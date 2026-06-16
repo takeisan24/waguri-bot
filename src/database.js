@@ -32,7 +32,7 @@ async function getUser(userId) {
                 .insert([{ user_id: userId }])
                 .select()
                 .single();
-                
+
             if (insertError) throw insertError;
             return newUser;
         }
@@ -47,32 +47,25 @@ async function getUser(userId) {
 }
 
 /**
- * Thêm / bớt tiền của người dùng.
- * @param {string} userId - Discord ID 
- * @param {number} amount - Số tiền (Âm để trừ tiền)
- * @param {string} type - 'wallet' (ví) hoặc 'bank' (ngân hàng)
- * @returns {boolean} - Trạng thái thành công
+ * Cộng / trừ tiền NGUYÊN TỬ qua RPC increment_balance.
+ * Phép cộng xảy ra trong DB nên KHÔNG bị race condition (dupe tiền),
+ * và chặn số dư âm ngay trong câu UPDATE.
+ * @param {string} userId - Discord ID
+ * @param {number} amount - Số tiền (âm để trừ)
+ * @param {string} type - 'wallet' hoặc 'bank'
+ * @returns {boolean} - true nếu thành công, false nếu không đủ tiền/lỗi
  */
 async function addMoney(userId, amount, type = 'wallet') {
     try {
-        const user = await getUser(userId);
-        if (!user) return false;
-
-        // Tính số tiền mới (dùng BigInt qua chuỗi để an toàn, hoặc dùng logic JS)
-        // Vì CSDL là BigInt, trả ra API JS sẽ là string hoặc number nếu nhỏ.
-        const currentMoney = Number(user[type]);
-        const newMoney = currentMoney + amount;
-
-        // Nếu trừ tiền thì không được để âm
-        if (newMoney < 0) return false;
-
-        const { error } = await supabase
-            .from('users')
-            .update({ [type]: newMoney })
-            .eq('user_id', userId);
+        const { data, error } = await supabase.rpc('increment_balance', {
+            p_user_id: userId,
+            p_field: type,
+            p_amount: amount,
+        });
 
         if (error) throw error;
-        return true;
+        // RPC trả NULL khi guard chặn (số dư không đủ) -> thất bại
+        return data !== null;
 
     } catch (error) {
         console.error(`[DATABASE ERROR] Lỗi addMoney(${userId}):`, error);
@@ -81,35 +74,49 @@ async function addMoney(userId, amount, type = 'wallet') {
 }
 
 /**
- * Thêm / bớt điểm kinh nghiệm.
- * @param {string} userId - Discord ID
- * @param {number} expAmount - Điểm EXP muốn cộng thêm
+ * Chuyển tiền giữa 2 user trong 1 transaction (atomic).
+ * @returns {boolean} - true nếu thành công, false nếu thiếu tiền / input sai.
  */
-async function updateExp(userId, expAmount) {
+async function transferMoney(fromUserId, toUserId, amount) {
     try {
-        const user = await getUser(userId);
-        if (!user) return false;
-
-        const newExp = Number(user.exp) + expAmount;
-
-        const { error } = await supabase
-            .from('users')
-            .update({ exp: newExp })
-            .eq('user_id', userId);
+        const { data, error } = await supabase.rpc('transfer_money', {
+            p_from: fromUserId,
+            p_to: toUserId,
+            p_amount: amount,
+        });
 
         if (error) throw error;
-        return true;
+        return data === true;
+
     } catch (error) {
-        console.error(`[DATABASE ERROR] Lỗi updateExp():`, error);
+        console.error(`[DATABASE ERROR] Lỗi transferMoney(${fromUserId} -> ${toUserId}):`, error);
         return false;
     }
 }
 
 /**
- * Kiểm tra xem người dùng có đang bị dính thời gian chờ (cooldown) hay không.
- * @param {string} userId - Discord ID
- * @param {string} command - Tên lệnh (vidu: 'work')
- * @returns {boolean|number} - Trả về false nếu KHÔNG BỊ COOLDOWN, trả về timestamp hết hạn nếu ĐANG BỊ.
+ * Cộng EXP nguyên tử qua RPC add_exp.
+ * @returns {number|null} - Tổng EXP MỚI (để tính level), hoặc null nếu lỗi.
+ */
+async function updateExp(userId, expAmount) {
+    try {
+        const { data, error } = await supabase.rpc('add_exp', {
+            p_user_id: userId,
+            p_amount: expAmount,
+        });
+
+        if (error) throw error;
+        return data === null ? null : Number(data);
+
+    } catch (error) {
+        console.error(`[DATABASE ERROR] Lỗi updateExp():`, error);
+        return null;
+    }
+}
+
+/**
+ * CHỈ ĐỌC: kiểm tra cooldown mà KHÔNG đặt (dùng để hiển thị thời gian chờ).
+ * @returns {boolean|number} - false nếu không bị cooldown, timestamp(ms) nếu đang bị.
  */
 async function checkCooldown(userId, command) {
     try {
@@ -121,17 +128,15 @@ async function checkCooldown(userId, command) {
             .single();
 
         if (error && error.code !== 'PGRST116') throw error; // Bỏ qua lỗi ko tìm thấy dòng
-        
+
         if (data) {
             const now = new Date();
             const expiresAt = new Date(data.expires_at);
-
-            // Nếu thời điểm hiện tại nhỏ hơn hạn bị cấm -> Đang bị cooldown
             if (now < expiresAt) {
                 return expiresAt.getTime();
             }
         }
-        
+
         return false;
 
     } catch (error) {
@@ -141,23 +146,49 @@ async function checkCooldown(userId, command) {
 }
 
 /**
- * Thiết lập thời gian chờ (cooldown).
- * @param {string} userId - Discord ID
- * @param {string} command - Tên lệnh
- * @param {number} durationMinutes - Thời gian cấm (tính bằng phút)
+ * NGUYÊN TỬ: kiểm tra + đặt cooldown trong 1 lần gọi (chống claim đúp khi spam).
+ * Nên dùng hàm NÀY trong command thay cho checkCooldown + setCooldown.
+ * @param {string} userId
+ * @param {string} command
+ * @param {number} durationSeconds - thời gian chờ (giây)
+ * @returns {boolean|number} - false nếu CLAIM ĐƯỢC (cho phép chạy lệnh),
+ *                             timestamp(ms) nếu ĐANG bị cooldown.
+ */
+async function claimCooldown(userId, command, durationSeconds) {
+    try {
+        const { data, error } = await supabase.rpc('claim_cooldown', {
+            p_user_id: userId,
+            p_command: command,
+            p_duration_seconds: durationSeconds,
+        });
+
+        if (error) throw error;
+        // RPC trả NULL => claim thành công (được phép chạy)
+        if (!data) return false;
+        return new Date(data).getTime();
+
+    } catch (error) {
+        console.error(`[DATABASE ERROR] Lỗi claimCooldown():`, error);
+        // Fail-open: nếu DB lỗi, không chặn user (tránh khóa cứng do sự cố hạ tầng)
+        return false;
+    }
+}
+
+/**
+ * @deprecated Không nguyên tử. Dùng claimCooldown() để tránh race condition.
+ * Giữ lại để tương thích ngược.
  */
 async function setCooldown(userId, command, durationMinutes) {
     try {
         const now = new Date();
-        const expiresAt = new Date(now.getTime() + durationMinutes * 60000); // Đổi phút ra ms
+        const expiresAt = new Date(now.getTime() + durationMinutes * 60000);
 
-        // Dùng upsert để nếu có sẵn thì update đè lên, chưa có thì insert.
         const { error } = await supabase
             .from('cooldowns')
-            .upsert({ 
-                user_id: userId, 
-                command: command, 
-                expires_at: expiresAt.toISOString() 
+            .upsert({
+                user_id: userId,
+                command: command,
+                expires_at: expiresAt.toISOString(),
             }, { onConflict: 'user_id,command' });
 
         if (error) throw error;
@@ -173,7 +204,9 @@ module.exports = {
     supabase,
     getUser,
     addMoney,
+    transferMoney,
     updateExp,
     checkCooldown,
-    setCooldown
+    claimCooldown,
+    setCooldown,
 };

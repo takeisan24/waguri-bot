@@ -1,5 +1,7 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const db = require('../../database.js');
+const config = require('../../config');
+const { getLevelFromExp } = require('../../lib/leveling');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -10,12 +12,14 @@ module.exports = {
         await interaction.deferReply();
 
         const userId = interaction.user.id;
-        
-        // 1. Kiểm tra Cooldown (Ví dụ: 5 phút làm việc một lần)
-        const cooldownTime = await db.checkCooldown(userId, 'work');
+
+        // 1. Claim cooldown NGUYÊN TỬ ngay từ đầu (chống spam/double-work khi chạy song song).
+        //    Nếu claim được, cooldown đã được đặt luôn trong DB.
+        const cooldownTime = await db.claimCooldown(userId, 'work', config.WORK.COOLDOWN_SECONDS);
         if (cooldownTime) {
-            const remainingTimeSeconds = Math.floor((cooldownTime - Date.now()) / 1000);
-            return await interaction.editReply(`Mới làm xong mệt quá bạn ơi 💦. Hãy quay lại sau <t:${Math.floor(cooldownTime / 1000)}:R> nữa nhé!`);
+            return await interaction.editReply(
+                `Mới làm xong mệt quá bạn ơi 💦. Hãy quay lại sau <t:${Math.floor(cooldownTime / 1000)}:R> nữa nhé!`
+            );
         }
 
         try {
@@ -25,14 +29,11 @@ module.exports = {
                 return await interaction.editReply('Lỗi hệ thống: Không thể kết nối với Thuế. Vui lòng thử lại sau!');
             }
 
-            let minWage = 10;
-            let maxWage = 50;
-            let jobName = "Làm thuê tự do ngoài đường";
-            let riskRate = 0.05;
+            // 3. Xác định thông số nghề (mặc định nếu chưa apply job)
+            let { name: jobName, min_wage: minWage, max_wage: maxWage, risk_rate: riskRate } = config.WORK.DEFAULT_JOB;
 
-            // Truy vấn thông tin công việc nếu user có job_id
             if (user.job_id) {
-                const { data: job, error } = await db.supabase
+                const { data: job } = await db.supabase
                     .from('jobs')
                     .select('*')
                     .eq('id', user.job_id)
@@ -46,40 +47,43 @@ module.exports = {
                 }
             }
 
-            // 3. Xử lý rủi ro (Risk event)
+            // 4. Xử lý rủi ro (Risk event)
+            // TODO (Phase 2): chuyển sang generator 70/20/10 + kịch bản hài hước theo từng nghề.
             const isUnlucky = Math.random() < riskRate;
             let earnedMoney = 0;
-            let resultMessage = "";
+            let resultMessage = '';
 
             if (isUnlucky) {
-                // Rủi ro xảy ra: Bị phạt một khoản nhỏ hoặc làm không công
-                earnedMoney = -Math.floor(Math.random() * (minWage / 2)); 
-                // Trừ tiền
+                earnedMoney = -Math.floor(Math.random() * (minWage / 2));
                 await db.addMoney(userId, earnedMoney, 'wallet');
-                resultMessage = `⚠️ Xui xẻo! Hôm nay đi làm **${jobName}** bạn vướng phải rắc rối và bị mất **${Math.abs(earnedMoney)}** VNĐ.`;
+                resultMessage = `⚠️ Xui xẻo! Hôm nay đi làm **${jobName}** bạn vướng phải rắc rối và bị mất **${Math.abs(earnedMoney)}** ${config.CURRENCY}.`;
             } else {
-                // Thuận lợi: Kiếm tiền ngẫu nhiên từ min đến max
                 earnedMoney = Math.floor(Math.random() * (maxWage - minWage + 1)) + minWage;
                 await db.addMoney(userId, earnedMoney, 'wallet');
-                resultMessage = `✅ Xuất sắc! Bạn cày cuốc **${jobName}** và kiếm được **${earnedMoney}** VNĐ vào ví!`;
+                resultMessage = `✅ Xuất sắc! Bạn cày cuốc **${jobName}** và kiếm được **${earnedMoney}** ${config.CURRENCY} vào ví!`;
             }
 
-            // 4. Cộng thêm một ít kinh nghiệm
-            const gainedExp = Math.floor(Math.random() * 5) + 1; // 1 đến 5 exp
-            await db.updateExp(userId, gainedExp);
+            // 5. Cộng EXP và tính level mới (cảnh báo lên cấp nếu có)
+            const { min, max } = config.WORK.EXP_PER_WORK;
+            const gainedExp = Math.floor(Math.random() * (max - min + 1)) + min;
+            const oldLevel = getLevelFromExp(Number(user.exp));
+            const newExp = await db.updateExp(userId, gainedExp);
+            const newLevel = newExp === null ? oldLevel : getLevelFromExp(newExp);
 
-            // 5. Set Cooldown 5 phút
-            await db.setCooldown(userId, 'work', 5);
-
-            // Gửi Embed thông báo
+            // 6. Gửi Embed thông báo
             const resultEmbed = new EmbedBuilder()
-                .setColor(isUnlucky ? 0xFF0000 : 0x00FF00)
+                .setColor(isUnlucky ? config.COLORS.ERROR : config.COLORS.SUCCESS)
                 .setTitle('💼 Kết quả làm việc')
                 .setDescription(resultMessage)
                 .addFields(
-                    { name: 'Kinh nghiệm nhận được', value: `+${gainedExp} EXP`, inline: true }
+                    { name: 'Kinh nghiệm nhận được', value: `+${gainedExp} EXP`, inline: true },
+                    { name: 'Cấp độ', value: `Lv.${newLevel}`, inline: true }
                 )
                 .setTimestamp();
+
+            if (newLevel > oldLevel) {
+                resultEmbed.addFields({ name: '🎉 Chúc mừng!', value: `Bạn đã lên **Level ${newLevel}**!`, inline: false });
+            }
 
             await interaction.editReply({ embeds: [resultEmbed] });
 

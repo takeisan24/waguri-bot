@@ -1,16 +1,50 @@
-# Node.js
-node_modules
+# Dependency directories
+node_modules/
 
-# Discord
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Diagnostic reports
+.pnp
+.pnp.js
+
+# Testing
+coverage/
+.nyc_output/
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDEs and Editors
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Environment variables (SENSITIVE)
 .env
-.env.example
+.env.local
+.env.production
+.env.development
+.env.staging
+.env.test
 
-# Supabase
-.supabase
-.supabase.example
+# Do NOT ignore .env.example as it serves as a template for other developers
+!.env.example
 
-# NPM
-package-lock.json
+# Supabase local config & state (except migrations which are committed)
+.supabase/
 
-#Propmt 
+# Local configuration / AI developer tools (keep repository clean)
+.claude/
+.omc/
 prompt.md
