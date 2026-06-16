@@ -1,85 +1,105 @@
-# Deploy bot Choco 24/7 trên Koyeb (Free)
+# Deploy bot Choco 24/7 trên Oracle Cloud Always Free
 
-Deploy thẳng từ GitHub repo `takeisan24/chocobot` — không SSH, không pm2, env vars gõ trên web.
-Mỗi lần `git push` về sau Koyeb **tự build lại**.
+VPS **miễn phí vĩnh viễn**, **không ngủ**, ổn định nhất trong các lựa chọn free.
+Thẻ chỉ dùng để **xác minh danh tính** — Oracle KHÔNG trừ tiền nếu bạn ở trong tài nguyên "Always Free".
+Bot chỉ kết nối **đi ra ngoài** → **không cần mở port inbound nào.**
 
 ---
 
 ## ⚠️ Bước 0 — Kiểm tra TRƯỚC (hay là lý do bot "không lên")
 
-1. **Bật Privileged Intent trên Discord:** Bot dùng `MessageContent` (privileged). Nếu chưa bật, bot sẽ **crash khi login** với lỗi *"Used disallowed intents"*.
-   → Vào https://discord.com/developers/applications → chọn app → **Bot** → bật **MESSAGE CONTENT INTENT** (và SERVER MEMBERS INTENT nếu cần) → Save.
+**Bật Privileged Intent trên Discord:** Bot dùng `MessageContent` (privileged). Chưa bật → bot **crash khi login** (*"Used disallowed intents"*).
+→ https://discord.com/developers/applications → app của bạn → **Bot** → bật **MESSAGE CONTENT INTENT** → Save.
 
-2. **Có sẵn 4 biến môi trường** (lấy từ `.env` máy bạn): `DISCORD_TOKEN`, `CLIENT_ID`, `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`.
-
-> 💡 Bot đã có Express server (`index.js`) lắng nghe `process.env.PORT` → đây **chính là HTTP health-check mà Koyeb cần**. Không cần sửa code.
+> Supabase RPC đã được áp dụng & test sẵn — không cần làm gì thêm ở phía database.
 
 ---
 
-## A. Tạo service trên Koyeb
+## A. Tạo tài khoản & VM Oracle Cloud
 
-1. Vào https://www.koyeb.com → **Sign up bằng GitHub** (không cần thẻ tín dụng).
-2. **Create Web Service** → chọn **GitHub** → cho phép Koyeb truy cập repo → chọn **`takeisan24/chocobot`**, branch **`master`**.
-3. **Instance:** chọn **Free** (`eco` / nano, 512MB) — dư cho bot này.
-4. **Region:** chọn **Singapore** (gần Supabase `ap-southeast-1` cho nhanh).
-5. **Builder:** để **Buildpack** (Koyeb tự nhận Node, chạy `npm ci` rồi `npm start`). Không cần Dockerfile.
+1. Đăng ký: https://www.oracle.com/cloud/free/ — nhập thẻ để xác minh (không trừ tiền). Chọn Region gần, vd **Singapore**.
+2. ☰ → **Compute → Instances → Create Instance:**
+   - **Image:** Canonical **Ubuntu 22.04** (hoặc 24.04).
+   - **Shape:** *Change Shape* → **Ampere (ARM)** → `VM.Standard.A1.Flex`, đặt **1 OCPU / 6 GB RAM**.
+   - **SSH keys:** *Generate a key pair for me* → **TẢI private key (.key) về máy** (không tải lại được!).
+   - **Create.**
 
----
-
-## B. Cấu hình Environment variables
-
-Trong phần **Environment variables**, thêm (bấm "secret" cho các giá trị nhạy cảm):
-
-| Key | Value |
-|---|---|
-| `DISCORD_TOKEN` | (token bot của bạn) |
-| `CLIENT_ID` | (application/client ID) |
-| `SUPABASE_URL` | `https://kuvlkaxregnanhzgqrbp.supabase.co` |
-| `SUPABASE_SERVICE_KEY` | (service_role key) |
-
-> **KHÔNG** cần đặt `PORT` — Koyeb tự cấp (mặc định 8000) và code tự nhận qua `process.env.PORT`.
+> ⚠️ **Cạm bẫy ARM:** hay báo *"Out of host capacity"*. Cách xử lý:
+> - Thử lại sau vài phút / đổi **Availability Domain** (AD-1 → AD-2/3).
+> - Bí quá thì dùng shape x86 **`VM.Standard.E2.1.Micro`** (cũng Always Free, đủ chạy bot nhẹ này).
 
 ---
 
-## C. Cấu hình Port / Health check
+## B. Kết nối SSH
 
-- **Exposed port:** `8000` (mặc định Koyeb). Code sẽ lắng nghe đúng cổng này nhờ `process.env.PORT`.
-- **Health check:** HTTP path `/` (Express trả 200 "Tín hiệu mạng..."). Để mặc định là được.
-
-Bấm **Deploy**.
-
----
-
-## D. Kiểm tra bot đã lên
-
-Mở tab **Logs** trên Koyeb, chờ build xong. Thành công khi thấy:
-```
-[HTTP SERVER] Web server đang chạy ở port 8000
-Ready! Logged in as <tên-bot>#0000
-[SYSTEM] Đã tự động đăng ký lệnh xong! ...
-```
-Vào Discord gõ `/ping` → bot trả `Pong!` là chạy ngon. 🎉
-
----
-
-## E. Nếu bot bị "ngủ" (scale-to-zero) trên free tier
-
-Koyeb free có thể tạm dừng service khi không có traffic HTTP. Nếu gặp (bot delay/offline lúc rảnh):
-- **Cách 1 (khuyên dùng):** trong Settings của service, đặt **Autoscaling min = 1** (không cho về 0) nếu plan cho phép.
-- **Cách 2 (dự phòng):** dùng **UptimeRobot** miễn phí ping URL công khai Koyeb (vd `https://choco-xxx.koyeb.app/`) mỗi 5 phút để giữ thức. (Đây là lý do giữ lại Express server.)
-
----
-
-## F. Cập nhật bot sau này
-Chỉ cần ở máy local:
+Lấy **Public IP** ở trang Instance. Trên máy bạn (Git Bash / PowerShell):
 ```bash
-git add -A && git commit -m "..." && git push
+chmod 400 đường-dẫn/ssh-key.key          # Git Bash/Linux; Windows có thể bỏ qua
+ssh -i đường-dẫn/ssh-key.key ubuntu@<PUBLIC_IP>
 ```
-Koyeb tự động build lại bản mới. Xong.
+(User Ubuntu mặc định là `ubuntu`.)
 
 ---
 
-## Phụ lục — vì sao không chọn cách khác
-- **Render free:** ngủ sau 15 phút → bot offline. Tránh.
-- **Oracle Cloud Free:** mạnh & không ngủ nhưng phải SSH + pm2 (lằng nhằng) — xem lịch sử git nếu cần.
-- **Fly.io:** free tier đã ngừng với tài khoản mới (2026).
+## C. Cài Node.js (dùng nvm — tránh lỗi repo ARM)
+```bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+source ~/.bashrc
+nvm install 22
+node -v
+```
+
+---
+
+## D. Lấy code từ GitHub
+```bash
+git clone https://github.com/takeisan24/chocobot.git
+cd chocobot
+```
+
+---
+
+## E. Tạo file .env trên VM
+File `.env` bị gitignore (đúng) nên KHÔNG đi theo git → phải tạo tay:
+```bash
+nano .env
+```
+Dán (điền giá trị thật từ `.env` máy bạn):
+```
+DISCORD_TOKEN=...
+CLIENT_ID=...
+SUPABASE_URL=https://kuvlkaxregnanhzgqrbp.supabase.co
+SUPABASE_SERVICE_KEY=...
+```
+Lưu: `Ctrl+O` → `Enter` → `Ctrl+X`.
+
+---
+
+## F. Cài deps & chạy 24/7 bằng pm2
+```bash
+npm ci --omit=dev          # cài từ lockfile, bỏ nodemon (devDependency)
+npm install -g pm2
+
+pm2 start ecosystem.config.js   # khởi động bot (cấu hình pm2 đã có sẵn trong repo)
+pm2 logs choco                  # PHẢI thấy "Ready! Logged in as ..."
+pm2 save                        # lưu danh sách tiến trình
+pm2 startup                     # in ra 1 lệnh -> COPY & CHẠY lệnh đó (sống lại sau reboot)
+```
+Vào Discord gõ `/ping` → ra `Pong!` là xong. Đóng SSH thoải mái, bot vẫn chạy 24/7. 🎉
+
+---
+
+## G. Lệnh pm2 hay dùng
+| Việc | Lệnh |
+|---|---|
+| Xem log realtime | `pm2 logs choco` |
+| Trạng thái | `pm2 status` |
+| Cập nhật code mới | `git pull && pm2 restart choco` |
+| Dừng / khởi động lại | `pm2 stop choco` / `pm2 restart choco` |
+
+---
+
+## Ghi chú
+- **Không cần UptimeRobot, không cần mở port firewall** — bot chỉ kết nối ra ngoài; pm2 + `pm2 startup` lo việc 24/7 kể cả sau reboot.
+- Dev ở máy local vẫn dùng `npm run dev` (nodemon); prod trên VM dùng pm2.
+- Express server (`/`) chỉ là /health tùy chọn, không bắt buộc trên VPS.
