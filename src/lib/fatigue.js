@@ -15,4 +15,15 @@ function fatigueMultiplier(userId) {
     return mult;
 }
 
-module.exports = { fatigueMultiplier };
+/** Giải trí/nghỉ ngơi -> giảm bớt độ mệt (giảm count). */
+function restFatigue(userId, amount = 1) {
+    const r = store.get(userId);
+    if (r) { r.count = Math.max(0, r.count - amount); store.set(userId, r); }
+}
+
+/** Hồi sức hoàn toàn (vd khi /ngu). */
+function resetFatigue(userId) {
+    store.delete(userId);
+}
+
+module.exports = { fatigueMultiplier, restFatigue, resetFatigue };

@@ -2,6 +2,7 @@
 const config = require('../../config');
 const db = require('../../database.js');
 const { WAGURI_SYSTEM_PROMPT, tierOf } = require('./persona');
+const { restFatigue } = require('../fatigue');
 
 const providers = {
     gemini: require('./gemini'),
@@ -59,6 +60,7 @@ async function chatWithWaguri(channelId, userId, userName, userText) {
     reply = formatReply(reply, userId, userName); // @mention + bọc lệnh trong `code`
 
     db.incrAffection(userId, 1); // trò chuyện làm Waguri thân thiết hơn
+    restFatigue(userId, 1);      // trò chuyện thư giãn -> bớt mệt
 
     // Cập nhật ngữ cảnh, cắt bớt và đảm bảo bắt đầu bằng 'user' (Gemini yêu cầu)
     history = [...history, { role: 'user', content: framed }, { role: 'assistant', content: reply }];

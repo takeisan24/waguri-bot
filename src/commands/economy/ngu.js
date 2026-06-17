@@ -1,6 +1,7 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const db = require('../../database.js');
 const config = require('../../config');
+const { resetFatigue } = require('../../lib/fatigue');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -13,9 +14,10 @@ module.exports = {
             return interaction.editReply(`Cậu vừa ngủ dậy mà~ 😴 Ngủ tiếp được sau <t:${Math.floor(cd / 1000)}:R> nhé.`);
         }
         await db.setEnergy(interaction.user.id, config.ENERGY.MAX);
+        resetFatigue(interaction.user.id); // ngủ dậy hết mệt mỏi
         await interaction.editReply({ embeds: [new EmbedBuilder()
             .setColor(config.COLORS.SUCCESS)
             .setTitle('😴 Ngủ một giấc thật ngon')
-            .setDescription(`Cậu nghỉ ngơi và hồi đầy **${config.ENERGY.MAX}** ⚡ năng lượng! Sẵn sàng cày tiếp nào~ 🌸`)] });
+            .setDescription(`Cậu nghỉ ngơi, hồi đầy **${config.ENERGY.MAX}** ⚡ năng lượng và **hết mệt mỏi** hẳn! Sẵn sàng cày tiếp nào~ 🌸`)] });
     },
 };

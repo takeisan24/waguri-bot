@@ -30,6 +30,7 @@ async function runGather(interaction, { title, table, energyCost = config.GATHER
     const c = pick(table);
     let payout = c.max > 0 ? Math.floor(Math.random() * (c.max - c.min + 1)) + c.min : 0;
     const fatigue = fatigueMultiplier(userId);
+    const gross = payout;
     if (payout > 0) payout = Math.round(payout * fatigue);
 
     let desc;
@@ -37,7 +38,7 @@ async function runGather(interaction, { title, table, energyCost = config.GATHER
         await db.addMoney(userId, payout, 'wallet');
         db.questIncr(userId, 'earn', payout);
         desc = `Cậu thu được ${c.emoji} **${c.name}** và bán được **+${fmt(payout)}** ${config.CURRENCY}!`
-            + (fatigue < 1 ? ` *(mệt -${Math.round((1 - fatigue) * 100)}%)*` : '');
+            + (fatigue < 1 && gross > 0 ? ` *(gốc ${fmt(gross)}, mệt -${Math.round((1 - fatigue) * 100)}%)*` : '');
     } else {
         desc = `Cậu chỉ nhặt được ${c.emoji} **${c.name}**... chẳng đáng bao nhiêu 😅`;
     }

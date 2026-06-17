@@ -1,11 +1,13 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const images = require('../../lib/images');
 const config = require('../../config');
+const { restFatigue } = require('../../lib/fatigue');
 
 module.exports = {
     data: new SlashCommandBuilder().setName('cat').setDescription('Ảnh mèo ngẫu nhiên 🐱'),
     async execute(interaction) {
         await interaction.deferReply();
+        restFatigue(interaction.user.id, 1); // giải trí giảm mệt
         try {
             const url = await images.cat();
             if (!url) throw new Error('no url');

@@ -72,6 +72,7 @@ module.exports = {
             }
             // Mệt mỏi: làm liên tục thì thu nhập giảm dần
             const fatigue = fatigueMultiplier(userId);
+            const grossMoney = earnedMoney;
             if (earnedMoney > 0) earnedMoney = Math.round(earnedMoney * fatigue);
 
             await db.addMoney(userId, earnedMoney, 'wallet');
@@ -86,7 +87,6 @@ module.exports = {
                 .replace(/\{amount\}/g, amtStr)
                 .replace(/\{job\}/g, jobName);
             if (buffActive && earnedMoney > 0) resultMessage += ` *(buff +${Math.round((buffMult - 1) * 100)}%)*`;
-            if (fatigue < 1 && earnedMoney > 0) resultMessage += ` *(mệt -${Math.round((1 - fatigue) * 100)}%)*`;
 
             // 5. EXP theo cấp nghề
             const gainedExp = Math.round(config.WORK.EXP_BASE + config.WORK.EXP_PER_LEVEL * jobLevel)
@@ -101,7 +101,7 @@ module.exports = {
                 .setTitle('💼 Kết quả làm việc')
                 .setDescription(resultMessage)
                 .addFields(
-                    { name: '💵 Số dư ví', value: `${earnedMoney >= 0 ? '+' : '-'}${fmt(Math.abs(earnedMoney))} → **${fmt(newWallet)}** ${config.CURRENCY}`, inline: false },
+                    { name: '💵 Số dư ví', value: `${earnedMoney >= 0 ? '+' : '-'}${fmt(Math.abs(earnedMoney))}${fatigue < 1 && grossMoney > 0 ? ` *(gốc ${fmt(grossMoney)}, mệt -${Math.round((1 - fatigue) * 100)}%)*` : ''} → **${fmt(newWallet)}** ${config.CURRENCY}`, inline: false },
                     { name: 'Kinh nghiệm', value: `+${gainedExp} EXP`, inline: true },
                     { name: 'Cấp độ', value: `Lv.${newLevel}`, inline: true },
                     { name: 'Năng lượng', value: `${energyLeft}/${config.ENERGY.MAX} ⚡`, inline: true },

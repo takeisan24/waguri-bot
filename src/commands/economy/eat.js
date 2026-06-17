@@ -1,6 +1,7 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const db = require('../../database.js');
 const config = require('../../config');
+const { restFatigue } = require('../../lib/fatigue');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -43,6 +44,8 @@ module.exports = {
             }[lastStatus] || 'Ơ, có lỗi rồi, cậu thử lại sau nhé~';
             return interaction.editReply(`🌸 ${msg}`);
         }
+
+        restFatigue(interaction.user.id, used); // ăn uống nghỉ ngơi -> bớt mệt
 
         let effectText;
         if (item.effect_type === 'energy') {

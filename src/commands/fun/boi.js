@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const config = require('../../config');
+const { restFatigue } = require('../../lib/fatigue');
 
 const TINH_DUYEN = [
     'Hôm nay có người thầm để ý cậu đó~ 👀',
@@ -76,6 +77,7 @@ module.exports = {
         .addSubcommand(s => s.setName('thaydo').setDescription('Thầy đồ phán một quẻ (mỗi lần một khác)')),
     async execute(interaction) {
         await interaction.deferReply();
+        restFatigue(interaction.user.id, 1); // giải trí giảm mệt
         const sub = interaction.options.getSubcommand();
 
         if (sub === 'cunghoangdao') {
