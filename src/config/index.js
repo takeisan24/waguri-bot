@@ -85,6 +85,9 @@ module.exports = {
     // Thú cưng
     PET: { FEED_COST: 200, FEED_EXP_MIN: 20, FEED_EXP_MAX: 40 },
 
+    // Rương bí ẩn (money sink + cơ hội vật phẩm)
+    CRATE: { COST: 1000 },
+
     // Thưởng khi chat (chat-leveling) — có cooldown chống farm
     CHAT: {
         COOLDOWN_MS: 60_000,

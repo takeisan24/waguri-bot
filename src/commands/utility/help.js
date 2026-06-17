@@ -33,6 +33,7 @@ const CATEGORIES = [
         ['taixiu', 'tài xỉu'],
         ['baucua', 'bầu cua tôm cá'],
         ['blackjack', 'xì dách'],
+        ['crate', 'mở rương bí ẩn 🎁'],
     ] },
     { name: '💬 Trò chuyện', cmds: [
         ['ask', 'trò chuyện với Waguri (hoặc @tag Waguri)'],
