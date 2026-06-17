@@ -11,6 +11,16 @@ const providers = {
 const contexts = new Map();  // channelId -> [{role,content}]
 const cooldowns = new Map(); // userId -> timestamp hết cooldown
 
+const escapeRegex = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+// Hậu xử lý câu trả lời: thay tên người dùng bằng @mention + bọc /lệnh trong `code`
+function formatReply(text, userId, userName) {
+    let t = text;
+    if (userName) t = t.replace(new RegExp(escapeRegex(userName), 'g'), `<@${userId}>`);
+    t = t.replace(/(?<!`)\/([a-zA-Z]{2,})(?!`)/g, '`/$1`'); // /work -> `/work`
+    return t;
+}
+
 function getProvider() {
     const name = (config.AI.PROVIDER || 'gemini').toLowerCase();
     return providers[name] || providers.gemini;
@@ -46,6 +56,7 @@ async function chatWithWaguri(channelId, userId, userName, userText) {
         return null;
     }
     if (!reply) return null;
+    reply = formatReply(reply, userId, userName); // @mention + bọc lệnh trong `code`
 
     db.incrAffection(userId, 1); // trò chuyện làm Waguri thân thiết hơn
 

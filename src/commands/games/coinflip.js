@@ -38,7 +38,12 @@ module.exports = {
             desc += `😢 Cậu thua **-${fmt(bet)}** ${config.CURRENCY}. Lần sau may hơn nhé~`;
         }
         const fine = await applyPolice(userId);
-        if (fine !== null) desc += `\n\n🚨 **Công an ập tới!** Cờ bạc nhiều quá, cậu bị phạt **${fmt(fine)}** ${config.CURRENCY}! 😱`;
+        if (fine !== null) {
+            let jailed = false;
+            try { await interaction.member?.timeout?.(config.POLICE.JAIL_MS, 'Cờ bạc bị công an bắt'); jailed = true; } catch { /* bot thiếu quyền timeout */ }
+            desc += `\n\n🚨 **Công an ập tới!** Cậu bị phạt **${fmt(fine)}** ${config.CURRENCY}`
+                + (jailed ? ` và **tạm giam ${Math.round(config.POLICE.JAIL_MS / 60000)} phút**! 🚓` : '! 😱');
+        }
 
         await interaction.editReply({ embeds: [new EmbedBuilder()
             .setColor(win ? config.COLORS.SUCCESS : config.COLORS.ERROR)

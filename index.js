@@ -74,6 +74,12 @@ if (process.env.DISCORD_TOKEN) {
 
             console.log(`[SYSTEM] Đăng ký ${commandsAPI.length} lệnh (${guildId ? `guild ${guildId} - tức thì` : 'global'})...`);
             await rest.put(route, { body: commandsAPI });
+
+            // Dùng GUILD_ID (dev) thì DỌN lệnh global để tránh hiện 2 dòng trong menu
+            if (guildId) {
+                await rest.put(Routes.applicationCommands(clientId), { body: [] });
+                console.log('[SYSTEM] Đã dọn lệnh global (tránh trùng).');
+            }
             console.log('[SYSTEM] Đăng ký lệnh xong! 🚀\n');
         } catch (error) {
             console.error('[SYSTEM LỖI] Lỗi đăng ký lệnh:', error);

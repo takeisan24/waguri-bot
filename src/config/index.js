@@ -81,7 +81,7 @@ module.exports = {
         ENERGY_COST: 8,
     },
     GATHER_ENERGY_COST: 8, // /mine, /chop
-    ACTION_COOLDOWN_MS: 3000, // chống spam /work /fish /mine /chop
+    ACTION_COOLDOWN_MS: 15000, // /work /fish /mine /chop (15s — đỡ spam, đỡ cày máy)
 
     // Thú cưng
     PET: { FEED_COST: 200, FEED_EXP_MIN: 20, FEED_EXP_MAX: 40 },
@@ -96,6 +96,7 @@ module.exports = {
         MAX_CHANCE: 0.4,    // tối đa 40%
         FINE_PCT: 0.2,      // phạt 20% ví
         DECAY_MS: 600_000,  // 10 phút không chơi thì "nguội"
+        JAIL_MS: 5 * 60_000, // bị bắt -> tạm giam (timeout) 5 phút
     },
 
     // Ngủ nghỉ hồi đầy năng lượng (cooldown dài)

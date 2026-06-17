@@ -9,6 +9,7 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
+    "clear": "node clear-commands.js",
     "test": "node --test"
   },
   "dependencies": {
