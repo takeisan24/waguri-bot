@@ -6,10 +6,7 @@ module.exports = {
     execute(client) {
         console.log(`Ready! Logged in as ${client.user.tag}`);
         
-        // Thiết lập trạng thái (Activity / Profile) cho bot
-        client.user.setActivity('quản lý Choco Server 🍫', { type: ActivityType.Watching });
-        // Hoặc có thể thử:
-        // client.user.setActivity('nhạc', { type: ActivityType.Listening });
-        // client.user.setActivity('với các lệnh', { type: ActivityType.Playing });
+        // Thiết lập trạng thái (Activity) cho bot — persona Waguri
+        client.user.setActivity('Có làm mới có ăn 💢', { type: ActivityType.Watching });
     },
 };
