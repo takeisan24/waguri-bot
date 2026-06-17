@@ -75,4 +75,9 @@ module.exports = {
         MAX_OUTPUT_TOKENS: 400,  // câu trả lời ngắn gọn cho Discord
         USER_COOLDOWN_MS: 4000,  // chống spam mỗi người
     },
+
+    // Câu cá (nguồn thu PvE, tốn năng lượng)
+    FISH: {
+        ENERGY_COST: 8,
+    },
 };

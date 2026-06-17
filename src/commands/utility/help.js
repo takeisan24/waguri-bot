@@ -4,6 +4,7 @@ const config = require('../../config');
 const CATEGORIES = [
     { name: '💼 Kinh tế & Nghề', cmds: [
         ['work', 'làm việc kiếm tiền (tốn năng lượng)'],
+        ['fish', 'đi câu cá kiếm tiền (tốn năng lượng)'],
         ['daily', 'điểm danh nhận thưởng + streak'],
         ['quest', 'nhiệm vụ hằng ngày (thưởng tiền)'],
         ['achievements', 'thành tựu (mở khóa nhận thưởng)'],
