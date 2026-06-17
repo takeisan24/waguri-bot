@@ -21,6 +21,7 @@ const CATEGORIES = [
         ['sell', 'bán vật phẩm (50% giá)'],
         ['inventory', 'xem kho đồ'],
         ['eat', 'dùng đồ ăn/uống (hồi năng lượng / buff)'],
+        ['ngu', 'đi ngủ hồi đầy năng lượng (6 tiếng/lần) 😴'],
     ] },
     { name: '💸 Giao dịch & Ngân hàng', cmds: [
         ['give', 'chuyển tiền cho người khác'],

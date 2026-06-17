@@ -89,6 +89,18 @@ module.exports = {
     // Rương bí ẩn (money sink + cơ hội vật phẩm)
     CRATE: { COST: 1000 },
 
+    // Công an bắt cờ bạc — chơi càng nhiều, xác suất bị bắt càng cao
+    POLICE: {
+        BASE_CHANCE: 0.0,   // lần đầu không bị bắt
+        STEP: 0.03,         // mỗi ván gần đây +3%
+        MAX_CHANCE: 0.4,    // tối đa 40%
+        FINE_PCT: 0.2,      // phạt 20% ví
+        DECAY_MS: 600_000,  // 10 phút không chơi thì "nguội"
+    },
+
+    // Ngủ nghỉ hồi đầy năng lượng (cooldown dài)
+    SLEEP_COOLDOWN_SECONDS: 6 * 3600, // 6 tiếng
+
     // Thưởng khi chat (chat-leveling) — có cooldown chống farm
     CHAT: {
         COOLDOWN_MS: 60_000,

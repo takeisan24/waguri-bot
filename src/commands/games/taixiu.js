@@ -3,6 +3,7 @@ const db = require('../../database.js');
 const config = require('../../config');
 const { parseAmount } = require('../../lib/amount');
 const { checkBet } = require('../../lib/bet');
+const { applyPolice } = require('../../lib/police');
 
 const DICE = ['', '⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
 const fmt = n => Number(n).toLocaleString('vi-VN');
@@ -44,6 +45,9 @@ module.exports = {
                 ? `💥 Ra bão, nhà cái thắng. Cậu mất **-${fmt(bet)}** ${config.CURRENCY}~`
                 : `😢 Cậu thua **-${fmt(bet)}** ${config.CURRENCY}. Lần sau nhé~`;
         }
+        const fine = await applyPolice(userId);
+        if (fine !== null) desc += `\n\n🚨 **Công an ập tới!** Cờ bạc nhiều quá, cậu bị phạt **${fmt(fine)}** ${config.CURRENCY}! 😱`;
+
         await interaction.editReply({ embeds: [new EmbedBuilder()
             .setColor(win ? config.COLORS.SUCCESS : config.COLORS.ERROR)
             .setTitle('🎲 Tài Xỉu').setDescription(desc)] });
