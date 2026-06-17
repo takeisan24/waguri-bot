@@ -1,8 +1,9 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder } = require('discord.js');
 const db = require('../../database.js');
 const config = require('../../config');
+const { sendPaginated } = require('../../lib/paginate');
 
-const TYPE_ICON = { tool: '🛠️', vehicle: '🛵', consumable: '🍞', misc: '📦' };
+const TYPE_ICON = { tool: '🛠️', vehicle: '🛵', consumable: '🍞', property: '🏠', luxury: '💎', misc: '📦' };
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -19,12 +20,12 @@ module.exports = {
             `　↳ \`${i.id}\`${i.description ? ` · ${i.description}` : ''}`
         );
 
-        const embed = new EmbedBuilder()
-            .setColor(config.COLORS.INFO)
-            .setTitle('🏪 Cửa Hàng Waguri')
-            .setDescription(lines.join('\n'))
-            .setFooter({ text: 'Mua bằng: /buy <item>' });
-
-        await interaction.editReply({ embeds: [embed] });
+        await sendPaginated(interaction, {
+            title: '🏪 Cửa Hàng Waguri',
+            color: config.COLORS.INFO,
+            lines,
+            perPage: 6,
+            footerNote: 'Mua: /buy <item>',
+        });
     },
 };

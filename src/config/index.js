@@ -6,6 +6,9 @@ module.exports = {
     // Tiền tố cho lệnh prefix (vd: w!work). Slash command vẫn dùng song song.
     PREFIX: 'w!',
 
+    // Discord ID của owner (cho /eco-admin). Nhiều owner: ngăn cách bằng dấu phẩy.
+    OWNER_IDS: (process.env.OWNER_IDS || '').split(',').map(s => s.trim()).filter(Boolean),
+
     CURRENCY: 'VNĐ',
 
     COLORS: {

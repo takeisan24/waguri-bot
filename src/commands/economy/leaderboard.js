@@ -1,7 +1,8 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder } = require('discord.js');
 const db = require('../../database.js');
 const config = require('../../config');
 const { getLevelFromExp } = require('../../lib/leveling');
+const { sendPaginated } = require('../../lib/paginate');
 
 const MEDALS = ['🥇', '🥈', '🥉'];
 
@@ -14,7 +15,7 @@ module.exports = {
     async execute(interaction) {
         await interaction.deferReply();
         const sort = interaction.options.getString('type') || 'networth';
-        const rows = await db.getLeaderboard(sort, 10);
+        const rows = await db.getLeaderboard(sort, 25);
         if (!rows.length) return interaction.editReply('Chưa có ai trên bảng xếp hạng cả~ 🌸');
 
         const lines = await Promise.all(rows.map(async (row, i) => {
@@ -28,10 +29,11 @@ module.exports = {
             return `${rank} ${name} — ${value}`;
         }));
 
-        const embed = new EmbedBuilder()
-            .setColor(config.COLORS.JACKPOT)
-            .setTitle(sort === 'level' ? '🏆 BXH Cấp độ' : '🏆 BXH Đại gia')
-            .setDescription(lines.join('\n'));
-        await interaction.editReply({ embeds: [embed] });
+        await sendPaginated(interaction, {
+            title: sort === 'level' ? '🏆 BXH Cấp độ' : '🏆 BXH Đại gia',
+            color: config.COLORS.JACKPOT,
+            lines,
+            perPage: 10,
+        });
     },
 };

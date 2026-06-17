@@ -406,6 +406,77 @@ async function sellItem(userId, itemId, quantity = 1) {
     }
 }
 
+// ============================================================
+//  ADMIN — chỉ owner dùng (qua /eco-admin)
+// ============================================================
+/** Đặt cứng số dư ví/bank. */
+async function setBalance(userId, field, amount) {
+    try {
+        if (field !== 'wallet' && field !== 'bank') return false;
+        await getUser(userId);
+        const { error } = await supabase.from('users').update({ [field]: amount }).eq('user_id', userId);
+        if (error) throw error;
+        return true;
+    } catch (error) {
+        console.error('[DATABASE ERROR] setBalance():', error);
+        return false;
+    }
+}
+
+/** Đặt cứng EXP. */
+async function setExp(userId, value) {
+    try {
+        await getUser(userId);
+        const { error } = await supabase.from('users').update({ exp: value }).eq('user_id', userId);
+        if (error) throw error;
+        return true;
+    } catch (error) {
+        console.error('[DATABASE ERROR] setExp():', error);
+        return false;
+    }
+}
+
+/** Đặt cứng năng lượng (reset mốc hồi về now). */
+async function setEnergy(userId, value) {
+    try {
+        await getUser(userId);
+        const { error } = await supabase.from('users')
+            .update({ energy: value, energy_updated_at: new Date().toISOString() })
+            .eq('user_id', userId);
+        if (error) throw error;
+        return true;
+    } catch (error) {
+        console.error('[DATABASE ERROR] setEnergy():', error);
+        return false;
+    }
+}
+
+/** Admin cấp vật phẩm miễn phí (atomic). */
+async function giveItemAdmin(userId, itemId, qty = 1) {
+    try {
+        const { data, error } = await supabase.rpc('give_item', { p_user_id: userId, p_item_id: itemId, p_qty: qty });
+        if (error) throw error;
+        return data === true;
+    } catch (error) {
+        console.error('[DATABASE ERROR] giveItemAdmin():', error);
+        return false;
+    }
+}
+
+/** Xóa sạch dữ liệu một user (reset). */
+async function resetUser(userId) {
+    try {
+        await supabase.from('inventory').delete().eq('user_id', userId);
+        await supabase.from('cooldowns').delete().eq('user_id', userId);
+        const { error } = await supabase.from('users').delete().eq('user_id', userId);
+        if (error) throw error;
+        return true;
+    } catch (error) {
+        console.error('[DATABASE ERROR] resetUser():', error);
+        return false;
+    }
+}
+
 module.exports = {
     supabase,
     getUser,
@@ -435,4 +506,10 @@ module.exports = {
     transferBank,
     getLeaderboard,
     sellItem,
+    // admin
+    setBalance,
+    setExp,
+    setEnergy,
+    giveItemAdmin,
+    resetUser,
 };

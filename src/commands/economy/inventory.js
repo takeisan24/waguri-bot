@@ -1,8 +1,9 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder } = require('discord.js');
 const db = require('../../database.js');
 const config = require('../../config');
+const { sendPaginated } = require('../../lib/paginate');
 
-const TYPE_ICON = { tool: '🛠️', vehicle: '🛵', consumable: '🍞', misc: '📦' };
+const TYPE_ICON = { tool: '🛠️', vehicle: '🛵', consumable: '🍞', property: '🏠', luxury: '💎', misc: '📦' };
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -14,19 +15,18 @@ module.exports = {
         const target = interaction.options.getUser('target') || interaction.user;
 
         const inv = await db.getInventory(target.id);
-
-        const embed = new EmbedBuilder()
-            .setColor(config.COLORS.INFO)
-            .setAuthor({ name: `Kho đồ của ${target.username}`, iconURL: target.displayAvatarURL() });
-
         if (!inv.length) {
-            embed.setDescription('Kho của cậu đang trống nè~ Đi `/work` kiếm tiền rồi ghé `/shop` sắm đồ nhé! 🌸');
-        } else {
-            embed.setDescription(inv
-                .map(r => `${TYPE_ICON[r.items?.type] || '📦'} **${r.items?.name || r.item_id}** ×${r.quantity}`)
-                .join('\n'));
+            return interaction.editReply(`Kho của **${target.username}** đang trống nè~ Đi \`/work\` rồi ghé \`/shop\` sắm đồ nhé! 🌸`);
         }
 
-        await interaction.editReply({ embeds: [embed] });
+        const lines = inv.map(r => `${TYPE_ICON[r.items?.type] || '📦'} **${r.items?.name || r.item_id}** ×${r.quantity}`);
+
+        await sendPaginated(interaction, {
+            title: `🎒 Kho đồ của ${target.username}`,
+            color: config.COLORS.INFO,
+            lines,
+            perPage: 12,
+            thumbnail: target.displayAvatarURL(),
+        });
     },
 };
