@@ -82,6 +82,9 @@ module.exports = {
     },
     GATHER_ENERGY_COST: 8, // /mine, /chop
 
+    // Thú cưng
+    PET: { FEED_COST: 200, FEED_EXP_MIN: 20, FEED_EXP_MAX: 40 },
+
     // Thưởng khi chat (chat-leveling) — có cooldown chống farm
     CHAT: {
         COOLDOWN_MS: 60_000,

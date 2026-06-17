@@ -520,6 +520,56 @@ async function divorceUser(userId) {
 }
 
 // ============================================================
+//  PETS — thú cưng
+// ============================================================
+async function getPet(userId) {
+    try {
+        const { data, error } = await supabase.from('user_pets').select('*').eq('user_id', userId).single();
+        if (error && error.code !== 'PGRST116') throw error;
+        return data || null;
+    } catch (error) {
+        console.error('[DATABASE ERROR] getPet():', error);
+        return null;
+    }
+}
+
+/** Nhận nuôi. Trả 'ok' | 'already' | 'error'. */
+async function adoptPet(userId, species, name) {
+    try {
+        if (await getPet(userId)) return 'already';
+        const { error } = await supabase.from('user_pets').insert([{ user_id: userId, species, name }]);
+        if (error) throw error;
+        return 'ok';
+    } catch (error) {
+        console.error('[DATABASE ERROR] adoptPet():', error);
+        return 'error';
+    }
+}
+
+async function renamePet(userId, name) {
+    try {
+        const { error } = await supabase.from('user_pets').update({ name }).eq('user_id', userId);
+        if (error) throw error;
+        return true;
+    } catch (error) {
+        console.error('[DATABASE ERROR] renamePet():', error);
+        return false;
+    }
+}
+
+/** Cho ăn (cộng exp). Trả exp mới, hoặc null nếu chưa có pet. */
+async function feedPet(userId, exp) {
+    try {
+        const { data, error } = await supabase.rpc('feed_pet', { p_user: userId, p_exp: exp });
+        if (error) throw error;
+        return data === null ? null : Number(data);
+    } catch (error) {
+        console.error('[DATABASE ERROR] feedPet():', error);
+        return null;
+    }
+}
+
+// ============================================================
 //  GUILD SETTINGS — cấu hình theo server
 // ============================================================
 /** Lấy object settings của một guild ({} nếu chưa có). */
@@ -666,6 +716,11 @@ module.exports = {
     divorceUser,
     // affection
     incrAffection,
+    // pets
+    getPet,
+    adoptPet,
+    renamePet,
+    feedPet,
     // guild settings
     getGuildSettings,
     setGuildSetting,

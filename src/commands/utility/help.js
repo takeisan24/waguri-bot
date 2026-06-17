@@ -13,6 +13,7 @@ const CATEGORIES = [
         ['balance', 'xem ví / ngân hàng / cấp độ / năng lượng'],
         ['profile', 'hồ sơ tổng quan'],
         ['jobs', 'xem & xin nghề (list / info / apply)'],
+        ['pet', 'thú cưng: nhận nuôi / cho ăn / xem 🐾'],
     ] },
     { name: '🏪 Cửa hàng & Kho', cmds: [
         ['shop', 'xem cửa hàng'],
