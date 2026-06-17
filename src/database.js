@@ -312,6 +312,45 @@ async function hasItem(userId, itemId) {
     }
 }
 
+// ============================================================
+//  ENERGY / BUFF — năng lượng & hiệu ứng
+// ============================================================
+/**
+ * Tiêu năng lượng nguyên tử (kèm hồi lazy). cost<=0 chỉ để "peek".
+ * @returns {number} năng lượng còn lại (>=0), hoặc -1 nếu không đủ.
+ */
+async function spendEnergy(userId, cost) {
+    try {
+        const { data, error } = await supabase.rpc('spend_energy', { p_user_id: userId, p_cost: cost });
+        if (error) throw error;
+        return Number(data);
+    } catch (error) {
+        console.error('[DATABASE ERROR] spendEnergy():', error);
+        return -1;
+    }
+}
+
+/** Lấy năng lượng hiện tại (đã hồi). */
+async function getEnergy(userId) {
+    const e = await spendEnergy(userId, 0);
+    return e < 0 ? 0 : e;
+}
+
+/**
+ * Dùng vật phẩm tiêu hao (ăn/uống) qua RPC consume_item.
+ * @returns {string} 'ok' | 'no_item' | 'not_consumable' | 'no_have' | 'error'
+ */
+async function consumeItem(userId, itemId) {
+    try {
+        const { data, error } = await supabase.rpc('consume_item', { p_user_id: userId, p_item_id: itemId });
+        if (error) throw error;
+        return data;
+    } catch (error) {
+        console.error('[DATABASE ERROR] consumeItem():', error);
+        return 'error';
+    }
+}
+
 module.exports = {
     supabase,
     getUser,
@@ -332,4 +371,8 @@ module.exports = {
     // inventory
     getInventory,
     hasItem,
+    // energy / buff
+    spendEnergy,
+    getEnergy,
+    consumeItem,
 };

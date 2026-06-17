@@ -24,6 +24,7 @@ module.exports = {
         const p = getProgress(Number(user.exp));
         const wallet = Number(user.wallet).toLocaleString('vi-VN');
         const bank = Number(user.bank).toLocaleString('vi-VN');
+        const energy = await db.getEnergy(target.id);
 
         const embed = new EmbedBuilder()
             .setColor(config.COLORS.INFO)
@@ -31,10 +32,18 @@ module.exports = {
             .addFields(
                 { name: '💵 Ví', value: `${wallet} ${config.CURRENCY}`, inline: true },
                 { name: '🏦 Ngân hàng', value: `${bank} ${config.CURRENCY}`, inline: true },
+                { name: '⚡ Năng lượng', value: `${energy}/${config.ENERGY.MAX}`, inline: true },
                 { name: '⭐ Cấp độ', value: `Lv.${p.level}`, inline: true },
                 { name: `📊 EXP (${p.expIntoLevel}/${p.expForNextLevel})`, value: makeBar(p.expIntoLevel, p.expForNextLevel), inline: false },
             )
             .setTimestamp();
+
+        // Buff đang chạy (nếu có)
+        if (user.buff_expires_at && new Date(user.buff_expires_at).getTime() > Date.now()) {
+            const minsLeft = Math.ceil((new Date(user.buff_expires_at).getTime() - Date.now()) / 60000);
+            const pct = Math.round((Number(user.buff_mult) - 1) * 100);
+            embed.addFields({ name: '🍗 Buff', value: `+${pct}% thu nhập (còn ${minsLeft} phút)`, inline: false });
+        }
 
         await interaction.editReply({ embeds: [embed] });
     },
