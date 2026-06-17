@@ -5,6 +5,8 @@ const CATEGORIES = [
     { name: '💼 Kinh tế & Nghề', cmds: [
         ['work', 'làm việc kiếm tiền (tốn năng lượng)'],
         ['fish', 'đi câu cá kiếm tiền (tốn năng lượng)'],
+        ['mine', 'đi đào mỏ kiếm tiền ⛏️'],
+        ['chop', 'đi chặt gỗ kiếm tiền 🪓'],
         ['daily', 'điểm danh nhận thưởng + streak'],
         ['quest', 'nhiệm vụ hằng ngày (thưởng tiền)'],
         ['achievements', 'thành tựu (mở khóa nhận thưởng)'],

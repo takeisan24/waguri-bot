@@ -1,8 +1,21 @@
 const { Events } = require('discord.js');
 const config = require('../config');
+const db = require('../database.js');
 const { buildPrefixInteraction } = require('../lib/prefixShim');
 const { chatWithWaguri, onCooldown } = require('../lib/ai');
 const { handleMessage: handleNoiTu } = require('../lib/noitu');
+
+// Chat-leveling: thưởng xu/EXP khi chat (có cooldown chống farm)
+const chatCD = new Map();
+const rand = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
+function grantChatReward(message) {
+    if (message.content.trim().length < config.CHAT.MIN_LEN) return;
+    const now = Date.now();
+    if (now < (chatCD.get(message.author.id) || 0)) return;
+    chatCD.set(message.author.id, now + config.CHAT.COOLDOWN_MS);
+    db.addMoney(message.author.id, rand(config.CHAT.MIN_COINS, config.CHAT.MAX_COINS), 'wallet');
+    db.updateExp(message.author.id, rand(config.CHAT.MIN_EXP, config.CHAT.MAX_EXP));
+}
 
 module.exports = {
     name: Events.MessageCreate,
@@ -41,7 +54,8 @@ module.exports = {
             return;
         }
 
-        // --- 3) Nối từ (nếu kênh đang có ván) ---
+        // --- 3) Chat thường: thưởng chat-leveling + nối từ (nếu có ván) ---
+        grantChatReward(message);
         await handleNoiTu(message);
     },
 };

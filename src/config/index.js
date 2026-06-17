@@ -76,8 +76,17 @@ module.exports = {
         USER_COOLDOWN_MS: 4000,  // chống spam mỗi người
     },
 
-    // Câu cá (nguồn thu PvE, tốn năng lượng)
+    // Câu cá / đào mỏ / chặt gỗ (nguồn thu PvE, tốn năng lượng)
     FISH: {
         ENERGY_COST: 8,
+    },
+    GATHER_ENERGY_COST: 8, // /mine, /chop
+
+    // Thưởng khi chat (chat-leveling) — có cooldown chống farm
+    CHAT: {
+        COOLDOWN_MS: 60_000,
+        MIN_COINS: 5, MAX_COINS: 15,
+        MIN_EXP: 3, MAX_EXP: 8,
+        MIN_LEN: 3, // bỏ qua tin nhắn quá ngắn
     },
 };
