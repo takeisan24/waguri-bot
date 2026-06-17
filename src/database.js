@@ -200,6 +200,118 @@ async function setCooldown(userId, command, durationMinutes) {
     }
 }
 
+// ============================================================
+//  JOBS — nghề nghiệp
+// ============================================================
+async function getJobs() {
+    try {
+        const { data, error } = await supabase.from('jobs').select('*').order('required_level');
+        if (error) throw error;
+        return data || [];
+    } catch (error) {
+        console.error('[DATABASE ERROR] getJobs():', error);
+        return [];
+    }
+}
+
+async function getJob(jobId) {
+    try {
+        const { data, error } = await supabase.from('jobs').select('*').eq('id', jobId).single();
+        if (error && error.code !== 'PGRST116') throw error;
+        return data || null;
+    } catch (error) {
+        console.error('[DATABASE ERROR] getJob():', error);
+        return null;
+    }
+}
+
+async function setUserJob(userId, jobId) {
+    try {
+        await getUser(userId); // đảm bảo user tồn tại
+        const { error } = await supabase.from('users').update({ job_id: jobId }).eq('user_id', userId);
+        if (error) throw error;
+        return true;
+    } catch (error) {
+        console.error('[DATABASE ERROR] setUserJob():', error);
+        return false;
+    }
+}
+
+// ============================================================
+//  ITEMS / SHOP — vật phẩm
+// ============================================================
+async function getItems() {
+    try {
+        const { data, error } = await supabase.from('items').select('*').order('price');
+        if (error) throw error;
+        return data || [];
+    } catch (error) {
+        console.error('[DATABASE ERROR] getItems():', error);
+        return [];
+    }
+}
+
+async function getItem(itemId) {
+    try {
+        const { data, error } = await supabase.from('items').select('*').eq('id', itemId).single();
+        if (error && error.code !== 'PGRST116') throw error;
+        return data || null;
+    } catch (error) {
+        console.error('[DATABASE ERROR] getItem():', error);
+        return null;
+    }
+}
+
+/**
+ * Mua vật phẩm NGUYÊN TỬ qua RPC buy_item.
+ * @returns {string} 'ok' | 'no_item' | 'insufficient_funds' | 'bad_quantity' | 'error'
+ */
+async function buyItem(userId, itemId, quantity = 1) {
+    try {
+        const { data, error } = await supabase.rpc('buy_item', {
+            p_user_id: userId,
+            p_item_id: itemId,
+            p_quantity: quantity,
+        });
+        if (error) throw error;
+        return data;
+    } catch (error) {
+        console.error('[DATABASE ERROR] buyItem():', error);
+        return 'error';
+    }
+}
+
+// ============================================================
+//  INVENTORY — kho đồ
+// ============================================================
+async function getInventory(userId) {
+    try {
+        const { data, error } = await supabase
+            .from('inventory')
+            .select('quantity, item_id, items(name, type, price)')
+            .eq('user_id', userId)
+            .gt('quantity', 0);
+        if (error) throw error;
+        return data || [];
+    } catch (error) {
+        console.error('[DATABASE ERROR] getInventory():', error);
+        return [];
+    }
+}
+
+async function hasItem(userId, itemId) {
+    try {
+        const { data, error } = await supabase
+            .from('inventory').select('quantity')
+            .eq('user_id', userId).eq('item_id', itemId).single();
+        if (error && error.code !== 'PGRST116') throw error;
+        return !!(data && data.quantity > 0);
+    } catch (error) {
+        console.error('[DATABASE ERROR] hasItem():', error);
+        return false;
+    }
+}
+
 module.exports = {
     supabase,
     getUser,
@@ -209,4 +321,15 @@ module.exports = {
     checkCooldown,
     claimCooldown,
     setCooldown,
+    // jobs
+    getJobs,
+    getJob,
+    setUserJob,
+    // items / shop
+    getItems,
+    getItem,
+    buyItem,
+    // inventory
+    getInventory,
+    hasItem,
 };
