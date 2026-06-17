@@ -6,6 +6,7 @@ const CATEGORIES = [
         ['work', 'làm việc kiếm tiền (tốn năng lượng)'],
         ['daily', 'điểm danh nhận thưởng + streak'],
         ['quest', 'nhiệm vụ hằng ngày (thưởng tiền)'],
+        ['achievements', 'thành tựu (mở khóa nhận thưởng)'],
         ['balance', 'xem ví / ngân hàng / cấp độ / năng lượng'],
         ['profile', 'hồ sơ tổng quan'],
         ['jobs', 'xem & xin nghề (list / info / apply)'],

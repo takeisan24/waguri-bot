@@ -452,6 +452,35 @@ async function questClaim(userId, quest) {
 }
 
 // ============================================================
+//  ACHIEVEMENTS — thành tựu
+// ============================================================
+/** Trả về Set các achievement_id user đã mở khóa. */
+async function getAchievements(userId) {
+    try {
+        const { data, error } = await supabase.from('achievements').select('achievement_id').eq('user_id', userId);
+        if (error) throw error;
+        return new Set((data || []).map(r => r.achievement_id));
+    } catch (error) {
+        console.error('[DATABASE ERROR] getAchievements():', error);
+        return new Set();
+    }
+}
+
+/** Mở khóa nhiều thành tựu (bỏ qua trùng). */
+async function unlockAchievements(userId, ids) {
+    try {
+        if (!ids || !ids.length) return true;
+        const rows = ids.map(id => ({ user_id: userId, achievement_id: id }));
+        const { error } = await supabase.from('achievements').upsert(rows, { onConflict: 'user_id,achievement_id', ignoreDuplicates: true });
+        if (error) throw error;
+        return true;
+    } catch (error) {
+        console.error('[DATABASE ERROR] unlockAchievements():', error);
+        return false;
+    }
+}
+
+// ============================================================
 //  ADMIN — chỉ owner dùng (qua /eco-admin)
 // ============================================================
 /** Đặt cứng số dư ví/bank. */
@@ -555,6 +584,9 @@ module.exports = {
     questIncr,
     getQuestRow,
     questClaim,
+    // achievements
+    getAchievements,
+    unlockAchievements,
     // admin
     setBalance,
     setExp,
