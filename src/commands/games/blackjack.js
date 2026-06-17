@@ -72,8 +72,10 @@ module.exports = {
                 push: `🤝 Hòa! Hoàn lại tiền cược.`,
                 lose: `😢 Cậu thua **-${fmt(bet)}** ${config.CURRENCY}. Lần sau nhé~`,
             }[outcome];
+            const u = await db.getUser(userId);
+            const noteFull = `${note}\n💵 Số dư ví: **${fmt(u?.wallet || 0)}** ${config.CURRENCY}`;
             const color = net > 0 ? config.COLORS.SUCCESS : (net === 0 ? config.COLORS.WARNING : config.COLORS.ERROR);
-            return embed(true, note, color);
+            return embed(true, noteFull, color);
         };
 
         // Xì dách ngay từ 2 lá
