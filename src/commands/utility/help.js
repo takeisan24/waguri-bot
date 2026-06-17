@@ -42,7 +42,7 @@ const CATEGORIES = [
     ] },
     { name: '🎀 Vui & Cộng đồng', cmds: [
         ['ship', 'đo độ hợp giữa hai người'],
-        ['boi', 'Waguri xem bói cho cậu hôm nay'],
+        ['boi', 'xem bói: hằng ngày / cung hoàng đạo / thầy đồ 🔮'],
         ['lixi', 'phát lì xì cho cả kênh 🧧'],
         ['marry', 'cầu hôn kết đôi 💍'],
         ['divorce', 'chia tay người ấy 💔'],

@@ -24,23 +24,86 @@ const LOI_KHUYEN = [
     'Một lời cảm ơn nhỏ hôm nay sẽ mang lại may mắn lớn.',
 ];
 
-// Bói theo NGÀY + người (cùng ngày ra cùng kết quả)
-function seed(userId) {
-    const s = userId + new Date().toISOString().slice(0, 10);
+const ZODIAC = [
+    { id: 'bach_duong', name: '♈ Bạch Dương' }, { id: 'kim_nguu', name: '♉ Kim Ngưu' },
+    { id: 'song_tu', name: '♊ Song Tử' }, { id: 'cu_giai', name: '♋ Cự Giải' },
+    { id: 'su_tu', name: '♌ Sư Tử' }, { id: 'xu_nu', name: '♍ Xử Nữ' },
+    { id: 'thien_binh', name: '♎ Thiên Bình' }, { id: 'bo_cap', name: '♏ Bọ Cạp' },
+    { id: 'nhan_ma', name: '♐ Nhân Mã' }, { id: 'ma_ket', name: '♑ Ma Kết' },
+    { id: 'bao_binh', name: '♒ Bảo Bình' }, { id: 'song_ngu', name: '♓ Song Ngư' },
+];
+const HOROSCOPE = [
+    'Năng lượng dồi dào, hợp khởi đầu việc mới.',
+    'Cẩn thận lời nói kẻo gây hiểu lầm nhỏ.',
+    'Tài lộc khá, có thể có khoản thu bất ngờ.',
+    'Tình cảm ấm áp, dành thời gian cho người thân nhé.',
+    'Nên nghỉ ngơi, đừng ép bản thân quá sức.',
+    'Một cơ hội tốt đang đến, mạnh dạn nắm bắt!',
+    'Giữ bình tĩnh trước thử thách, mọi việc sẽ ổn.',
+    'Hợp gặp gỡ bạn bè, mở rộng quan hệ.',
+    'Trực giác hôm nay rất nhạy, tin vào bản thân.',
+    'Tránh quyết định vội vàng về tiền bạc.',
+];
+const THAYDO = [
+    'Thầy phán: số con hôm nay "tiền vào như nước, tiền ra như... thác" 💸',
+    'Quẻ này là quẻ "chăm chỉ ắt có ngày nên" — đi `/work` đi con!',
+    'Thầy thấy con có quý nhân phù trợ, mà quý nhân tên... Waguri 🌸',
+    'Hậu vận của con xán lạn, nhưng tiền vận thì... ráng đi cày 😅',
+    'Quẻ "an cư lạc nghiệp" — để dành tiền sắm đồ xịn ở `/shop` đi con.',
+    'Thầy phán: chớ ham cờ bạc, công an đang rình đó nha 👮',
+    'Số con đào hoa lắm, thử `/ship` xem hợp với ai nào~',
+    'Quẻ "cần kiệm liêm chính" — bớt `/baucua` lại con ơi.',
+    'Thầy thấy con sắp gặp may, đi `/daily` điểm danh ngay kẻo lỡ!',
+    'Quẻ "có làm thì mới có ăn" — chân lý ngàn đời đó con!',
+];
+
+function seed(str) {
     let h = 0;
-    for (const c of s) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+    for (const c of str) h = (h * 31 + c.charCodeAt(0)) >>> 0;
     return h;
 }
 const pick = (arr, n) => arr[Math.abs(n) % arr.length];
+const today = () => new Date().toISOString().slice(0, 10);
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('boi')
-        .setDescription('Waguri xem bói cho cậu hôm nay 🔮'),
+        .setDescription('Waguri xem bói cho cậu 🔮')
+        .addSubcommand(s => s.setName('hangngay').setDescription('Vận mệnh hôm nay của cậu'))
+        .addSubcommand(s => s.setName('cunghoangdao').setDescription('Tử vi theo cung hoàng đạo')
+            .addStringOption(o => o.setName('cung').setDescription('Cung của cậu').setRequired(true)
+                .addChoices(...ZODIAC.map(z => ({ name: z.name, value: z.id })))))
+        .addSubcommand(s => s.setName('thaydo').setDescription('Thầy đồ phán một quẻ (mỗi lần một khác)')),
     async execute(interaction) {
         await interaction.deferReply();
-        const h = seed(interaction.user.id);
+        const sub = interaction.options.getSubcommand();
 
+        if (sub === 'cunghoangdao') {
+            const cung = interaction.options.getString('cung');
+            const z = ZODIAC.find(x => x.id === cung);
+            const h = seed(cung + today());
+            const embed = new EmbedBuilder()
+                .setColor(config.COLORS.JACKPOT)
+                .setTitle(`🔮 Tử vi hôm nay — ${z.name}`)
+                .setDescription(pick(HOROSCOPE, h))
+                .addFields(
+                    { name: '🍀 May mắn', value: pick(MAY_MAN, h >>> 4), inline: true },
+                    { name: '🔢 Số may mắn', value: `${(h % 99) + 1}`, inline: true },
+                )
+                .setFooter({ text: 'Bói cho vui thôi nha~' });
+            return interaction.editReply({ embeds: [embed] });
+        }
+
+        if (sub === 'thaydo') {
+            const embed = new EmbedBuilder()
+                .setColor(config.COLORS.INFO)
+                .setTitle('🧙 Thầy đồ phán')
+                .setDescription(THAYDO[Math.floor(Math.random() * THAYDO.length)]);
+            return interaction.editReply({ embeds: [embed] });
+        }
+
+        // hangngay (mặc định)
+        const h = seed(interaction.user.id + today());
         const embed = new EmbedBuilder()
             .setColor(config.COLORS.JACKPOT)
             .setTitle(`🔮 Vận mệnh hôm nay của ${interaction.user.username}`)
