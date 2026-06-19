@@ -882,6 +882,24 @@ async function clanList(limit = 20) {
     try { const { data } = await supabase.from('clans').select('*').order('bank', { ascending: false }).limit(limit); return data || []; }
     catch { return []; }
 }
+// ============================================================
+//  ĐÁNH ĐỀ theo XSMB
+// ============================================================
+const xosoBet = (userId, number, amount, date) => clanRpc('xoso_bet', { p_user: userId, p_number: number, p_amount: amount, p_date: date });
+const xosoResolve = (date, number, mult) => clanRpc('xoso_resolve', { p_date: date, p_number: number, p_mult: mult });
+async function xosoResult(date) {
+    try { const { data } = await supabase.from('xoso_results').select('*').eq('draw_date', date).maybeSingle(); return data; }
+    catch (error) { console.error('[DATABASE ERROR] xosoResult():', error); return null; }
+}
+async function xosoMyBets(userId, date) {
+    try { const { data } = await supabase.from('xoso_bets').select('number, amount').eq('user_id', userId).eq('draw_date', date).eq('status', 'pending'); return data || []; }
+    catch { return []; }
+}
+async function xosoRecentResults(limit = 7) {
+    try { const { data } = await supabase.from('xoso_results').select('*').order('draw_date', { ascending: false }).limit(limit); return data || []; }
+    catch { return []; }
+}
+
 /** Top cặp đôi theo điểm tình cảm. */
 async function getTopLove(limit = 20) {
     try { const { data } = await supabase.from('users').select('user_id, love, partner_id').gt('love', 0).not('partner_id', 'is', null).order('love', { ascending: false }).limit(limit); return data || []; }
@@ -1160,6 +1178,12 @@ module.exports = {
     clanMembersExp,
     clanWar,
     getTopLove,
+    // xoso (đánh đề)
+    xosoBet,
+    xosoResolve,
+    xosoResult,
+    xosoMyBets,
+    xosoRecentResults,
     // market
     marketList,
     marketBuy,

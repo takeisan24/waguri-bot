@@ -1,4 +1,5 @@
 const { Events, ActivityType } = require('discord.js');
+const { startScheduler } = require('../lib/xoso');
 
 const ROTATE_MS = 25_000; // đổi status mỗi 25 giây
 
@@ -34,5 +35,7 @@ module.exports = {
         };
         rotate();
         setInterval(rotate, ROTATE_MS);
+
+        startScheduler(client); // tự dò kết quả đề ~18h30 giờ VN
     },
 };

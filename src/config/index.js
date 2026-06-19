@@ -118,6 +118,9 @@ module.exports = {
     // Xổ số cộng đồng (sink qua % nhà cái; quay tự động mỗi vòng)
     LOTTERY: { TICKET_PRICE: 500, HOUSE_CUT: 0.10, ROUND_HOURS: 24, MAX_PER_BUY: 100 },
 
+    // Đánh đề theo XSMB thật (dò giải đặc biệt 18h30 giờ VN)
+    XOSO: { PAYOUT: 70, MIN: 1000, MAX: 100000, DRAW_HOUR: 18, DRAW_MIN: 30 },
+
     // Cosmetic sink (flex, không ảnh hưởng cân bằng): danh hiệu + màu hồ sơ
     COSMETIC: { TITLE_COST: 20000, COLOR_COST: 15000, MAX_TITLE_LEN: 30 },
 

@@ -45,6 +45,7 @@ const CATEGORIES = [
         ['blackjack', 'xì dách'],
         ['crate', 'mở rương bí ẩn 🎁'],
         ['lottery', 'xổ số cộng đồng 🎟️ (gom vé, ai trúng ôm cả hũ)'],
+        ['xoso', 'đánh đề theo XSMB thật 🎰 (dò giải ĐB 18h30)'],
         ['bingo', 'bingo 🎱 (nhiều người, gọi số tự động)'],
         ['masoi', 'ma sói 🐺 (4-15 người, suy luận, có vai bí mật)'],
         ['xocdia', 'xóc đĩa 🥢 (nhiều người đặt Chẵn/Lẻ)'],
