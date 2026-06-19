@@ -47,6 +47,7 @@ const CATEGORIES = [
         ['bingo', 'bingo 🎱 (nhiều người, gọi số tự động)'],
         ['masoi', 'ma sói 🐺 (4-15 người, suy luận, có vai bí mật)'],
         ['xocdia', 'xóc đĩa 🥢 (nhiều người đặt Chẵn/Lẻ)'],
+        ['duangua', 'đua ngựa 🐎 (đặt cửa 1 con, đua trực tiếp)'],
     ] },
     { name: '💬 Trò chuyện', cmds: [
         ['ask', 'trò chuyện với Waguri (hoặc @tag Waguri)'],
