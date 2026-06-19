@@ -18,13 +18,20 @@ function targetDrawDate() {
 
 // Nguồn #1 (JSON): repo cộng đồng tự cập nhật KQ XSMB hằng ngày (free, không key).
 const DEFAULT_XSMB_URL = 'https://raw.githubusercontent.com/khiemdoan/vietnam-lottery-xsmb-analysis/main/data/xsmb.json';
-// Nguồn #2 (crawl trang gốc): bản nhúng KQ của Minh Ngọc — số 5 chữ số đầu = giải ĐB, ngày đầu = mới nhất.
-const MINHNGOC_URL = 'https://www.minhngoc.com.vn/getkqxs/mien-bac.js';
+// Các trang KQ gốc để crawl (mỗi trang 1 cách parse, đều verify ngày).
+const MINHNGOC_URL = 'https://www.minhngoc.com.vn/getkqxs/mien-bac.js'; // bản nhúng: số 5cs đầu = ĐB
+const XSKT_URL = 'https://xskt.com.vn/';
+const XOSO_URL = 'https://xoso.com.vn/xo-so-mien-bac/xsmb-p1.html';
 
 const last2 = special => {
     const s = String(special).replace(/\D/g, '');
     return s.length >= 2 ? Number(s.slice(-2)) : null;
 };
+const cleanHtml = h => h.replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ');
+async function getText(url) {
+    const res = await fetch(url, { signal: AbortSignal.timeout(10000), headers: { 'User-Agent': 'Mozilla/5.0' } });
+    return res.text();
+}
 
 /** Nguồn JSON (repo hoặc env XOSO_API_URL). Trả 0-99 hoặc null. */
 async function fetchJsonSource(targetDate) {
@@ -43,23 +50,58 @@ async function fetchJsonSource(targetDate) {
     } catch (e) { console.error('[XOSO json]', e.message); return null; }
 }
 
-/** Crawl thẳng trang KQ gốc (Minh Ngọc). Chỉ nhận khi ngày mới nhất == ngày cần. */
-async function crawlXSMB(targetDate) {
+// Số ĐB kiểu 99999/00000 = ô chưa quay (placeholder) -> bỏ.
+const isPlaceholder = s => /^(\d)\1{4}$/.test(String(s));
+
+/** Minh Ngọc (bản nhúng): ngày dd/mm/yyyy đầu = mới nhất, số 5cs đầu = giải ĐB. */
+async function crawlMinhNgoc(targetDate) {
     try {
-        const res = await fetch(MINHNGOC_URL, { signal: AbortSignal.timeout(10000), headers: { 'User-Agent': 'Mozilla/5.0' } });
-        const t = await res.text();
-        const dm = t.match(/(\d{2})\/(\d{2})\/(\d{4})/);   // ngày mới nhất (xuất hiện đầu)
+        const t = await getText(MINHNGOC_URL);
+        const dm = t.match(/(\d{2})\/(\d{2})\/(\d{4})/);
         if (!dm || `${dm[3]}-${dm[2]}-${dm[1]}` !== targetDate) return null;
-        const num = t.match(/\d{5}/);                       // số 5 chữ số đầu = giải đặc biệt
-        return num ? last2(num[0]) : null;
-    } catch (e) { console.error('[XOSO crawl]', e.message); return null; }
+        const num = (t.match(/\d{5}/) || [])[0];
+        return num && !isPlaceholder(num) ? last2(num) : null;
+    } catch (e) { console.error('[XOSO minhngoc]', e.message); return null; }
 }
 
-/** Lấy 2 số cuối giải ĐB cho ngày: thử JSON repo -> crawl trang gốc -> null (chờ owner). */
+// Lấy ĐB trong 1 segment (đoạn của đúng 1 ngày). Trả 0-99 hoặc null (placeholder/không có).
+function dbInSegment(seg) {
+    const sp = seg.match(/ĐB\s*(\d{5})/);
+    return sp && !isPlaceholder(sp[1]) ? last2(sp[1]) : null;
+}
+
+/** xskt.com.vn: tách theo header "ngày DD/MM", lấy ĐB trong segment của ngày cần. */
+async function crawlXskt(targetDate) {
+    try {
+        const c = cleanHtml(await getText(XSKT_URL));
+        const tMonth = Number(targetDate.slice(5, 7)), tDay = Number(targetDate.slice(8, 10));
+        for (const seg of c.split(/(?=ng[aà]y\s*\d{1,2}\/\d{1,2})/i)) {
+            const dm = seg.match(/^ng[aà]y\s*(\d{1,2})\/(\d{1,2})/i);
+            if (dm && Number(dm[1]) === tDay && Number(dm[2]) === tMonth) return dbInSegment(seg);
+        }
+        return null;
+    } catch (e) { console.error('[XOSO xskt]', e.message); return null; }
+}
+
+/** xoso.com.vn: tách theo header "XSMB DD/MM/YYYY", lấy ĐB trong segment của ngày cần. */
+async function crawlXoso(targetDate) {
+    try {
+        const c = cleanHtml(await getText(XOSO_URL));
+        for (const seg of c.split(/(?=XSMB\s+\d{2}\/\d{2}\/\d{4})/)) {
+            const dm = seg.match(/^XSMB\s+(\d{2})\/(\d{2})\/(\d{4})/);
+            if (dm && `${dm[3]}-${dm[2]}-${dm[1]}` === targetDate) return dbInSegment(seg);
+        }
+        return null;
+    } catch (e) { console.error('[XOSO xoso]', e.message); return null; }
+}
+
+/** Lấy 2 số cuối giải ĐB: thử JSON repo -> Minh Ngọc -> xskt -> xoso -> null (chờ owner). */
 async function fetchXSMB(targetDate = vnDateStr()) {
-    const a = await fetchJsonSource(targetDate);
-    if (a != null) return a;
-    return crawlXSMB(targetDate);
+    for (const src of [fetchJsonSource, crawlMinhNgoc, crawlXskt, crawlXoso]) {
+        const v = await src(targetDate);
+        if (v != null) return v;
+    }
+    return null;
 }
 
 async function announce(client, r, date) {
@@ -107,4 +149,4 @@ function startScheduler(client) {
     console.log('[SYSTEM] Đã bật scheduler xổ số (quay ~18h30 giờ VN).');
 }
 
-module.exports = { targetDrawDate, vnDateStr, resolveToday, startScheduler, fetchXSMB, crawlXSMB };
+module.exports = { targetDrawDate, vnDateStr, resolveToday, startScheduler, fetchXSMB, crawlMinhNgoc, crawlXskt, crawlXoso };
