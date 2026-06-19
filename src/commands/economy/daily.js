@@ -28,6 +28,9 @@ module.exports = {
         if (r.interest && Number(r.interest) > 0) {
             desc += `\n📈 Lãi tiết kiệm ngân hàng (0.2%/ngày): **+${fmt(r.interest)}** ${config.CURRENCY} *(đã cộng vào bank)*.`;
         }
+        if (r.tax && Number(r.tax) > 0) {
+            desc += `\n🏛️ Thuế tài sản (1% phần vượt 100k): **-${fmt(r.tax)}** ${config.CURRENCY} *(người giàu góp ngân sách~)*.`;
+        }
 
         const embed = new EmbedBuilder()
             .setColor(config.COLORS.SUCCESS)
