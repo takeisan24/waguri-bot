@@ -41,4 +41,11 @@ function getProgress(exp) {
     };
 }
 
-module.exports = { expForLevel, getLevelFromExp, getProgress };
+/** Tiền thưởng khi lên cấp: mỗi cấp đạt được = level * 100 (cộng dồn nếu nhảy nhiều cấp). */
+function levelUpReward(oldLevel, newLevel) {
+    let total = 0;
+    for (let L = oldLevel + 1; L <= newLevel; L++) total += L * 100;
+    return total;
+}
+
+module.exports = { expForLevel, getLevelFromExp, getProgress, levelUpReward };

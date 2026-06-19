@@ -22,6 +22,9 @@ module.exports = {
         const u = await db.getUser(interaction.user.id);
 
         let desc = `Cậu nhận được **${fmt(r.reward)}** ${config.CURRENCY}!`;
+        if (r.milestone && Number(r.milestone) > 0) {
+            desc += `\n🏆 **Mốc ${r.streak} ngày liên tiếp!** Thưởng thêm **+${fmt(r.milestone)}** ${config.CURRENCY} 🎉`;
+        }
         if (r.interest && Number(r.interest) > 0) {
             desc += `\n📈 Lãi tiết kiệm ngân hàng (0.2%/ngày): **+${fmt(r.interest)}** ${config.CURRENCY} *(đã cộng vào bank)*.`;
         }

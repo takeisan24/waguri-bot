@@ -2,7 +2,7 @@ const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const db = require('../../database.js');
 const config = require('../../config');
 const scripts = require('../../data/workScripts');
-const { getLevelFromExp } = require('../../lib/leveling');
+const { getLevelFromExp, levelUpReward } = require('../../lib/leveling');
 const { onCooldown } = require('../../lib/cooldown');
 const { fatigueMultiplier } = require('../../lib/fatigue');
 
@@ -168,7 +168,9 @@ module.exports = {
                 )
                 .setTimestamp();
             if (newLevel > oldLevel) {
-                embed.addFields({ name: '🎉 Lên cấp!', value: `Chúc mừng cậu đạt **Level ${newLevel}**! Cố lên nhé~`, inline: false });
+                const bonus = levelUpReward(oldLevel, newLevel);
+                if (bonus > 0) await db.addMoney(userId, bonus, 'wallet');
+                embed.addFields({ name: '🎉 Lên cấp!', value: `Chúc mừng cậu đạt **Level ${newLevel}**! Thưởng **+${fmt(bonus)}** ${config.CURRENCY} 🎁`, inline: false });
             }
             await interaction.editReply({ embeds: [embed] });
 

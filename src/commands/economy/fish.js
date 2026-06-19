@@ -4,7 +4,7 @@ const config = require('../../config');
 const FISH = require('../../data/fish');
 const { onCooldown } = require('../../lib/cooldown');
 const { fatigueMultiplier } = require('../../lib/fatigue');
-const { getLevelFromExp } = require('../../lib/leveling');
+const { getLevelFromExp, levelUpReward } = require('../../lib/leveling');
 
 const fmt = n => Number(n).toLocaleString('vi-VN');
 
@@ -73,7 +73,11 @@ module.exports = {
         const oldLevel = getLevelFromExp(Number(u?.exp || 0));
         const newExp = await db.updateExp(userId, gainedExp);
         const newLevel = newExp === null ? oldLevel : getLevelFromExp(newExp);
-        if (newLevel > oldLevel) desc += `\n🎉 Lên **Level ${newLevel}**! Cố lên nhé~`;
+        if (newLevel > oldLevel) {
+            const bonus = levelUpReward(oldLevel, newLevel);
+            if (bonus > 0) await db.addMoney(userId, bonus, 'wallet');
+            desc += `\n🎉 Lên **Level ${newLevel}**! Thưởng **+${fmt(bonus)}** ${config.CURRENCY} 🎁`;
+        }
 
         const embed = new EmbedBuilder()
             .setColor(payout > 0 ? config.COLORS.SUCCESS : config.COLORS.WARNING)

@@ -3,7 +3,7 @@ const db = require('../database.js');
 const config = require('../config');
 const { onCooldown } = require('./cooldown');
 const { fatigueMultiplier } = require('./fatigue');
-const { getLevelFromExp } = require('./leveling');
+const { getLevelFromExp, levelUpReward } = require('./leveling');
 
 const fmt = n => Number(n).toLocaleString('vi-VN');
 
@@ -70,7 +70,11 @@ async function runGather(interaction, { title, table, energyCost = config.GATHER
     const oldLevel = getLevelFromExp(Number(u?.exp || 0));
     const newExp = await db.updateExp(userId, gainedExp);
     const newLevel = newExp === null ? oldLevel : getLevelFromExp(newExp);
-    if (newLevel > oldLevel) desc += `\n🎉 Lên **Level ${newLevel}**! Cố lên nhé~`;
+    if (newLevel > oldLevel) {
+        const bonus = levelUpReward(oldLevel, newLevel);
+        if (bonus > 0) await db.addMoney(userId, bonus, 'wallet');
+        desc += `\n🎉 Lên **Level ${newLevel}**! Thưởng **+${fmt(bonus)}** ${config.CURRENCY} 🎁`;
+    }
 
     await interaction.editReply({ embeds: [new EmbedBuilder()
         .setColor(payout > 0 ? config.COLORS.SUCCESS : config.COLORS.WARNING)
