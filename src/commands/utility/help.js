@@ -39,6 +39,7 @@ const CATEGORIES = [
         ['crate', 'mở rương bí ẩn 🎁'],
         ['lottery', 'xổ số cộng đồng 🎟️ (gom vé, ai trúng ôm cả hũ)'],
         ['bingo', 'bingo 🎱 (nhiều người, gọi số tự động)'],
+        ['masoi', 'ma sói 🐺 (4-15 người, suy luận, có vai bí mật)'],
     ] },
     { name: '💬 Trò chuyện', cmds: [
         ['ask', 'trò chuyện với Waguri (hoặc @tag Waguri)'],
