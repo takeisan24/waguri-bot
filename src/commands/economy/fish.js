@@ -4,6 +4,7 @@ const config = require('../../config');
 const FISH = require('../../data/fish');
 const { onCooldown } = require('../../lib/cooldown');
 const { fatigueMultiplier } = require('../../lib/fatigue');
+const { getLevelFromExp } = require('../../lib/leveling');
 
 const fmt = n => Number(n).toLocaleString('vi-VN');
 
@@ -52,6 +53,7 @@ module.exports = {
         const c = pickCatch();
         let payout = c.max > 0 ? Math.floor(Math.random() * (c.max - c.min + 1)) + c.min : 0;
         const fatigue = fatigueMultiplier(userId);
+        const gross = payout;
         if (payout > 0) payout = Math.round(payout * fatigue);
 
         let desc;
@@ -59,7 +61,7 @@ module.exports = {
             await db.addMoney(userId, payout, 'wallet');
             db.questIncr(userId, 'earn', payout);
             desc = `Cậu câu được ${c.emoji} **${c.name}** và bán được **+${fmt(payout)}** ${config.CURRENCY}!`
-                + (fatigue < 1 ? ` *(mệt -${Math.round((1 - fatigue) * 100)}%)*` : '');
+                + (fatigue < 1 && gross > 0 ? ` *(gốc ${fmt(gross)}, mệt -${Math.round((1 - fatigue) * 100)}%)*` : '');
         } else {
             desc = `Cậu chỉ câu phải ${c.emoji} **${c.name}**... chẳng được gì cả 😅 Lần sau may hơn nhé~`;
         }
@@ -67,12 +69,19 @@ module.exports = {
         desc += `\nĐộ bền Cần câu: **${toolResult.durability}/100** 🎣` + (toolResult.broken ? ' *(đã hỏng! Cần mua mới hoặc sửa)*' : '');
 
         const u = await db.getUser(userId);
+        const gainedExp = 4 + Math.floor(Math.random() * 3); // 4..6 EXP
+        const oldLevel = getLevelFromExp(Number(u?.exp || 0));
+        const newExp = await db.updateExp(userId, gainedExp);
+        const newLevel = newExp === null ? oldLevel : getLevelFromExp(newExp);
+        if (newLevel > oldLevel) desc += `\n🎉 Lên **Level ${newLevel}**! Cố lên nhé~`;
+
         const embed = new EmbedBuilder()
             .setColor(payout > 0 ? config.COLORS.SUCCESS : config.COLORS.WARNING)
             .setTitle('🎣 Đi câu cá')
             .setDescription(desc)
             .addFields(
                 { name: '💵 Số dư ví', value: `${payout > 0 ? '+' + fmt(payout) + ' → ' : ''}**${fmt(u?.wallet || 0)}** ${config.CURRENCY}`, inline: false },
+                { name: 'Kinh nghiệm', value: `+${gainedExp} EXP`, inline: true },
                 { name: 'Năng lượng', value: `${energyLeft}/${config.ENERGY.MAX} ⚡`, inline: true },
                 { name: '❤️ Sức khỏe', value: `${u && u.health !== undefined ? u.health : 100}/100`, inline: true },
             )

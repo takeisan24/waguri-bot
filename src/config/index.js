@@ -52,7 +52,7 @@ module.exports = {
         MIN_BET: 10,
         MAX_BET: 1_000_000,
         COINFLIP_MULT: 1.95,
-        TAIXIU_MULT: 1.95,
+        TAIXIU_MULT: 1.98, // house edge ~3.8% (cân hơn với coinflip ~2.5%)
         // Bầu cua: thắng nhận lại bet * (1 + số_con_trùng)
     },
 
