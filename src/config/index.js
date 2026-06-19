@@ -128,4 +128,7 @@ module.exports = {
         MIN_LEN: 12,       // bỏ qua tin nhắn quá ngắn (chống farm "kkk", "lol")
         DAILY_CAP: 50,     // tối đa 50 lượt thưởng chat/ngày/người
     },
+
+    // Rate limit tổng (chống spam lệnh / quá tải DB)
+    RATE_LIMIT: { MAX: 5, WINDOW_MS: 5000 }, // tối đa 5 lệnh / 5 giây / người
 };

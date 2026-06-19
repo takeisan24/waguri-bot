@@ -57,7 +57,9 @@ console.table(commandTable);
 //    - Có GUILD_ID (môi trường DEV): đăng ký theo server -> cập nhật TỨC THÌ.
 //    - Không có GUILD_ID (PROD): đăng ký global (~1 tiếng Discord mới cache xong).
 // ---------------------------------------------------------
-if (process.env.DISCORD_TOKEN) {
+if (process.env.SKIP_DEPLOY === '1') {
+    console.log('[SYSTEM] SKIP_DEPLOY=1 -> bỏ qua đăng ký lệnh (commands không đổi).');
+} else if (process.env.DISCORD_TOKEN) {
     const rest = new REST().setToken(process.env.DISCORD_TOKEN);
     (async () => {
         try {

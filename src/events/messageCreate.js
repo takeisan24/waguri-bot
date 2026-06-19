@@ -4,6 +4,7 @@ const db = require('../database.js');
 const { buildPrefixInteraction } = require('../lib/prefixShim');
 const { chatWithWaguri, onCooldown } = require('../lib/ai');
 const { handleMessage: handleNoiTu } = require('../lib/noitu');
+const { rateLimited } = require('../lib/ratelimit');
 
 // Chat-leveling: thưởng xu/EXP khi chat (có cooldown + cap ngày chống farm)
 const chatCD = new Map();    // userId -> hết cooldown (ms)
@@ -44,6 +45,11 @@ module.exports = {
 
             const command = message.client.commands.get(cmdName);
             if (!command) return;
+
+            if (rateLimited(message.author.id)) {
+                message.reply('Cậu thao tác hơi nhanh rồi~ chờ vài giây nhé! 🌸').catch(() => {});
+                return;
+            }
 
             try {
                 const shim = await buildPrefixInteraction(message, command, tokens);

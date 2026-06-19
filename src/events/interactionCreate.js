@@ -1,4 +1,5 @@
 const { Events, MessageFlags } = require('discord.js');
+const { rateLimited } = require('../lib/ratelimit');
 
 module.exports = {
     name: Events.InteractionCreate,
@@ -22,6 +23,11 @@ module.exports = {
             if (!command) {
                 console.error(`Không tìm thấy lệnh nào khớp với ${interaction.commandName}.`);
                 return;
+            }
+
+            // Rate limit tổng (chống spam)
+            if (rateLimited(interaction.user.id)) {
+                return interaction.reply({ content: 'Cậu thao tác hơi nhanh rồi~ chờ vài giây nhé! 🌸', flags: MessageFlags.Ephemeral });
             }
 
             try {
