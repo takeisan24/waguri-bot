@@ -55,13 +55,16 @@ module.exports = {
         const fatigue = fatigueMultiplier(userId);
         const gross = payout;
         if (payout > 0) payout = Math.round(payout * fatigue);
+        const premium = user.premium_until && new Date(user.premium_until).getTime() > Date.now();
+        if (premium && payout > 0) payout = Math.round(payout * (1 + config.PREMIUM.INCOME_BONUS));
 
         let desc;
         if (payout > 0) {
             await db.addMoney(userId, payout, 'wallet');
             db.questIncr(userId, 'earn', payout);
             desc = `Cậu câu được ${c.emoji} **${c.name}** và bán được **+${fmt(payout)}** ${config.CURRENCY}!`
-                + (fatigue < 1 && gross > 0 ? ` *(gốc ${fmt(gross)}, mệt -${Math.round((1 - fatigue) * 100)}%)*` : '');
+                + (fatigue < 1 && gross > 0 ? ` *(gốc ${fmt(gross)}, mệt -${Math.round((1 - fatigue) * 100)}%)*` : '')
+                + (premium ? ` *(Premium +${Math.round(config.PREMIUM.INCOME_BONUS * 100)}% 💎)*` : '');
         } else {
             desc = `Cậu chỉ câu phải ${c.emoji} **${c.name}**... chẳng được gì cả 😅 Lần sau may hơn nhé~`;
         }

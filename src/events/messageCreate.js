@@ -5,6 +5,7 @@ const { buildPrefixInteraction } = require('../lib/prefixShim');
 const { chatWithWaguri, onCooldown } = require('../lib/ai');
 const { handleMessage: handleNoiTu } = require('../lib/noitu');
 const { rateLimited } = require('../lib/ratelimit');
+const { isBanned } = require('../lib/bans');
 
 // Chat-leveling: thưởng xu/EXP khi chat (có cooldown + cap ngày chống farm)
 const chatCD = new Map();    // userId -> hết cooldown (ms)
@@ -34,6 +35,7 @@ module.exports = {
     name: Events.MessageCreate,
     async execute(message) {
         if (message.author.bot || !message.guild) return;
+        if (isBanned(message.author.id)) return;
 
         const prefix = config.PREFIX;
 

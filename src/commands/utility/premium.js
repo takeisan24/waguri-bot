@@ -25,6 +25,7 @@ module.exports = {
                 { name: '💬 Lượt chat AI hôm nay', value: `${used}/${cap}`, inline: true },
                 { name: '🎁 Quyền lợi Premium', value:
                     `• **${config.AI.PREMIUM_DAILY} lượt** chat AI/ngày (gấp 10 lần)\n` +
+                    `• **+${Math.round(config.PREMIUM.INCOME_BONUS * 100)}% thu nhập** khi /work /fish /mine /chop\n` +
                     '• Huy hiệu 💎 trong hồ sơ\n' +
                     '• Được ưu tiên trải nghiệm tính năng mới', inline: false },
             )

@@ -124,6 +124,10 @@ module.exports = {
             const grossMoney = earnedMoney;
             if (earnedMoney > 0) earnedMoney = Math.round(earnedMoney * fatigue);
 
+            // Premium: +% thu nhập (user đã fetch sẵn, không tốn query thêm)
+            const premium = user.premium_until && new Date(user.premium_until).getTime() > Date.now();
+            if (premium && earnedMoney > 0) earnedMoney = Math.round(earnedMoney * (1 + config.PREMIUM.INCOME_BONUS));
+
             await db.addMoney(userId, earnedMoney, 'wallet');
             const userAfter = await db.getUser(userId);
             const newWallet = userAfter ? Number(userAfter.wallet) : (Number(user.wallet) + earnedMoney);
@@ -138,6 +142,7 @@ module.exports = {
                 .replace(/\{amount\}/g, amtStr)
                 .replace(/\{job\}/g, jobName);
             if (buffActive && earnedMoney > 0) resultMessage += ` *(buff +${Math.round((buffMult - 1) * 100)}%)*`;
+            if (premium && earnedMoney > 0) resultMessage += ` *(Premium +${Math.round(config.PREMIUM.INCOME_BONUS * 100)}% 💎)*`;
             if (fatigue < 1 && earnedMoney > 0) resultMessage += ` *(mệt -${Math.round((1 - fatigue) * 100)}%)*`;
             if (usedInsurance) resultMessage += `\n🛡️ **Bảo hiểm Lao động** đã kích hoạt giúp gánh 80% thiệt hại!`;
             if (category === 'jackpot' && catBuff) resultMessage += `\n🐱 Bé mèo **${userPetName}** dụi dụi mang lại tài lộc đầy túi!`;

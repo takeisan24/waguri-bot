@@ -2,6 +2,7 @@ const { SlashCommandBuilder, EmbedBuilder, MessageFlags } = require('discord.js'
 const db = require('../../database.js');
 const config = require('../../config');
 const { isOwner } = require('../../lib/owner');
+const { setBan } = require('../../lib/bans');
 
 const fmt = n => Number(n).toLocaleString('vi-VN');
 
@@ -33,6 +34,10 @@ module.exports = {
         .addSubcommand(s => s.setName('premium').setDescription('Cấp/gia hạn Premium cho người chơi')
             .addUserOption(o => o.setName('user').setDescription('Người chơi').setRequired(true))
             .addIntegerOption(o => o.setName('days').setDescription('Số ngày').setRequired(true).setMinValue(1)))
+        .addSubcommand(s => s.setName('ban').setDescription('Chặn user dùng bot')
+            .addUserOption(o => o.setName('user').setDescription('Người chơi').setRequired(true)))
+        .addSubcommand(s => s.setName('unban').setDescription('Bỏ chặn user')
+            .addUserOption(o => o.setName('user').setDescription('Người chơi').setRequired(true)))
         .addSubcommand(s => s.setName('resetuser').setDescription('Xóa sạch dữ liệu một người chơi')
             .addUserOption(o => o.setName('user').setDescription('Người chơi').setRequired(true))),
 
@@ -103,6 +108,14 @@ module.exports = {
             if (!job) return interaction.editReply('❌ Không tìm thấy công việc này.');
             const ok = await db.setUserJob(target.id, jobId);
             return interaction.editReply(ok ? `✅ Đã bổ nhiệm <@${target.id}> làm **${job.name}**.` : '❌ Thất bại.');
+        }
+        if (sub === 'ban') {
+            const ok = await setBan(target.id, true);
+            return interaction.editReply(ok ? `🚫 Đã chặn <@${target.id}> dùng bot.` : '❌ Thất bại.');
+        }
+        if (sub === 'unban') {
+            const ok = await setBan(target.id, false);
+            return interaction.editReply(ok ? `✅ Đã bỏ chặn <@${target.id}>.` : '❌ Thất bại.');
         }
         if (sub === 'premium') {
             const days = interaction.options.getInteger('days');

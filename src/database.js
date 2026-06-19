@@ -931,6 +931,23 @@ async function coupleLove(userId, amount) {
     } catch (error) { console.error('[DATABASE ERROR] coupleLove():', error); return null; }
 }
 
+/** Chặn/bỏ chặn user. */
+async function setBanned(userId, val) {
+    try {
+        const { error } = await supabase.from('users').upsert({ user_id: userId, banned: val });
+        if (error) throw error;
+        return true;
+    } catch (error) { console.error('[DATABASE ERROR] setBanned():', error); return false; }
+}
+
+/** Danh sách user_id đang bị ban (nạp vào RAM lúc khởi động). */
+async function getBannedIds() {
+    try {
+        const { data } = await supabase.from('users').select('user_id').eq('banned', true);
+        return (data || []).map(r => r.user_id);
+    } catch (error) { console.error('[DATABASE ERROR] getBannedIds():', error); return []; }
+}
+
 /** Chế tạo: tiêu nguyên liệu + tiền -> tạo thành phẩm. Trả {status} hoặc null. */
 async function craftItem(userId, recipe) {
     try {
@@ -1096,6 +1113,9 @@ module.exports = {
     loansOf,
     // craft
     craftItem,
+    // ban
+    setBanned,
+    getBannedIds,
     // couple
     coupleLove,
     // clan

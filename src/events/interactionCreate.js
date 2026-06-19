@@ -1,5 +1,6 @@
 const { Events, MessageFlags } = require('discord.js');
 const { rateLimited } = require('../lib/ratelimit');
+const { isBanned } = require('../lib/bans');
 
 module.exports = {
     name: Events.InteractionCreate,
@@ -23,6 +24,11 @@ module.exports = {
             if (!command) {
                 console.error(`Không tìm thấy lệnh nào khớp với ${interaction.commandName}.`);
                 return;
+            }
+
+            // Chặn user bị ban
+            if (isBanned(interaction.user.id)) {
+                return interaction.reply({ content: 'Cậu đã bị chặn sử dụng bot~ Liên hệ admin nếu có nhầm lẫn nhé.', flags: MessageFlags.Ephemeral });
             }
 
             // Rate limit tổng (chống spam)

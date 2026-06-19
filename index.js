@@ -21,6 +21,18 @@ const client = new Client({
 process.on('unhandledRejection', (reason) => console.error('[UNHANDLED REJECTION]', reason));
 process.on('uncaughtException', (error) => console.error('[UNCAUGHT EXCEPTION]', error));
 
+// Tắt mượt: đóng kết nối Discord gọn gàng khi nhận tín hiệu dừng (Wispbyte/PM2/Ctrl+C restart)
+let shuttingDown = false;
+function gracefulShutdown(sig) {
+    if (shuttingDown) return;
+    shuttingDown = true;
+    console.log(`[SYSTEM] Nhận ${sig} — đang tắt gọn gàng...`);
+    try { client.destroy(); } catch { /* ignore */ }
+    setTimeout(() => process.exit(0), 1000);
+}
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+
 // Collection lưu các lệnh (tên lệnh -> code thực thi)
 client.commands = new Collection();
 
@@ -103,6 +115,10 @@ for (const file of fs.readdirSync(eventsPath).filter(f => f.endsWith('.js'))) {
 }
 
 // ---------------------------------------------------------
-// 4. ĐĂNG NHẬP
+// 4. NẠP DANH SÁCH BAN (RAM) + ĐĂNG NHẬP
 // ---------------------------------------------------------
+require('./src/lib/bans').loadBans()
+    .then(n => console.log(`[SYSTEM] Đã nạp ${n} user bị ban.`))
+    .catch(() => {});
+
 client.login(process.env.DISCORD_TOKEN);

@@ -136,6 +136,9 @@ module.exports = {
     // Bang hội: phí lập bang (sink)
     CLAN: { CREATE_COST: 50000 },
 
+    // Quyền lợi Premium trong game (ngoài quota AI): +% thu nhập lao động
+    PREMIUM: { INCOME_BONUS: 0.10 },
+
     // Công an bắt cờ bạc — chơi càng nhiều, xác suất bị bắt càng cao
     POLICE: {
         BASE_CHANCE: 0.0,   // lần đầu không bị bắt
