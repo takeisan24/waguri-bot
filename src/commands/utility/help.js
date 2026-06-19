@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder, ApplicationCommandOptionType, ActionRowBuilder, StringSelectMenuBuilder, ComponentType, MessageFlags } = require('discord.js');
+const { buildWaguriEmbed } = require('../../lib/embed');
 const config = require('../../config');
 
 const CATEGORIES = [
@@ -120,7 +121,6 @@ module.exports = {
     async execute(interaction) {
         await interaction.deferReply();
         const cmdName = interaction.options.getString('command');
-        const { buildWaguriEmbed } = require('../../lib/embed');
 
         // --- Chi tiết một lệnh ---
         if (cmdName) {

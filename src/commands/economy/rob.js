@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { buildWaguriEmbed } = require('../../lib/embed');
 const db = require('../../database.js');
 const config = require('../../config');
 
@@ -14,7 +15,6 @@ module.exports = {
         const robberId = interaction.user.id;
         const target = interaction.options.getUser('target');
 
-        const { buildWaguriEmbed } = require('../../lib/embed');
         if (!target) {
             const embed = buildWaguriEmbed(interaction, 'error', { title: '🦹・Trộm cướp', description: 'Cậu định "ghé thăm" ai cơ? Nhập @người nhé~' });
             return interaction.editReply({ embeds: [embed] });

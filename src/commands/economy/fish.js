@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { buildWaguriEmbed } = require('../../lib/embed');
 const db = require('../../database.js');
 const config = require('../../config');
 const FISH = require('../../data/fish');
@@ -29,7 +30,6 @@ module.exports = {
 
         const user = await db.getUser(userId);
         const userHealth = user && user.health !== undefined ? user.health : 100;
-        const { buildWaguriEmbed } = require('../../lib/embed');
         if (userHealth < 30) {
             const embed = buildWaguriEmbed(interaction, 'error', {
                 title: '🎣・Đi câu cá',

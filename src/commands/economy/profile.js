@@ -27,24 +27,24 @@ module.exports = {
         const networth = wallet + bank;
 
         const HEX = /^[0-9a-fA-F]{6}$/;
-        const color = user.profile_color && HEX.test(user.profile_color) ? parseInt(user.profile_color, 16) : config.COLORS.INFO;
         const premium = user.premium_until && new Date(user.premium_until).getTime() > Date.now();
 
-        const embed = new EmbedBuilder()
-            .setColor(color)
-            .setTitle(`🌸・Hồ sơ của ${target.username}${premium ? ' 💎' : ''}`)
-            .setThumbnail(target.displayAvatarURL());
-        if (user.title) embed.setDescription(`🏷️ *${user.title}*`);
-        
-        embed.addFields(
-            { name: '💼 Nghề nghiệp', value: job ? job.name : '*Chưa có nghề*', inline: true },
-            { name: '⭐ Cấp độ', value: `Lv.${p.level}`, inline: true },
-            { name: '⚡ Năng lượng', value: `${energy}/${config.ENERGY.MAX} ⚡`, inline: true },
-            { name: '💵 Ví tiền', value: `${wallet.toLocaleString('vi-VN')} ${config.CURRENCY}`, inline: true },
-            { name: '🏦 Ngân hàng', value: `${bank.toLocaleString('vi-VN')} ${config.CURRENCY}`, inline: true },
-            { name: '💎 Tổng tài sản', value: `${networth.toLocaleString('vi-VN')} ${config.CURRENCY}`, inline: true },
-            { name: `📊 Tiến trình EXP (${p.expIntoLevel}/${p.expForNextLevel})`, value: `${createWaguriBar(p.expIntoLevel, p.expForNextLevel, 12)}`, inline: false },
-        );
+        const embed = buildWaguriEmbed(interaction, premium ? 'jackpot' : 'info', {
+            title: `🌸・Hồ sơ của ${target.username}${premium ? ' 💎' : ''}`,
+            description: user.title ? `🏷️ *${user.title}*` : undefined,
+            thumbnail: target.displayAvatarURL(),
+            fields: [
+                { name: '💼 Nghề nghiệp', value: job ? job.name : '*Chưa có nghề*', inline: true },
+                { name: '⭐ Cấp độ', value: `Lv.${p.level}`, inline: true },
+                { name: '⚡ Năng lượng', value: `${energy}/${config.ENERGY.MAX} ⚡`, inline: true },
+                { name: '💵 Ví tiền', value: `${wallet.toLocaleString('vi-VN')} ${config.CURRENCY}`, inline: true },
+                { name: '🏦 Ngân hàng', value: `${bank.toLocaleString('vi-VN')} ${config.CURRENCY}`, inline: true },
+                { name: '💎 Tổng tài sản', value: `${networth.toLocaleString('vi-VN')} ${config.CURRENCY}`, inline: true },
+                { name: `📊 Tiến trình EXP (${p.expIntoLevel}/${p.expForNextLevel})`, value: `${createWaguriBar(p.expIntoLevel, p.expForNextLevel, 12)}`, inline: false },
+            ],
+        });
+        // Màu hồ sơ tuỳ chỉnh (cosmetic) ghi đè màu theo type
+        if (user.profile_color && HEX.test(user.profile_color)) embed.setColor(parseInt(user.profile_color, 16));
 
         if (user.partner_id) {
             embed.addFields({ name: '💞 Người thương', value: `<@${user.partner_id}> · Tình cảm: **${Number(user.love || 0)}** 💞`, inline: false });

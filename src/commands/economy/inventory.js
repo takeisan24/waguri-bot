@@ -1,4 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js');
+const { buildWaguriEmbed } = require('../../lib/embed');
 const db = require('../../database.js');
 const config = require('../../config');
 const { sendPaginated } = require('../../lib/paginate');
@@ -15,7 +16,6 @@ module.exports = {
         const target = interaction.options.getUser('target') || interaction.user;
 
         const inv = await db.getInventory(target.id);
-        const { buildWaguriEmbed } = require('../../lib/embed');
         if (!inv.length) {
             const embed = buildWaguriEmbed(interaction, 'info', {
                 title: 'backpack・Kho đồ trống',

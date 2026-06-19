@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { buildWaguriEmbed } = require('../../lib/embed');
 const db = require('../../database.js');
 const config = require('../../config');
 
@@ -23,7 +24,6 @@ module.exports = {
         await interaction.deferReply();
         const userId = interaction.user.id;
         const sub = interaction.options.getSubcommand();
-        const { buildWaguriEmbed } = require('../../lib/embed');
 
         if (sub === 'buy') {
             const count = interaction.options.getInteger('count');

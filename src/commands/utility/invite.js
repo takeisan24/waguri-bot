@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits, OAuth2Scopes } = require('discord.js');
+const { buildWaguriEmbed } = require('../../lib/embed');
 const config = require('../../config');
 
 module.exports = {
@@ -23,7 +24,6 @@ module.exports = {
                 PermissionFlagsBits.ManageRoles,      // gán role (tính năng sắp tới)
             ],
         });
-        const { buildWaguriEmbed } = require('../../lib/embed');
         const embed = buildWaguriEmbed(interaction, 'info', {
             title: '🌸・Mời Waguri về server',
             description: `[**Bấm vào đây để mời mình nha~**](${url})\n\nMình sẽ mang cả nền kinh tế, minigame và những cuộc trò chuyện dễ thương tới server của cậu! 💕`

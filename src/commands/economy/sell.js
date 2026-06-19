@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { buildWaguriEmbed } = require('../../lib/embed');
 const db = require('../../database.js');
 const config = require('../../config');
 
@@ -26,7 +27,6 @@ module.exports = {
         const itemId = interaction.options.getString('item');
         const qty = interaction.options.getInteger('quantity') || 1;
         const item = await db.getItem(itemId);
-        const { buildWaguriEmbed } = require('../../lib/embed');
         if (!item) {
             const embed = buildWaguriEmbed(interaction, 'error', { title: '🏪・Bán Vật Phẩm', description: 'Mình không tìm thấy vật phẩm này~ 🌸' });
             return interaction.editReply({ embeds: [embed] });

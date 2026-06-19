@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { buildWaguriEmbed } = require('../../lib/embed');
 const db = require('../../database.js');
 const config = require('../../config');
 const { peekFatigue } = require('../../lib/fatigue');
@@ -16,7 +17,6 @@ module.exports = {
         const id = interaction.user.id;
         const user = await db.getUser(id);
         if (!user) {
-            const { buildWaguriEmbed } = require('../../lib/embed');
             const embed = buildWaguriEmbed(interaction, 'error', {
                 description: 'Hơ, mình chưa lấy được dữ liệu của cậu~ 🌸'
             });
@@ -48,7 +48,6 @@ module.exports = {
             if (clan) fields.push({ name: '🏰 Bang hội', value: `**${clan.name}** (Lv.${clanLevel(clan.xp)})`, inline: false });
         }
 
-        const { buildWaguriEmbed } = require('../../lib/embed');
         const embed = buildWaguriEmbed(interaction, premium ? 'jackpot' : 'info', {
             title: `📊・Trạng thái của ${interaction.user.username}${premium ? ' 💎' : ''}`,
             fields: fields,

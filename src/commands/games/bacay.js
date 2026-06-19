@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { buildWaguriEmbed } = require('../../lib/embed');
 const db = require('../../database.js');
 const config = require('../../config');
 const { openLobby } = require('../../lib/lobby');
@@ -43,7 +44,6 @@ module.exports = {
         const bet = interaction.options.getInteger('bet');
         const err = checkBet(bet);
         if (err) {
-            const { buildWaguriEmbed } = require('../../lib/embed');
             const embed = buildWaguriEmbed(interaction, 'warning', { description: `🌸 ${err}` });
             return interaction.reply({ embeds: [embed] });
         }
@@ -67,7 +67,6 @@ module.exports = {
         }
         if (staked.length < 2) {
             for (const p of staked) await db.addMoney(p.id, bet, 'wallet');
-            const { buildWaguriEmbed } = require('../../lib/embed');
             const embed = buildWaguriEmbed(interaction, 'warning', { description: 'Không đủ người đủ tiền để vào ván, đã hoàn cược~ 🌸' });
             return interaction.followUp({ embeds: [embed] });
         }
@@ -93,7 +92,6 @@ module.exports = {
             .map(r => `${winners.includes(r) ? '👑' : '▫️'} <@${r.id}> — ${showCards(r.cards)} → **${r.hand.label}**`);
         const winMention = winners.map(w => `<@${w.id}>`).join(', ');
 
-        const { buildWaguriEmbed } = require('../../lib/embed');
         const embed = buildWaguriEmbed(interaction, 'jackpot', {
             title: '🃏・Kết quả Ba Cây',
             description: `${lines.join('\n')}\n\n` +

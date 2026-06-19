@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder, MessageFlags } = require('discord.js');
+const { buildWaguriEmbed } = require('../../lib/embed');
 const db = require('../../database.js');
 const config = require('../../config');
 const QUIZ = require('../../data/quiz');
@@ -14,7 +15,6 @@ module.exports = {
         .setName('dovui')
         .setDescription('Đố vui 🧠 — trả lời nhanh & đúng nhất trong chat để thắng thưởng'),
     async execute(interaction) {
-        const { buildWaguriEmbed } = require('../../lib/embed');
         if (active.has(interaction.channelId)) {
             const embed = buildWaguriEmbed(interaction, 'warning', { title: '🧠・Đố Vui', description: 'Kênh này đang có một câu đố rồi, chờ xong đã nhé~ 🌸' });
             return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });

@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { buildWaguriEmbed } = require('../../lib/embed');
 const db = require('../../database.js');
 const config = require('../../config');
 
@@ -35,7 +36,6 @@ module.exports = {
 
         const r = await db.repairTool(userId, toolId, cost);
 
-        const { buildWaguriEmbed } = require('../../lib/embed');
         if (r === 'no_tool') {
             const embed = buildWaguriEmbed(interaction, 'error', {
                 title: '🛠️・Sửa công cụ',

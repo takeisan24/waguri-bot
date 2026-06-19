@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, MessageFlags } = require('discord.js');
+const { buildWaguriEmbed } = require('../../lib/embed');
 const db = require('../../database.js');
 const config = require('../../config');
 
@@ -15,7 +16,6 @@ module.exports = {
         const me = interaction.user;
         const lender = interaction.options.getUser('lender');
         const amount = interaction.options.getInteger('amount');
-        const { buildWaguriEmbed } = require('../../lib/embed');
 
         if (!lender) {
             const embed = buildWaguriEmbed(interaction, 'error', { title: '🤝・Vay tiền', description: 'Cậu muốn vay ai? Nhập @người nhé~ 🌸' });

@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, MessageFlags } = require('discord.js');
+const { buildWaguriEmbed, getWaguriFooter } = require('../../lib/embed');
 const db = require('../../database.js');
 const config = require('../../config');
 const { getLevelFromExp } = require('../../lib/leveling');
@@ -35,7 +36,6 @@ module.exports = {
         const me = interaction.user;
         const sub = interaction.options.getSubcommand();
         const C = config.CURRENCY;
-        const { buildWaguriEmbed } = require('../../lib/embed');
 
         const replyEmbed = (type, title, desc) => {
             const embed = buildWaguriEmbed(interaction, type, { title, description: desc });
@@ -107,7 +107,6 @@ module.exports = {
             const clans = await db.clanList(15);
             if (!clans.length) return interaction.editReply('Chưa có bang nào được lập~ Hãy là người đầu tiên với `/clan create`!');
             const lines = clans.map((c, i) => `${['🥇', '🥈', '🥉'][i] || `**${i + 1}.**`} **${c.name}** (Lv.${clanLevel(c.xp)}) — quỹ **${fmt(c.bank)}** ${C} · <@${c.leader_id}>`);
-            const { buildWaguriEmbed } = require('../../lib/embed');
             const embed = buildWaguriEmbed(interaction, 'jackpot', {
                 title: '🏰・Bảng xếp hạng Bang hội',
                 description: lines.join('\n')
@@ -128,7 +127,6 @@ module.exports = {
             const stake = Math.min(Number(myClan.bank), Number(foe.bank), config.CLAN.WAR_STAKE);
             if (stake <= 0) return replyEmbed('warning', '⚔️・Chiến tranh Bang hội', `Cả hai bang đều cần có quỹ (cược tối đa ${fmt(config.CLAN.WAR_STAKE)} ${C}) mới khai chiến được. Góp quỹ thêm nhé~`);
 
-            const { buildWaguriEmbed } = require('../../lib/embed');
             const embed = buildWaguriEmbed(interaction, 'warning', {
                 title: '⚔️・Lời tuyên chiến!',
                 description: `Bang **${myClan.name}** tuyên chiến với bang **${foe.name}**!\nCược: **${fmt(stake)}** ${C} — bang thua mất, bang thắng cướp.\n\n<@${foe.leader_id}> (trưởng bang **${foe.name}**) có chấp nhận không?`
@@ -186,7 +184,6 @@ module.exports = {
 
         const members = await db.clanMembers(clan.id);
         const memList = members.map(id => `${id === clan.leader_id ? '👑' : '▫️'} <@${id}>`).join('\n') || '*(trống)*';
-        const { getWaguriFooter } = require('../../lib/embed');
         const embed = buildWaguriEmbed(interaction, 'info', {
             title: `🏰・Bang: ${clan.name} (Lv.${clanLevel(clan.xp)})`,
             fields: [

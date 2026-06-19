@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { buildWaguriEmbed } = require('../../lib/embed');
 const db = require('../../database.js');
 const config = require('../../config');
 
@@ -23,7 +24,6 @@ module.exports = {
         await interaction.deferReply();
         const itemId = interaction.options.getString('item');
         const qty = interaction.options.getInteger('quantity') || 1;
-        const { buildWaguriEmbed } = require('../../lib/embed');
 
         const item = await db.getItem(itemId);
         if (!item) {

@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, MessageFlags } = require('discord.js');
+const { buildWaguriEmbed } = require('../../lib/embed');
 const db = require('../../database.js');
 const config = require('../../config');
 const { checkBet } = require('../../lib/bet');
@@ -22,13 +23,11 @@ module.exports = {
         const bet = interaction.options.getInteger('bet');
         const err = checkBet(bet);
         if (err) {
-            const { buildWaguriEmbed } = require('../../lib/embed');
             const embed = buildWaguriEmbed(interaction, 'warning', { description: `🌸 ${err}` });
             return interaction.reply({ embeds: [embed] });
         }
 
         const bets = new Map(); // userId -> { horse, username }
-        const { buildWaguriEmbed } = require('../../lib/embed');
         const render = () => {
             const counts = HORSES.map((h, i) => `${h.c} **Ngựa ${h.n}**: ${[...bets.values()].filter(b => b.horse === i).length} người`).join('\n');
             return buildWaguriEmbed(interaction, 'info', {
@@ -58,10 +57,11 @@ module.exports = {
             }
             const pos = HORSES.map(() => 0);
             const lanes = () => HORSES.map((h, i) => `${h.c}\`${'─'.repeat(Math.min(pos[i], FINISH))}🐎${'─'.repeat(Math.max(0, FINISH - pos[i]))}\`🏁`).join('\n');
+            // footer cố định khi đang đua (tránh quote đổi mỗi frame gây nhấp nháy)
             const raceEmbed = (title) => buildWaguriEmbed(interaction, 'jackpot', {
                 title: title,
                 description: lanes()
-            });
+            }).setFooter({ text: '🐎 Đua Ngựa • Waguri' });
 
             await interaction.editReply({ embeds: [raceEmbed('🐎 Xuất phát!')], components: [] }).catch(() => {});
             let winner = null;

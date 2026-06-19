@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { buildWaguriEmbed } = require('../../lib/embed');
 const db = require('../../database.js');
 const config = require('../../config');
 
@@ -11,7 +12,6 @@ module.exports = {
     async execute(interaction) {
         await interaction.deferReply();
         const r = await db.claimDaily(interaction.user.id);
-        const { buildWaguriEmbed } = require('../../lib/embed');
         if (!r) {
             const embed = buildWaguriEmbed(interaction, 'error', { description: 'Ơ, có lỗi rồi, cậu thử lại sau nhé~ 🌸' });
             return interaction.editReply({ embeds: [embed] });

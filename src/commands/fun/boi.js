@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { buildWaguriEmbed } = require('../../lib/embed');
 const config = require('../../config');
 const { restFatigue } = require('../../lib/fatigue');
 
@@ -79,7 +80,6 @@ module.exports = {
         await interaction.deferReply();
         restFatigue(interaction.user.id, 1); // giải trí giảm mệt
         const sub = interaction.options.getSubcommand();
-        const { buildWaguriEmbed } = require('../../lib/embed');
 
         if (sub === 'cunghoangdao') {
             const cung = interaction.options.getString('cung');

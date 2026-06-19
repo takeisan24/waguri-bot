@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { buildWaguriEmbed } = require('../../lib/embed');
 const config = require('../../config');
 
 function fmtUptime(ms) {
@@ -19,7 +20,6 @@ module.exports = {
         const rtt = Date.now() - start;
         const ws = Math.round(interaction.client.ws.ping);
 
-        const { buildWaguriEmbed } = require('../../lib/embed');
         const embed = buildWaguriEmbed(interaction, 'info', {
             title: '🏓・Pong!',
             fields: [

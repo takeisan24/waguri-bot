@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { buildWaguriEmbed } = require('../../lib/embed');
 const db = require('../../database.js');
 const config = require('../../config');
 const { openLobby } = require('../../lib/lobby');
@@ -55,7 +56,6 @@ module.exports = {
         const bet = interaction.options.getInteger('bet');
         const err = checkBet(bet);
         if (err) {
-            const { buildWaguriEmbed } = require('../../lib/embed');
             const embed = buildWaguriEmbed(interaction, 'warning', { description: `🌸 ${err}` });
             return interaction.reply({ embeds: [embed] });
         }
@@ -75,7 +75,6 @@ module.exports = {
         for (const p of players) { if (await db.addMoney(p.id, -bet, 'wallet')) staked.push(p); }
         if (staked.length < 2) {
             for (const p of staked) await db.addMoney(p.id, bet, 'wallet');
-            const { buildWaguriEmbed } = require('../../lib/embed');
             const embed = buildWaguriEmbed(interaction, 'warning', { description: 'Không đủ người đủ tiền để vào ván, đã hoàn cược~ 🌸' });
             return interaction.followUp({ embeds: [embed] });
         }
@@ -85,7 +84,6 @@ module.exports = {
         const pool = pickN(1, 75, 75); // thứ tự gọi
         const called = [];
 
-        const { buildWaguriEmbed } = require('../../lib/embed');
         const progressView = (last) => {
             const lines = cards.map(c => {
                 const prog = bestProgress(c.grid, c.marked);
@@ -97,10 +95,8 @@ module.exports = {
                     `Đã gọi (${called.length}): ${called.map(label).join(', ') || '—'}\n\n` +
                     `**Tiến độ:**\n${lines.join('\n')}`
             });
-            embed.setFooter({
-                text: `Pot: ${fmt(pot)} ${config.CURRENCY} • ${embed.data.footer.text}`,
-                iconURL: embed.data.footer.icon_url
-            });
+            // footer cố định khi đang quay (tránh quote đổi mỗi lần gọi số gây nhấp nháy)
+            embed.setFooter({ text: `🎱 Bingo • Pot: ${fmt(pot)} ${config.CURRENCY}`, iconURL: embed.data.footer.icon_url });
             return embed;
         };
 

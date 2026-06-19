@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder, MessageFlags } = require('discord.js');
+const { buildWaguriEmbed } = require('../../lib/embed');
 const db = require('../../database.js');
 const config = require('../../config');
 const { isOwner } = require('../../lib/owner');
@@ -20,7 +21,6 @@ module.exports = {
             .addIntegerOption(o => o.setName('number').setDescription('2 số cuối giải đặc biệt (0-99)').setRequired(true).setMinValue(0).setMaxValue(99))),
 
     async execute(interaction) {
-        const { buildWaguriEmbed } = require('../../lib/embed');
         const sub = interaction.options.getSubcommand();
 
         if (sub === 'bet') {

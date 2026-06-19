@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { buildWaguriEmbed } = require('../../lib/embed');
 const db = require('../../database.js');
 const config = require('../../config');
 
@@ -11,7 +12,6 @@ module.exports = {
         await interaction.deferReply();
         const raw = interaction.options.getString('amount');
         const user = await db.getUser(interaction.user.id);
-        const { buildWaguriEmbed } = require('../../lib/embed');
         if (!user) {
             const embed = buildWaguriEmbed(interaction, 'error', { title: '🏦・Gửi tiền', description: 'Hơ, mình chưa lấy được dữ liệu của cậu~ 🌸' });
             return interaction.editReply({ embeds: [embed] });

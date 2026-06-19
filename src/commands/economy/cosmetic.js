@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { buildWaguriEmbed } = require('../../lib/embed');
 const db = require('../../database.js');
 const config = require('../../config');
 
@@ -19,7 +20,6 @@ module.exports = {
         const userId = interaction.user.id;
         const sub = interaction.options.getSubcommand();
 
-        const { buildWaguriEmbed } = require('../../lib/embed');
         const replyEmbed = (type, title, desc) => {
             const embed = buildWaguriEmbed(interaction, type, { title, description: desc });
             return interaction.editReply({ embeds: [embed] });

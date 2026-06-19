@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder, ComponentType, MessageFlags } = require('discord.js');
+const { buildWaguriEmbed } = require('../../lib/embed');
 const db = require('../../database.js');
 const config = require('../../config');
 const { openLobby } = require('../../lib/lobby');
@@ -21,7 +22,6 @@ module.exports = {
         const bet = interaction.options.getInteger('bet');
         const err = checkBet(bet);
         if (err) {
-            const { buildWaguriEmbed } = require('../../lib/embed');
             const embed = buildWaguriEmbed(interaction, 'warning', { description: `🌸 ${err}` });
             return interaction.reply({ embeds: [embed] });
         }
@@ -41,7 +41,6 @@ module.exports = {
         for (const p of players) { if (await db.addMoney(p.id, -bet, 'wallet')) staked.push(p); }
         if (staked.length < 4) {
             for (const p of staked) await db.addMoney(p.id, bet, 'wallet');
-            const { buildWaguriEmbed } = require('../../lib/embed');
             const embed = buildWaguriEmbed(interaction, 'warning', { description: 'Không đủ người đủ tiền để chơi, đã hoàn cược~ 🌸' });
             return interaction.followUp({ embeds: [embed] });
         }
@@ -73,7 +72,6 @@ module.exports = {
         }
 
         // ----- Phase: xem vai -----
-        const { buildWaguriEmbed } = require('../../lib/embed');
         await channel.send({ embeds: [buildWaguriEmbed(interaction, 'info', {
             title: '🐺・Ván Ma Sói bắt đầu!',
             description: `**${staked.length}** người chơi · pot **${fmt(pot)}** ${config.CURRENCY}.\nNhấn nút bên dưới để **xem vai bí mật** của mình nhé~`

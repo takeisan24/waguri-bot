@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, MessageFlags } = require('discord.js');
+const { buildWaguriEmbed } = require('../../lib/embed');
 const db = require('../../database.js');
 const config = require('../../config');
 const { checkBet } = require('../../lib/bet');
@@ -16,7 +17,6 @@ module.exports = {
         const bet = interaction.options.getInteger('bet');
         const err = checkBet(bet);
         if (err) {
-            const { buildWaguriEmbed } = require('../../lib/embed');
             const embed = buildWaguriEmbed(interaction, 'warning', { description: `🌸 ${err}` });
             return interaction.reply({ embeds: [embed] });
         }
@@ -27,7 +27,6 @@ module.exports = {
             const le = [...bets.values()].filter(b => b.side === 'le').length;
             return { chan, le };
         };
-        const { buildWaguriEmbed } = require('../../lib/embed');
         const render = () => {
             const c = counts();
             return buildWaguriEmbed(interaction, 'info', {

@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { buildWaguriEmbed } = require('../../lib/embed');
 const db = require('../../database.js');
 const config = require('../../config');
 
@@ -33,7 +34,6 @@ module.exports = {
         else { desc = `💎 CỰC HIẾM! Cậu nhận được **${await giveItem(RARE)}**!`; type = 'jackpot'; }
 
         const u = await db.getUser(userId);
-        const { buildWaguriEmbed } = require('../../lib/embed');
         const embed = buildWaguriEmbed(interaction, type, {
             title: '🎁・Mở Rương Bí Ẩn',
             description: `Cậu chi **${fmt(cost)}** ${config.CURRENCY} mở rương...\n\n${desc}\n\n💵 Số dư ví: **${fmt(u?.wallet || 0)}** ${config.CURRENCY}`

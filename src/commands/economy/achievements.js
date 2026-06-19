@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { buildWaguriEmbed } = require('../../lib/embed');
 const db = require('../../database.js');
 const config = require('../../config');
 const ACH = require('../../data/achievements');
@@ -48,7 +49,6 @@ module.exports = {
             ? `🏅 **${a.name}** — ${a.desc}`
             : `🔒 ${a.name} — ${a.desc} · 🪙 ${fmt(a.reward)}`);
 
-        const { buildWaguriEmbed } = require('../../lib/embed');
         const embed = buildWaguriEmbed(interaction, 'jackpot', {
             title: '🏅・Thành tựu',
             description: lines.join('\n')

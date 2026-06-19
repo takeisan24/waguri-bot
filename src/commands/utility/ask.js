@@ -1,4 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js');
+const { buildWaguriEmbed } = require('../../lib/embed');
 const { chatWithWaguri } = require('../../lib/ai');
 const config = require('../../config');
 
@@ -12,7 +13,6 @@ module.exports = {
         const text = interaction.options.getString('message');
         const res = await chatWithWaguri(interaction.channelId, interaction.user.id, interaction.user.username, text);
         if (!res.ok) {
-            const { buildWaguriEmbed } = require('../../lib/embed');
             if (res.reason === 'quota') {
                 const embed = buildWaguriEmbed(interaction, 'warning', {
                     description: `Hôm nay cậu đã dùng hết **${res.cap}** lượt trò chuyện với mình rồi 🥺 Quay lại ngày mai nhé~ — hoặc nâng cấp \`/premium\` để có **${config.AI.PREMIUM_DAILY} lượt/ngày** 💎`
