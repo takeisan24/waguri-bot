@@ -59,6 +59,7 @@ const CATEGORIES = [
         ['divorce', 'chia tay người ấy 💔'],
         ['confession', 'gửi confession ẩn danh 🤫'],
         ['noitu', 'chơi nối từ tiếng Việt 🔤'],
+        ['dovui', 'đố vui 🧠 (trả lời nhanh trong chat, thắng thưởng)'],
     ] },
     { name: '🖼️ Ảnh & Tiện ích', cmds: [
         ['cat', 'ảnh mèo ngẫu nhiên 🐱'],

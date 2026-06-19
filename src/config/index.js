@@ -127,6 +127,9 @@ module.exports = {
     // Vay/đòi nợ giữa người chơi (P2P): lãi cố định, hạn trả, quá hạn bị cưỡng chế thu
     LOAN: { INTEREST_PCT: 0.10, DUE_DAYS: 7, MIN: 100, MAX: 1_000_000 },
 
+    // Đố vui (chơi vui + thưởng nhẹ, đẩy tương tác cộng đồng)
+    QUIZ: { REWARD: 300, EXP: 5, TIME_MS: 20000 },
+
     // Công an bắt cờ bạc — chơi càng nhiều, xác suất bị bắt càng cao
     POLICE: {
         BASE_CHANCE: 0.0,   // lần đầu không bị bắt
