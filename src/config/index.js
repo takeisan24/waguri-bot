@@ -130,6 +130,9 @@ module.exports = {
     // Đố vui (chơi vui + thưởng nhẹ, đẩy tương tác cộng đồng)
     QUIZ: { REWARD: 300, EXP: 5, TIME_MS: 20000 },
 
+    // Chợ mua bán đồ giữa người chơi (chợ cắt % = sink)
+    MARKET: { FEE_PCT: 0.05, MIN_PRICE: 1 },
+
     // Công an bắt cờ bạc — chơi càng nhiều, xác suất bị bắt càng cao
     POLICE: {
         BASE_CHANCE: 0.0,   // lần đầu không bị bắt

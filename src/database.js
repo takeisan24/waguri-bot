@@ -851,6 +851,45 @@ async function loanCollect(lenderId, borrowerId) {
     } catch (error) { console.error('[DATABASE ERROR] loanCollect():', error); return null; }
 }
 
+// ============================================================
+//  CHỢ (market — P2P trading)
+// ============================================================
+const { MARKET } = config;
+
+async function marketList(sellerId, itemId, qty, price) {
+    try {
+        const { data, error } = await supabase.rpc('market_list', { p_seller: sellerId, p_item: itemId, p_qty: qty, p_price: price });
+        if (error) throw error;
+        return data;
+    } catch (error) { console.error('[DATABASE ERROR] marketList():', error); return null; }
+}
+async function marketBuy(buyerId, listingId) {
+    try {
+        const { data, error } = await supabase.rpc('market_buy', { p_buyer: buyerId, p_listing: listingId, p_fee: MARKET.FEE_PCT });
+        if (error) throw error;
+        return data;
+    } catch (error) { console.error('[DATABASE ERROR] marketBuy():', error); return null; }
+}
+async function marketCancel(sellerId, listingId) {
+    try {
+        const { data, error } = await supabase.rpc('market_cancel', { p_seller: sellerId, p_listing: listingId });
+        if (error) throw error;
+        return data;
+    } catch (error) { console.error('[DATABASE ERROR] marketCancel():', error); return null; }
+}
+async function marketActive(limit = 25) {
+    try {
+        const { data } = await supabase.from('market_listings').select('*').eq('status', 'active').order('created_at', { ascending: false }).limit(limit);
+        return data || [];
+    } catch (error) { console.error('[DATABASE ERROR] marketActive():', error); return []; }
+}
+async function marketMine(sellerId) {
+    try {
+        const { data } = await supabase.from('market_listings').select('*').eq('seller_id', sellerId).eq('status', 'active').order('created_at');
+        return data || [];
+    } catch (error) { console.error('[DATABASE ERROR] marketMine():', error); return []; }
+}
+
 /** Tăng điểm tình cảm cặp đôi (cả hai vợ chồng). Trả {status, love, partner} hoặc null. */
 async function coupleLove(userId, amount) {
     try {
@@ -1027,6 +1066,12 @@ module.exports = {
     craftItem,
     // couple
     coupleLove,
+    // market
+    marketList,
+    marketBuy,
+    marketCancel,
+    marketActive,
+    marketMine,
     // admin
     setBalance,
     setExp,

@@ -18,7 +18,8 @@ const CATEGORIES = [
     { name: '🏪 Cửa hàng & Kho', cmds: [
         ['shop', 'xem cửa hàng'],
         ['buy', 'mua vật phẩm'],
-        ['sell', 'bán vật phẩm (50% giá)'],
+        ['sell', 'bán vật phẩm cho hệ thống (50% giá)'],
+        ['market', 'chợ mua bán đồ giữa người chơi 🛒'],
         ['inventory', 'xem kho đồ'],
         ['eat', 'dùng đồ ăn/uống (hồi năng lượng / buff)'],
         ['ngu', 'đi ngủ hồi đầy năng lượng (6 tiếng/lần) 😴'],
