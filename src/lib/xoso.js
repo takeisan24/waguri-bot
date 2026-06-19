@@ -16,31 +16,50 @@ function targetDrawDate() {
     return vnDateStr(v);
 }
 
-// Nguồn mặc định: repo cộng đồng tự cập nhật KQ XSMB hằng ngày (free, không cần key).
+// Nguồn #1 (JSON): repo cộng đồng tự cập nhật KQ XSMB hằng ngày (free, không key).
 const DEFAULT_XSMB_URL = 'https://raw.githubusercontent.com/khiemdoan/vietnam-lottery-xsmb-analysis/main/data/xsmb.json';
+// Nguồn #2 (crawl trang gốc): bản nhúng KQ của Minh Ngọc — số 5 chữ số đầu = giải ĐB, ngày đầu = mới nhất.
+const MINHNGOC_URL = 'https://www.minhngoc.com.vn/getkqxs/mien-bac.js';
 
-/** Lấy 2 số cuối giải đặc biệt XSMB cho ngày targetDate (YYYY-MM-DD). Trả 0-99 hoặc null nếu chưa có KQ. */
-async function fetchXSMB(targetDate = vnDateStr()) {
+const last2 = special => {
+    const s = String(special).replace(/\D/g, '');
+    return s.length >= 2 ? Number(s.slice(-2)) : null;
+};
+
+/** Nguồn JSON (repo hoặc env XOSO_API_URL). Trả 0-99 hoặc null. */
+async function fetchJsonSource(targetDate) {
     try {
         const url = process.env.XOSO_API_URL || DEFAULT_XSMB_URL;
         const headers = {};
         if (process.env.XOSO_API_KEY) headers.Authorization = `Bearer ${process.env.XOSO_API_KEY}`;
         const res = await fetch(url, { headers, signal: AbortSignal.timeout(10000) });
         const data = await res.json();
-
-        let special = null;
         if (Array.isArray(data)) {
-            // mảng lịch sử: chỉ nhận record ĐÚNG ngày cần (tránh dùng KQ cũ khi chưa công bố)
             const row = data.find(r => String(r.date).slice(0, 10) === targetDate);
-            if (row) special = row.special;
-        } else if (data && (data.special ?? data.dac_biet ?? data.giaiDB) != null) {
-            special = data.special ?? data.dac_biet ?? data.giaiDB; // hỗ trợ API tuỳ chỉnh
+            return row ? last2(row.special) : null;
         }
-        if (special == null) return null;
-        const s = String(special).replace(/\D/g, '');
-        if (s.length >= 2) return Number(s.slice(-2));
-    } catch (e) { console.error('[XOSO fetch]', e.message); }
-    return null;
+        const sp = data?.special ?? data?.dac_biet ?? data?.giaiDB;
+        return sp != null ? last2(sp) : null;
+    } catch (e) { console.error('[XOSO json]', e.message); return null; }
+}
+
+/** Crawl thẳng trang KQ gốc (Minh Ngọc). Chỉ nhận khi ngày mới nhất == ngày cần. */
+async function crawlXSMB(targetDate) {
+    try {
+        const res = await fetch(MINHNGOC_URL, { signal: AbortSignal.timeout(10000), headers: { 'User-Agent': 'Mozilla/5.0' } });
+        const t = await res.text();
+        const dm = t.match(/(\d{2})\/(\d{2})\/(\d{4})/);   // ngày mới nhất (xuất hiện đầu)
+        if (!dm || `${dm[3]}-${dm[2]}-${dm[1]}` !== targetDate) return null;
+        const num = t.match(/\d{5}/);                       // số 5 chữ số đầu = giải đặc biệt
+        return num ? last2(num[0]) : null;
+    } catch (e) { console.error('[XOSO crawl]', e.message); return null; }
+}
+
+/** Lấy 2 số cuối giải ĐB cho ngày: thử JSON repo -> crawl trang gốc -> null (chờ owner). */
+async function fetchXSMB(targetDate = vnDateStr()) {
+    const a = await fetchJsonSource(targetDate);
+    if (a != null) return a;
+    return crawlXSMB(targetDate);
 }
 
 async function announce(client, r, date) {
@@ -88,4 +107,4 @@ function startScheduler(client) {
     console.log('[SYSTEM] Đã bật scheduler xổ số (quay ~18h30 giờ VN).');
 }
 
-module.exports = { targetDrawDate, vnDateStr, resolveToday, startScheduler, fetchXSMB };
+module.exports = { targetDrawDate, vnDateStr, resolveToday, startScheduler, fetchXSMB, crawlXSMB };
