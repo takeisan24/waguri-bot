@@ -10,8 +10,24 @@ module.exports = {
                 && ch.type === ChannelType.GuildText
                 && ch.permissionsFor(me)?.has(PermissionsBitField.Flags.SendMessages);
 
-            // Ưu tiên kênh hệ thống, không thì tìm kênh text đầu tiên gửi được
-            let channel = canSend(guild.systemChannel) ? guild.systemChannel : guild.channels.cache.find(canSend);
+            const welcomeNames = ['welcome', 'chào-mừng', 'chat-chung', 'general', 'nhà-chung', 'main'];
+            let channel = null;
+
+            // 1. Thử tìm kênh có tên phù hợp
+            for (const name of welcomeNames) {
+                channel = guild.channels.cache.find(c => c.name.toLowerCase().includes(name) && canSend(c));
+                if (channel) break;
+            }
+
+            // 2. Thử systemChannel
+            if (!channel && canSend(guild.systemChannel)) {
+                channel = guild.systemChannel;
+            }
+
+            // 3. Thử tìm bất kỳ kênh text nào
+            if (!channel) {
+                channel = guild.channels.cache.find(canSend);
+            }
             if (!channel) return;
 
             const { buildWaguriEmbed } = require('../lib/embed');

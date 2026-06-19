@@ -1,41 +1,49 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { handleBingoPrefix } = require('../../lib/bingoPrefix');
+const { handleLotoPrefix } = require('../../lib/loto');
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('bingo')
-        .setDescription('Trò chơi Bingo 🎱')
+        .setName('loto')
+        .setDescription('Trò chơi Loto 🎟️')
         .addSubcommand(sub =>
             sub.setName('open')
-               .setDescription('Mở phòng chơi Bingo (yêu cầu vào voice)')
+               .setDescription('Mở phòng chơi Loto (yêu cầu vào voice)')
         )
         .addSubcommand(sub =>
-            sub.setName('buy')
-               .setDescription('Mua vé Bingo')
+            sub.setName('join')
+               .setDescription('Mua vé Loto với 5 số')
+               .addStringOption(opt =>
+                   opt.setName('numbers')
+                      .setDescription('5 số từ 01-90 (ví dụ: 01 15 27 42 89)')
+                      .setRequired(true)
+               )
         )
         .addSubcommand(sub =>
-            sub.setName('check')
-               .setDescription('Kiểm tra vé Bingo của cậu')
+            sub.setName('list')
+               .setDescription('Xem danh sách vé đã mua')
         )
         .addSubcommand(sub =>
             sub.setName('start')
-               .setDescription('Bắt đầu game Bingo')
+               .setDescription('Bắt đầu game Loto')
         )
         .addSubcommand(sub =>
             sub.setName('end')
-               .setDescription('Kết thúc/hủy phòng game Bingo')
+               .setDescription('Kết thúc/hủy phòng game Loto')
         ),
     async execute(interaction) {
         const subcommand = interaction.options.getSubcommand();
         let cmd = '';
-        const args = [];
+        let args = [];
 
         if (subcommand === 'open') {
-            cmd = 'bingo';
-        } else if (subcommand === 'buy') {
-            cmd = 'mua';
-        } else if (subcommand === 'check') {
-            cmd = 'check';
+            cmd = 'loto';
+        } else if (subcommand === 'join') {
+            cmd = 'so';
+            const numStr = interaction.options.getString('numbers');
+            // Split by space, comma, or any whitespace
+            args = numStr.trim().split(/[\s,]+/);
+        } else if (subcommand === 'list') {
+            cmd = 'ds';
         } else if (subcommand === 'start') {
             cmd = 'start';
         } else if (subcommand === 'end') {
@@ -63,6 +71,6 @@ module.exports = {
             }
         };
 
-        await handleBingoPrefix(messageShim, cmd, args);
+        await handleLotoPrefix(messageShim, cmd, args);
     }
 };

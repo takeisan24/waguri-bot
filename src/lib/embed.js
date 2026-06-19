@@ -25,7 +25,7 @@ function getWaguriQuote() {
 
 function getWaguriFooter(client) {
     return {
-        text: `🌸 Waguri • ${getWaguriQuote()}`,
+        text: `🌸 Waguri • Trợ lý Tiệm bánh Gekka`,
         iconURL: client?.user?.displayAvatarURL()
     };
 }

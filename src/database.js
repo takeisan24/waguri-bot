@@ -767,36 +767,69 @@ async function grantPremium(userId, days) {
 }
 
 // ============================================================
-//  XỔ SỐ (lottery)
+//  VÉ SỐ (ticket lottery)
 // ============================================================
-const { LOTTERY } = config;
-const lotterySecs = () => LOTTERY.ROUND_HOURS * 3600;
-
-/** Mua vé xổ số. Trả {status,'my_tickets',pool,round,draw,...} hoặc null. */
-async function lotteryBuy(userId, count) {
+/** Nhận vé số ngẫu nhiên cho người chơi. */
+async function lotteryClaimTicket(userId, ticketNumber, defRewardType, defRewardValue, defRewardName, durationSecs) {
     try {
-        const { data, error } = await supabase.rpc('lottery_buy', {
-            p_user_id: userId, p_count: count, p_price: LOTTERY.TICKET_PRICE, p_cut: LOTTERY.HOUSE_CUT, p_secs: lotterySecs(),
+        const { data, error } = await supabase.rpc('lottery_claim_ticket', {
+            p_user_id: userId,
+            p_ticket_number: ticketNumber,
+            p_def_reward_type: defRewardType,
+            p_def_reward_value: String(defRewardValue),
+            p_def_reward_name: defRewardName,
+            p_duration_secs: durationSecs
         });
         if (error) throw error;
         return data;
     } catch (error) {
-        console.error('[DATABASE ERROR] lotteryBuy():', error);
+        console.error('[DATABASE ERROR] lotteryClaimTicket():', error);
         return null;
     }
 }
 
-/** Xem trạng thái xổ số (tự quay nếu hết hạn). Trả jsonb hoặc null. */
-async function lotteryView(userId) {
+/** Lấy trạng thái hiện tại của vé số. */
+async function lotteryGetState() {
     try {
-        const { data, error } = await supabase.rpc('lottery_view', {
-            p_user_id: userId, p_cut: LOTTERY.HOUSE_CUT, p_secs: lotterySecs(),
-        });
+        const { data, error } = await supabase.from('lottery_state').select('*').eq('id', 1).maybeSingle();
         if (error) throw error;
         return data;
     } catch (error) {
-        console.error('[DATABASE ERROR] lotteryView():', error);
+        console.error('[DATABASE ERROR] lotteryGetState():', error);
         return null;
+    }
+}
+
+/** Lấy toàn bộ người tham gia của vòng hiện tại. */
+async function lotteryGetParticipants(roundNo) {
+    try {
+        const { data, error } = await supabase.from('lottery_tickets').select('user_id, ticket_number').eq('round_no', roundNo);
+        if (error) throw error;
+        return data || [];
+    } catch (error) {
+        console.error('[DATABASE ERROR] lotteryGetParticipants():', error);
+        return [];
+    }
+}
+
+/** Lưu kết quả quay số và sang vòng tiếp theo. */
+async function lotterySaveDrawResult(roundNo, winningNumber, nextType, nextVal, nextName, durationSecs, winnerDesc, rewardDesc) {
+    try {
+        const { error } = await supabase.rpc('lottery_save_draw_result', {
+            p_round_no: roundNo,
+            p_winning_number: winningNumber,
+            p_next_reward_type: nextType,
+            p_next_reward_value: String(nextVal),
+            p_next_reward_name: nextName,
+            p_duration_secs: durationSecs,
+            p_last_winner_desc: winnerDesc,
+            p_last_reward_desc: rewardDesc
+        });
+        if (error) throw error;
+        return true;
+    } catch (error) {
+        console.error('[DATABASE ERROR] lotterySaveDrawResult():', error);
+        return false;
     }
 }
 
@@ -882,23 +915,7 @@ async function clanList(limit = 20) {
     try { const { data } = await supabase.from('clans').select('*').order('bank', { ascending: false }).limit(limit); return data || []; }
     catch { return []; }
 }
-// ============================================================
-//  ĐÁNH ĐỀ theo XSMB
-// ============================================================
-const xosoBet = (userId, number, amount, date) => clanRpc('xoso_bet', { p_user: userId, p_number: number, p_amount: amount, p_date: date });
-const xosoResolve = (date, number, mult) => clanRpc('xoso_resolve', { p_date: date, p_number: number, p_mult: mult });
-async function xosoResult(date) {
-    try { const { data } = await supabase.from('xoso_results').select('*').eq('draw_date', date).maybeSingle(); return data; }
-    catch (error) { console.error('[DATABASE ERROR] xosoResult():', error); return null; }
-}
-async function xosoMyBets(userId, date) {
-    try { const { data } = await supabase.from('xoso_bets').select('number, amount').eq('user_id', userId).eq('draw_date', date).eq('status', 'pending'); return data || []; }
-    catch { return []; }
-}
-async function xosoRecentResults(limit = 7) {
-    try { const { data } = await supabase.from('xoso_results').select('*').order('draw_date', { ascending: false }).limit(limit); return data || []; }
-    catch { return []; }
-}
+
 
 /** Top cặp đôi theo điểm tình cảm. */
 async function getTopLove(limit = 20) {
@@ -1143,9 +1160,11 @@ module.exports = {
     // ai quota & premium
     consumeAiQuota,
     grantPremium,
-    // lottery
-    lotteryBuy,
-    lotteryView,
+    // ticket lottery
+    lotteryClaimTicket,
+    lotteryGetState,
+    lotteryGetParticipants,
+    lotterySaveDrawResult,
     // cosmetic
     setCosmetic,
     // loans
@@ -1178,12 +1197,6 @@ module.exports = {
     clanMembersExp,
     clanWar,
     getTopLove,
-    // xoso (đánh đề)
-    xosoBet,
-    xosoResolve,
-    xosoResult,
-    xosoMyBets,
-    xosoRecentResults,
     // market
     marketList,
     marketBuy,

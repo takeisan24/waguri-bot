@@ -45,6 +45,59 @@ module.exports = {
             const cmdName = (tokens.shift() || '').toLowerCase();
             if (!cmdName) return;
 
+            // --- Intercept Loto & Bingo prefix commands ---
+            const { handleLotoPrefix, activeLotoGames } = require('../lib/loto');
+            const { handleBingoPrefix, activeBingoGames } = require('../lib/bingoPrefix');
+
+            if (['loto', 'so', 'ds'].includes(cmdName)) {
+                if (rateLimited(message.author.id)) {
+                    message.reply('Cậu thao tác hơi nhanh rồi~ chờ vài giây nhé! 🌸').catch(() => {});
+                    return;
+                }
+                try {
+                    await handleLotoPrefix(message, cmdName, tokens);
+                } catch (error) {
+                    console.error(`Lỗi prefix ${prefix}${cmdName}:`, error);
+                    message.reply('Ơ, có lỗi rồi, cậu thử lại sau nhé~ 🌸').catch(() => {});
+                }
+                return;
+            }
+
+            if (['bingo', 'mua', 'check'].includes(cmdName)) {
+                if (rateLimited(message.author.id)) {
+                    message.reply('Cậu thao tác hơi nhanh rồi~ chờ vài giây nhé! 🌸').catch(() => {});
+                    return;
+                }
+                try {
+                    await handleBingoPrefix(message, cmdName, tokens);
+                } catch (error) {
+                    console.error(`Lỗi prefix ${prefix}${cmdName}:`, error);
+                    message.reply('Ơ, có lỗi rồi, cậu thử lại sau nhé~ 🌸').catch(() => {});
+                }
+                return;
+            }
+
+            if (['start', 'end'].includes(cmdName)) {
+                if (rateLimited(message.author.id)) {
+                    message.reply('Cậu thao tác hơi nhanh rồi~ chờ vài giây nhé! 🌸').catch(() => {});
+                    return;
+                }
+                try {
+                    const channelId = message.channelId;
+                    if (activeLotoGames.has(channelId)) {
+                        await handleLotoPrefix(message, cmdName, tokens);
+                    } else if (activeBingoGames.has(channelId)) {
+                        await handleBingoPrefix(message, cmdName, tokens);
+                    } else {
+                        message.reply('Hiện không có phòng game Loto hay Bingo nào hoạt động ở kênh này hết á~ 🌸').catch(() => {});
+                    }
+                } catch (error) {
+                    console.error(`Lỗi prefix ${prefix}${cmdName}:`, error);
+                    message.reply('Ơ, có lỗi rồi, cậu thử lại sau nhé~ 🌸').catch(() => {});
+                }
+                return;
+            }
+
             const command = message.client.commands.get(cmdName);
             if (!command) return;
 

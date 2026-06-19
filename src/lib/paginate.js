@@ -19,7 +19,7 @@ async function sendPaginated(interaction, { title, color, lines, perPage = 10, f
             .setTitle(title)
             .setDescription(pages[page].join('\n'))
             .setFooter({
-                text: `🌸 Trang ${page + 1}/${pages.length}` + (footerNote ? ` · ${footerNote}` : '') + ` • ${getWaguriQuote()}`,
+                text: `🌸 Trang ${page + 1}/${pages.length}` + (footerNote ? ` · ${footerNote}` : '') + ` • Waguri`,
                 iconURL: interaction.client.user.displayAvatarURL()
             });
         if (thumbnail) e.setThumbnail(thumbnail);

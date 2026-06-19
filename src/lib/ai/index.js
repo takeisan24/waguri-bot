@@ -17,7 +17,7 @@ const escapeRegex = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 // Hậu xử lý câu trả lời: thay tên người dùng bằng @mention + bọc /lệnh trong `code`
 function formatReply(text, userId, userName) {
     let t = text;
-    if (userName) t = t.replace(new RegExp(escapeRegex(userName), 'g'), `<@${userId}>`);
+    if (userName) t = t.replace(new RegExp(escapeRegex(userName), 'g'), `**${userName}**`);
     t = t.replace(/(?<!`)\/([a-zA-Z]{2,})(?!`)/g, '`/$1`'); // /work -> `/work`
     return t;
 }
