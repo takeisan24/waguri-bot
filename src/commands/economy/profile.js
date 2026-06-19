@@ -26,11 +26,16 @@ module.exports = {
         const wallet = Number(user.wallet), bank = Number(user.bank);
         const networth = wallet + bank;
 
+        const HEX = /^[0-9a-fA-F]{6}$/;
+        const color = user.profile_color && HEX.test(user.profile_color) ? parseInt(user.profile_color, 16) : config.COLORS.INFO;
+        const premium = user.premium_until && new Date(user.premium_until).getTime() > Date.now();
+
         const embed = new EmbedBuilder()
-            .setColor(config.COLORS.INFO)
-            .setTitle(`🪪 Hồ sơ của ${target.username}`)
-            .setThumbnail(target.displayAvatarURL())
-            .addFields(
+            .setColor(color)
+            .setTitle(`🪪 Hồ sơ của ${target.username}${premium ? ' 💎' : ''}`)
+            .setThumbnail(target.displayAvatarURL());
+        if (user.title) embed.setDescription(`🏷️ *${user.title}*`);
+        embed.addFields(
                 { name: '💼 Nghề', value: job ? job.name : 'Chưa có nghề', inline: true },
                 { name: '⭐ Cấp độ', value: `Lv.${p.level}`, inline: true },
                 { name: '⚡ Năng lượng', value: `${energy}/${config.ENERGY.MAX}`, inline: true },

@@ -118,6 +118,9 @@ module.exports = {
     // Xổ số cộng đồng (sink qua % nhà cái; quay tự động mỗi vòng)
     LOTTERY: { TICKET_PRICE: 500, HOUSE_CUT: 0.10, ROUND_HOURS: 24, MAX_PER_BUY: 100 },
 
+    // Cosmetic sink (flex, không ảnh hưởng cân bằng): danh hiệu + màu hồ sơ
+    COSMETIC: { TITLE_COST: 20000, COLOR_COST: 15000, MAX_TITLE_LEN: 30 },
+
     // Công an bắt cờ bạc — chơi càng nhiều, xác suất bị bắt càng cao
     POLICE: {
         BASE_CHANCE: 0.0,   // lần đầu không bị bắt

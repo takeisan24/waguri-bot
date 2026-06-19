@@ -801,6 +801,22 @@ async function lotteryView(userId) {
 }
 
 // ============================================================
+//  COSMETIC (danh hiệu / màu hồ sơ)
+// ============================================================
+/** Đặt cosmetic (field: 'title' | 'profile_color'). Trả true/false. */
+async function setCosmetic(userId, field, value) {
+    if (!['title', 'profile_color'].includes(field)) return false;
+    try {
+        const { error } = await supabase.from('users').update({ [field]: value }).eq('user_id', userId);
+        if (error) throw error;
+        return true;
+    } catch (error) {
+        console.error('[DATABASE ERROR] setCosmetic():', error);
+        return false;
+    }
+}
+
+// ============================================================
 //  ADMIN — chỉ owner dùng (qua /eco-admin)
 // ============================================================
 /** Đặt cứng số dư ví/bank. */
@@ -934,6 +950,8 @@ module.exports = {
     // lottery
     lotteryBuy,
     lotteryView,
+    // cosmetic
+    setCosmetic,
     // admin
     setBalance,
     setExp,
