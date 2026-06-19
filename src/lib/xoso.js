@@ -16,25 +16,29 @@ function targetDrawDate() {
     return vnDateStr(v);
 }
 
-/** Best-effort lấy 2 số cuối giải đặc biệt XSMB. Cần env XOSO_API_URL. Trả 0-99 hoặc null. */
-async function fetchXSMB() {
+// Nguồn mặc định: repo cộng đồng tự cập nhật KQ XSMB hằng ngày (free, không cần key).
+const DEFAULT_XSMB_URL = 'https://raw.githubusercontent.com/khiemdoan/vietnam-lottery-xsmb-analysis/main/data/xsmb.json';
+
+/** Lấy 2 số cuối giải đặc biệt XSMB cho ngày targetDate (YYYY-MM-DD). Trả 0-99 hoặc null nếu chưa có KQ. */
+async function fetchXSMB(targetDate = vnDateStr()) {
     try {
-        const url = process.env.XOSO_API_URL;
-        if (!url) return null; // chưa cấu hình -> để owner nhập tay
+        const url = process.env.XOSO_API_URL || DEFAULT_XSMB_URL;
         const headers = {};
         if (process.env.XOSO_API_KEY) headers.Authorization = `Bearer ${process.env.XOSO_API_KEY}`;
-        const res = await fetch(url, { headers, signal: AbortSignal.timeout(8000) });
-        const text = await res.text();
-        let special = '';
-        try {
-            const j = JSON.parse(text);
-            special = String(j.special ?? j.dac_biet ?? j.giaiDB ?? j.dacbiet ?? j?.data?.special ?? '');
-        } catch {
-            const m = text.match(/(\d{5,6})/); // số 5-6 chữ số đầu tiên (giải đặc biệt)
-            special = m ? m[1] : '';
+        const res = await fetch(url, { headers, signal: AbortSignal.timeout(10000) });
+        const data = await res.json();
+
+        let special = null;
+        if (Array.isArray(data)) {
+            // mảng lịch sử: chỉ nhận record ĐÚNG ngày cần (tránh dùng KQ cũ khi chưa công bố)
+            const row = data.find(r => String(r.date).slice(0, 10) === targetDate);
+            if (row) special = row.special;
+        } else if (data && (data.special ?? data.dac_biet ?? data.giaiDB) != null) {
+            special = data.special ?? data.dac_biet ?? data.giaiDB; // hỗ trợ API tuỳ chỉnh
         }
-        special = special.replace(/\D/g, '');
-        if (special.length >= 2) return Number(special.slice(-2));
+        if (special == null) return null;
+        const s = String(special).replace(/\D/g, '');
+        if (s.length >= 2) return Number(s.slice(-2));
     } catch (e) { console.error('[XOSO fetch]', e.message); }
     return null;
 }
@@ -62,7 +66,7 @@ async function resolveToday(client, numberOverride = null) {
     const date = vnDateStr();
     if (await db.xosoResult(date)) return { status: 'already' };
     let num = numberOverride;
-    if (num == null) num = await fetchXSMB();
+    if (num == null) num = await fetchXSMB(date);
     if (num == null) return { status: 'no_source' };
     const r = await db.xosoResolve(date, num, config.XOSO.PAYOUT);
     if (r?.status === 'ok' && client) await announce(client, r, date);
