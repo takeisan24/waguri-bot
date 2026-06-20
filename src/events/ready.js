@@ -81,6 +81,9 @@ module.exports = {
         // Gửi số server lên Top.gg định kỳ (nếu có TOPGG_TOKEN)
         startTopggAutopost(client);
 
+        // Tự backup DB mỗi 24h vào kênh riêng (nếu có BACKUP_CHANNEL_ID)
+        require('../lib/autobackup').scheduleAutoBackup(client);
+
         let i = 0;
         const rotate = () => {
             const list = buildStatuses(client); // tính lại mỗi lần -> số liệu luôn mới

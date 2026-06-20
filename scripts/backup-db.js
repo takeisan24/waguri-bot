@@ -1,42 +1,17 @@
 // ============================================================
-// scripts/backup-db.js — Sao lưu các bảng dữ liệu người chơi ra file JSON.
-// ------------------------------------------------------------
-// Dùng: node scripts/backup-db.js
-//   -> tạo backups/backup-<thời-gian>.json (đã .gitignore).
-// Nên đặt lịch chạy hằng ngày (Wispbyte scheduled task / cron / GitHub Actions).
-// Phục hồi: nạp lại JSON vào Supabase (hoặc giữ làm ảnh chụp an toàn).
+// scripts/backup-db.js — Sao lưu bảng dữ liệu người chơi ra file JSON (chạy tay).
+// Dùng: node scripts/backup-db.js  ->  backups/backup-<thời-gian>.json (đã .gitignore).
+// (Bot cũng TỰ backup mỗi 24h vào kênh BACKUP_CHANNEL_ID — xem src/lib/autobackup.js.)
 // ============================================================
 require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
-const { supabase } = require('../src/database');
-
-// Bảng dữ liệu động cần backup (bỏ items/jobs vì đã nằm trong migration seed).
-const TABLES = [
-    'users', 'inventory', 'cooldowns', 'achievements', 'quest_progress',
-    'user_pets', 'pigs', 'plants', 'clans', 'loans', 'market_listings',
-    'guild_settings', 'guild_members', 'daily_counters', 'game_event',
-];
+const { dumpAll } = require('../src/lib/backup');
 
 (async () => {
-    const dump = {};
-    for (const t of TABLES) {
-        try {
-            let rows = [], from = 0;
-            const PAGE = 1000;
-            // eslint-disable-next-line no-constant-condition
-            while (true) {
-                const { data, error } = await supabase.from(t).select('*').range(from, from + PAGE - 1);
-                if (error) throw error;
-                rows.push(...data);
-                if (data.length < PAGE) break;
-                from += PAGE;
-            }
-            dump[t] = rows;
-            console.log(`  ${t}: ${rows.length} dòng`);
-        } catch (e) {
-            console.warn(`  ! bỏ qua ${t}: ${e.message}`);
-        }
+    const dump = await dumpAll();
+    for (const [t, v] of Object.entries(dump)) {
+        console.log(`  ${t}: ${Array.isArray(v) ? v.length + ' dòng' : '⚠️ ' + v.__error}`);
     }
     const dir = path.join(__dirname, '..', 'backups');
     fs.mkdirSync(dir, { recursive: true });
