@@ -9,6 +9,7 @@ const { isBanned } = require('../lib/bans');
 const { isBlocked, getJail } = require('../lib/jail');
 const { PIG_CMDS, handlePigPrefix } = require('../lib/pig');
 const { PLANT_CMDS, handlePlantPrefix } = require('../lib/plant');
+const { recordMembership } = require('../lib/membership');
 
 // Chat-leveling: thưởng xu/EXP khi chat (có cooldown + cap ngày chống farm)
 const chatCD = new Map();    // userId -> hết cooldown (ms)
@@ -48,6 +49,7 @@ module.exports = {
     async execute(message) {
         if (message.author.bot || !message.guild) return;
         if (isBanned(message.author.id)) return;
+        recordMembership(message.guild.id, message.author.id); // BXH theo server — fire-and-forget
 
         const prefix = config.PREFIX;
 

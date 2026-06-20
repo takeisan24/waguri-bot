@@ -1205,9 +1205,33 @@ async function resetUser(userId) {
     }
 }
 
+// ============================================================
+//  GUILD MEMBERS — ghi nhận user hoạt động ở guild nào (cho BXH theo server)
+// ============================================================
+/** Ghi nhận user thuộc guild (idempotent). Gọi fire-and-forget từ event. */
+async function recordGuildMember(guildId, userId) {
+    try {
+        const { error } = await supabase.from('guild_members')
+            .upsert({ guild_id: guildId, user_id: userId }, { onConflict: 'guild_id,user_id', ignoreDuplicates: true });
+        if (error) throw error;
+        return true;
+    } catch (error) { console.error('[DATABASE ERROR] recordGuildMember():', error); return false; }
+}
+
+/** BXH giới hạn trong 1 guild (sort='level'|'networth'). */
+async function getLeaderboardGuild(sort, limit, guildId) {
+    try {
+        const { data, error } = await supabase.rpc('leaderboard_rows_guild', { p_sort: sort, p_limit: limit, p_guild: guildId });
+        if (error) throw error;
+        return data || [];
+    } catch (error) { console.error('[DATABASE ERROR] getLeaderboardGuild():', error); return []; }
+}
+
 module.exports = {
     supabase,
     getUser,
+    recordGuildMember,
+    getLeaderboardGuild,
     addMoney,
     transferMoney,
     transferMoneyWithTax,

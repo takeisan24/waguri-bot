@@ -3,6 +3,7 @@ const { rateLimited } = require('../lib/ratelimit');
 const { isBanned } = require('../lib/bans');
 const { isBlocked, getJail } = require('../lib/jail');
 const { buildWaguriEmbed } = require('../lib/embed');
+const { recordMembership } = require('../lib/membership');
 
 module.exports = {
     name: Events.InteractionCreate,
@@ -27,6 +28,9 @@ module.exports = {
                 console.error(`Không tìm thấy lệnh nào khớp với ${interaction.commandName}.`);
                 return;
             }
+
+            // Ghi nhận user thuộc guild (cho BXH theo server) — fire-and-forget
+            recordMembership(interaction.guildId, interaction.user.id);
 
             // Chặn user bị ban
             if (isBanned(interaction.user.id)) {
