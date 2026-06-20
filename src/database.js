@@ -767,73 +767,6 @@ async function grantPremium(userId, days) {
 }
 
 // ============================================================
-//  VÉ SỐ (ticket lottery)
-// ============================================================
-/** Nhận vé số ngẫu nhiên cho người chơi. */
-async function lotteryClaimTicket(userId, ticketNumber, defRewardType, defRewardValue, defRewardName, durationSecs) {
-    try {
-        const { data, error } = await supabase.rpc('lottery_claim_ticket', {
-            p_user_id: userId,
-            p_ticket_number: ticketNumber,
-            p_def_reward_type: defRewardType,
-            p_def_reward_value: String(defRewardValue),
-            p_def_reward_name: defRewardName,
-            p_duration_secs: durationSecs
-        });
-        if (error) throw error;
-        return data;
-    } catch (error) {
-        console.error('[DATABASE ERROR] lotteryClaimTicket():', error);
-        return null;
-    }
-}
-
-/** Lấy trạng thái hiện tại của vé số. */
-async function lotteryGetState() {
-    try {
-        const { data, error } = await supabase.from('lottery_state').select('*').eq('id', 1).maybeSingle();
-        if (error) throw error;
-        return data;
-    } catch (error) {
-        console.error('[DATABASE ERROR] lotteryGetState():', error);
-        return null;
-    }
-}
-
-/** Lấy toàn bộ người tham gia của vòng hiện tại. */
-async function lotteryGetParticipants(roundNo) {
-    try {
-        const { data, error } = await supabase.from('lottery_tickets').select('user_id, ticket_number').eq('round_no', roundNo);
-        if (error) throw error;
-        return data || [];
-    } catch (error) {
-        console.error('[DATABASE ERROR] lotteryGetParticipants():', error);
-        return [];
-    }
-}
-
-/** Lưu kết quả quay số và sang vòng tiếp theo. */
-async function lotterySaveDrawResult(roundNo, winningNumber, nextType, nextVal, nextName, durationSecs, winnerDesc, rewardDesc) {
-    try {
-        const { error } = await supabase.rpc('lottery_save_draw_result', {
-            p_round_no: roundNo,
-            p_winning_number: winningNumber,
-            p_next_reward_type: nextType,
-            p_next_reward_value: String(nextVal),
-            p_next_reward_name: nextName,
-            p_duration_secs: durationSecs,
-            p_last_winner_desc: winnerDesc,
-            p_last_reward_desc: rewardDesc
-        });
-        if (error) throw error;
-        return true;
-    } catch (error) {
-        console.error('[DATABASE ERROR] lotterySaveDrawResult():', error);
-        return false;
-    }
-}
-
-// ============================================================
 //  COSMETIC (danh hiệu / màu hồ sơ)
 // ============================================================
 /** Đặt cosmetic (field: 'title' | 'profile_color'). Trả true/false. */
@@ -1160,11 +1093,6 @@ module.exports = {
     // ai quota & premium
     consumeAiQuota,
     grantPremium,
-    // ticket lottery
-    lotteryClaimTicket,
-    lotteryGetState,
-    lotteryGetParticipants,
-    lotterySaveDrawResult,
     // cosmetic
     setCosmetic,
     // loans

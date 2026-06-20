@@ -128,7 +128,7 @@ export default function Home() {
               <span className="text-3xl">🎲</span>
               <h3 className="text-lg font-bold text-white">Minigame Cờ Bạc Đa Dạng</h3>
               <p className="text-slate-400 text-sm leading-relaxed">
-                Tài Xỉu, Bầu Cua, Coinflip, Blackjack, Ba Cây. Đặc biệt là đánh đề theo kết quả xổ số miền Bắc (XSMB) thật trả kết quả lúc 18h30 hàng ngày.
+                Tài Xỉu, Bầu Cua, Coinflip, Blackjack, Ba Cây. Đặc biệt là Loto và Bingo chơi nhiều người ngay trong phòng voice, máy tự gọi số trực tiếp.
               </p>
             </div>
 

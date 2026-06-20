@@ -6,7 +6,7 @@
 
 **Waguri** là một Discord bot **kinh tế · nhập vai · cộng đồng** bản địa hoá đậm chất Việt Nam, kèm
 **AI trò chuyện** mang persona dịu dàng, lễ phép, hay động viên (lấy cảm hứng từ nhân vật **Waguri Kaoruko**).
-Từ nghề vỉa hè (nhặt ve chai, bán trà đá) leo lên đại gia, lập bang hội, đánh đề theo XSMB thật,
+Từ nghề vỉa hè (nhặt ve chai, bán trà đá) leo lên đại gia, lập bang hội, chơi Loto/Bingo trong voice,
 chơi minigame nhiều người, kết đôi, buôn bán… — tất cả bằng tiếng Việt.
 
 > **Vòng lặp lõi:** Làm việc → kiếm VNĐ → mua sắm / chế đồ / lên cấp → mở nghề xịn → flex trên bảng xếp hạng.
@@ -21,8 +21,8 @@ chơi minigame nhiều người, kết đôi, buôn bán… — tất cả bằn
 | 💼 **Kiếm tiền** | `/work` `/fish` `/mine` `/chop` `/daily` `/quest` `/jobs` — năng lượng + mệt mỏi + lên cấp + nghề |
 | 🏪 **Cửa hàng & Kho** | `/shop` `/buy` `/sell` `/inventory` `/eat` `/ngu` `/cosmetic` `/craft` — chế tạo từ gỗ/quặng |
 | 💸 **Tiền & Nợ** | `/balance` `/deposit` `/withdraw` `/give` `/rob` · vay nợ P2P `/vay` `/trano` `/donno` `/no` |
-| 🎲 **Minigame** | `/coinflip` `/taixiu` `/baucua` `/blackjack` `/crate` `/lottery` `/xoso` (đề XSMB thật) |
-| 👥 **Game nhiều người** | `/bacay` `/bingo` `/masoi` (Ma Sói) `/xocdia` `/duangua` (đua ngựa) `/dovui` (đố vui) |
+| 🎲 **Minigame** | `/coinflip` `/taixiu` `/baucua` `/blackjack` `/crate` |
+| 👥 **Game nhiều người** | `/bacay` `/bingo` `/loto` `/masoi` (Ma Sói) `/xocdia` `/duangua` (đua ngựa) `/dovui` (đố vui) |
 | 💞 **Cộng đồng** | `/marry` `/hug` `/kiss` `/date` `/divorce` `/relationship` `/lixi` `/confession` `/noitu` `/ship` `/boi` |
 | 🏰 **Bang hội** | `/clan create·join·info·list·deposit·withdraw·kick·disband·war` (chiến tranh bang PvP) |
 | 🛒 **Chợ** | `/market view·mine·sell·buy·cancel` — mua bán đồ giữa người chơi (ký gửi) |
@@ -52,7 +52,7 @@ waguri/
 ├── src/
 │   ├── config/index.js       # ⚙️ Toàn bộ hằng số cân bằng + WAGURI_IMAGES
 │   ├── database.js           # Helper Supabase (gọi RPC)
-│   ├── lib/                  # embed, leveling, fatigue, lobby, couple, xoso, masoi/engine, ...
+│   ├── lib/                  # embed, leveling, fatigue, lobby, couple, loto, bingoPrefix, masoi/engine, ...
 │   ├── commands/{economy,games,fun,utility,admin}/*.js
 │   └── events/{ready,interactionCreate,messageCreate,guildCreate}.js
 ├── supabase/migrations/      # 0001 → 0036 (schema + RPC; đã áp qua Supabase)
@@ -78,7 +78,6 @@ waguri/
 | `CLIENT_ID` | ❌ | Tự suy từ token nếu bỏ trống |
 | `GUILD_ID` | ❌ | **Chỉ DEV** — đăng ký lệnh tức thì 1 server |
 | `SKIP_DEPLOY` | ❌ | `=1` để bỏ qua đăng ký lệnh mỗi lần restart (đặt sau lần deploy đầu) |
-| `XOSO_API_URL` | ❌ | Nguồn KQ XSMB tuỳ chỉnh; bỏ trống = dùng nguồn mặc định (repo + crawl) |
 
 ### 3) Database (1 lần)
 Chạy lần lượt các file trong `supabase/migrations/` (`0001` → `0036`) trên **Supabase SQL Editor**
@@ -101,10 +100,10 @@ npm test        # unit test
 
 ---
 
-## 🎰 Xổ số đề (XSMB thật)
-`/xoso` dò **2 số cuối giải đặc biệt XSMB** lúc **18h30 giờ VN** (scheduler tự chạy). Lấy KQ qua nhiều nguồn
-auto (repo cộng đồng + crawl minhngoc/xskt/xoso, đều **verify ngày**), lỗi thì owner nhập tay `/xoso ketqua`.
-*(Mô phỏng cho game private.)*
+## 🎱 Loto & Bingo (chơi trong voice)
+`/loto` mở phòng, mỗi người `.so` mua vé **5 số 01–90**, `.ds` xem danh sách, chủ phòng `.start`/`.end`.
+`/bingo` mở phòng, `.mua` mua vé, `.check` xem vé, chủ phòng `.start`/`.end` — máy tự gọi số.
+Cả hai **yêu cầu vào phòng voice** để mở game.
 
 ---
 
