@@ -26,6 +26,7 @@ module.exports = {
 
         const now = Date.now();
         const fatigue = conditionMultiplier(energy, user.health);
+        const jailedUntil = user.jailed_until && new Date(user.jailed_until).getTime() > now ? new Date(user.jailed_until).getTime() : null;
         const buffActive = user.buff_expires_at && new Date(user.buff_expires_at).getTime() > now;
         const premium = user.premium_until && new Date(user.premium_until).getTime() > now;
         const ev = getEventInfo();
@@ -48,6 +49,9 @@ module.exports = {
         if (user.clan_id) {
             const clan = await db.clanById(user.clan_id);
             if (clan) fields.push({ name: '🏰 Bang hội', value: `**${clan.name}** (Lv.${clanLevel(clan.xp)})`, inline: false });
+        }
+        if (jailedUntil) {
+            fields.unshift({ name: '🚓 Đang bị giam', value: `${user.jail_reason ? `**${user.jail_reason}** — ` : ''}thả <t:${Math.floor(jailedUntil / 1000)}:R>`, inline: false });
         }
 
         const embed = buildWaguriEmbed(interaction, premium ? 'jackpot' : 'info', {

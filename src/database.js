@@ -767,6 +767,36 @@ async function grantPremium(userId, days) {
 }
 
 // ============================================================
+//  GIAM GIỮ (jail) — chặn kiếm tiền/cờ bạc/trộm khi phạm pháp thất bại
+// ============================================================
+/** Lấy thông tin giam (nhẹ). Trả { jailed_until, jail_reason } hoặc null. */
+async function getJail(userId) {
+    try {
+        const { data, error } = await supabase.from('users')
+            .select('jailed_until, jail_reason').eq('user_id', userId).maybeSingle();
+        if (error) throw error;
+        return data;
+    } catch (error) {
+        console.error('[DATABASE ERROR] getJail():', error);
+        return null;
+    }
+}
+
+/** Atomic: thử nộp phạt, không đủ tiền thì giam. Trả {result:'fined'|'jailed'|'error', ...}. */
+async function jailOrFine(userId, fine, jailHours, reason) {
+    try {
+        const { data, error } = await supabase.rpc('jail_or_fine', {
+            p_user_id: userId, p_fine: fine, p_jail_hours: jailHours, p_reason: reason,
+        });
+        if (error) throw error;
+        return data;
+    } catch (error) {
+        console.error('[DATABASE ERROR] jailOrFine():', error);
+        return { result: 'error' };
+    }
+}
+
+// ============================================================
 //  COSMETIC (danh hiệu / màu hồ sơ)
 // ============================================================
 /** Đặt cosmetic (field: 'title' | 'profile_color'). Trả true/false. */
@@ -1093,6 +1123,9 @@ module.exports = {
     // ai quota & premium
     consumeAiQuota,
     grantPremium,
+    // jail
+    getJail,
+    jailOrFine,
     // cosmetic
     setCosmetic,
     // loans

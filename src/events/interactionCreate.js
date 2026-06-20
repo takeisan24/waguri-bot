@@ -1,6 +1,7 @@
 const { Events, MessageFlags } = require('discord.js');
 const { rateLimited } = require('../lib/ratelimit');
 const { isBanned } = require('../lib/bans');
+const { isBlocked, getJail } = require('../lib/jail');
 const { buildWaguriEmbed } = require('../lib/embed');
 
 module.exports = {
@@ -33,6 +34,18 @@ module.exports = {
                     description: 'Cậu đã bị chặn sử dụng bot~ Liên hệ admin nếu có nhầm lẫn nhé.'
                 });
                 return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+            }
+
+            // Chặn khi đang bị giam (chỉ kiểm tra với lệnh kiếm tiền/cờ bạc/trộm)
+            if (isBlocked(interaction.commandName)) {
+                const jail = await getJail(interaction.user.id);
+                if (jail) {
+                    const embed = buildWaguriEmbed(interaction, 'error', {
+                        title: '🚓・Cậu đang bị giam',
+                        description: `Cậu chưa thể làm việc này khi đang bị giam đâu~\n${jail.reason ? `Lý do: **${jail.reason}**\n` : ''}Được thả <t:${Math.floor(jail.until / 1000)}:R>. 🌸`
+                    });
+                    return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+                }
             }
 
             // Rate limit tổng (chống spam)

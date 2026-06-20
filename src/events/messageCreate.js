@@ -6,6 +6,7 @@ const { chatWithWaguri, onCooldown } = require('../lib/ai');
 const { handleMessage: handleNoiTu } = require('../lib/noitu');
 const { rateLimited } = require('../lib/ratelimit');
 const { isBanned } = require('../lib/bans');
+const { isBlocked, getJail } = require('../lib/jail');
 
 // Chat-leveling: thưởng xu/EXP khi chat (có cooldown + cap ngày chống farm)
 const chatCD = new Map();    // userId -> hết cooldown (ms)
@@ -104,6 +105,15 @@ module.exports = {
             if (rateLimited(message.author.id)) {
                 message.reply('Cậu thao tác hơi nhanh rồi~ chờ vài giây nhé! 🌸').catch(() => {});
                 return;
+            }
+
+            // Chặn khi đang bị giam (lệnh kiếm tiền/cờ bạc/trộm)
+            if (isBlocked(cmdName)) {
+                const jail = await getJail(message.author.id);
+                if (jail) {
+                    message.reply(`🚓 Cậu đang bị giam${jail.reason ? ` (**${jail.reason}**)` : ''}, được thả <t:${Math.floor(jail.until / 1000)}:R> nhé~ 🌸`).catch(() => {});
+                    return;
+                }
             }
 
             try {
