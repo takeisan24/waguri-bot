@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, MessageFlags } = require('discord.js');
+const { SlashCommandBuilder, MessageFlags, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType } = require('discord.js');
 const db = require('../../database.js');
 const config = require('../../config');
 const { isOwner } = require('../../lib/owner');
@@ -166,11 +166,29 @@ module.exports = {
             return interaction.editReply({ embeds: [embed] });
         }
         if (sub === 'resetuser') {
-            const ok = await db.resetUser(target.id);
-            const embed = buildWaguriEmbed(interaction, ok ? 'success' : 'error', {
-                description: ok ? `✅ Đã reset toàn bộ dữ liệu của <@${target.id}>.` : '❌ Thất bại.'
+            // Hành động hủy diệt -> bắt buộc xác nhận để tránh gõ nhầm
+            const confirmRow = new ActionRowBuilder().addComponents(
+                new ButtonBuilder().setCustomId('reset_yes').setLabel('Xóa sạch').setStyle(ButtonStyle.Danger),
+                new ButtonBuilder().setCustomId('reset_no').setLabel('Hủy').setStyle(ButtonStyle.Secondary));
+            const warn = buildWaguriEmbed(interaction, 'warning', {
+                description: `⚠️ Sắp **XÓA SẠCH** toàn bộ dữ liệu của <@${target.id}> — không thể hoàn tác. Xác nhận? (20s)`
             });
-            return interaction.editReply({ embeds: [embed] });
+            const msg = await interaction.editReply({ embeds: [warn], components: [confirmRow] });
+            try {
+                const btn = await msg.awaitMessageComponent({
+                    componentType: ComponentType.Button, time: 20000,
+                    filter: i => i.user.id === interaction.user.id,
+                });
+                if (btn.customId === 'reset_no') {
+                    return btn.update({ embeds: [buildWaguriEmbed(interaction, 'info', { description: 'Đã hủy, không xóa gì cả~ 🌸' })], components: [] });
+                }
+                const ok = await db.resetUser(target.id);
+                return btn.update({ embeds: [buildWaguriEmbed(interaction, ok ? 'success' : 'error', {
+                    description: ok ? `✅ Đã reset toàn bộ dữ liệu của <@${target.id}>.` : '❌ Thất bại.'
+                })], components: [] });
+            } catch {
+                return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'info', { description: 'Hết giờ xác nhận, không xóa gì cả~ 🌸' })], components: [] }).catch(() => {});
+            }
         }
     },
 };

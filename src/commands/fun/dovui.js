@@ -35,6 +35,7 @@ module.exports = {
         let won = false;
 
         collector.on('collect', async (m) => {
+            if (won) return; // đã có người thắng -> bỏ qua mọi tin nhắn sau
             if (!accepted.includes(norm(m.content))) return;
             won = true;
             collector.stop('won');
