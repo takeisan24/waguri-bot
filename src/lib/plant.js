@@ -63,11 +63,15 @@ async function fertilize(userId) {
     const plant = await db.getPlant(userId);
     if (!plant) return warn('Cậu chưa trồng cây nào~');
     const dead = await ensureAlive(plant); if (dead) return dead;
-    const r = await db.plantFertilize(userId, COST.FERT);
-    if (r.result === 'mature') return ok(`Bón phân (**${fmt(COST.FERT)}** ${C}) — cây vọt lên **trưởng thành** luôn! 🌳`);
-    if (r.result === 'ok') return ok(`Bón phân (**${fmt(COST.FERT)}** ${C}) giúp cây thêm 1 nước ngay 💧 (**${r.water}/3**).`);
+    const usedPhan = await db.takeItem(userId, 'phan_bon', 1); // có Phân Bón (từ nuôi heo) thì miễn phí
+    const cost = usedPhan ? 0 : COST.FERT;
+    const r = await db.plantFertilize(userId, cost);
+    const costStr = usedPhan ? 'bằng **Phân Bón** 💩 (miễn phí)' : `(**${fmt(COST.FERT)}** ${C})`;
+    if (r.result === 'mature') return ok(`Bón phân ${costStr} — cây vọt lên **trưởng thành** luôn! 🌳`);
+    if (r.result === 'ok') return ok(`Bón phân ${costStr} giúp cây thêm 1 nước ngay 💧 (**${r.water}/3**).`);
+    if (usedPhan) await db.giveItemAdmin(userId, 'phan_bon', 1); // hoàn phân nếu không thành
     if (r.result === 'not_growing') return warn('Cây đã trưởng thành rồi, khỏi bón nữa~');
-    if (r.result === 'insufficient') return warn(`Bón phân cần **${fmt(COST.FERT)}** ${C}~`);
+    if (r.result === 'insufficient') return warn(`Bón phân cần **${fmt(COST.FERT)}** ${C} (hoặc 1 **Phân Bón** từ nuôi heo)~`);
     return warn('Hổng bón được lúc này~');
 }
 
@@ -81,7 +85,8 @@ async function harvest(userId) {
     const r = await db.plantClaim(userId, secs(TIMINGS.HARVEST_MIN_MS), secs(TIMINGS.PEST_MAX_MS));
     if (r.result === 'ok') {
         await db.giveItemAdmin(userId, produceId(r.tier, r.is_flower), 1);
-        return ok(`Cậu thu hoạch được **${plant.type || (r.is_flower ? 'đoá hoa' : 'trái cây')}**! 🧺\nVào kho \`/eat\` (nếu là trái) hoặc \`/sell\` để bán lấy tiền nhé~`);
+        await db.giveItemAdmin(userId, 'cam_heo', 1); // rau/lá thừa làm cám cho heo
+        return ok(`Cậu thu hoạch được **${plant.type || (r.is_flower ? 'đoá hoa' : 'trái cây')}** và ít rau thừa làm **Cám Heo** 🌽! 🧺\nVào kho \`/eat\` (nếu là trái) hoặc \`/sell\` để bán lấy tiền nhé~`);
     }
     if (r.result === 'too_soon') return warn(`Cây vừa trưởng thành~ đợi thêm **${Math.ceil(r.wait / 60)} phút** rồi thu hoạch.`);
     if (r.result === 'pest') return errR('Cây để quá lâu (hơn 4 tiếng) bị sâu bọ phá mất trắng rồi 🐛 — trồng cây mới với `muagiong` nhé~');
@@ -117,7 +122,8 @@ async function stealPlant(thiefId, target) {
 
     const e = await db.spendEnergy(thiefId, STEAL.ENERGY);
     if (e < 0) return warn(`Cậu hết năng lượng để đi trộm rồi (cần ${STEAL.ENERGY} ⚡)~`);
-    if (!await db.addMoney(thiefId, -COST.STEAL_FEE, 'wallet')) return warn(`Cần **${fmt(COST.STEAL_FEE)}** ${C} mua đồ nghề đi trộm~`);
+    const usedTool = await db.takeItem(thiefId, 'do_trom', 1); // có Đồ Nghề Trộm thì khỏi tốn tiền
+    if (!usedTool && !await db.addMoney(thiefId, -COST.STEAL_FEE, 'wallet')) return warn(`Cần **${fmt(COST.STEAL_FEE)}** ${C} (hoặc 1 **Đồ Nghề Trộm**) để đi trộm~`);
 
     if (Math.random() < STEAL.SUCCESS) {
         const claim = await db.plantClaim(target.id, secs(TIMINGS.STEAL_MIN_MS), secs(TIMINGS.PEST_MAX_MS));
@@ -147,6 +153,7 @@ async function plantBox(userId, target) {
     const receiver = target && !target.bot ? target : null;
     const cd = await db.claimCooldown(userId, 'plantbox', 10);
     if (cd) return warn(`Mở Plantbox liên tục quá~ chờ một chút rồi mở tiếp <t:${Math.floor(cd / 1000)}:R> nhé.`);
+    if (await db.claimDailyCounter(userId, 'plantbox', 10) === -1) return warn('Cậu đã mở Plantbox đủ **10 lần hôm nay** rồi, mai quay lại nhé~ 🌸');
     if (!await db.addMoney(userId, -COST.BOX, 'wallet')) return warn(`Cần **${fmt(COST.BOX)}** ${C} để mở Plantbox~`);
 
     const x = Math.random();

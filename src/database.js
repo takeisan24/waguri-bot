@@ -484,6 +484,42 @@ async function consumeItem(userId, itemId) {
     }
 }
 
+/** Lấy bớt vật phẩm khỏi kho (atomic). Trả true nếu đủ. */
+async function takeItem(userId, itemId, qty = 1) {
+    try {
+        const { data, error } = await supabase.rpc('take_item', { p_user_id: userId, p_item_id: itemId, p_qty: qty });
+        if (error) throw error;
+        return data === true;
+    } catch (error) {
+        console.error('[DATABASE ERROR] takeItem():', error);
+        return false;
+    }
+}
+
+/** Chuyển vật phẩm giữa 2 người (atomic). Trả true nếu đủ. */
+async function transferItem(fromId, toId, itemId, qty = 1) {
+    try {
+        const { data, error } = await supabase.rpc('transfer_item', { p_from: fromId, p_to: toId, p_item_id: itemId, p_qty: qty });
+        if (error) throw error;
+        return data === true;
+    } catch (error) {
+        console.error('[DATABASE ERROR] transferItem():', error);
+        return false;
+    }
+}
+
+/** Tăng đếm lượt/ngày theo key. Trả số đã dùng (>=1) hoặc -1 nếu vượt cap. */
+async function claimDailyCounter(userId, key, max) {
+    try {
+        const { data, error } = await supabase.rpc('claim_daily_counter', { p_user_id: userId, p_key: key, p_max: max });
+        if (error) throw error;
+        return data;
+    } catch (error) {
+        console.error('[DATABASE ERROR] claimDailyCounter():', error);
+        return -1;
+    }
+}
+
 // ============================================================
 //  DAILY / BANK / LEADERBOARD (Sprint 2)
 // ============================================================
@@ -1255,6 +1291,10 @@ module.exports = {
     plantStealFail,
     plantSetDead,
     deletePlant,
+    // inventory helpers v2
+    takeItem,
+    transferItem,
+    claimDailyCounter,
     // cosmetic
     setCosmetic,
     // loans

@@ -54,13 +54,17 @@ async function feedPig(userId) {
     }
     if (pig.stage === 'slept') {
         if (!timeReady(pig)) return warn(`Heo vừa ngủ dậy chưa lâu~ đợi thêm **${waitMins(pig)} phút** rồi cho ăn lần 2 nhé.`);
-        const r = await db.pigMature(userId, COST.FEED2);
+        const usedCam = await db.takeItem(userId, 'cam_heo', 1); // ăn bằng cám (từ thu hoạch cây) -> miễn phí
+        const cost = usedCam ? 0 : COST.FEED2;
+        const r = await db.pigMature(userId, cost);
         if (r.result === 'ok') {
             const type = randType(r.tier);
             await db.pigSetType(userId, type);
-            return ok(`Cho ăn lần 2 (**${fmt(COST.FEED2)}** ${C}) xong — heo đã **trưởng thành**! 🎉\nĐó là **${type}** (giá trị **${fmt(r.tier)}** ${C}). Đợi 15 phút rồi \`banheo\` để chế biến & bán nhé~`);
+            const costMsg = usedCam ? 'bằng **Cám Heo** 🌽 (miễn phí)' : `(**${fmt(COST.FEED2)}** ${C})`;
+            return ok(`Cho ăn lần 2 ${costMsg} xong — heo đã **trưởng thành**! 🎉\nĐó là **${type}** (giá trị **${fmt(r.tier)}** ${C}). Đợi 15 phút rồi \`banheo\` để chế biến & bán nhé~`);
         }
-        if (r.result === 'insufficient') return warn(`Cho ăn lần 2 cần **${fmt(COST.FEED2)}** ${C}~`);
+        if (usedCam) await db.giveItemAdmin(userId, 'cam_heo', 1); // hoàn cám nếu không thành
+        if (r.result === 'insufficient') return warn(`Cho ăn lần 2 cần **${fmt(COST.FEED2)}** ${C} (hoặc 1 **Cám Heo** từ thu hoạch cây)~`);
         return warn('Chưa tới bước cho ăn lần 2~');
     }
     return warn(`Giờ chưa cho ăn được — hãy ${STAGE_HINT[pig.stage] || 'tiếp tục chu trình'} nhé~`);
@@ -82,7 +86,10 @@ async function sleepPig(userId) {
     const blocked = await blockIfSick(pig); if (blocked) return blocked;
     if (pig.stage !== 'bathed') return warn(`Chưa cho ngủ được — hãy ${STAGE_HINT[pig.stage] || 'tiếp tục chu trình'} nhé~`);
     if (!timeReady(pig)) return warn(`Heo vừa tắm xong~ đợi thêm **${waitMins(pig)} phút** rồi cho ngủ nhé.`);
-    if (await db.pigSetStage(userId, 'bathed', 'slept')) return ok('Heo ngủ ngon lành 😴🐷 Đợi 15 phút rồi `heoan` cho ăn lần 2 để heo trưởng thành nhé~');
+    if (await db.pigSetStage(userId, 'bathed', 'slept')) {
+        await db.giveItemAdmin(userId, 'phan_bon', 1); // phụ phẩm: nhặt được phân để bón cây
+        return ok('Heo ngủ ngon lành 😴🐷 Cậu dọn chuồng nhặt được **1 Phân Bón** 💩 (bón cây miễn phí)!\nĐợi 15 phút rồi `heoan` cho ăn lần 2 để heo trưởng thành nhé~');
+    }
     return warn('Hổng cho ngủ được lúc này~');
 }
 
@@ -135,7 +142,8 @@ async function stealPig(thiefId, target) {
 
     const e = await db.spendEnergy(thiefId, STEAL.ENERGY);
     if (e < 0) return warn(`Cậu hết năng lượng để đi trộm rồi (cần ${STEAL.ENERGY} ⚡)~`);
-    if (!await db.addMoney(thiefId, -COST.STEAL, 'wallet')) return warn(`Cần **${fmt(COST.STEAL)}** ${C} để sắm đồ nghề đi trộm~`);
+    const usedTool = await db.takeItem(thiefId, 'do_trom', 1); // có Đồ Nghề Trộm thì khỏi tốn tiền
+    if (!usedTool && !await db.addMoney(thiefId, -COST.STEAL, 'wallet')) return warn(`Cần **${fmt(COST.STEAL)}** ${C} (hoặc 1 **Đồ Nghề Trộm** chế từ gỗ+quặng) để đi trộm~`);
 
     if (Math.random() < STEAL.SUCCESS) {
         const claim = await db.pigClaimSale(target.id, Math.floor(TIMINGS.STEAL_AGE_MS / 1000));
@@ -165,6 +173,7 @@ async function pigBox(userId, target) {
     const receiver = target && !target.bot ? target : null;
     const cd = await db.claimCooldown(userId, 'pigbox', 10);
     if (cd) return warn(`Mở Pigbox liên tục quá~ chờ một chút rồi mở tiếp <t:${Math.floor(cd / 1000)}:R> nhé.`);
+    if (await db.claimDailyCounter(userId, 'pigbox', 10) === -1) return warn('Cậu đã mở Pigbox đủ **10 lần hôm nay** rồi, mai quay lại nhé~ 🌸');
     if (!await db.addMoney(userId, -COST_PIGBOX, 'wallet')) return warn(`Cần **${fmt(COST_PIGBOX)}** ${C} để mở Pigbox~`);
 
     const x = Math.random();
