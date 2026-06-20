@@ -27,6 +27,7 @@ export default function Home() {
           <nav className="hidden md:flex items-center space-x-8 text-sm font-medium text-slate-300">
             <a href="#features" className="hover:text-pink-300 transition-colors duration-200">Tính Năng</a>
             <a href="#commands" className="hover:text-pink-300 transition-colors duration-200">Trải Nghiệm</a>
+            <Link href="/wiki" className="hover:text-pink-300 transition-colors duration-200">Wiki</Link>
             <Link href="/tos" className="hover:text-pink-300 transition-colors duration-200">Điều Khoản</Link>
             <Link href="/privacy" className="hover:text-pink-300 transition-colors duration-200">Bảo Mật</Link>
           </nav>
@@ -184,6 +185,7 @@ export default function Home() {
             <p className="text-center md:text-left">Made with 🌸 for Vietnamese Discord communities.</p>
           </div>
           <div className="flex flex-wrap justify-center gap-8 text-[13px]">
+            <Link href="/wiki" className="hover:text-pink-300 transition-colors">Wiki Hướng Dẫn</Link>
             <Link href="/tos" className="hover:text-pink-300 transition-colors">Điều Khoản Dịch Vụ</Link>
             <Link href="/privacy" className="hover:text-pink-300 transition-colors">Chính Sách Bảo Mật</Link>
             <a
