@@ -83,8 +83,9 @@ const CATEGORIES = [
         ['clan', 'lập bang / quỹ chung / ⚔️ chiến tranh bang (create·join·info·list·deposit·withdraw·kick·disband·war)'],
     ] },
     { name: '🏆 Khác', cmds: [
-        ['leaderboard', 'bảng xếp hạng'],
+        ['leaderboard', 'bảng xếp hạng (server / toàn cầu)'],
         ['event', 'xem sự kiện x2 đang diễn ra 🎉'],
+        ['vote', 'vote trên Top.gg nhận thưởng 💝'],
         ['invite', 'mời Waguri về server của cậu 🌸'],
         ['ping', 'độ trễ & trạng thái bot'],
         ['server', 'thông tin server'],

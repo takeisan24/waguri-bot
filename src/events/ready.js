@@ -24,6 +24,30 @@ async function cleanupDuplicateGuildCommands(client) {
     }
 }
 
+// ---------------------------------------------------------
+// Top.gg autoposter: định kỳ gửi số server lên Top.gg (cần TOPGG_TOKEN).
+// Không có token -> bỏ qua (no-op). Dùng global fetch (Node >= 18).
+// ---------------------------------------------------------
+function startTopggAutopost(client) {
+    const token = process.env.TOPGG_TOKEN;
+    if (!token) return;
+    const post = async () => {
+        try {
+            const res = await fetch(`https://top.gg/api/bots/${client.user.id}/stats`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: token },
+                body: JSON.stringify({ server_count: client.guilds.cache.size }),
+            });
+            if (res.ok) console.log(`[TOPGG] Đã cập nhật server_count = ${client.guilds.cache.size}`);
+            else console.error(`[TOPGG] autopost lỗi HTTP ${res.status}`);
+        } catch (e) {
+            console.error('[TOPGG] autopost lỗi:', e?.message || e);
+        }
+    };
+    post();
+    setInterval(post, 30 * 60 * 1000).unref(); // mỗi 30 phút
+}
+
 // Tạo danh sách status (gồm số liệu động: thành viên, số server)
 function buildStatuses(client) {
     const guilds = client.guilds.cache.size;
@@ -53,6 +77,9 @@ module.exports = {
 
         // Dọn lệnh guild thừa ở nền (không chặn việc set status)
         cleanupDuplicateGuildCommands(client).catch(e => console.error('[SYSTEM] Lỗi dọn lệnh guild:', e?.message || e));
+
+        // Gửi số server lên Top.gg định kỳ (nếu có TOPGG_TOKEN)
+        startTopggAutopost(client);
 
         let i = 0;
         const rotate = () => {

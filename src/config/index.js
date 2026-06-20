@@ -184,4 +184,7 @@ module.exports = {
 
     // Rate limit tổng (chống spam lệnh / quá tải DB)
     RATE_LIMIT: { MAX: 5, WINDOW_MS: 5000 }, // tối đa 5 lệnh / 5 giây / người
+
+    // Vote trên Top.gg (cần TOPGG_TOKEN để check & autopost). Vote lại được sau 12h.
+    VOTE: { REWARD: 5000, EXP: 50, COOLDOWN_HOURS: 12 },
 };
