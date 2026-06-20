@@ -37,6 +37,10 @@ function buildStatuses(client) {
         { type: ActivityType.Listening, name: '/ask · @Waguri để trò chuyện' },
         { type: ActivityType.Watching, name: 'Kaoruko ăn bánh nhà Rintaro 🍰' },
         { type: ActivityType.Playing, name: '/work · /fish · /daily mỗi ngày' },
+        { type: ActivityType.Playing, name: '/loto · /bingo · /masoi cùng bạn bè 🎲' },
+        { type: ActivityType.Competing, name: 'ván Ma Sói gay cấn 🐺' },
+        { type: ActivityType.Watching, name: 'tiệm bánh Gekka 月下 🧁' },
+        { type: ActivityType.Listening, name: '/help để xem tất cả lệnh 🌸' },
     ];
 }
 
