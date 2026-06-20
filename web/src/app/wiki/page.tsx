@@ -153,7 +153,7 @@ export default function Wiki() {
               { c: "/heo ban · w!banheo", d: "chế biến & bán heo trưởng thành" },
               { c: "/heo chuabenh · w!chuabenh", d: "chữa bệnh cho heo (1.000)" },
               { c: "/heo trom · w!tromheo @ai", d: "trộm heo trưởng thành của người khác (rủi ro!)" },
-              { c: "/heo box · w!pigbox [@ai]", d: "mở/tặng hộp may mắn Pigbox (2.400)" },
+              { c: "/heo box · w!pigbox [@ai]", d: "mở/tặng hộp may mắn Pigbox (2.400, tối đa 10 lần/ngày)" },
             ]}
           />
         </Card>
@@ -174,9 +174,35 @@ export default function Wiki() {
               { c: "/cay hoisinh · w!hoisinh", d: "hồi sinh cây đã chết (1.000)" },
               { c: "/cay phacay · w!phacay", d: "phá cây hiện tại để trồng cây mới" },
               { c: "/cay trom · w!trom @ai", d: "trộm cây trưởng thành của người khác (rủi ro!)" },
-              { c: "/cay box · w!plantbox [@ai]", d: "mở/tặng hộp may mắn Plantbox (240)" },
+              { c: "/cay box · w!plantbox [@ai]", d: "mở/tặng hộp may mắn Plantbox (240, tối đa 10 lần/ngày)" },
             ]}
           />
+        </Card>
+
+        <Card title="Vòng khép kín nông trại 🔁" emoji="🔁">
+          <p>
+            Nuôi heo và trồng cây liên kết với nhau và với việc kiếm nguyên liệu, giúp tiết kiệm tiền:
+          </p>
+          <ul className="list-disc pl-5 space-y-1.5 text-slate-400">
+            <li>
+              <strong>Thu hoạch cây</strong> → nhận thêm <strong>Cám Heo</strong> 🌽 → dùng cho heo ăn lần 2{" "}
+              <em>miễn phí</em> (thay vì 500đ).
+            </li>
+            <li>
+              <strong>Nuôi heo</strong> (cho ngủ) → nhặt được <strong>Phân Bón</strong> 💩 → bón cây <em>miễn phí</em>{" "}
+              (thay vì 200đ).
+            </li>
+            <li>
+              <code>/chop</code> + <code>/mine</code> → <code>/craft</code> ra <strong>Đồ Nghề Trộm</strong> 🧰 → đi trộm
+              heo/cây <em>khỏi tốn tiền</em> mua đồ.
+            </li>
+            <li>
+              Nghề <strong>Nông dân nông trại</strong> mở khoá ở Lv.5 trong <code>/jobs</code> — lương khá, rủi ro thấp.
+            </li>
+            <li>
+              <code>/tangdo @ai &lt;vật phẩm&gt;</code> — tặng vật phẩm (hoa, thịt, đồ ăn...) cho người khác.
+            </li>
+          </ul>
         </Card>
 
         <Card title="Hệ giam 🚓" emoji="🚓">
