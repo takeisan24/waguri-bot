@@ -13,6 +13,15 @@ const { PLANT_CMDS, handlePlantPrefix } = require('../lib/plant');
 // Chat-leveling: thưởng xu/EXP khi chat (có cooldown + cap ngày chống farm)
 const chatCD = new Map();    // userId -> hết cooldown (ms)
 const chatDaily = new Map(); // userId -> { date, count }
+
+// Dọn rác định kỳ (tránh phình RAM trên bot public). .unref() để không giữ tiến trình sống.
+setInterval(() => {
+    const now = Date.now();
+    const today = new Date().toISOString().slice(0, 10);
+    for (const [uid, exp] of chatCD) if (exp < now) chatCD.delete(uid);
+    for (const [uid, d] of chatDaily) if (d.date !== today) chatDaily.delete(uid);
+}, 30 * 60 * 1000).unref();
+
 const rand = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
 function grantChatReward(message) {
     if (message.content.trim().length < config.CHAT.MIN_LEN) return;

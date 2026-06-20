@@ -9,7 +9,21 @@ const providers = {
 };
 
 const contexts = new Map();  // channelId -> [{role,content}]
+const ctxSeen = new Map();   // channelId -> lần hoạt động gần nhất (ms) — để dọn ngữ cảnh cũ
 const cooldowns = new Map(); // userId -> timestamp hết cooldown
+
+// Dọn rác định kỳ: tránh phình RAM trên bot public chạy lâu (nhiều kênh/người).
+// .unref() để timer không giữ tiến trình sống khi tắt bot.
+const CONTEXT_TTL_MS = 60 * 60 * 1000; // 1h không trò chuyện -> xoá ngữ cảnh kênh
+setInterval(() => {
+    const now = Date.now();
+    for (const [cid, t] of ctxSeen) {
+        if (now - t > CONTEXT_TTL_MS) { contexts.delete(cid); ctxSeen.delete(cid); }
+    }
+    for (const [uid, exp] of cooldowns) {
+        if (exp < now) cooldowns.delete(uid);
+    }
+}, 10 * 60 * 1000).unref();
 
 const escapeRegex = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -39,9 +53,12 @@ function onCooldown(userId) {
  * Trả object: {ok:true, reply} | {ok:false, reason:'quota', used, cap, premium} | {ok:false, reason:'error'}
  */
 async function chatWithWaguri(channelId, userId, userName, userText) {
-    // Quota AI hằng ngày (Premium nhiều lượt hơn). DB lỗi -> không chặn (lỗi hạ tầng).
+    // Quota AI hằng ngày (Premium nhiều lượt hơn).
+    // FAIL-CLOSED: DB lỗi (q == null) -> KHÔNG gọi AI, tránh rò rỉ chi phí / lạm dụng khi quota
+    // không đếm được. (Khác cooldown game vốn fail-open vì không tốn tiền.)
     const q = await db.consumeAiQuota(userId, config.AI.FREE_DAILY, config.AI.PREMIUM_DAILY);
-    if (q && q.allowed === false) {
+    if (!q) return { ok: false, reason: 'error' };
+    if (q.allowed === false) {
         return { ok: false, reason: 'quota', used: q.used, cap: q.cap, premium: q.premium };
     }
 
@@ -73,6 +90,7 @@ async function chatWithWaguri(channelId, userId, userName, userText) {
     if (history.length > max) history = history.slice(history.length - max);
     if (history[0] && history[0].role === 'assistant') history = history.slice(1);
     contexts.set(channelId, history);
+    ctxSeen.set(channelId, Date.now()); // mốc hoạt động để dọn ngữ cảnh cũ
 
     return { ok: true, reply };
 }
