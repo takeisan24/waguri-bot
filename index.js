@@ -89,7 +89,9 @@ if (process.env.SKIP_DEPLOY === '1') {
             console.log(`[SYSTEM] Đăng ký ${commandsAPI.length} lệnh (${guildId ? `guild ${guildId} - tức thì` : 'global'})...`);
             await rest.put(route, { body: commandsAPI });
 
-            // Dùng GUILD_ID (dev) thì DỌN lệnh global để tránh hiện 2 dòng trong menu
+            // Dùng GUILD_ID (dev) thì DỌN lệnh global để tránh hiện 2 dòng trong menu.
+            // Chiều ngược lại (PROD global -> dọn lệnh guild thừa) xử lý ở src/events/ready.js,
+            // vì lúc này chưa biết bot đang ở những guild nào (cần client đã ready).
             if (guildId) {
                 await rest.put(Routes.applicationCommands(clientId), { body: [] });
                 console.log('[SYSTEM] Đã dọn lệnh global (tránh trùng).');

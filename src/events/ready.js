@@ -2,6 +2,28 @@ const { Events, ActivityType } = require('discord.js');
 
 const ROTATE_MS = 25_000; // đổi status mỗi 25 giây
 
+// ---------------------------------------------------------
+// Tự dọn lệnh GUILD thừa -> chống slash command hiện 2 dòng.
+// Ở PROD bot đăng ký GLOBAL (index.js). Nếu trước đây từng đăng ký theo
+// guild (lúc dev), bản guild đó vẫn còn -> mỗi lệnh hiện 2 lần (1 global + 1 guild).
+// Khi không dùng GUILD_ID (chế độ global), quét mọi guild và xoá lệnh guild thừa.
+// Idempotent: guild đã sạch trả về 0 lệnh -> bỏ qua, không gọi API ghi.
+// ---------------------------------------------------------
+async function cleanupDuplicateGuildCommands(client) {
+    if (process.env.GUILD_ID) return; // chế độ dev theo guild -> giữ nguyên, không đụng
+    for (const guild of client.guilds.cache.values()) {
+        try {
+            const cmds = await guild.commands.fetch(); // chỉ trả lệnh ĐĂNG KÝ RIÊNG theo guild, không gồm global
+            if (cmds.size > 0) {
+                await guild.commands.set([]);
+                console.log(`[SYSTEM] Đã dọn ${cmds.size} lệnh guild thừa ở "${guild.name}" (${guild.id}) — tránh hiện 2 dòng.`);
+            }
+        } catch (e) {
+            console.error(`[SYSTEM] Không dọn được lệnh guild ${guild.id}:`, e?.message || e);
+        }
+    }
+}
+
 // Tạo danh sách status (gồm số liệu động: thành viên, số server)
 function buildStatuses(client) {
     const guilds = client.guilds.cache.size;
@@ -24,6 +46,9 @@ module.exports = {
     execute(client) {
         console.log(`Ready! Logged in as ${client.user.tag}`);
         client.user.setStatus('online');
+
+        // Dọn lệnh guild thừa ở nền (không chặn việc set status)
+        cleanupDuplicateGuildCommands(client).catch(e => console.error('[SYSTEM] Lỗi dọn lệnh guild:', e?.message || e));
 
         let i = 0;
         const rotate = () => {
