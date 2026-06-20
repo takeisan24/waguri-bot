@@ -21,7 +21,7 @@ module.exports = {
                 PermissionFlagsBits.UseExternalEmojis,
                 PermissionFlagsBits.ModerateMembers, // tạm giam (timeout) khi bị công an bắt
                 PermissionFlagsBits.ManageChannels,   // /setup tạo phòng riêng
-                PermissionFlagsBits.ManageRoles,      // gán role (tính năng sắp tới)
+                // ManageRoles: bỏ tới khi có tính năng role-reward (least privilege; tránh admin ngại add bot)
             ],
         });
         const embed = buildWaguriEmbed(interaction, 'info', {

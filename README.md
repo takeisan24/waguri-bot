@@ -14,7 +14,7 @@ chơi minigame nhiều người, kết đôi, buôn bán… — tất cả bằn
 
 ---
 
-## ✨ Tính năng (≈72 lệnh)
+## ✨ Tính năng (≈75 lệnh)
 
 | Nhóm | Lệnh tiêu biểu |
 |---|---|
@@ -55,7 +55,7 @@ waguri/
 │   ├── lib/                  # embed, leveling, fatigue, lobby, couple, loto, bingoPrefix, masoi/engine, ...
 │   ├── commands/{economy,games,fun,utility,admin}/*.js
 │   └── events/{ready,interactionCreate,messageCreate,guildCreate}.js
-├── supabase/migrations/      # 0001 → 0036 (schema + RPC; đã áp qua Supabase)
+├── supabase/migrations/      # 0001 → 0041 (schema + RPC; đã áp qua Supabase)
 └── test/*.test.js            # Unit test (leveling, fatigue, amount, masoi, sprint3)
 ```
 
@@ -80,7 +80,7 @@ waguri/
 | `SKIP_DEPLOY` | ❌ | `=1` để bỏ qua đăng ký lệnh mỗi lần restart (đặt sau lần deploy đầu) |
 
 ### 3) Database (1 lần)
-Chạy lần lượt các file trong `supabase/migrations/` (`0001` → `0036`) trên **Supabase SQL Editor**
+Chạy lần lượt các file trong `supabase/migrations/` (`0001` → `0041`) trên **Supabase SQL Editor**
 (hoặc Supabase CLI). Đã được thiết kế idempotent (`create ... if not exists` / `or replace`).
 
 ### 4) Chạy
