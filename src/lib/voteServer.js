@@ -101,10 +101,12 @@ async function buildProfilePayload(client, id) {
     };
 }
 
-// Bảng xếp hạng công khai (top theo tài sản hoặc cấp).
-async function buildLeaderboardPayload(client, type, limit) {
+// Bảng xếp hạng (top theo tài sản hoặc cấp). guildId -> theo server, null -> toàn cầu.
+async function buildLeaderboardPayload(client, type, limit, guildId = null) {
     const sort = type === 'level' ? 'level' : 'networth';
-    const rows = await db.getLeaderboard(sort, limit);
+    const rows = guildId
+        ? await db.getLeaderboardGuild(sort, limit, guildId)
+        : await db.getLeaderboard(sort, limit);
     const out = [];
     for (const r of rows) {
         let username = 'Người chơi', avatar = null;
@@ -176,10 +178,17 @@ function startVoteServer(client) {
                     const q = new URL(req.url, 'http://local');
                     const type = q.searchParams.get('type') === 'level' ? 'level' : 'wealth';
                     const limit = Math.min(Math.max(Number(q.searchParams.get('limit')) || 10, 1), 25);
-                    const key = `lb:${type}:${limit}`;
+                    const guildRaw = q.searchParams.get('guild');
+                    const guild = guildRaw && /^\d{5,25}$/.test(guildRaw) ? guildRaw : null;
+                    const key = `lb:${type}:${limit}:${guild || 'global'}`;
                     let data = cacheGet(key);
-                    if (!data) { data = await buildLeaderboardPayload(client, type, limit); cacheSet(key, data); }
+                    if (!data) { data = await buildLeaderboardPayload(client, type, limit, guild); cacheSet(key, data); }
                     res.writeHead(200, JSONH); res.end(JSON.stringify(data));
+                    return;
+                }
+                if (req.url.startsWith('/api/guilds')) {
+                    // ID các server bot đang ở (để web lọc "server chung" với user). Chỉ ID -> không lộ tên.
+                    res.writeHead(200, JSONH); res.end(JSON.stringify({ ids: client.guilds.cache.map(g => g.id) }));
                     return;
                 }
                 res.writeHead(404, JSONH); res.end('{"error":"not_found"}');

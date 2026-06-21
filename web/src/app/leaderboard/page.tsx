@@ -15,9 +15,10 @@ const MEDALS = ["🥇", "🥈", "🥉"];
 
 type Row = { id: string; username: string; avatar: string | null; value: number };
 
-async function getBoard(type: "wealth" | "level"): Promise<Row[]> {
+async function getBoard(type: "wealth" | "level", guild?: string): Promise<Row[]> {
   try {
-    const res = await fetch(`${API}/api/leaderboard?type=${type}&limit=10`, { next: { revalidate: 60 } });
+    const url = `${API}/api/leaderboard?type=${type}&limit=10${guild ? `&guild=${encodeURIComponent(guild)}` : ""}`;
+    const res = await fetch(url, { next: { revalidate: 60 } });
     if (!res.ok) return [];
     const d = await res.json();
     return d.rows || [];
@@ -62,8 +63,15 @@ function Board({ title, rows, suffix = "", prefix = "" }: { title: string; rows:
   );
 }
 
-export default async function LeaderboardPage() {
-  const [wealth, level] = await Promise.all([getBoard("wealth"), getBoard("level")]);
+export default async function LeaderboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ guild?: string; name?: string }>;
+}) {
+  const sp = await searchParams;
+  const guild = sp.guild && /^\d{5,25}$/.test(sp.guild) ? sp.guild : undefined;
+  const serverName = sp.name ? decodeURIComponent(sp.name) : null;
+  const [wealth, level] = await Promise.all([getBoard("wealth", guild), getBoard("level", guild)]);
 
   return (
     <div className="relative min-h-screen flex flex-col bg-[#0d0812] text-slate-200 overflow-x-hidden">
@@ -77,8 +85,19 @@ export default async function LeaderboardPage() {
 
       <main className="relative flex-1 w-full max-w-4xl mx-auto px-6 py-8 z-10 space-y-6">
         <div className="text-center space-y-1">
-          <h1 className="text-3xl md:text-4xl font-black text-white">🏆 Bảng xếp hạng Waguri</h1>
-          <p className="text-slate-400 text-sm">Top toàn cầu — bấm vào tên để xem hồ sơ chi tiết.</p>
+          <h1 className="text-3xl md:text-4xl font-black text-white">
+            🏆 {guild ? "Bảng xếp hạng server" : "Bảng xếp hạng Waguri"}
+          </h1>
+          <p className="text-slate-400 text-sm">
+            {guild
+              ? `${serverName ? `Server ${serverName} — ` : ""}bấm vào tên để xem hồ sơ.`
+              : "Top toàn cầu — bấm vào tên để xem hồ sơ chi tiết."}
+          </p>
+          {guild ? (
+            <Link href="/leaderboard" className="inline-block text-xs text-pink-300 hover:underline pt-1">
+              ← Xem bảng toàn cầu
+            </Link>
+          ) : null}
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <Board title="💎 Đại gia (tài sản)" rows={wealth} suffix=" VNĐ" />

@@ -30,6 +30,9 @@ export default async function Dashboard() {
   const { id, username, avatar } = getDiscordIdentity(user);
   if (!id) redirect("/login");
 
+  const guilds =
+    (user.user_metadata?.guilds as { id: string; name: string; icon: string | null }[] | undefined) ?? [];
+
   const admin = createAdminClient();
   const { data: row } = await admin.from("users").select("*").eq("user_id", id).single();
 
@@ -161,9 +164,27 @@ export default async function Dashboard() {
           </>
         )}
 
+        {guilds.length > 0 ? (
+          <div className="glass-panel rounded-3xl p-6 space-y-3 border border-pink-300/10">
+            <h2 className="text-lg font-extrabold text-white">🏆 Bảng xếp hạng server của bạn</h2>
+            <p className="text-xs text-slate-400">Các server cậu tham gia mà Waguri cũng có mặt — bấm để xem BXH riêng:</p>
+            <div className="flex flex-wrap gap-2">
+              {guilds.map((g) => (
+                <Link
+                  key={g.id}
+                  href={`/leaderboard?guild=${g.id}&name=${encodeURIComponent(g.name)}`}
+                  className="px-4 py-2 rounded-full text-xs font-bold border border-pink-300/20 text-pink-100 hover:border-pink-300/50 bg-pink-500/5 transition-all"
+                >
+                  {g.name}
+                </Link>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
         <div className="text-center">
           <Link href="/leaderboard" className="text-sm text-pink-300 hover:underline">
-            🏆 Xem bảng xếp hạng
+            🏆 Xem bảng xếp hạng toàn cầu
           </Link>
         </div>
       </main>

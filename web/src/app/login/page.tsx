@@ -14,7 +14,7 @@ export default function LoginPage() {
       provider: "discord",
       options: {
         redirectTo: `${location.origin}/auth/callback`,
-        scopes: "identify",
+        scopes: "identify guilds",
       },
     });
     if (error) setLoading(false);
