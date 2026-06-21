@@ -53,3 +53,4 @@ backups/
 .claude/
 .omc/
 prompt.md
+.vercel
