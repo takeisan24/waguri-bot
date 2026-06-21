@@ -13,6 +13,26 @@ const { logError } = require('./logger');
 
 const fmt = n => Number(n).toLocaleString('vi-VN');
 
+// Số server + thành viên toàn bot (gộp mọi shard nếu có) — cho widget công khai trên web.
+async function getPublicStats(client) {
+    if (client.shard) {
+        try {
+            const [servers, members] = await Promise.all([
+                client.shard.fetchClientValues('guilds.cache.size'),
+                client.shard.broadcastEval(c => c.guilds.cache.reduce((s, g) => s + (g.memberCount || 0), 0)),
+            ]);
+            return {
+                servers: servers.reduce((s, n) => s + (n || 0), 0),
+                users: members.reduce((s, n) => s + (n || 0), 0),
+            };
+        } catch { /* fallback xuống tính cục bộ */ }
+    }
+    return {
+        servers: client.guilds.cache.size,
+        users: client.guilds.cache.reduce((s, g) => s + (g.memberCount || 0), 0),
+    };
+}
+
 // Cộng thưởng cho 1 lượt vote. Dùng CHUNG cooldown 'vote_reward' với lệnh /vote
 // (claim nguyên tử) -> không bao giờ phát thưởng trùng dù user vừa bấm /vote.
 async function grantVoteReward(client, userId, isWeekend) {
@@ -47,9 +67,21 @@ function startVoteServer(client) {
     // Khi chạy sharding: chỉ shard 0 bind cổng (tránh nhiều process tranh cùng port).
     if (client.shard && !client.shard.ids.includes(0)) return;
 
-    const server = http.createServer((req, res) => {
-        // Health check (uptime ping)
+    const server = http.createServer(async (req, res) => {
         if (req.method === 'GET') {
+            // Số liệu công khai cho widget trên web (CORS mở vì chỉ đọc, không nhạy cảm)
+            if (req.url.startsWith('/stats')) {
+                res.setHeader('Access-Control-Allow-Origin', '*');
+                try {
+                    const { servers, users } = await getPublicStats(client);
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ servers, users }));
+                } catch {
+                    res.writeHead(500); res.end();
+                }
+                return;
+            }
+            // Health check (uptime ping)
             res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
             res.end('Waguri OK 🌸');
             return;
