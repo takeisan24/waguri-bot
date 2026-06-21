@@ -134,6 +134,7 @@ const CATEGORIES: Cat[] = [
 
 export default function CommandsExplorer() {
   const [q, setQ] = useState("");
+  const [open, setOpen] = useState<string | null>(null);
   const query = q.trim().toLowerCase();
 
   const filtered = CATEGORIES.map((cat) => ({
@@ -162,15 +163,36 @@ export default function CommandsExplorer() {
           {filtered.map((cat) => (
             <section key={cat.name} className="glass-panel rounded-2xl p-5 border border-pink-300/10 space-y-2.5">
               <h2 className="text-base font-extrabold text-white">{cat.name}</h2>
-              <ul className="space-y-1.5">
-                {cat.cmds.map(([c, d]) => (
-                  <li key={c} className="flex flex-col sm:flex-row sm:items-baseline gap-x-3">
-                    <code className="text-pink-300 bg-pink-500/10 border border-pink-300/15 rounded px-2 py-0.5 text-[13px] whitespace-nowrap">
-                      /{c}
-                    </code>
-                    <span className="text-slate-400 text-sm">{d}</span>
-                  </li>
-                ))}
+              <ul className="space-y-0.5">
+                {cat.cmds.map(([c, d]) => {
+                  const expanded = open === c;
+                  return (
+                    <li key={c}>
+                      <button
+                        onClick={() => setOpen(expanded ? null : c)}
+                        className="w-full text-left flex flex-col sm:flex-row sm:items-baseline gap-x-3 rounded px-2 py-1.5 hover:bg-pink-500/5 transition-colors"
+                        aria-expanded={expanded}
+                      >
+                        <code className="text-pink-300 bg-pink-500/10 border border-pink-300/15 rounded px-2 py-0.5 text-[13px] whitespace-nowrap">
+                          /{c}
+                        </code>
+                        <span className="text-slate-400 text-sm">{d}</span>
+                      </button>
+                      {expanded ? (
+                        <div className="ml-2 mb-1.5 pl-3 border-l-2 border-pink-300/25 text-xs text-slate-400 space-y-1 py-1">
+                          <p>{d}.</p>
+                          <p>
+                            Cách dùng: <code className="text-pink-200">/{c}</code> · cũng được{" "}
+                            <code className="text-pink-200">w!{c}</code>
+                          </p>
+                          <p>
+                            Gõ <code className="text-pink-200">/help {c}</code> trong Discord để xem chi tiết tham số & lệnh con.
+                          </p>
+                        </div>
+                      ) : null}
+                    </li>
+                  );
+                })}
               </ul>
             </section>
           ))}
