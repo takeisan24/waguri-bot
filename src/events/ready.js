@@ -41,28 +41,49 @@ async function getTotalGuildCount(client) {
 }
 
 // ---------------------------------------------------------
-// Top.gg autoposter: định kỳ gửi TỔNG số server lên Top.gg (cần TOPGG_TOKEN).
-// Không có token -> bỏ qua (no-op). Dùng global fetch (Node >= 18).
-// Khi sharding: chỉ shard 0 post (gửi tổng + shard_count) để tránh ghi đè lẫn nhau.
+// Stats autoposter ĐA NỀN TẢNG: gửi TỔNG số server lên các bot-list đã cấu hình token.
+// top.gg (TOPGG_TOKEN) · discordbotlist.com (DBL_TOKEN) · discord.bots.gg (DBGG_TOKEN).
+// Mỗi cái no-op nếu thiếu token. Khi sharding: chỉ shard 0 post (gửi tổng + shard_count).
 // ---------------------------------------------------------
-function startTopggAutopost(client) {
-    const token = process.env.TOPGG_TOKEN;
-    if (!token) return;
+function startStatsAutopost(client) {
     if (client.shard && !client.shard.ids.includes(0)) return; // chỉ 1 shard chịu trách nhiệm post
+
+    const targets = [
+        {
+            name: 'Top.gg', token: process.env.TOPGG_TOKEN,
+            url: id => `https://top.gg/api/bots/${id}/stats`,
+            body: (servers, shards) => shards ? { server_count: servers, shard_count: shards } : { server_count: servers },
+        },
+        {
+            name: 'DiscordBotList', token: process.env.DBL_TOKEN,
+            url: id => `https://discordbotlist.com/api/v1/bots/${id}/stats`,
+            body: (servers) => ({ guilds: servers }),
+        },
+        {
+            name: 'Discord.Bots.gg', token: process.env.DBGG_TOKEN,
+            url: id => `https://discord.bots.gg/api/v1/bots/${id}/stats`,
+            body: (servers, shards) => shards ? { guildCount: servers, shardCount: shards } : { guildCount: servers },
+        },
+    ].filter(t => t.token);
+    if (!targets.length) return;
+
     const post = async () => {
-        try {
-            const server_count = await getTotalGuildCount(client);
-            const payload = { server_count };
-            if (client.shard) payload.shard_count = client.shard.count;
-            const res = await fetch(`https://top.gg/api/bots/${client.user.id}/stats`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', Authorization: token },
-                body: JSON.stringify(payload),
-            });
-            if (res.ok) console.log(`[TOPGG] Đã cập nhật server_count = ${server_count}`);
-            else console.error(`[TOPGG] autopost lỗi HTTP ${res.status}`);
-        } catch (e) {
-            console.error('[TOPGG] autopost lỗi:', e?.message || e);
+        let servers;
+        try { servers = await getTotalGuildCount(client); }
+        catch (e) { console.error('[STATS] không đếm được guild:', e?.message || e); return; }
+        const shards = client.shard ? client.shard.count : undefined;
+        for (const t of targets) {
+            try {
+                const res = await fetch(t.url(client.user.id), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Authorization: t.token },
+                    body: JSON.stringify(t.body(servers, shards)),
+                });
+                if (res.ok) console.log(`[STATS] ${t.name}: server_count = ${servers}`);
+                else console.error(`[STATS] ${t.name} lỗi HTTP ${res.status}`);
+            } catch (e) {
+                console.error(`[STATS] ${t.name} lỗi:`, e?.message || e);
+            }
         }
     };
     post();
@@ -99,8 +120,8 @@ module.exports = {
         // Dọn lệnh guild thừa ở nền (không chặn việc set status)
         cleanupDuplicateGuildCommands(client).catch(e => console.error('[SYSTEM] Lỗi dọn lệnh guild:', e?.message || e));
 
-        // Gửi số server lên Top.gg định kỳ (nếu có TOPGG_TOKEN)
-        startTopggAutopost(client);
+        // Gửi số server lên các bot-list định kỳ (top.gg / discordbotlist / discord.bots.gg)
+        startStatsAutopost(client);
 
         // Bật HTTP server nhận webhook vote Top.gg (thưởng tức thì) + health check
         // (nếu có TOPGG_WEBHOOK_AUTH + PORT). No-op khi thiếu cấu hình.
