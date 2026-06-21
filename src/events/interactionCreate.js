@@ -125,6 +125,29 @@ module.exports = {
                 }
                 return;
             }
+
+            // Nút "Làm tiếp" sau /work -> chạy lại /work (áp cùng guard như slash).
+            if (interaction.customId.startsWith('work:again:')) {
+                const ownerId = interaction.customId.slice('work:again:'.length);
+                if (interaction.user.id !== ownerId) {
+                    return interaction.reply({ content: 'Nút này của người khác nha~ Gõ `/work` để tự đi làm nhé! 🌸', flags: MessageFlags.Ephemeral });
+                }
+                if (isBanned(interaction.user.id)) {
+                    return interaction.reply({ embeds: [buildWaguriEmbed(interaction, 'error', { description: 'Cậu đã bị chặn sử dụng bot~' })], flags: MessageFlags.Ephemeral });
+                }
+                if (rateLimited(interaction.user.id)) {
+                    return interaction.reply({ embeds: [buildWaguriEmbed(interaction, 'warning', { description: 'Cậu thao tác hơi nhanh rồi~ chờ vài giây nhé! 🌸' })], flags: MessageFlags.Ephemeral });
+                }
+                if (isBlocked('work')) {
+                    const jail = await getJail(interaction.user.id);
+                    if (jail) {
+                        return interaction.reply({ embeds: [buildWaguriEmbed(interaction, 'error', { title: '🚓・Cậu đang bị giam', description: `Cậu chưa thể làm việc khi đang bị giam đâu~ Được thả <t:${Math.floor(jail.until / 1000)}:R>. 🌸` })], flags: MessageFlags.Ephemeral });
+                    }
+                }
+                const work = interaction.client.commands.get('work');
+                try { if (work) await work.execute(interaction); } catch (error) { logError('work:again', error); }
+                return;
+            }
             return;
         }
         // Các component khác: định tuyến theo customId (phase sau sẽ nạp động).

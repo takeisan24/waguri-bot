@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const db = require('../../database.js');
 const config = require('../../config');
 const scripts = require('../../data/workScripts');
@@ -184,6 +184,7 @@ module.exports = {
             // 6. Embed — kèm 1 gợi ý "bước tiếp theo" theo ngữ cảnh (dẫn dắt người mới)
             let tip = '';
             if (!user.onboarded) tip = 'Người mới hả? Gõ `/start` nhận **quà chào mừng** từ mình nha~ 🎁';
+            else if (category === 'fail') tip = 'Đen một chút thôi mà, đừng buồn nha~ Lần sau may mắn hơn, mình tin cậu! 🌸';
             else if (!user.job_id) tip = 'Cậu đang làm **nghề tự do** — gõ `/jobs` xin nghề để lương cao hơn nha~ 💼';
             else if (energyLeft < energyCost * 2) tip = 'Năng lượng sắp cạn rồi, `/eat` hoặc `/ngu` nghỉ chút cho lại sức nhé~ 🌸';
             else if (newLevel > oldLevel) tip = 'Lên cấp rồi nè! Ghé `/jobs` xem có mở nghề xịn hơn không nha~ ✨';
@@ -211,7 +212,11 @@ module.exports = {
                 fields
             }).setTimestamp();
 
-            await interaction.editReply({ embeds: [embed] });
+            // Nút "Làm tiếp" — bấm để làm việc lần nữa (vẫn qua cooldown/năng lượng).
+            const row = new ActionRowBuilder().addComponents(
+                new ButtonBuilder().setCustomId(`work:again:${userId}`).setLabel('🔄 Làm tiếp').setStyle(ButtonStyle.Secondary)
+            );
+            await interaction.editReply({ embeds: [embed], components: [row] });
 
         } catch (error) {
             console.error('[WORK COMMAND ERROR]', error);
