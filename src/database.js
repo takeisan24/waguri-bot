@@ -1334,9 +1334,27 @@ async function setProfilePublic(userId, isPublic) {
     }
 }
 
+/**
+ * Ghi nhận thanh toán Premium từ webhook SePay: khớp đơn theo `code` trong nội dung CK,
+ * gia hạn premium_until (idempotent — webhook gọi lại không cộng dồn). Trả về object kết quả.
+ */
+async function redeemPremiumOrder(code, amount, ref) {
+    try {
+        const { data, error } = await supabase.rpc('redeem_premium_order', {
+            p_code: code, p_amount: amount, p_ref: ref || null,
+        });
+        if (error) throw error;
+        return data; // { ok, user_id?, months?, until?, already?, reason? }
+    } catch (error) {
+        console.error('[DATABASE ERROR] redeemPremiumOrder:', error);
+        return { ok: false, reason: 'db_error' };
+    }
+}
+
 module.exports = {
     supabase,
     getUser,
+    redeemPremiumOrder,
     claimWelcomeBonus,
     touchLastSeen,
     getPublicProfile,

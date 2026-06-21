@@ -159,7 +159,15 @@ module.exports = {
     CLAN: { CREATE_COST: 50000, WAR_STAKE: 20000 },
 
     // Quyền lợi Premium trong game (ngoài quota AI): +% thu nhập lao động
-    PREMIUM: { INCOME_BONUS: 0.10 },
+    PREMIUM: {
+        INCOME_BONUS: 0.10,
+        // Gói bán qua SePay (VietQR). key = plan id, dùng CHUNG với web (web/src/lib/premium.ts).
+        PLANS: {
+            m1: { months: 1, amount: 25000, label: '1 tháng' },
+            m3: { months: 3, amount: 60000, label: '3 tháng' },
+            m6: { months: 6, amount: 99000, label: '6 tháng' },
+        },
+    },
 
     // Công an bắt cờ bạc — chơi càng nhiều, xác suất bị bắt càng cao
     POLICE: {
@@ -198,4 +206,7 @@ module.exports = {
     // Onboarding theo từng user
     WELCOME: { BONUS: 5000 },     // quà chào mừng 1 lần (~1 lần /daily, không gây lạm phát)
     RETURN_GREET_DAYS: 3,         // vắng >= 3 ngày thì Waguri chào quay lại (ở /daily)
+
+    // Web app (dashboard, mua Premium...). Đổi qua env WEB_URL nếu deploy domain khác.
+    WEB_URL: process.env.WEB_URL || 'https://waguri-bot.vercel.app',
 };

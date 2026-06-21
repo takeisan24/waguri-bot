@@ -106,6 +106,26 @@ export default async function Dashboard() {
           </div>
         </div>
 
+        {/* Premium upsell / trạng thái */}
+        <Link
+          href="/dashboard/premium"
+          className="block glass-panel rounded-3xl p-5 border border-pink-400/30 hover:border-pink-400/60 transition-all"
+        >
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-extrabold text-white">
+                {isPremium ? "💎 Waguri Premium đang bật" : "💎 Nâng cấp Waguri Premium"}
+              </p>
+              <p className="text-xs text-pink-200/80 mt-0.5">
+                {isPremium
+                  ? "Cảm ơn cậu đã ủng hộ~ Bấm để gia hạn thêm."
+                  : "150 chat AI/ngày · +10% thu nhập · badge 💎 — chỉ từ 25k 🌸"}
+              </p>
+            </div>
+            <span className="text-pink-300 font-bold text-sm flex-shrink-0">{isPremium ? "Gia hạn →" : "Xem gói →"}</span>
+          </div>
+        </Link>
+
         {!row ? (
           <div className="glass-panel rounded-3xl p-8 text-center text-slate-400">
             Cậu chưa có dữ liệu game~ Vào Discord chơi vài lệnh (<code>/start</code>, <code>/daily</code>) rồi quay lại nhé! 🌸

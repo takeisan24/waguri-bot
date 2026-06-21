@@ -19,20 +19,26 @@ module.exports = {
         const embed = buildWaguriEmbed(interaction, active ? 'jackpot' : 'info', {
             title: '💎 Waguri Premium',
             description: active
-                ? `Cậu đang là **Premium** 💎 — hết hạn <t:${Math.floor(until.getTime() / 1000)}:R>. Cảm ơn cậu nhiều nha~ 🌸`
-                : 'Cậu đang dùng gói **Miễn phí**. Nâng cấp Premium để trò chuyện với mình thoải mái hơn nhé~ 💕',
+                ? `Cậu đang là **Premium** 💎 — hết hạn <t:${Math.floor(until.getTime() / 1000)}:R>. Cảm ơn cậu nhiều nha~ 🌸\n` +
+                  `Muốn gia hạn? Ghé **[trang Premium](${config.WEB_URL}/dashboard/premium)** nhé 💕`
+                : 'Cậu đang dùng gói **Miễn phí**. Nâng cấp Premium để trò chuyện với mình thoải mái hơn nhé~ 💕\n' +
+                  `👉 Mua tại **[trang Premium](${config.WEB_URL}/dashboard/premium)** — quét VietQR, kích hoạt **tự động** trong vài giây!`,
             fields: [
                 { name: '💬 Lượt chat AI hôm nay', value: `${used}/${cap}`, inline: true },
                 { name: '🎁 Quyền lợi Premium', value:
                     `• **${config.AI.PREMIUM_DAILY} lượt** chat AI/ngày (gấp 10 lần)\n` +
                     `• **+${Math.round(config.PREMIUM.INCOME_BONUS * 100)}% thu nhập** khi /work /fish /mine /chop\n` +
                     '• Huy hiệu 💎 trong hồ sơ\n' +
-                    '• Được ưu tiên trải nghiệm tính năng mới', inline: false }
+                    '• Được ưu tiên trải nghiệm tính năng mới', inline: false },
+                { name: '💰 Bảng giá', value:
+                    Object.values(config.PREMIUM.PLANS)
+                        .map(p => `• **${p.label}** — ${Number(p.amount).toLocaleString('vi-VN')}đ`)
+                        .join('\n'), inline: false },
             ]
         });
-        
+
         embed.setFooter({
-            text: `Liên hệ owner để nâng cấp (cổng thanh toán sắp ra mắt) 💎 • ${embed.data.footer.text}`,
+            text: `Quét VietQR · kích hoạt tự động 💎 • ${embed.data.footer.text}`,
             iconURL: embed.data.footer.icon_url
         });
 
