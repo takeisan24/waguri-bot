@@ -10,6 +10,7 @@ const http = require('node:http');
 const db = require('../database.js');
 const config = require('../config');
 const { logError } = require('./logger');
+const { computeVoteReward } = require('./voteReward');
 
 const fmt = n => Number(n).toLocaleString('vi-VN');
 
@@ -39,18 +40,20 @@ async function grantVoteReward(client, userId, isWeekend) {
     const cd = await db.claimCooldown(userId, 'vote_reward', config.VOTE.COOLDOWN_HOURS * 3600);
     if (cd) return; // đã nhận trong chu kỳ 12h này -> bỏ qua
 
-    const mult = isWeekend ? 2 : 1; // Top.gg tính cuối tuần = 2 lượt -> thưởng x2
-    await db.getUser(userId);       // đảm bảo có hồ sơ (tự tạo nếu lần đầu) trước khi cộng
-    await db.addMoney(userId, config.VOTE.REWARD * mult, 'wallet');
-    await db.updateExp(userId, config.VOTE.EXP * mult);
+    // Tăng chuỗi vote (RPC tự tạo user nếu lần đầu) -> tính thưởng theo streak.
+    const streak = await db.bumpVoteStreak(userId, config.VOTE.STREAK_GRACE_HOURS * 3600);
+    const { coins, exp, bonus } = computeVoteReward(streak, isWeekend);
+    await db.addMoney(userId, coins, 'wallet');
+    await db.updateExp(userId, exp);
 
     // DM cảm ơn (im lặng nếu user tắt DM)
     try {
         const user = await client.users.fetch(userId);
         await user.send(
             `🌸 Cảm ơn cậu đã vote cho Waguri${isWeekend ? ' (cuối tuần x2)' : ''}! ` +
-            `Mình tặng cậu **${fmt(config.VOTE.REWARD * mult)}** ${config.CURRENCY} + **${config.VOTE.EXP * mult} EXP** nè 💝\n` +
-            `Nhớ ghé vote tiếp sau 12 tiếng nha~`
+            `Mình tặng cậu **${fmt(coins)}** ${config.CURRENCY} + **${exp} EXP** nè 💝\n` +
+            `🔥 Chuỗi vote: **${streak} ngày**${bonus > 0 ? ` (thưởng chuỗi +${fmt(bonus)} ${config.CURRENCY})` : ''}\n` +
+            `Nhớ ghé vote tiếp sau 12 tiếng để giữ chuỗi nha~`
         );
     } catch { /* user tắt DM -> bỏ qua */ }
 }

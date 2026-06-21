@@ -106,6 +106,9 @@ module.exports = {
         // (nếu có TOPGG_WEBHOOK_AUTH + PORT). No-op khi thiếu cấu hình.
         require('../lib/voteServer').startVoteServer(client);
 
+        // Nhắc vote định kỳ qua DM (khi user đủ 12h để vote lại)
+        require('../lib/voteReminder').scheduleVoteReminders(client);
+
         // Tự backup DB mỗi 24h vào kênh riêng (nếu có BACKUP_CHANNEL_ID)
         require('../lib/autobackup').scheduleAutoBackup(client);
 

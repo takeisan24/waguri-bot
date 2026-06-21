@@ -2,6 +2,7 @@ const { SlashCommandBuilder } = require('discord.js');
 const db = require('../../database.js');
 const config = require('../../config');
 const { buildWaguriEmbed } = require('../../lib/embed');
+const { computeVoteReward } = require('../../lib/voteReward');
 
 const fmt = n => Number(n).toLocaleString('vi-VN');
 
@@ -61,11 +62,15 @@ module.exports = {
             return interaction.editReply({ embeds: [embed] });
         }
 
-        await db.addMoney(interaction.user.id, config.VOTE.REWARD, 'wallet');
-        await db.updateExp(interaction.user.id, config.VOTE.EXP);
+        const streak = await db.bumpVoteStreak(interaction.user.id, config.VOTE.STREAK_GRACE_HOURS * 3600);
+        const { coins, exp, bonus } = computeVoteReward(streak, false);
+        await db.addMoney(interaction.user.id, coins, 'wallet');
+        await db.updateExp(interaction.user.id, exp);
         const embed = buildWaguriEmbed(interaction, 'success', {
             title: '💝・Cảm ơn cậu đã vote!',
-            description: `Waguri tặng cậu **${fmt(config.VOTE.REWARD)}** ${C} + **${config.VOTE.EXP} EXP** nè! 🎁\nNhớ ghé vote tiếp sau 12 tiếng nha~ Cảm ơn cậu đã luôn ủng hộ mình 🌸`
+            description: `Waguri tặng cậu **${fmt(coins)}** ${C} + **${exp} EXP** nè! 🎁\n` +
+                `🔥 Chuỗi vote: **${streak} ngày**${bonus > 0 ? ` (+${fmt(bonus)} ${C} thưởng chuỗi)` : ''}\n` +
+                `Nhớ ghé vote tiếp sau 12 tiếng để giữ chuỗi nha~ Cảm ơn cậu đã luôn ủng hộ mình 🌸`
         });
         await interaction.editReply({ embeds: [embed] });
     },

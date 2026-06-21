@@ -189,5 +189,11 @@ module.exports = {
     RATE_LIMIT: { MAX: 5, WINDOW_MS: 5000 }, // tối đa 5 lệnh / 5 giây / người
 
     // Vote trên Top.gg (cần TOPGG_TOKEN để check & autopost). Vote lại được sau 12h.
-    VOTE: { REWARD: 5000, EXP: 50, COOLDOWN_HOURS: 12 },
+    VOTE: {
+        REWARD: 5000, EXP: 50, COOLDOWN_HOURS: 12,
+        STREAK_GRACE_HOURS: 36,   // vote lại trong 36h (12h cd + 24h dư) thì GIỮ chuỗi
+        STREAK_BONUS: 1000,       // thưởng cộng thêm mỗi mốc streak (từ ngày thứ 2)
+        STREAK_BONUS_MAX: 7,      // cap số mốc cộng (tối đa +7.000)
+        REMINDER: true,           // bật nhắc vote qua DM khi đủ 12h
+    },
 };

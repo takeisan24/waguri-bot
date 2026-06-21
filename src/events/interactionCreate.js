@@ -5,6 +5,7 @@ const { isBlocked, getJail } = require('../lib/jail');
 const { buildWaguriEmbed } = require('../lib/embed');
 const { recordMembership } = require('../lib/membership');
 const { logError } = require('../lib/logger');
+const db = require('../database.js');
 
 module.exports = {
     name: Events.InteractionCreate,
@@ -87,7 +88,21 @@ module.exports = {
         }
 
         // --- Component (button / select menu / modal) ---
-        // Định tuyến theo customId. Quy ước: "namespace:action:..." -> file trong src/components/.
-        // (Phase sau sẽ nạp động; hiện chỉ bỏ qua để không crash.)
+        if (interaction.isButton()) {
+            // Nút "Tắt nhắc" trong DM nhắc vote -> tắt nhận nhắc cho user này.
+            if (interaction.customId === 'vote_remind_off') {
+                try {
+                    await db.setVoteReminder(interaction.user.id, false);
+                    await interaction.update({
+                        content: '🔕 Mình đã tắt nhắc vote cho cậu rồi nha~ Cảm ơn cậu vẫn luôn ủng hộ Waguri 🌸',
+                        components: [],
+                    });
+                } catch (error) {
+                    logError('vote_remind_off', error);
+                }
+            }
+            return;
+        }
+        // Các component khác: định tuyến theo customId (phase sau sẽ nạp động).
     },
 };

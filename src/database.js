@@ -1227,9 +1227,72 @@ async function getLeaderboardGuild(sort, limit, guildId) {
     } catch (error) { console.error('[DATABASE ERROR] getLeaderboardGuild():', error); return []; }
 }
 
+/**
+ * Tăng chuỗi vote (streak) nguyên tử qua RPC. Tự tạo user nếu chưa có.
+ * @returns {number} streak mới (>=1). Fail-safe trả 1 nếu DB lỗi.
+ */
+async function bumpVoteStreak(userId, graceSeconds) {
+    try {
+        const { data, error } = await supabase.rpc('bump_vote_streak', {
+            p_user_id: userId,
+            p_grace_seconds: graceSeconds,
+        });
+        if (error) throw error;
+        return Number(data) || 1;
+    } catch (error) {
+        console.error('[DATABASE ERROR] bumpVoteStreak:', error);
+        return 1;
+    }
+}
+
+/** Lấy danh sách user cần nhắc vote (đã vote, đủ 12h, chưa nhắc, còn bật nhắc). */
+async function getVoteReminderCandidates(limit = 40) {
+    try {
+        const cutoff = new Date(Date.now() - config.VOTE.COOLDOWN_HOURS * 3600 * 1000).toISOString();
+        const { data, error } = await supabase
+            .from('users')
+            .select('user_id')
+            .eq('vote_reminder', true)
+            .eq('vote_reminded', false)
+            .not('last_vote_at', 'is', null)
+            .lt('last_vote_at', cutoff)
+            .limit(limit);
+        if (error) throw error;
+        return (data || []).map(r => r.user_id);
+    } catch (error) {
+        console.error('[DATABASE ERROR] getVoteReminderCandidates:', error);
+        return [];
+    }
+}
+
+/** Đánh dấu đã nhắc (tránh nhắc lại tới khi user vote lần nữa). */
+async function markVoteReminded(userIds) {
+    if (!userIds || !userIds.length) return;
+    try {
+        const { error } = await supabase.from('users').update({ vote_reminded: true }).in('user_id', userIds);
+        if (error) throw error;
+    } catch (error) {
+        console.error('[DATABASE ERROR] markVoteReminded:', error);
+    }
+}
+
+/** Bật/tắt nhận nhắc vote (nút "Tắt nhắc" trong DM). */
+async function setVoteReminder(userId, on) {
+    try {
+        const { error } = await supabase.from('users').update({ vote_reminder: !!on }).eq('user_id', userId);
+        if (error) throw error;
+    } catch (error) {
+        console.error('[DATABASE ERROR] setVoteReminder:', error);
+    }
+}
+
 module.exports = {
     supabase,
     getUser,
+    bumpVoteStreak,
+    getVoteReminderCandidates,
+    markVoteReminded,
+    setVoteReminder,
     recordGuildMember,
     getLeaderboardGuild,
     addMoney,
