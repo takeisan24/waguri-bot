@@ -38,7 +38,7 @@ function cmp(a, b) {
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('bacay')
-        .setDescription('Ba Cây 🃏 — nhiều người, đặt cược bằng nhau, điểm cao ăn cả')
+        .setDescription('Ba Cây 🃏 — nhiều người, góp cửa bằng nhau, điểm cao ăn cả')
         .addIntegerOption(o => o.setName('bet').setDescription('Tiền cược mỗi người').setRequired(true).setMinValue(config.GAMBLE.MIN_BET)),
     async execute(interaction) {
         const bet = interaction.options.getInteger('bet');

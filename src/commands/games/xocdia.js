@@ -30,7 +30,7 @@ module.exports = {
         const render = () => {
             const c = counts();
             return buildWaguriEmbed(interaction, 'info', {
-                title: '🥢・Xóc Đĩa — Đặt cược!',
+                title: '🥢・Xóc Đĩa — Đặt cửa!',
                 description: `Cược **${fmt(bet)}** ${config.CURRENCY}/người. Thắng nhận **x${MULT}**.\n` +
                     `🔴 **Chẵn** (0/2/4 đỏ): ${c.chan} người\n⚪ **Lẻ** (1/3 đỏ): ${c.le} người\n\n⏰ Chốt sau ${WINDOW_MS / 1000}s.`
             });

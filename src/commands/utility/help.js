@@ -42,7 +42,7 @@ const CATEGORIES = [
         ['coinflip', 'tung đồng xu'],
         ['taixiu', 'tài xỉu'],
         ['baucua', 'bầu cua tôm cá'],
-        ['bacay', 'ba cây 🃏 (nhiều người, đặt cược)'],
+        ['bacay', 'ba cây 🃏 (nhiều người, đặt cửa)'],
         ['blackjack', 'xì dách'],
         ['crate', 'mở rương bí ẩn 🎁'],
         ['bingo', 'bingo 🎱 (nhiều người, gọi số tự động)'],

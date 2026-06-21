@@ -32,7 +32,7 @@ chơi minigame nhiều người, kết đôi, buôn bán… — tất cả bằn
 
 **Hệ thống nền:** năng lượng & hồi lười (lazy regen) · mệt mỏi giảm thu nhập · sức khỏe & nhập viện ·
 xe cộ tiết kiệm năng lượng · độ bền & sửa công cụ · bảo hiểm · thú cưng · **chống lạm phát**
-(thuế tài sản, lãi bank có cap, sink đa tầng) · **chống lạm dụng** (rate-limit, ban, công an cờ bạc) ·
+(thuế tài sản, lãi bank có cap, sink đa tầng) · **chống lạm dụng** (rate-limit, ban, công an trò may rủi) ·
 **sự kiện x2** toàn cục · **graceful shutdown**.
 
 ---

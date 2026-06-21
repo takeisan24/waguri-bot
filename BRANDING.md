@@ -9,7 +9,7 @@ Tài liệu sẵn để copy vào **Discord Developer Portal** và **top.gg**. H
 **Name:** `Waguri`
 
 **Description** (≤ 400 ký tự, hiện trong hồ sơ bot):
-> Waguri 🌸 — cô bạn AI waifu kiêm "quản gia kinh tế" cho server của bạn! Trò chuyện mọi điều bằng AI, chơi hệ thống kinh tế nhập vai đậm chất Việt Nam (đi làm, mở nghề, mua sắm, cờ bạc, lì xì...), nhiệm vụ, thành tựu, bảng xếp hạng và nhiều minigame vui. Hỗ trợ cả lệnh `/slash` lẫn prefix `w!`.
+> Waguri 🌸 — cô bạn AI waifu kiêm "quản gia kinh tế" cho server của bạn! Trò chuyện mọi điều bằng AI, chơi hệ thống kinh tế nhập vai đậm chất Việt Nam (đi làm, mở nghề, mua sắm, minigame may rủi, lì xì...), nhiệm vụ, thành tựu, bảng xếp hạng và nhiều minigame vui. Hỗ trợ cả lệnh `/slash` lẫn prefix `w!`.
 
 **Tags / Interactions Endpoint:** để trống (bot dùng gateway, không dùng interactions endpoint URL).
 
@@ -21,7 +21,7 @@ Tài liệu sẵn để copy vào **Discord Developer Portal** và **top.gg**. H
 ---
 
 ## 2) top.gg — Mô tả ngắn (Short Description, ≤ 200 ký tự)
-> Bạn gái AI waifu + game kinh tế nhập vai chất Việt Nam: trò chuyện AI, đi làm, lì xì, cờ bạc, nhiệm vụ, thành tựu. Slash & prefix `w!`.
+> Bạn gái AI waifu + game kinh tế nhập vai chất Việt Nam: trò chuyện AI, đi làm, lì xì, minigame may rủi, nhiệm vụ, thành tựu. Slash & prefix `w!`.
 
 ## 3) top.gg — Mô tả dài (Long Description, Markdown)
 

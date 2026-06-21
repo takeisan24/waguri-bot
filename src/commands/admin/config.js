@@ -15,7 +15,7 @@ module.exports = {
             .addChannelOption(o => o.setName('channel').setDescription('Kênh (bỏ trống để gỡ giới hạn)').addChannelTypes(ChannelType.GuildText)))
         .addSubcommand(s => s.setName('pvp').setDescription('Bật/tắt PvP: cướp /rob + trộm heo/cây')
             .addBooleanOption(o => o.setName('enabled').setDescription('Bật PvP?').setRequired(true)))
-        .addSubcommand(s => s.setName('police-jail').setDescription('Bật/tắt tạm giam (Discord timeout) khi công an bắt cờ bạc')
+        .addSubcommand(s => s.setName('police-jail').setDescription('Bật/tắt tạm giam (Discord timeout) khi công an kiểm tra trò may rủi')
             .addBooleanOption(o => o.setName('enabled').setDescription('Bật tạm giam?').setRequired(true)))
         .addSubcommand(s => s.setName('view').setDescription('Xem cấu hình hiện tại')),
     async execute(interaction) {
@@ -76,7 +76,7 @@ module.exports = {
             const enabled = interaction.options.getBoolean('enabled');
             await db.setGuildSetting(gid, 'police_jail', enabled ? '1' : '0');
             const embed = buildWaguriEmbed(interaction, 'success', {
-                description: `✅ Đã **${enabled ? 'BẬT' : 'TẮT'}** tạm giam (Discord timeout) khi công an bắt cờ bạc.${enabled ? '' : ' Giờ chỉ phạt tiền, không timeout nữa.'}`
+                description: `✅ Đã **${enabled ? 'BẬT' : 'TẮT'}** tạm giam (Discord timeout) khi công an kiểm tra trò may rủi.${enabled ? '' : ' Giờ chỉ phạt tiền, không timeout nữa.'}`
             });
             return interaction.editReply({ embeds: [embed] });
         }
@@ -90,7 +90,7 @@ module.exports = {
                     { name: 'AI trò chuyện', value: s.ai_enabled === '0' ? '🔴 Tắt' : '🟢 Bật', inline: true },
                     { name: 'Kênh AI', value: s.ai_channel ? `<#${s.ai_channel}>` : '*(mọi kênh)*', inline: true },
                     { name: 'PvP (cướp/trộm)', value: s.pvp === '0' ? '🔴 Tắt' : '🟢 Bật', inline: true },
-                    { name: 'Tạm giam cờ bạc', value: s.police_jail === '0' ? '🔴 Tắt' : '🟢 Bật', inline: true }
+                    { name: 'Tạm giam (trò may rủi)', value: s.police_jail === '0' ? '🔴 Tắt' : '🟢 Bật', inline: true }
                 ]
             });
             return interaction.editReply({ embeds: [embed] });
