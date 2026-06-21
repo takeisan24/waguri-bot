@@ -2,6 +2,10 @@ import React from "react";
 import Link from "next/link";
 import CherryBlossom from "../components/CherryBlossom";
 import DiscordMockup from "../components/DiscordMockup";
+import LiveStats from "../components/LiveStats";
+
+const BOT_ID = "1482620714690543738";
+const TOPGG_VOTE_URL = `https://top.gg/bot/${BOT_ID}/vote`;
 
 export default function Home() {
   return (
@@ -31,7 +35,15 @@ export default function Home() {
             <Link href="/tos" className="hover:text-pink-300 transition-colors duration-200">Điều Khoản</Link>
             <Link href="/privacy" className="hover:text-pink-300 transition-colors duration-200">Bảo Mật</Link>
           </nav>
-          <div>
+          <div className="flex items-center gap-2">
+            <a
+              href={TOPGG_VOTE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden sm:inline-block px-4 py-2.5 rounded-full text-xs font-bold border border-pink-300/30 text-pink-200 hover:text-white hover:border-pink-300/60 bg-pink-500/5 backdrop-blur-md transition-all duration-300 cursor-pointer"
+            >
+              💝 Vote
+            </a>
             <a
               href="https://discord.com/oauth2/authorize?client_id=1482620714690543738&permissions=1099512007760&integration_type=0&scope=bot+applications.commands"
               target="_blank"
@@ -78,6 +90,9 @@ export default function Home() {
               Khám Phá Tính Năng
             </a>
           </div>
+
+          {/* Số liệu live (ẩn nếu bot offline / chưa mở cổng) */}
+          <LiveStats />
         </div>
 
         {/* Live Discord Interactive Demo Section */}
@@ -185,6 +200,14 @@ export default function Home() {
             <p className="text-center md:text-left">Made with 🌸 for Vietnamese Discord communities.</p>
           </div>
           <div className="flex flex-wrap justify-center gap-8 text-[13px]">
+            <a
+              href={TOPGG_VOTE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-pink-300 transition-colors"
+            >
+              Vote trên Top.gg
+            </a>
             <Link href="/wiki" className="hover:text-pink-300 transition-colors">Wiki Hướng Dẫn</Link>
             <Link href="/tos" className="hover:text-pink-300 transition-colors">Điều Khoản Dịch Vụ</Link>
             <Link href="/privacy" className="hover:text-pink-300 transition-colors">Chính Sách Bảo Mật</Link>
