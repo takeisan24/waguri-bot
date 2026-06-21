@@ -12,6 +12,8 @@ const db = require('../database.js');
 const config = require('../config');
 const { logError } = require('./logger');
 const { computeVoteReward } = require('./voteReward');
+const { getProgress, getLevelFromExp } = require('./leveling');
+const { tierOf } = require('./ai/persona');
 
 const fmt = n => Number(n).toLocaleString('vi-VN');
 
@@ -48,6 +50,71 @@ async function getPublicStats(client) {
         servers: client.guilds.cache.size,
         users: client.guilds.cache.reduce((s, g) => s + (g.memberCount || 0), 0),
     };
+}
+
+// --- Cache phản hồi API (giảm tải DB + Discord fetch) ---
+const apiCache = new Map(); // key -> { exp, data }
+function cacheGet(key) {
+    const e = apiCache.get(key);
+    if (e && e.exp > Date.now()) return e.data;
+    if (e) apiCache.delete(key);
+    return null;
+}
+function cacheSet(key, data, ttlMs = 60_000) {
+    if (apiCache.size > 2000) apiCache.clear(); // chặn phình RAM
+    apiCache.set(key, { exp: Date.now() + ttlMs, data });
+}
+
+// --- Throttle theo IP (chống lạm dụng endpoint công khai) ---
+const ipHits = new Map();
+function tooManyReq(ip) {
+    const now = Date.now();
+    const e = ipHits.get(ip);
+    if (!e || e.reset < now) { ipHits.set(ip, { count: 1, reset: now + 10_000 }); return false; }
+    return ++e.count > 60; // 60 req / 10s / IP
+}
+const JSONH = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
+
+// Gộp dữ liệu hồ sơ công khai cho 1 user (DB + resolve tên/avatar qua Discord).
+async function buildProfilePayload(client, id) {
+    const prof = await db.getPublicProfile(id);
+    if (!prof || !prof.exists) return null;
+    if (!prof.public) return { id, hidden: true };
+
+    let username = 'Người chơi', avatar = null;
+    try { const u = await client.users.fetch(id); username = u.username; avatar = u.displayAvatarURL({ extension: 'png', size: 128 }); } catch { /* không fetch được */ }
+    let partner = null;
+    if (prof.partner_id) { try { partner = (await client.users.fetch(String(prof.partner_id))).username; } catch { /* bỏ qua */ } }
+
+    const p = getProgress(Number(prof.exp || 0));
+    const tier = tierOf(Number(prof.affection || 0));
+    return {
+        id, username, avatar, hidden: false,
+        level: p.level, expInto: p.expIntoLevel, expForNext: p.expForNextLevel,
+        wallet: Number(prof.wallet || 0), bank: Number(prof.bank || 0),
+        netWorth: Number(prof.wallet || 0) + Number(prof.bank || 0),
+        job: prof.job || null,
+        affection: Number(prof.affection || 0), affectionTier: tier ? tier.name : null,
+        partner, clan: prof.clan || null,
+        achievements: Number(prof.achievements || 0),
+        rank: Number(prof.wealth_rank || 0),
+    };
+}
+
+// Bảng xếp hạng công khai (top theo tài sản hoặc cấp).
+async function buildLeaderboardPayload(client, type, limit) {
+    const sort = type === 'level' ? 'level' : 'networth';
+    const rows = await db.getLeaderboard(sort, limit);
+    const out = [];
+    for (const r of rows) {
+        let username = 'Người chơi', avatar = null;
+        try { const u = await client.users.fetch(String(r.user_id)); username = u.username; avatar = u.displayAvatarURL({ extension: 'png', size: 64 }); } catch { /* bỏ qua */ }
+        out.push({
+            id: r.user_id, username, avatar,
+            value: sort === 'level' ? getLevelFromExp(Number(r.exp || 0)) : Number(r.networth || 0),
+        });
+    }
+    return { type: sort === 'level' ? 'level' : 'wealth', rows: out };
 }
 
 // Cộng thưởng cho 1 lượt vote. Dùng CHUNG cooldown 'vote_reward' với lệnh /vote
@@ -91,6 +158,34 @@ function startVoteServer(client) {
 
     const server = http.createServer(async (req, res) => {
         if (req.method === 'GET') {
+            // --- API công khai (chỉ đọc) cho web: hồ sơ & bảng xếp hạng ---
+            if (req.url.startsWith('/api/')) {
+                const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress || 'unknown';
+                if (tooManyReq(ip)) { res.writeHead(429, JSONH); res.end('{"error":"rate_limited"}'); return; }
+
+                if (req.url.startsWith('/api/profile/')) {
+                    const id = decodeURIComponent(req.url.slice('/api/profile/'.length).split(/[?#]/)[0]).trim();
+                    if (!/^\d{5,25}$/.test(id)) { res.writeHead(400, JSONH); res.end('{"error":"bad_id"}'); return; }
+                    let data = cacheGet('p:' + id);
+                    if (!data) { data = await buildProfilePayload(client, id); if (data) cacheSet('p:' + id, data); }
+                    if (!data) { res.writeHead(404, JSONH); res.end('{"error":"not_found"}'); return; }
+                    res.writeHead(200, JSONH); res.end(JSON.stringify(data));
+                    return;
+                }
+                if (req.url.startsWith('/api/leaderboard')) {
+                    const q = new URL(req.url, 'http://local');
+                    const type = q.searchParams.get('type') === 'level' ? 'level' : 'wealth';
+                    const limit = Math.min(Math.max(Number(q.searchParams.get('limit')) || 10, 1), 25);
+                    const key = `lb:${type}:${limit}`;
+                    let data = cacheGet(key);
+                    if (!data) { data = await buildLeaderboardPayload(client, type, limit); cacheSet(key, data); }
+                    res.writeHead(200, JSONH); res.end(JSON.stringify(data));
+                    return;
+                }
+                res.writeHead(404, JSONH); res.end('{"error":"not_found"}');
+                return;
+            }
+
             // Số liệu công khai cho widget trên web (CORS mở vì chỉ đọc, không nhạy cảm)
             if (req.url.startsWith('/stats')) {
                 res.setHeader('Access-Control-Allow-Origin', '*');

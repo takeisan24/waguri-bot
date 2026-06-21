@@ -1310,11 +1310,37 @@ async function touchLastSeen(userId) {
     }
 }
 
+/** Hồ sơ công khai (gộp 1 query) cho web /u/[id] + API. Trả object jsonb hoặc null. */
+async function getPublicProfile(userId) {
+    try {
+        const { data, error } = await supabase.rpc('get_public_profile', { p_user_id: userId });
+        if (error) throw error;
+        return data || null;
+    } catch (error) {
+        console.error('[DATABASE ERROR] getPublicProfile:', error);
+        return null;
+    }
+}
+
+/** Bật/tắt hiển thị hồ sơ web (/profile toggle). */
+async function setProfilePublic(userId, isPublic) {
+    try {
+        const { error } = await supabase.from('users').update({ profile_public: !!isPublic }).eq('user_id', userId);
+        if (error) throw error;
+        return true;
+    } catch (error) {
+        console.error('[DATABASE ERROR] setProfilePublic:', error);
+        return false;
+    }
+}
+
 module.exports = {
     supabase,
     getUser,
     claimWelcomeBonus,
     touchLastSeen,
+    getPublicProfile,
+    setProfilePublic,
     bumpVoteStreak,
     getVoteReminderCandidates,
     markVoteReminded,
