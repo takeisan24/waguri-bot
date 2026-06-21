@@ -1,7 +1,8 @@
 import React from "react";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import CherryBlossom from "../../../components/CherryBlossom";
+import SiteHeader from "../../../components/SiteHeader";
+import SiteFooter from "../../../components/SiteFooter";
 
 const API = "https://chocobot.wispbyte.app";
 const INVITE_URL =
@@ -72,14 +73,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
       </div>
       <CherryBlossom />
 
-      <header className="relative w-full max-w-3xl mx-auto px-6 py-5 flex items-center justify-between z-20">
-        <Link href="/" className="text-xl font-black text-glow tracking-wider text-pink-300">
-          WAGURI <span className="text-pink-400">🌸</span>
-        </Link>
-        <Link href="/leaderboard" className="text-xs font-bold text-pink-300 hover:text-pink-400">
-          🏆 Bảng xếp hạng
-        </Link>
-      </header>
+      <SiteHeader />
 
       <main className="relative flex-1 w-full max-w-3xl mx-auto px-6 py-8 z-10">
         {!p || (p && "hidden" in p && p.hidden) ? (
@@ -172,6 +166,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
           })()
         )}
       </main>
+      <SiteFooter />
     </div>
   );
 }

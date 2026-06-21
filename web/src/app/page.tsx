@@ -1,11 +1,9 @@
 import React from "react";
-import Link from "next/link";
 import CherryBlossom from "../components/CherryBlossom";
 import DiscordMockup from "../components/DiscordMockup";
 import LiveStats from "../components/LiveStats";
-
-const BOT_ID = "1482620714690543738";
-const TOPGG_VOTE_URL = `https://top.gg/bot/${BOT_ID}/vote`;
+import SiteHeader from "../components/SiteHeader";
+import SiteFooter from "../components/SiteFooter";
 
 export default function Home() {
   return (
@@ -21,41 +19,7 @@ export default function Home() {
       <CherryBlossom />
 
       {/* Navigation Header */}
-      <header className="sticky top-0 w-full bg-[#0d0812]/80 backdrop-blur-md border-b border-pink-300/10 z-30 transition-all duration-200">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center space-x-2 select-none group">
-            <span className="text-2xl font-black text-glow tracking-wider text-pink-300 group-hover:scale-105 transition-transform duration-300">
-              WAGURI <span className="text-pink-400">🌸</span>
-            </span>
-          </Link>
-          <nav className="hidden md:flex items-center space-x-8 text-sm font-medium text-slate-300">
-            <a href="#features" className="hover:text-pink-300 transition-colors duration-200">Tính Năng</a>
-            <a href="#commands" className="hover:text-pink-300 transition-colors duration-200">Trải Nghiệm</a>
-            <Link href="/wiki" className="hover:text-pink-300 transition-colors duration-200">Wiki</Link>
-            <Link href="/leaderboard" className="hover:text-pink-300 transition-colors duration-200">BXH</Link>
-            <Link href="/tos" className="hover:text-pink-300 transition-colors duration-200">Điều Khoản</Link>
-            <Link href="/login" className="hover:text-pink-300 transition-colors duration-200">Đăng nhập</Link>
-          </nav>
-          <div className="flex items-center gap-2">
-            <a
-              href={TOPGG_VOTE_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hidden sm:inline-block px-4 py-2.5 rounded-full text-xs font-bold border border-pink-300/30 text-pink-200 hover:text-white hover:border-pink-300/60 bg-pink-500/5 backdrop-blur-md transition-all duration-300 cursor-pointer"
-            >
-              💝 Vote
-            </a>
-            <a
-              href="https://discord.com/oauth2/authorize?client_id=1482620714690543738&permissions=1099512007760&integration_type=0&scope=bot+applications.commands"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-5 py-2.5 rounded-full text-xs font-bold bg-pink-300 text-[#0d0812] hover:bg-pink-400 shadow-[0_0_20px_rgba(255,183,197,0.3)] hover:shadow-[0_0_25px_rgba(255,183,197,0.5)] transition-all duration-300 transform hover:-translate-y-0.5 cursor-pointer"
-            >
-              Thêm Vào Discord
-            </a>
-          </div>
-        </div>
-      </header>
+      <SiteHeader />
 
       {/* Hero Section */}
       <main className="relative flex-1 flex flex-col items-center justify-center px-6 z-10 py-12 md:py-20 max-w-7xl mx-auto w-full">
@@ -176,7 +140,7 @@ export default function Home() {
             <div className="space-y-4 max-w-xl text-center md:text-left relative z-10">
               <h2 className="text-2xl md:text-3xl font-extrabold text-white">Hãy mang nụ cười của Waguri về server!</h2>
               <p className="text-slate-400 text-sm md:text-base leading-relaxed">
-                Cùng hàng ngàn thành viên khác chơi đùa, trò chuyện và cùng nhau đi lên từ bàn tay trắng. Hoàn toàn miễn phí, cài đặt chỉ trong 3 giây!
+                Cùng cộng đồng đang lớn dần mỗi ngày chơi đùa, trò chuyện và cùng nhau đi lên từ bàn tay trắng. Hoàn toàn miễn phí, cài đặt chỉ trong 3 giây!
               </p>
             </div>
             <div className="relative z-10 flex-shrink-0">
@@ -193,39 +157,7 @@ export default function Home() {
         </section>
       </main>
 
-      {/* Footer */}
-      <footer className="relative border-t border-slate-900 bg-[#07040a]/80 py-10 z-10 text-xs text-slate-500">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex flex-col items-center md:items-start space-y-2">
-            <span className="text-sm font-extrabold tracking-wider text-pink-300">WAGURI 🌸</span>
-            <p className="text-center md:text-left">Made with 🌸 for Vietnamese Discord communities.</p>
-          </div>
-          <div className="flex flex-wrap justify-center gap-8 text-[13px]">
-            <a
-              href={TOPGG_VOTE_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-pink-300 transition-colors"
-            >
-              Vote trên Top.gg
-            </a>
-            <Link href="/wiki" className="hover:text-pink-300 transition-colors">Wiki Hướng Dẫn</Link>
-            <Link href="/tos" className="hover:text-pink-300 transition-colors">Điều Khoản Dịch Vụ</Link>
-            <Link href="/privacy" className="hover:text-pink-300 transition-colors">Chính Sách Bảo Mật</Link>
-            <a
-              href="https://discord.gg/zbJ4SBaMhE" // Placeholder for support server
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-pink-300 transition-colors"
-            >
-              Hỗ Trợ Discord
-            </a>
-          </div>
-          <div>
-            <p>&copy; {new Date().getFullYear()} Waguri. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

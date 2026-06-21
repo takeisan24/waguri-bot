@@ -1,6 +1,7 @@
 import React from "react";
-import Link from "next/link";
 import CherryBlossom from "../../components/CherryBlossom";
+import SiteHeader from "../../components/SiteHeader";
+import SiteFooter from "../../components/SiteFooter";
 
 export const metadata = {
   title: "Wiki 🌸 - Hướng dẫn chơi Waguri Bot",
@@ -46,16 +47,7 @@ export default function Wiki() {
 
       <CherryBlossom />
 
-      <header className="relative w-full max-w-4xl mx-auto px-6 py-5 flex items-center justify-between z-20">
-        <Link href="/" className="flex items-center space-x-2 select-none group">
-          <span className="text-xl font-black text-glow tracking-wider text-pink-300 group-hover:scale-105 transition-transform duration-300">
-            WAGURI <span className="text-pink-400">🌸</span>
-          </span>
-        </Link>
-        <Link href="/" className="text-xs font-bold text-pink-300 hover:text-pink-400 flex items-center space-x-1.5 transition-colors">
-          <span>&larr;</span> <span>Quay lại trang chủ</span>
-        </Link>
-      </header>
+      <SiteHeader />
 
       <main className="relative flex-1 flex flex-col items-center px-6 z-10 py-10 max-w-4xl mx-auto w-full space-y-6">
         <div className="text-center space-y-2">
@@ -225,16 +217,7 @@ export default function Wiki() {
         </Card>
       </main>
 
-      <footer className="relative border-t border-slate-900 bg-[#07040a]/80 py-8 z-10 text-xs text-slate-500">
-        <div className="max-w-4xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p>&copy; {new Date().getFullYear()} Waguri. All rights reserved.</p>
-          <div className="flex gap-6 text-[13px]">
-            <Link href="/" className="hover:text-pink-300 transition-colors">Trang chủ</Link>
-            <Link href="/tos" className="hover:text-pink-300 transition-colors">Điều Khoản</Link>
-            <Link href="/privacy" className="hover:text-pink-300 transition-colors">Bảo Mật</Link>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

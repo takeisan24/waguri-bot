@@ -1,6 +1,8 @@
 import React from "react";
 import Link from "next/link";
 import CherryBlossom from "../../components/CherryBlossom";
+import SiteHeader from "../../components/SiteHeader";
+import SiteFooter from "../../components/SiteFooter";
 
 export const metadata = {
   title: "Bảng xếp hạng 🏆 — Waguri",
@@ -24,7 +26,7 @@ async function getBoard(type: "wealth" | "level"): Promise<Row[]> {
   }
 }
 
-function Board({ title, rows, suffix }: { title: string; rows: Row[]; suffix: string }) {
+function Board({ title, rows, suffix = "", prefix = "" }: { title: string; rows: Row[]; suffix?: string; prefix?: string }) {
   return (
     <div className="glass-panel rounded-3xl p-6 border border-pink-300/15 space-y-3">
       <h2 className="text-lg font-extrabold text-white">{title}</h2>
@@ -47,6 +49,7 @@ function Board({ title, rows, suffix }: { title: string; rows: Row[]; suffix: st
                 )}
                 <span className="flex-1 truncate text-slate-200">{r.username}</span>
                 <span className="font-bold text-white">
+                  {prefix}
                   {fmt(r.value)}
                   {suffix}
                 </span>
@@ -70,14 +73,7 @@ export default async function LeaderboardPage() {
       </div>
       <CherryBlossom />
 
-      <header className="relative w-full max-w-4xl mx-auto px-6 py-5 flex items-center justify-between z-20">
-        <Link href="/" className="text-xl font-black text-glow tracking-wider text-pink-300">
-          WAGURI <span className="text-pink-400">🌸</span>
-        </Link>
-        <Link href="/" className="text-xs font-bold text-pink-300 hover:text-pink-400">
-          ← Trang chủ
-        </Link>
-      </header>
+      <SiteHeader />
 
       <main className="relative flex-1 w-full max-w-4xl mx-auto px-6 py-8 z-10 space-y-6">
         <div className="text-center space-y-1">
@@ -86,9 +82,10 @@ export default async function LeaderboardPage() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <Board title="💎 Đại gia (tài sản)" rows={wealth} suffix=" VNĐ" />
-          <Board title="⭐ Cao thủ (cấp độ)" rows={level} suffix="" />
+          <Board title="⭐ Cao thủ (cấp độ)" rows={level} prefix="Lv." />
         </div>
       </main>
+      <SiteFooter />
     </div>
   );
 }
