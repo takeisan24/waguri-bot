@@ -1,6 +1,7 @@
 import React from "react";
-import Link from "next/link";
 import CherryBlossom from "../../components/CherryBlossom";
+import SiteHeader from "../../components/SiteHeader";
+import SiteFooter from "../../components/SiteFooter";
 
 export default function PrivacyPolicy() {
   return (
@@ -14,27 +15,14 @@ export default function PrivacyPolicy() {
       {/* Cherry Blossom falling petals effect */}
       <CherryBlossom />
 
-      {/* Navigation Header */}
-      <header className="relative w-full max-w-4xl mx-auto px-6 py-5 flex items-center justify-between z-20">
-        <Link href="/" className="flex items-center space-x-2 select-none group">
-          <span className="text-xl font-black text-glow tracking-wider text-pink-300 group-hover:scale-105 transition-transform duration-300">
-            WAGURI <span className="text-pink-400">🌸</span>
-          </span>
-        </Link>
-        <Link
-          href="/"
-          className="text-xs font-bold text-pink-300 hover:text-pink-400 flex items-center space-x-1.5 transition-colors"
-        >
-          <span>&larr;</span> <span>Quay lại trang chủ</span>
-        </Link>
-      </header>
+      <SiteHeader />
 
       {/* Main Content */}
       <main className="relative flex-1 flex flex-col items-center px-6 z-10 py-10 max-w-4xl mx-auto w-full">
         <div className="glass-panel w-full p-8 md:p-12 rounded-2xl border border-pink-300/15 space-y-8 shadow-xl">
           <div className="border-b border-pink-300/10 pb-6">
             <h1 className="text-3xl font-black text-white mb-2">Chính Sách Bảo Mật (Privacy Policy)</h1>
-            <p className="text-slate-400 text-xs">Cập nhật lần cuối: Ngày 19 tháng 6 năm 2026</p>
+            <p className="text-slate-400 text-xs">Cập nhật lần cuối: Ngày 21 tháng 6 năm 2026</p>
           </div>
 
           <div className="space-y-6 text-sm md:text-base leading-relaxed text-slate-300">
@@ -78,7 +66,19 @@ export default function PrivacyPolicy() {
 
             <section className="space-y-3">
               <h2 className="text-lg font-bold text-white flex items-center space-x-2">
-                <span className="text-pink-300">4.</span> <span>Quyền của Người dùng (Yêu cầu Xóa Dữ liệu)</span>
+                <span className="text-pink-300">4.</span> <span>Đăng nhập Web & Bảng điều khiển</span>
+              </h2>
+              <p className="text-sm">Trang web Waguri cho phép bạn <strong>đăng nhập bằng Discord (OAuth2)</strong> để xem bảng điều khiển cá nhân. Khi đăng nhập, chúng tôi xử lý:</p>
+              <ul className="list-disc pl-5 space-y-2 text-slate-400 text-sm">
+                <li><strong>Danh tính Discord (scope <code>identify</code>):</strong> Discord User ID, tên hiển thị và ảnh đại diện — để hiển thị đúng hồ sơ của bạn. <strong>Chúng tôi KHÔNG thu thập email.</strong></li>
+                <li><strong>Danh sách server (scope <code>guilds</code>):</strong> chỉ dùng để lọc ra những server bạn tham gia <em>mà Waguri cũng có mặt</em>, phục vụ tính năng bảng xếp hạng theo server. Chúng tôi không lưu các server khác.</li>
+                <li><strong>Phiên đăng nhập:</strong> được quản lý bằng cookie an toàn qua dịch vụ <strong>Supabase Auth</strong>; trang web được lưu trữ trên <strong>Vercel</strong>. Bạn có thể đăng xuất bất cứ lúc nào.</li>
+              </ul>
+            </section>
+
+            <section className="space-y-3">
+              <h2 className="text-lg font-bold text-white flex items-center space-x-2">
+                <span className="text-pink-300">5.</span> <span>Quyền của Người dùng (Yêu cầu Xóa Dữ liệu)</span>
               </h2>
               <p className="text-slate-400 text-sm">
                 Bạn có toàn quyền kiểm soát dữ liệu của mình. Nếu bạn muốn xóa toàn bộ dữ liệu game và thông tin cá nhân của mình liên quan đến Waguri Bot khỏi cơ sở dữ liệu của chúng tôi, bạn có thể gửi yêu cầu trực tiếp cho nhà phát triển qua máy chủ hỗ trợ. Dữ liệu của bạn sẽ được xóa vĩnh viễn trong vòng 48 giờ sau khi tiếp nhận yêu cầu.
@@ -87,7 +87,7 @@ export default function PrivacyPolicy() {
 
             <section className="space-y-3">
               <h2 className="text-lg font-bold text-white flex items-center space-x-2">
-                <span className="text-pink-300">5.</span> <span>Liên hệ Hỗ trợ</span>
+                <span className="text-pink-300">6.</span> <span>Liên hệ Hỗ trợ</span>
               </h2>
               <p className="text-slate-400 text-sm">
                 Nếu bạn có bất kỳ thắc mắc nào liên quan đến Chính sách Bảo mật này hoặc muốn yêu cầu xóa dữ liệu, vui lòng liên hệ với nhà phát triển qua:
@@ -101,18 +101,7 @@ export default function PrivacyPolicy() {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="relative border-t border-slate-900 bg-[#07040a]/80 py-8 z-10 text-xs text-slate-500">
-        <div className="max-w-4xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div>
-            <p>&copy; {new Date().getFullYear()} Waguri. All rights reserved.</p>
-          </div>
-          <div className="flex gap-6 text-[13px]">
-            <Link href="/tos" className="hover:text-pink-300 transition-colors">Điều Khoản</Link>
-            <Link href="/privacy" className="text-pink-300 font-semibold hover:underline">Bảo Mật</Link>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

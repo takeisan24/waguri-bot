@@ -1,6 +1,7 @@
 import React from "react";
-import Link from "next/link";
 import CherryBlossom from "../../components/CherryBlossom";
+import SiteHeader from "../../components/SiteHeader";
+import SiteFooter from "../../components/SiteFooter";
 
 export default function TermsOfService() {
   return (
@@ -14,27 +15,14 @@ export default function TermsOfService() {
       {/* Cherry Blossom falling petals effect */}
       <CherryBlossom />
 
-      {/* Navigation Header */}
-      <header className="relative w-full max-w-4xl mx-auto px-6 py-5 flex items-center justify-between z-20">
-        <Link href="/" className="flex items-center space-x-2 select-none group">
-          <span className="text-xl font-black text-glow tracking-wider text-pink-300 group-hover:scale-105 transition-transform duration-300">
-            WAGURI <span className="text-pink-400">🌸</span>
-          </span>
-        </Link>
-        <Link
-          href="/"
-          className="text-xs font-bold text-pink-300 hover:text-pink-400 flex items-center space-x-1.5 transition-colors"
-        >
-          <span>&larr;</span> <span>Quay lại trang chủ</span>
-        </Link>
-      </header>
+      <SiteHeader />
 
       {/* Main Content */}
       <main className="relative flex-1 flex flex-col items-center px-6 z-10 py-10 max-w-4xl mx-auto w-full">
         <div className="glass-panel w-full p-8 md:p-12 rounded-2xl border border-pink-300/15 space-y-8 shadow-xl">
           <div className="border-b border-pink-300/10 pb-6">
             <h1 className="text-3xl font-black text-white mb-2">Điều Khoản Dịch Vụ (Terms of Service)</h1>
-            <p className="text-slate-400 text-xs">Cập nhật lần cuối: Ngày 19 tháng 6 năm 2026</p>
+            <p className="text-slate-400 text-xs">Cập nhật lần cuối: Ngày 21 tháng 6 năm 2026</p>
           </div>
 
           <div className="space-y-6 text-sm md:text-base leading-relaxed text-slate-300">
@@ -81,7 +69,18 @@ export default function TermsOfService() {
 
             <section className="space-y-3">
               <h2 className="text-lg font-bold text-white flex items-center space-x-2">
-                <span className="text-pink-300">4.</span> <span>Thay đổi Điều khoản</span>
+                <span className="text-pink-300">4.</span> <span>Tài khoản Web & Bảng điều khiển</span>
+              </h2>
+              <ul className="list-disc pl-5 space-y-2 text-slate-400 text-sm">
+                <li>Bạn có thể đăng nhập trang web bằng tài khoản Discord để xem bảng điều khiển và quản lý cài đặt cá nhân. Bạn chịu trách nhiệm bảo mật phiên đăng nhập của mình.</li>
+                <li>Bảng điều khiển chỉ hiển thị dữ liệu game của chính bạn; nghiêm cấm mọi hành vi cố gắng truy cập trái phép dữ liệu của người khác.</li>
+                <li>Hồ sơ công khai (trang <code>/u/...</code>) hiển thị một số chỉ số game của bạn cho người khác xem; bạn có thể <strong>ẩn</strong> hồ sơ bất cứ lúc nào trong cài đặt.</li>
+              </ul>
+            </section>
+
+            <section className="space-y-3">
+              <h2 className="text-lg font-bold text-white flex items-center space-x-2">
+                <span className="text-pink-300">5.</span> <span>Thay đổi Điều khoản</span>
               </h2>
               <p className="text-slate-400 text-sm">
                 Chúng tôi có quyền sửa đổi hoặc thay thế các Điều khoản Dịch vụ này bất kỳ lúc nào để phù hợp với sự phát triển của Bot. Các thay đổi sẽ có hiệu lực ngay khi được đăng tải lên trang web này. Việc bạn tiếp tục sử dụng Bot sau khi có bất kỳ thay đổi nào đồng nghĩa với việc bạn chấp nhận các điều khoản mới.
@@ -90,7 +89,7 @@ export default function TermsOfService() {
 
             <section className="space-y-3">
               <h2 className="text-lg font-bold text-white flex items-center space-x-2">
-                <span className="text-pink-300">5.</span> <span>Liên hệ Hỗ trợ</span>
+                <span className="text-pink-300">6.</span> <span>Liên hệ Hỗ trợ</span>
               </h2>
               <p className="text-slate-400 text-sm">
                 Nếu bạn có bất kỳ câu hỏi, khiếu nại hoặc muốn báo cáo lỗi/hành vi gian lận, vui lòng liên hệ với chúng tôi qua:
@@ -104,18 +103,7 @@ export default function TermsOfService() {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="relative border-t border-slate-900 bg-[#07040a]/80 py-8 z-10 text-xs text-slate-500">
-        <div className="max-w-4xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div>
-            <p>&copy; {new Date().getFullYear()} Waguri. All rights reserved.</p>
-          </div>
-          <div className="flex gap-6 text-[13px]">
-            <Link href="/tos" className="text-pink-300 font-semibold hover:underline">Điều Khoản</Link>
-            <Link href="/privacy" className="hover:text-pink-300 transition-colors">Bảo Mật</Link>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }
