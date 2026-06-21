@@ -59,6 +59,9 @@ module.exports = {
         if (item.effect_type === 'energy') {
             const energy = await db.getEnergy(interaction.user.id);
             effectText = `năng lượng giờ là **${energy}/${config.ENERGY.MAX}** ⚡`;
+        } else if (item.effect_type === 'health') {
+            const u = await db.getUser(interaction.user.id);
+            effectText = `hồi **+${item.effect_value} sức khỏe** ❤️ (giờ ${u?.health ?? '?'}/100)`;
         } else if (item.effect_type === 'buff') {
             effectText = `nhận buff **+${item.effect_value}% thu nhập** trong ${item.effect_duration_hours || 1} giờ 🍗`;
         } else {
