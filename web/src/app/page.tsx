@@ -33,7 +33,7 @@ export default function Home() {
           </nav>
           <div>
             <a
-              href="https://discord.com/oauth2/authorize?client_id=1482620714690543738&permissions=8&integration_type=0&scope=bot+applications.commands"
+              href="https://discord.com/oauth2/authorize?client_id=1482620714690543738&permissions=1099512007760&integration_type=0&scope=bot+applications.commands"
               target="_blank"
               rel="noopener noreferrer"
               className="px-5 py-2.5 rounded-full text-xs font-bold bg-pink-300 text-[#0d0812] hover:bg-pink-400 shadow-[0_0_20px_rgba(255,183,197,0.3)] hover:shadow-[0_0_25px_rgba(255,183,197,0.5)] transition-all duration-300 transform hover:-translate-y-0.5 cursor-pointer"
@@ -64,7 +64,7 @@ export default function Home() {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
             <a
-              href="https://discord.com/oauth2/authorize?client_id=1482620714690543738&permissions=8&integration_type=0&scope=bot+applications.commands"
+              href="https://discord.com/oauth2/authorize?client_id=1482620714690543738&permissions=1099512007760&integration_type=0&scope=bot+applications.commands"
               target="_blank"
               rel="noopener noreferrer"
               className="w-full sm:w-auto px-8 py-4 rounded-full font-bold bg-pink-300 text-[#0d0812] hover:bg-pink-400 shadow-[0_0_30px_rgba(255,183,197,0.35)] hover:shadow-[0_0_35px_rgba(255,183,197,0.55)] transition-all duration-300 transform hover:-translate-y-1 text-center cursor-pointer"
@@ -165,7 +165,7 @@ export default function Home() {
             </div>
             <div className="relative z-10 flex-shrink-0">
               <a
-                href="https://discord.com/oauth2/authorize?client_id=1482620714690543738&permissions=8&integration_type=0&scope=bot+applications.commands"
+                href="https://discord.com/oauth2/authorize?client_id=1482620714690543738&permissions=1099512007760&integration_type=0&scope=bot+applications.commands"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-8 py-4 rounded-full font-bold bg-pink-300 text-[#0d0812] hover:bg-pink-400 shadow-[0_0_30px_rgba(255,183,197,0.3)] transition-all duration-300 transform hover:-translate-y-0.5 inline-block text-center cursor-pointer"

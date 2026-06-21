@@ -93,7 +93,7 @@ export default function PrivacyPolicy() {
                 Nếu bạn có bất kỳ thắc mắc nào liên quan đến Chính sách Bảo mật này hoặc muốn yêu cầu xóa dữ liệu, vui lòng liên hệ với nhà phát triển qua:
               </p>
               <ul className="list-disc pl-5 space-y-1 text-slate-400 text-sm">
-                <li><strong>Server Discord Hỗ trợ:</strong> <a href="https://discord.gg/invite-link-placeholder" className="text-pink-300 hover:underline">Liên kết Server</a></li>
+                <li><strong>Server Discord Hỗ trợ:</strong> <a href="https://discord.gg/zbJ4SBaMhE" className="text-pink-300 hover:underline">Liên kết Server</a></li>
                 <li><strong>Nhà phát triển:</strong> takei (Discord ID)</li>
               </ul>
             </section>

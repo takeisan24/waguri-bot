@@ -96,7 +96,7 @@ export default function TermsOfService() {
                 Nếu bạn có bất kỳ câu hỏi, khiếu nại hoặc muốn báo cáo lỗi/hành vi gian lận, vui lòng liên hệ với chúng tôi qua:
               </p>
               <ul className="list-disc pl-5 space-y-1 text-slate-400 text-sm">
-                <li><strong>Server Discord Hỗ trợ:</strong> <a href="https://discord.gg/invite-link-placeholder" className="text-pink-300 hover:underline">Liên kết Server</a></li>
+                <li><strong>Server Discord Hỗ trợ:</strong> <a href="https://discord.gg/zbJ4SBaMhE" className="text-pink-300 hover:underline">Liên kết Server</a></li>
                 <li><strong>Nhà phát triển:</strong> takei (Discord ID)</li>
               </ul>
             </section>
