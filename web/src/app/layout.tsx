@@ -15,6 +15,7 @@ export const metadata: Metadata = {
   keywords: ["Waguri", "Discord Bot", "Economy Bot", "RPG Bot", "AI Waifu", "Game Discord tiếng Việt", "Trò chuyện AI"],
   authors: [{ name: "takei" }],
   alternates: { canonical: "/" },
+  appleWebApp: { capable: true, title: "Waguri", statusBarStyle: "black-translucent" },
   // og:image / twitter:image lấy tự động từ app/opengraph-image.tsx & twitter-image.tsx
   openGraph: {
     title: "Waguri 🌸 - AI Waifu & Game Kinh Tế RPG Việt Nam",
