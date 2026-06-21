@@ -14,7 +14,7 @@ chơi minigame nhiều người, kết đôi, buôn bán… — tất cả bằn
 
 ---
 
-## ✨ Tính năng (≈75 lệnh)
+## ✨ Tính năng (77 lệnh)
 
 | Nhóm | Lệnh tiêu biểu |
 |---|---|
@@ -42,7 +42,7 @@ xe cộ tiết kiệm năng lượng · độ bền & sửa công cụ · bảo 
 - **discord.js v14** — Slash **và** prefix (`w!`) song song qua `prefixShim`; tương tác bằng button/select/collector.
 - **Atomic-first**: mọi thao tác tiền/EXP/kho/quỹ chạy bằng **RPC PostgreSQL nguyên tử** (chống dupe & race).
 - **Config tập trung** ở `src/config/index.js` — tinh chỉnh toàn bộ cân bằng game tại 1 chỗ.
-- **AI provider abstraction** — đổi `gemini` ↔ `claude` chỉ bằng biến môi trường; quota theo ngày (free/premium).
+- **AI Gemini** — persona Waguri trò chuyện qua Google Gemini (free tier); quota theo ngày (free/premium).
 - **Embed chuẩn hoá** qua `src/lib/embed.js` (`buildWaguriEmbed`): màu theo trạng thái + ảnh/GIF Waguri + footer cá tính.
 - **Logic thuần tách riêng** (leveling, fatigue, ma sói engine…) → có **unit test** (`node --test`).
 
@@ -55,7 +55,7 @@ waguri/
 │   ├── lib/                  # embed, leveling, fatigue, lobby, couple, loto, bingoPrefix, masoi/engine, ...
 │   ├── commands/{economy,games,fun,utility,admin}/*.js
 │   └── events/{ready,interactionCreate,messageCreate,guildCreate}.js
-├── supabase/migrations/      # 0001 → 0041 (schema + RPC; đã áp qua Supabase)
+├── supabase/migrations/      # 0001 → 0045 (schema + RPC; đã áp qua Supabase)
 └── test/*.test.js            # Unit test (leveling, fatigue, amount, masoi, sprint3)
 ```
 

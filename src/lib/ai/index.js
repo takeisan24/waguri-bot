@@ -3,10 +3,7 @@ const config = require('../../config');
 const db = require('../../database.js');
 const { WAGURI_SYSTEM_PROMPT, tierOf } = require('./persona');
 
-const providers = {
-    gemini: require('./gemini'),
-    claude: require('./claude'),
-};
+const gemini = require('./gemini'); // provider AI duy nhất: Google Gemini
 
 const contexts = new Map();  // channelId -> [{role,content}]
 const ctxSeen = new Map();   // channelId -> lần hoạt động gần nhất (ms) — để dọn ngữ cảnh cũ
@@ -36,8 +33,7 @@ function formatReply(text, userId, userName) {
 }
 
 function getProvider() {
-    const name = (config.AI.PROVIDER || 'gemini').toLowerCase();
-    return providers[name] || providers.gemini;
+    return gemini;
 }
 
 /** True nếu user đang trong cooldown (đồng thời đặt cooldown mới). */

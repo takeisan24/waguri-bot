@@ -91,11 +91,9 @@ module.exports = {
         MIN_TARGET_WALLET: 100,
     },
 
-    // AI persona Waguri (đổi provider chỉ bằng AI_PROVIDER trong .env)
+    // AI persona Waguri (Google Gemini)
     AI: {
-        PROVIDER: process.env.AI_PROVIDER || 'gemini', // 'gemini' | 'claude'
         GEMINI_MODEL: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
-        CLAUDE_MODEL: process.env.CLAUDE_MODEL || 'claude-haiku-4-5',
         MAX_CONTEXT_TURNS: 6,    // số lượt hội thoại gần nhất giữ lại theo kênh
         MAX_OUTPUT_TOKENS: 600,  // đủ dài cho câu trả lời tự nhiên (vẫn gọn cho Discord)
         USER_COOLDOWN_MS: 4000,  // chống spam mỗi người

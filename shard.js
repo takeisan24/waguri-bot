@@ -12,9 +12,8 @@
 //  3) ShardingManager tự spawn số shard phù hợp ('auto').
 //
 // ⚠️ LƯU Ý khi đã sharding:
-//  - Top.gg autopost (ready.js) hiện đếm client.guilds.cache.size của TỪNG shard
-//    (chỉ 1 phần). Khi sharding cần cộng gộp qua manager.fetchClientValues('guilds.cache.size').
-//    -> Lúc chuyển sang sharding nhớ chuyển autopost lên shard.js (đếm tổng) thay vì ready.js.
+//  - Top.gg autopost + /stats (ready.js, voteServer.js) ĐÃ shard-safe: cộng gộp qua
+//    fetchClientValues/broadcastEval và chỉ shard 0 post/bind cổng. Không cần chỉnh thêm.
 //  - State in-memory (loto/bingo, ngữ cảnh AI, cooldown) là theo-shard; an toàn vì mỗi
 //    guild nằm trọn 1 shard. Dữ liệu game/kinh tế nằm ở Supabase nên dùng chung bình thường.
 // ============================================================

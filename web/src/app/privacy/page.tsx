@@ -61,7 +61,7 @@ export default function PrivacyPolicy() {
               </h2>
               <ul className="list-disc pl-5 space-y-2 text-slate-400 text-sm">
                 <li><strong>Không lưu trữ tin nhắn lâu dài:</strong> Bot KHÔNG bao giờ ghi lại hoặc lưu trữ nội dung tin nhắn của bạn vào cơ sở dữ liệu vĩnh viễn.</li>
-                <li><strong>Ngữ cảnh trò chuyện AI:</strong> Khi bạn sử dụng lệnh `/ask` hoặc @tag Waguri để nói chuyện, nội dung tin nhắn của bạn được chuyển trực tiếp đến nhà cung cấp API trí tuệ nhân tạo (Google Gemini API hoặc Anthropic Claude API tùy thuộc cấu hình hệ thống) để xử lý tạo câu trả lời.</li>
+                <li><strong>Ngữ cảnh trò chuyện AI:</strong> Khi bạn sử dụng lệnh `/ask` hoặc @tag Waguri để nói chuyện, nội dung tin nhắn của bạn được chuyển trực tiếp đến API trí tuệ nhân tạo Google Gemini để xử lý tạo câu trả lời.</li>
                 <li>Ngữ cảnh hội thoại gần nhất (tối đa 6 lượt chat gần nhất) được giữ tạm thời trong bộ nhớ đệm (RAM) của ứng dụng để giúp AI trả lời mạch lạc và sẽ bị xóa sạch hoàn toàn ngay khi bot khởi động lại hoặc sau một thời gian không hoạt động.</li>
               </ul>
             </section>
