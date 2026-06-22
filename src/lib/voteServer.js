@@ -14,6 +14,7 @@ const { logError } = require('./logger');
 const { computeVoteReward } = require('./voteReward');
 const { getProgress, getLevelFromExp } = require('./leveling');
 const { tierOf } = require('./ai/persona');
+const { verifyPayos } = require('./payosVerify');
 
 const fmt = n => Number(n).toLocaleString('vi-VN');
 
@@ -145,24 +146,12 @@ async function grantVoteReward(client, userId, isWeekend) {
     } catch { /* user tắt DM -> bỏ qua */ }
 }
 
-// --- SePay webhook: tiền vào tài khoản -> gia hạn Premium tức thì ---
-// SePay POST /sepay/webhook, header: Authorization: Apikey <SEPAY_WEBHOOK_APIKEY>.
-// Body: { transferType:'in', transferAmount, content, referenceCode, ... }.
-// Khớp đơn theo MÃ trong `content` (WAGURI + 8 hex). Idempotent ở tầng RPC.
-async function grantSepayPremium(client, data) {
-    if (String(data?.transferType) !== 'in') return; // chỉ xử lý tiền VÀO
-    const content = String(data?.content || data?.description || '');
-    const m = content.toUpperCase().match(/WAGURI[0-9A-F]{8}/);
-    if (!m) { console.log('[SEPAY] Giao dịch không có mã đơn, bỏ qua:', content.slice(0, 60)); return; }
-    const code = m[0];
-    const amount = Math.round(Number(data?.transferAmount || 0));
-    const ref = String(data?.referenceCode || data?.id || '');
+// --- PayOS webhook: thanh toán Premium -> gia hạn tức thì ---
+// PayOS POST /payos/webhook, body { code, desc, success, data, signature }.
+// Xác thực: HMAC-SHA256 trên `data` (sort key) bằng PAYOS_CHECKSUM_KEY -> xem payosVerify.js.
 
-    const r = await db.redeemPremiumOrder(code, amount, ref);
-    if (!r?.ok) { console.log(`[SEPAY] Đơn ${code} không khớp:`, r?.reason); return; }
-    if (r.already) { console.log(`[SEPAY] Đơn ${code} đã xử lý trước đó (idempotent).`); return; }
-
-    console.log(`[SEPAY] ✅ Premium +${r.months} tháng cho ${r.user_id} (đơn ${code}).`);
+// DM cảm ơn sau khi kích hoạt Premium (dùng chung mọi cổng thanh toán).
+async function dmPremiumThanks(client, r) {
     try {
         const user = await client.users.fetch(String(r.user_id));
         const until = r.until ? Math.floor(new Date(r.until).getTime() / 1000) : null;
@@ -175,11 +164,27 @@ async function grantSepayPremium(client, data) {
     } catch { /* user tắt DM -> bỏ qua */ }
 }
 
+// Xử lý 1 webhook PayOS đã xác thực: khớp đơn theo orderCode (= premium_orders.id).
+// (description do PayOS tự sinh nên KHÔNG dùng để khớp.)
+async function grantPayosPremium(client, data) {
+    const orderCode = Math.round(Number(data?.orderCode || 0));
+    if (!orderCode) { console.log('[PAYOS] Webhook thiếu orderCode (có thể là ping test).'); return; }
+    const amount = Math.round(Number(data?.amount || 0));
+    const ref = String(data?.reference || data?.paymentLinkId || '');
+
+    const r = await db.redeemPremiumOrderByOrderCode(orderCode, amount, ref);
+    if (!r?.ok) { console.log(`[PAYOS] Đơn #${orderCode} không khớp:`, r?.reason); return; }
+    if (r.already) { console.log(`[PAYOS] Đơn #${orderCode} đã xử lý trước đó (idempotent).`); return; }
+
+    console.log(`[PAYOS] ✅ Premium +${r.months} tháng cho ${r.user_id} (đơn #${orderCode}).`);
+    await dmPremiumThanks(client, r);
+}
+
 function startVoteServer(client) {
     if (process.env.DISABLE_VOTE_SERVER === '1') return;
 
     const auth = process.env.TOPGG_WEBHOOK_AUTH;
-    const sepayKey = process.env.SEPAY_WEBHOOK_APIKEY; // bí mật cấu hình ở SePay (Apikey ...)
+    const payosKey = process.env.PAYOS_CHECKSUM_KEY; // checksum key PayOS (xác thực webhook)
     const port = Number(process.env.PORT || process.env.SERVER_PORT || 0);
     if (!port) {
         console.log('[VOTE] Bỏ qua HTTP server (chưa có PORT/SERVER_PORT).');
@@ -188,8 +193,8 @@ function startVoteServer(client) {
     // /stats + health chỉ cần PORT là chạy. Webhook chỉ kích hoạt khi có TOPGG_WEBHOOK_AUTH
     // (lấy sau khi bot được duyệt). Chưa có secret -> webhook trả 503, các route khác vẫn ổn.
     if (!auth) console.log('[VOTE] Chưa có TOPGG_WEBHOOK_AUTH -> webhook tạm tắt (/stats + health vẫn chạy).');
-    if (!sepayKey) console.log('[SEPAY] Chưa có SEPAY_WEBHOOK_APIKEY -> webhook thanh toán tạm tắt.');
-    else console.log('[SEPAY] Webhook thanh toán Premium sẵn sàng ở /sepay/webhook.');
+    if (!payosKey) console.log('[PAYOS] Chưa có PAYOS_CHECKSUM_KEY -> webhook thanh toán tạm tắt.');
+    else console.log('[PAYOS] Webhook thanh toán Premium sẵn sàng ở /payos/webhook.');
     // Khi chạy sharding: chỉ shard 0 bind cổng (tránh nhiều process tranh cùng port).
     if (client.shard && !client.shard.ids.includes(0)) return;
 
@@ -248,8 +253,8 @@ function startVoteServer(client) {
             return;
         }
         const isVote = req.url.startsWith('/topgg/vote');
-        const isSepay = req.url.startsWith('/sepay/webhook');
-        if (req.method !== 'POST' || (!isVote && !isSepay)) {
+        const isPayos = req.url.startsWith('/payos/webhook');
+        if (req.method !== 'POST' || (!isVote && !isPayos)) {
             res.writeHead(404); res.end(); return;
         }
 
@@ -262,16 +267,15 @@ function startVoteServer(client) {
         req.on('end', () => {
             if (aborted) return;
 
-            // --- SePay webhook (thanh toán Premium) ---
-            if (isSepay) {
-                // Chưa cấu hình key -> không xác thực được -> từ chối (chống lỗ hổng).
-                if (!sepayKey) { res.writeHead(503); res.end(); return; }
-                if (req.headers.authorization !== `Apikey ${sepayKey}`) { res.writeHead(401); res.end(); return; }
-                res.writeHead(200, JSONH); res.end('{"success":true}'); // SePay cần 200 + success
-                try {
-                    const data = JSON.parse(body || '{}');
-                    grantSepayPremium(client, data).catch(e => logError('sepay premium', e));
-                } catch (e) { logError('sepay webhook parse', e); }
+            // --- PayOS webhook (thanh toán Premium) ---
+            if (isPayos) {
+                // Chưa cấu hình checksum -> không xác thực được -> từ chối (chống lỗ hổng).
+                if (!payosKey) { res.writeHead(503); res.end(); return; }
+                let payload;
+                try { payload = JSON.parse(body || '{}'); } catch { res.writeHead(400); res.end(); return; }
+                if (!verifyPayos(payload.data, payload.signature, payosKey)) { res.writeHead(401); res.end(); return; }
+                res.writeHead(200, JSONH); res.end('{"success":true}'); // PayOS cần 200 + success
+                grantPayosPremium(client, payload.data).catch(e => logError('payos premium', e));
                 return;
             }
 

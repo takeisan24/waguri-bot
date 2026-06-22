@@ -161,7 +161,7 @@ module.exports = {
     // Quyền lợi Premium trong game (ngoài quota AI): +% thu nhập lao động
     PREMIUM: {
         INCOME_BONUS: 0.10,
-        // Gói bán qua SePay (VietQR). key = plan id, dùng CHUNG với web (web/src/lib/premium.ts).
+        // Gói bán qua PayOS (VietQR). key = plan id, dùng CHUNG với web (web/src/lib/premium.ts).
         PLANS: {
             m1: { months: 1, amount: 25000, label: '1 tháng' },
             m3: { months: 3, amount: 60000, label: '3 tháng' },
