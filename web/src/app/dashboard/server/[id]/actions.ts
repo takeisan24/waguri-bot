@@ -5,7 +5,7 @@ import { createClient } from "../../../../lib/supabase/server";
 import { createAdminClient } from "../../../../lib/supabase/admin";
 
 // Chỉ cho phép sửa vài key an toàn (toggle tính năng theo server).
-const ALLOWED = new Set(["ai_enabled", "pvp", "police_jail"]);
+const ALLOWED = new Set(["ai_enabled", "pvp", "police_jail", "gambling"]);
 
 async function userManages(guildId: string): Promise<boolean> {
   const supabase = await createClient();

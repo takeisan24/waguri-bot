@@ -17,6 +17,8 @@ module.exports = {
             .addBooleanOption(o => o.setName('enabled').setDescription('Bật PvP?').setRequired(true)))
         .addSubcommand(s => s.setName('police-jail').setDescription('Bật/tắt tạm giam (Discord timeout) khi công an kiểm tra trò may rủi')
             .addBooleanOption(o => o.setName('enabled').setDescription('Bật tạm giam?').setRequired(true)))
+        .addSubcommand(s => s.setName('gambling').setDescription('Bật/tắt trò may rủi (bài cào, tài xỉu, xóc đĩa…)')
+            .addBooleanOption(o => o.setName('enabled').setDescription('Bật trò may rủi?').setRequired(true)))
         .addSubcommand(s => s.setName('view').setDescription('Xem cấu hình hiện tại')),
     async execute(interaction) {
         // Tự enforce quyền (phòng trường hợp gọi qua prefix)
@@ -81,6 +83,15 @@ module.exports = {
             return interaction.editReply({ embeds: [embed] });
         }
 
+        if (sub === 'gambling') {
+            const enabled = interaction.options.getBoolean('enabled');
+            await db.setGuildSetting(gid, 'gambling', enabled ? '1' : '0');
+            const embed = buildWaguriEmbed(interaction, 'success', {
+                description: `✅ Đã **${enabled ? 'BẬT' : 'TẮT'}** trò may rủi (bài cào, tài xỉu, xóc đĩa…) ở server này.${enabled ? '' : ' Các lệnh chơi sẽ bị từ chối nhẹ nhàng.'}`
+            });
+            return interaction.editReply({ embeds: [embed] });
+        }
+
         if (sub === 'view') {
             const s = await db.getGuildSettings(gid);
             const embed = buildWaguriEmbed(interaction, 'info', {
@@ -90,6 +101,7 @@ module.exports = {
                     { name: 'AI trò chuyện', value: s.ai_enabled === '0' ? '🔴 Tắt' : '🟢 Bật', inline: true },
                     { name: 'Kênh AI', value: s.ai_channel ? `<#${s.ai_channel}>` : '*(mọi kênh)*', inline: true },
                     { name: 'PvP (cướp/trộm)', value: s.pvp === '0' ? '🔴 Tắt' : '🟢 Bật', inline: true },
+                    { name: 'Trò may rủi', value: s.gambling === '0' ? '🔴 Tắt' : '🟢 Bật', inline: true },
                     { name: 'Tạm giam (trò may rủi)', value: s.police_jail === '0' ? '🔴 Tắt' : '🟢 Bật', inline: true }
                 ]
             });

@@ -3,6 +3,7 @@ const { buildWaguriEmbed } = require('../../lib/embed');
 const db = require('../../database.js');
 const config = require('../../config');
 const { sendPaginated } = require('../../lib/paginate');
+const { isItemInSeason } = require('../../lib/season');
 
 const TYPE_ICON = { tool: '🛠️', vehicle: '🛵', consumable: '🍞', property: '🏠', luxury: '💎', misc: '📦' };
 
@@ -13,7 +14,8 @@ module.exports = {
     async execute(interaction) {
         await interaction.deferReply();
 
-        const items = (await db.getItems()).filter(i => !i.shop_hidden);
+        // Ẩn đồ ẩn + đồ mùa lễ chưa tới mùa (Tết/Trung thu) -> tạo cảm giác giới hạn.
+        const items = (await db.getItems()).filter(i => !i.shop_hidden && isItemInSeason(i));
         if (!items.length) {
             const embed = buildWaguriEmbed(interaction, 'warning', {
                 title: '🏪・Cửa Hàng Trống',

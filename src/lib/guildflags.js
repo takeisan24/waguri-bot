@@ -16,4 +16,11 @@ async function policeJailEnabled(guildId) {
     return s.police_jail !== '0';
 }
 
-module.exports = { pvpEnabled, policeJailEnabled };
+/** Trò may rủi (đặt cược: bài cào, tài xỉu, xóc đĩa...). Tắt -> các lệnh chơi từ chối nhẹ nhàng. */
+async function gamblingEnabled(guildId) {
+    if (!guildId) return true;
+    const s = await db.getGuildSettings(guildId);
+    return s.gambling !== '0';
+}
+
+module.exports = { pvpEnabled, policeJailEnabled, gamblingEnabled };

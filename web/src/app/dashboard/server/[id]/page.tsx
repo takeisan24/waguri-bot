@@ -54,6 +54,7 @@ export default async function ServerConfig({ params }: { params: Promise<{ id: s
   const aiOn = s.ai_enabled !== "0";
   const pvpOn = s.pvp !== "0";
   const jailOn = s.police_jail !== "0";
+  const gambleOn = s.gambling !== "0";
 
   return (
     <div className="relative min-h-screen flex flex-col bg-[#0d0812] text-slate-200">
@@ -87,6 +88,12 @@ export default async function ServerConfig({ params }: { params: Promise<{ id: s
             desc="Cho phép người chơi cướp tiền & trộm nông sản của nhau."
             on={pvpOn}
             action={setGuildFlag.bind(null, id, "pvp", pvpOn ? "0" : "1")}
+          />
+          <Toggle
+            label="Trò may rủi (bài cào, tài xỉu, xóc đĩa…)"
+            desc="Cho phép thành viên chơi các trò đặt cược. Tắt = mọi lệnh chơi bị từ chối nhẹ nhàng."
+            on={gambleOn}
+            action={setGuildFlag.bind(null, id, "gambling", gambleOn ? "0" : "1")}
           />
           <Toggle
             label="Tạm giam (Discord timeout) khi vi phạm"

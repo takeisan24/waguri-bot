@@ -20,7 +20,7 @@ module.exports = {
         .addIntegerOption(o => o.setName('bet').setDescription('Tiền cược mỗi người').setRequired(true).setMinValue(config.GAMBLE.MIN_BET)),
     async execute(interaction) {
         const bet = interaction.options.getInteger('bet');
-        const err = checkBet(bet);
+        const err = await checkBet(bet, interaction.guildId);
         if (err) {
             const embed = buildWaguriEmbed(interaction, 'warning', { description: `🌸 ${err}` });
             return interaction.reply({ embeds: [embed] });
