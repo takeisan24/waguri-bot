@@ -86,7 +86,7 @@ export default function SiteHeader() {
             rel="noopener noreferrer"
             className="px-5 py-2.5 rounded-full text-xs font-bold bg-pink-300 text-[#0d0812] hover:bg-pink-400 shadow-[0_0_20px_rgba(255,183,197,0.3)] transition-all duration-300 hover:-translate-y-0.5"
           >
-            Thêm Vào Discord
+            Mời Waguri 🌸
           </a>
         </nav>
 
@@ -124,7 +124,7 @@ export default function SiteHeader() {
             rel="noopener noreferrer"
             className="w-full text-center px-5 py-2.5 rounded-full text-sm font-bold bg-pink-300 text-[#0d0812] hover:bg-pink-400 transition-all"
           >
-            Thêm Vào Discord 🌸
+            Mời Waguri 🌸
           </a>
         </div>
       ) : null}
