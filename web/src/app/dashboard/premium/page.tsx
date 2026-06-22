@@ -6,6 +6,7 @@ import { createAdminClient } from "../../../lib/supabase/admin";
 import { getDiscordIdentity } from "../../../lib/discord";
 import { fmtVND } from "../../../lib/game";
 import { PREMIUM_PLANS, PLAN_ORDER } from "../../../lib/premium";
+import { isOwnerId } from "../../../lib/owner";
 import { createPremiumOrder } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -38,9 +39,16 @@ export default async function PremiumPage() {
         <Link href="/" className="text-xl font-black text-glow tracking-wider text-pink-300">
           WAGURI <span className="text-pink-400">🌸</span>
         </Link>
-        <Link href="/dashboard" className="text-xs font-bold text-slate-400 hover:text-pink-300">
-          ← Dashboard
-        </Link>
+        <div className="flex items-center gap-4">
+          {isOwnerId(id) ? (
+            <Link href="/dashboard/premium/admin" className="text-xs font-bold text-emerald-300 hover:text-emerald-200">
+              🛠️ Duyệt đơn
+            </Link>
+          ) : null}
+          <Link href="/dashboard" className="text-xs font-bold text-slate-400 hover:text-pink-300">
+            ← Dashboard
+          </Link>
+        </div>
       </header>
 
       <main className="flex-1 w-full max-w-3xl mx-auto px-6 py-6 space-y-7">

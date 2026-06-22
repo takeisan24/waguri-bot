@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "../../../lib/supabase/server";
 import { createAdminClient } from "../../../lib/supabase/admin";
 import { getDiscordIdentity } from "../../../lib/discord";
+import { isOwnerId } from "../../../lib/owner";
 import { PREMIUM_PLANS, isPlanId } from "../../../lib/premium";
 
 // Tạo đơn mua Premium rồi chuyển sang trang thanh toán (hiện VietQR Vietcombank).
@@ -52,3 +53,19 @@ export async function claimPremiumOrder(code: string) {
 
   revalidatePath(`/dashboard/premium/pay/${code}`);
 }
+
+// Owner duyệt đơn ngay trên web (kích hoạt Premium, bỏ qua kiểm tra số tiền — đã tự đối chiếu).
+export async function approvePremiumOrderWeb(code: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+  const { id } = getDiscordIdentity(user);
+  if (!isOwnerId(id)) redirect("/dashboard"); // chỉ owner
+
+  const admin = createAdminClient();
+  await admin.rpc("approve_premium_order", { p_code: code, p_ref: `web:${id}` });
+  revalidatePath("/dashboard/premium/admin");
+}
+
