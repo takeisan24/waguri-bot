@@ -12,6 +12,10 @@ module.exports = {
         // Bỏ qua bot
         if (member.user.bot) return;
 
+        // Chỉ chào mừng ở SERVER HỖ TRỢ chính thức — tránh tự đăng tin ở mọi server dùng bot.
+        const supportId = process.env.SUPPORT_GUILD_ID;
+        if (!supportId || member.guild.id !== supportId) return;
+
         const channel = member.guild.systemChannel;
         if (!channel) return;
 
