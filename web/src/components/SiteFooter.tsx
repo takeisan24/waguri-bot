@@ -36,6 +36,11 @@ export default function SiteFooter() {
         </div>
         <p>&copy; {new Date().getFullYear()} Waguri</p>
       </div>
+      <div className="max-w-7xl mx-auto px-6 mt-5 pt-4 border-t border-slate-900/60">
+        <p className="text-[11px] text-slate-600 text-center leading-relaxed">
+          Lấy cảm hứng từ nhân vật <em>Waguri Kaoruko</em> trong &quot;The Fragrant Flower Blooms with Dignity&quot;. Đây là sản phẩm fan, không có liên kết chính thức với tác giả/nhà xuất bản và không sở hữu bản quyền nhân vật.
+        </p>
+      </div>
     </footer>
   );
 }

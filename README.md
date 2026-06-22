@@ -122,6 +122,9 @@ Cả hai **yêu cầu vào phòng voice** để mở game.
 ---
 
 ## 📄 License
-MIT — xem file `LICENSE`.
+MIT — xem file `LICENSE`. *(Áp dụng cho **mã nguồn**, không bao gồm nhân vật/hình ảnh có bản quyền.)*
+
+## ⚖️ Bản quyền & Ghi nhận
+Waguri lấy cảm hứng từ nhân vật **Waguri Kaoruko** trong *"The Fragrant Flower Blooms with Dignity"* (Kaoru Hana wa Rin to Saku). Đây là **sản phẩm fan**, **không** có liên kết chính thức với tác giả/nhà xuất bản và **không** sở hữu bản quyền nhân vật. Mọi quyền với nhân vật thuộc về chủ sở hữu hợp pháp.
 
 > 🌸 *"Cố lên nhé! Hôm nay cậu đã vất vả rồi, Waguri luôn ở sau cổ vũ cậu!"*

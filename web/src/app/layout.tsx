@@ -1,11 +1,18 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Nunito, Baloo_2 } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
-const inter = Inter({
-  variable: "--font-inter",
+// Body: Nunito (bo tròn, ấm áp) · Tiêu đề: Baloo 2 (dễ thương) — cả hai đủ dấu tiếng Việt.
+const nunito = Nunito({
+  variable: "--font-body",
   subsets: ["latin", "vietnamese"],
+  display: "swap",
+});
+const baloo = Baloo_2({
+  variable: "--font-heading",
+  subsets: ["latin", "vietnamese"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -44,7 +51,7 @@ export default function RootLayout({
   return (
     <html
       lang="vi"
-      className={`${inter.variable} h-full antialiased`}
+      className={`${nunito.variable} ${baloo.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col font-sans bg-[#0a060d] text-slate-100 overflow-x-hidden">
         {children}

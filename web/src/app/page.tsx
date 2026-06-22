@@ -62,7 +62,7 @@ export default function Home() {
               rel="noopener noreferrer"
               className="w-full sm:w-auto px-8 py-4 rounded-full font-bold bg-pink-300 text-[#0d0812] hover:bg-pink-400 shadow-[0_0_30px_rgba(255,183,197,0.35)] hover:shadow-[0_0_35px_rgba(255,183,197,0.55)] transition-all duration-300 transform hover:-translate-y-1 text-center cursor-pointer"
             >
-              Mời Waguri Tham Gia 🌸
+              Mời Waguri 🌸
             </a>
             <a
               href="#features"
@@ -166,7 +166,7 @@ export default function Home() {
                 rel="noopener noreferrer"
                 className="px-8 py-4 rounded-full font-bold bg-pink-300 text-[#0d0812] hover:bg-pink-400 shadow-[0_0_30px_rgba(255,183,197,0.3)] transition-all duration-300 transform hover:-translate-y-0.5 inline-block text-center cursor-pointer"
               >
-                Mời Bot Ngay 🌸
+                Mời Waguri 🌸
               </a>
             </div>
           </div>
