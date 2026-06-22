@@ -14,7 +14,7 @@ const { logError } = require('./logger');
 const { computeVoteReward } = require('./voteReward');
 const { getProgress, getLevelFromExp } = require('./leveling');
 const { tierOf } = require('./ai/persona');
-const { verifyPayos } = require('./payosVerify');
+const { extractPremiumCode } = require('./paymatch');
 
 const fmt = n => Number(n).toLocaleString('vi-VN');
 
@@ -146,9 +146,10 @@ async function grantVoteReward(client, userId, isWeekend) {
     } catch { /* user tắt DM -> bỏ qua */ }
 }
 
-// --- PayOS webhook: thanh toán Premium -> gia hạn tức thì ---
-// PayOS POST /payos/webhook, body { code, desc, success, data, signature }.
-// Xác thực: HMAC-SHA256 trên `data` (sort key) bằng PAYOS_CHECKSUM_KEY -> xem payosVerify.js.
+// --- Casso webhook: tiền vào TK Vietcombank -> gia hạn Premium tức thì ---
+// Casso POST /casso/webhook, header: secure-token: <CASSO_WEBHOOK_TOKEN>.
+// Body Casso V2: { data: {...} } | legacy: { data: [ {...} ] }. Mỗi giao dịch có
+// description (nội dung CK chứa mã WAGURI), amount, tid/reference. Idempotent ở tầng RPC.
 
 // DM cảm ơn sau khi kích hoạt Premium (dùng chung mọi cổng thanh toán).
 async function dmPremiumThanks(client, r) {
@@ -164,27 +165,31 @@ async function dmPremiumThanks(client, r) {
     } catch { /* user tắt DM -> bỏ qua */ }
 }
 
-// Xử lý 1 webhook PayOS đã xác thực: khớp đơn theo orderCode (= premium_orders.id).
-// (description do PayOS tự sinh nên KHÔNG dùng để khớp.)
-async function grantPayosPremium(client, data) {
-    const orderCode = Math.round(Number(data?.orderCode || 0));
-    if (!orderCode) { console.log('[PAYOS] Webhook thiếu orderCode (có thể là ping test).'); return; }
-    const amount = Math.round(Number(data?.amount || 0));
-    const ref = String(data?.reference || data?.paymentLinkId || '');
+// Xử lý webhook Casso (đã xác thực token): khớp đơn theo MÃ trong nội dung CK.
+async function grantCassoPremium(client, payload) {
+    // Casso V2: payload.data là object; legacy: là mảng giao dịch.
+    const list = Array.isArray(payload?.data) ? payload.data : (payload?.data ? [payload.data] : []);
+    for (const tx of list) {
+        const amount = Math.round(Number(tx?.amount || 0));
+        if (amount <= 0) continue; // chỉ xử lý tiền VÀO
+        const code = extractPremiumCode(tx?.description || tx?.content || '');
+        if (!code) { console.log('[CASSO] Giao dịch không có mã đơn, bỏ qua.'); continue; }
+        const ref = String(tx?.tid || tx?.reference || tx?.id || '');
 
-    const r = await db.redeemPremiumOrderByOrderCode(orderCode, amount, ref);
-    if (!r?.ok) { console.log(`[PAYOS] Đơn #${orderCode} không khớp:`, r?.reason); return; }
-    if (r.already) { console.log(`[PAYOS] Đơn #${orderCode} đã xử lý trước đó (idempotent).`); return; }
+        const r = await db.redeemPremiumOrderByCode(code, amount, ref);
+        if (!r?.ok) { console.log(`[CASSO] Đơn ${code} không khớp:`, r?.reason); continue; }
+        if (r.already) { console.log(`[CASSO] Đơn ${code} đã xử lý trước đó (idempotent).`); continue; }
 
-    console.log(`[PAYOS] ✅ Premium +${r.months} tháng cho ${r.user_id} (đơn #${orderCode}).`);
-    await dmPremiumThanks(client, r);
+        console.log(`[CASSO] ✅ Premium +${r.months} tháng cho ${r.user_id} (đơn ${code}).`);
+        await dmPremiumThanks(client, r);
+    }
 }
 
 function startVoteServer(client) {
     if (process.env.DISABLE_VOTE_SERVER === '1') return;
 
     const auth = process.env.TOPGG_WEBHOOK_AUTH;
-    const payosKey = process.env.PAYOS_CHECKSUM_KEY; // checksum key PayOS (xác thực webhook)
+    const cassoToken = process.env.CASSO_WEBHOOK_TOKEN; // Secure-Token cấu hình ở Casso
     const port = Number(process.env.PORT || process.env.SERVER_PORT || 0);
     if (!port) {
         console.log('[VOTE] Bỏ qua HTTP server (chưa có PORT/SERVER_PORT).');
@@ -193,8 +198,8 @@ function startVoteServer(client) {
     // /stats + health chỉ cần PORT là chạy. Webhook chỉ kích hoạt khi có TOPGG_WEBHOOK_AUTH
     // (lấy sau khi bot được duyệt). Chưa có secret -> webhook trả 503, các route khác vẫn ổn.
     if (!auth) console.log('[VOTE] Chưa có TOPGG_WEBHOOK_AUTH -> webhook tạm tắt (/stats + health vẫn chạy).');
-    if (!payosKey) console.log('[PAYOS] Chưa có PAYOS_CHECKSUM_KEY -> webhook thanh toán tạm tắt.');
-    else console.log('[PAYOS] Webhook thanh toán Premium sẵn sàng ở /payos/webhook.');
+    if (!cassoToken) console.log('[CASSO] Chưa có CASSO_WEBHOOK_TOKEN -> webhook thanh toán tạm tắt.');
+    else console.log('[CASSO] Webhook thanh toán Premium sẵn sàng ở /casso/webhook.');
     // Khi chạy sharding: chỉ shard 0 bind cổng (tránh nhiều process tranh cùng port).
     if (client.shard && !client.shard.ids.includes(0)) return;
 
@@ -253,8 +258,8 @@ function startVoteServer(client) {
             return;
         }
         const isVote = req.url.startsWith('/topgg/vote');
-        const isPayos = req.url.startsWith('/payos/webhook');
-        if (req.method !== 'POST' || (!isVote && !isPayos)) {
+        const isCasso = req.url.startsWith('/casso/webhook');
+        if (req.method !== 'POST' || (!isVote && !isCasso)) {
             res.writeHead(404); res.end(); return;
         }
 
@@ -267,15 +272,15 @@ function startVoteServer(client) {
         req.on('end', () => {
             if (aborted) return;
 
-            // --- PayOS webhook (thanh toán Premium) ---
-            if (isPayos) {
-                // Chưa cấu hình checksum -> không xác thực được -> từ chối (chống lỗ hổng).
-                if (!payosKey) { res.writeHead(503); res.end(); return; }
+            // --- Casso webhook (thanh toán Premium) ---
+            if (isCasso) {
+                // Chưa cấu hình token -> không xác thực được -> từ chối (chống lỗ hổng).
+                if (!cassoToken) { res.writeHead(503); res.end(); return; }
+                if (req.headers['secure-token'] !== cassoToken) { res.writeHead(401); res.end(); return; }
                 let payload;
                 try { payload = JSON.parse(body || '{}'); } catch { res.writeHead(400); res.end(); return; }
-                if (!verifyPayos(payload.data, payload.signature, payosKey)) { res.writeHead(401); res.end(); return; }
-                res.writeHead(200, JSONH); res.end('{"success":true}'); // PayOS cần 200 + success
-                grantPayosPremium(client, payload.data).catch(e => logError('payos premium', e));
+                res.writeHead(200, JSONH); res.end('{"success":true}'); // Casso strict mode cần 200 + success
+                grantCassoPremium(client, payload).catch(e => logError('casso premium', e));
                 return;
             }
 

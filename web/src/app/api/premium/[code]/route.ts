@@ -5,7 +5,7 @@ import { getDiscordIdentity } from "../../../../lib/discord";
 
 export const dynamic = "force-dynamic";
 
-// Trang thanh toán poll endpoint này để biết đơn đã được PayOS xác nhận chưa.
+// Trang thanh toán poll endpoint này để biết đơn đã được Casso xác nhận chưa.
 export async function GET(_req: Request, { params }: { params: Promise<{ code: string }> }) {
   const { code } = await params;
   const supabase = await createClient();

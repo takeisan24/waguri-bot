@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-// Hỏi trạng thái đơn mỗi 4s; khi PayOS báo đã trả -> refresh để server render màn "thành công".
+// Hỏi trạng thái đơn mỗi 4s; khi Casso báo đã trả -> refresh để server render màn "thành công".
 export default function PayStatus({ code }: { code: string }) {
   const router = useRouter();
   const [waited, setWaited] = useState(0);

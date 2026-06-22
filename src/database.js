@@ -1334,17 +1334,17 @@ async function setProfilePublic(userId, isPublic) {
     }
 }
 
-/** Ghi nhận thanh toán Premium theo orderCode = premium_orders.id (webhook PayOS).
+/** Ghi nhận thanh toán Premium theo MÃ trong nội dung CK (webhook Casso).
  *  Gia hạn premium_until, idempotent (webhook gọi lại không cộng dồn). */
-async function redeemPremiumOrderByOrderCode(orderCode, amount, ref) {
+async function redeemPremiumOrderByCode(code, amount, ref) {
     try {
-        const { data, error } = await supabase.rpc('redeem_premium_order_by_id', {
-            p_id: orderCode, p_amount: amount, p_ref: ref || null,
+        const { data, error } = await supabase.rpc('redeem_premium_order', {
+            p_code: code, p_amount: amount, p_ref: ref || null,
         });
         if (error) throw error;
         return data;
     } catch (error) {
-        console.error('[DATABASE ERROR] redeemPremiumOrderByOrderCode:', error);
+        console.error('[DATABASE ERROR] redeemPremiumOrderByCode:', error);
         return { ok: false, reason: 'db_error' };
     }
 }
@@ -1352,7 +1352,7 @@ async function redeemPremiumOrderByOrderCode(orderCode, amount, ref) {
 module.exports = {
     supabase,
     getUser,
-    redeemPremiumOrderByOrderCode,
+    redeemPremiumOrderByCode,
     claimWelcomeBonus,
     touchLastSeen,
     getPublicProfile,
