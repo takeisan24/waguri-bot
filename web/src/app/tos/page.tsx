@@ -35,7 +35,7 @@ export default function TermsOfService() {
                 <span className="text-pink-300">1.</span> <span>Hệ thống Kinh tế Ảo và Vật phẩm</span>
               </h2>
               <ul className="list-disc pl-5 space-y-2 text-slate-400 text-sm">
-                <li>Tất cả tiền tệ ảo (VNĐ), năng lượng (⚡), trang bị, vật phẩm phẩm hoặc tài sản tích lũy trong hệ thống của Waguri hoàn toàn là ảo.</li>
+                <li>Tất cả tiền tệ ảo (VNĐ), năng lượng (⚡), trang bị, vật phẩm hoặc tài sản tích lũy trong hệ thống của Waguri hoàn toàn là ảo.</li>
                 <li>Chúng không có giá trị tiền mặt thực tế và không thể được quy đổi, chuyển nhượng hoặc mua bán bằng tiền thật hoặc các hình thức giao dịch ngoài đời thực dưới mọi hình thức.</li>
                 <li>Mọi hành vi mua bán tài khoản hoặc tài sản ảo trong Bot bằng tiền thật sẽ bị xử phạt nghiêm khắc (bao gồm ban vĩnh viễn và reset toàn bộ dữ liệu).</li>
               </ul>

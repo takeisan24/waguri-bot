@@ -79,6 +79,34 @@ export default async function PremiumPage() {
           ))}
         </div>
 
+        {/* So sánh Miễn phí vs Premium */}
+        <div className="glass-panel rounded-2xl p-5 border border-pink-300/10">
+          <h2 className="text-base font-extrabold text-white text-center mb-3">Miễn phí vs Premium</h2>
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-slate-400 border-b border-pink-300/10">
+                <th className="text-left font-medium py-2">Quyền lợi</th>
+                <th className="text-center font-medium py-2">Miễn phí</th>
+                <th className="text-center font-bold text-pink-300 py-2">Premium 💎</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-pink-300/5">
+              {[
+                ["Lượt chat AI / ngày", "15", "150"],
+                ["Thu nhập kiếm tiền", "×1", "+10%"],
+                ["Huy hiệu 💎 hồ sơ", "—", "✓"],
+                ["Trải nghiệm tính năng mới sớm", "—", "✓"],
+              ].map(([label, free, prem]) => (
+                <tr key={label}>
+                  <td className="py-2 text-slate-300">{label}</td>
+                  <td className="py-2 text-center text-slate-500">{free}</td>
+                  <td className="py-2 text-center font-bold text-pink-200">{prem}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
         {/* Bảng giá */}
         <div className="space-y-3">
           <h2 className="text-lg font-extrabold text-white text-center">Chọn gói {active ? "để gia hạn thêm" : ""}</h2>
