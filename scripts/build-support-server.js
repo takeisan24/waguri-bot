@@ -7,8 +7,9 @@
 //
 // CÁCH DÙNG:
 //   1) Mời Waguri + tạm cấp ADMINISTRATOR, đặt role Waguri lên CAO.
-//   2) Xem trước:  node scripts/build-support-server.js <SERVER_ID>     (DRY_RUN=true)
-//   3) Ưng -> DRY_RUN=false, chạy lại. Dọn role/kênh rác thì bật HARDEN_ROLES/CLEANUP_CLUTTER.
+//   2) Xem trước:  node scripts/build-support-server.js <SERVER_ID>           (mặc định: DRY RUN)
+//   3) Ưng -> làm thật:  node scripts/build-support-server.js <SERVER_ID> --apply
+//      Dọn role/kênh rác thì thêm cờ:  --harden  --cleanup
 // ============================================================
 require('dotenv').config();
 const {
@@ -17,15 +18,25 @@ const {
 } = require('discord.js');
 const config = require('../src/config');
 
-// ====================== TUỲ CHỈNH ======================
-const DRY_RUN = true;            // true = chỉ xem trước. Đổi false để làm thật.
-const CREATE_MISSING = true;     // tạo role/kênh/voice còn thiếu.
-const REWRITE_CONTENT = true;    // xoá tin Waguri cũ trong kênh nội dung -> đăng lại bản mới.
-const SET_PERMS = true;          // đặt quyền category (THÔNG TIN đọc-only, STAFF riêng tư).
-const ENABLE_COMMUNITY = true;   // bật Community + verification Medium + AFK + system channel.
-const HARDEN_ROLES = false;      // ⚠️ gỡ @everyone khỏi Helper/Voter.
-const CLEANUP_CLUTTER = false;   // ⚠️ XOÁ kênh trong CLUTTER_NAMES.
-const CLUTTER_NAMES = ['general', 'choco-test'];
+// ====================== TUỲ CHỈNH (điều khiển bằng CỜ dòng lệnh — không cần sửa file) ======================
+// Mặc định AN TOÀN: chỉ XEM TRƯỚC. Thêm cờ để làm thật:
+//   --apply        thực thi thật (tắt DRY_RUN)
+//   --harden       ⚠️ gỡ @everyone của Helper/Voter
+//   --cleanup      ⚠️ xoá kênh rác trong CLUTTER_NAMES
+//   --no-content   bỏ qua việc ghi/đè nội dung kênh
+//   --no-perms     bỏ qua đặt quyền category
+//   --no-community bỏ qua bật Community/verification
+// VD:  node scripts/build-support-server.js 123456789 --apply
+const FLAGS = process.argv.slice(2).filter(a => a.startsWith('--'));
+const has = f => FLAGS.includes(f);
+const DRY_RUN = !has('--apply');        // true = chỉ xem trước. Thêm --apply để làm thật.
+const CREATE_MISSING = true;            // tạo role/kênh/voice còn thiếu.
+const REWRITE_CONTENT = !has('--no-content'); // xoá tin Waguri cũ trong kênh nội dung -> đăng lại bản mới.
+const SET_PERMS = !has('--no-perms');   // đặt quyền category (THÔNG TIN đọc-only, STAFF riêng tư).
+const ENABLE_COMMUNITY = !has('--no-community'); // bật Community + verification Medium + AFK + system channel.
+const HARDEN_ROLES = has('--harden');   // ⚠️ gỡ @everyone khỏi Helper/Voter.
+const CLEANUP_CLUTTER = has('--cleanup'); // ⚠️ XOÁ kênh trong CLUTTER_NAMES.
+const CLUTTER_NAMES = ['general', 'waguri-test'];
 
 // ID kênh CÓ SẴN (ép dùng). Để trống = tự dò theo tên alias.
 const USE_EXISTING = {
@@ -37,8 +48,8 @@ const USE_EXISTING = {
 };
 // =======================================================
 
-const GUILD_ID = process.argv[2] || process.env.SUPPORT_GUILD_ID;
-if (!GUILD_ID) { console.error('❌ Thiếu Server ID. Dùng: node scripts/build-support-server.js <SERVER_ID>'); process.exit(1); }
+const GUILD_ID = process.argv.slice(2).find(a => !a.startsWith('--')) || process.env.SUPPORT_GUILD_ID;
+if (!GUILD_ID) { console.error('❌ Thiếu Server ID. Dùng: node scripts/build-support-server.js <SERVER_ID> [--apply]'); process.exit(1); }
 if (!process.env.DISCORD_TOKEN) { console.error('❌ Thiếu DISCORD_TOKEN trong .env'); process.exit(1); }
 
 const PINK = config.COLORS.INFO;
@@ -248,7 +259,7 @@ client.once('ready', async () => {
         if (clutter.length) console.log(`\n🧹 Kênh rác: ${clutter.map(c => '#' + c.name).join(', ')} -> ${CLEANUP_CLUTTER ? 'SẼ XOÁ' : 'giữ (bật CLEANUP_CLUTTER)'}`);
         if (loosen.size) console.log(`🔐 Role @everyone thừa: ${loosen.map(r => r.name).join(', ')} -> ${HARDEN_ROLES ? 'SẼ GỠ' : 'giữ (bật HARDEN_ROLES)'}`);
 
-        if (DRY_RUN) { console.log('\n👀 XEM TRƯỚC xong. Ổn thì đặt DRY_RUN=false rồi chạy lại.'); return; }
+        if (DRY_RUN) { console.log(`\n👀 XEM TRƯỚC xong. Ổn thì chạy lại kèm --apply:\n   node scripts/build-support-server.js ${GUILD_ID} --apply`); return; }
 
         // ===== 3) QUYỀN CATEGORY =====
         if (SET_PERMS) {
@@ -268,6 +279,20 @@ client.once('ready', async () => {
                         console.log(`  = ${cat.name}: riêng tư staff`);
                     }
                 } catch (e) { console.warn(`  ! quyền ${cat.name}: ${e.message}`); }
+            }
+        }
+
+        // ===== 3b) QUYỀN KÊNH ĐẶC BIỆT — chỉ-đọc theo từng kênh =====
+        // Kênh #sự-kiện nằm trong category CỘNG ĐỒNG (public) nhưng là kênh thông báo:
+        // @everyone KHÔNG gửi được; chỉ staff mới gửi. Tương tự #cập-nhật nếu chưa readonly qua category.
+        if (SET_PERMS) {
+            const announcementOnlyChannels = ['events', 'changelog'].map(k => resolved[k]).filter(Boolean);
+            for (const ch of announcementOnlyChannels) {
+                try {
+                    await ch.permissionOverwrites.edit(guild.roles.everyone, { SendMessages: false, AddReactions: true, ViewChannel: true });
+                    for (const id of staffRoleIds) await ch.permissionOverwrites.edit(id, { SendMessages: true });
+                    console.log(`  = #${ch.name}: chỉ-đọc (override riêng kênh)`);
+                } catch (e) { console.warn(`  ! quyền kênh #${ch.name}: ${e.message}`); }
             }
         }
 

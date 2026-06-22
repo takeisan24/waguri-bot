@@ -14,7 +14,7 @@ chơi minigame nhiều người, kết đôi, buôn bán… — tất cả bằn
 
 ---
 
-## ✨ Tính năng (77 lệnh)
+## ✨ Tính năng (82 lệnh)
 
 | Nhóm | Lệnh tiêu biểu |
 |---|---|
@@ -27,7 +27,11 @@ chơi minigame nhiều người, kết đôi, buôn bán… — tất cả bằn
 | 🏰 **Bang hội** | `/clan create·join·info·list·deposit·withdraw·kick·disband·war` (chiến tranh bang PvP) |
 | 🛒 **Chợ** | `/market view·mine·sell·buy·cancel` — mua bán đồ giữa người chơi (ký gửi) |
 | 💬 **AI & Premium** | `/ask` + @tag Waguri trò chuyện · `/premium` (quota AI cao + 10% thu nhập) · `/status` |
-| 🏆 **Khác** | `/leaderboard` (tài sản / cấp / tình cảm) · `/achievements` · `/event` · `/invite` · `/help` |
+| 🐷 **Nuôi & Trồng** | `/heo` (nuôi heo đất) · `/cay` (trồng cây) · `/pet` (thú cưng) |
+| 🏥 **Sức khoẻ & Xe** | `/hospital` (nhập viện) · `/tangdo` (độ xe) · `/repair` (sửa công cụ) |
+| 🗓️ **Thông tin** | `/amlich` (lịch âm) · `/thoitiet` (thời tiết) · `/cat` `/dog` `/waifu` (ảnh ngẫu nhiên) |
+| 🏆 **Bảng xếp hạng** | `/leaderboard` (tài sản / cấp / tình cảm) · `/achievements` · `/event` · `/invite` · `/help` |
+| ℹ️ **Tiện ích** | `/about` (thông tin bot) · `/ping` (độ trễ) · `/user` (hồ sơ) · `/server` (thông tin server) |
 | ⚙️ **Quản trị** | `/setup` (tạo phòng + cấu hình) · `/config` (AI toggle/kênh) · `/eco-admin` (owner: tiền/ban/premium) |
 
 **Hệ thống nền:** năng lượng & hồi lười (lazy regen) · mệt mỏi giảm thu nhập · sức khỏe & nhập viện ·
@@ -55,8 +59,8 @@ waguri/
 │   ├── lib/                  # embed, leveling, fatigue, lobby, couple, loto, bingoPrefix, masoi/engine, ...
 │   ├── commands/{economy,games,fun,utility,admin}/*.js
 │   └── events/{ready,interactionCreate,messageCreate,guildCreate}.js
-├── supabase/migrations/      # 0001 → 0045 (schema + RPC; đã áp qua Supabase)
-└── test/*.test.js            # Unit test (leveling, fatigue, amount, masoi, sprint3)
+├── supabase/migrations/      # 0001 → 0055 (schema + RPC; đã áp qua Supabase)
+└── test/*.test.js            # Unit test (amlich, amount, fatigue, leveling, loto_bingo, masoi, paymatch, sprint3)
 ```
 
 ---
@@ -80,7 +84,7 @@ waguri/
 | `SKIP_DEPLOY` | ❌ | `=1` để bỏ qua đăng ký lệnh mỗi lần restart (đặt sau lần deploy đầu) |
 
 ### 3) Database (1 lần)
-Chạy lần lượt các file trong `supabase/migrations/` (`0001` → `0041`) trên **Supabase SQL Editor**
+Chạy lần lượt các file trong `supabase/migrations/` (`0001` → `0055`) trên **Supabase SQL Editor**
 (hoặc Supabase CLI). Đã được thiết kế idempotent (`create ... if not exists` / `or replace`).
 
 ### 4) Chạy
@@ -107,7 +111,17 @@ Cả hai **yêu cầu vào phòng voice** để mở game.
 
 ---
 
-## 📄 License
-ISC — xem `package.json`.
+## 🔗 Liên kết
 
-> 🌸 *“Cố lên nhé! Hôm nay cậu đã vất vả rồi, Waguri luôn ở sau cổ vũ cậu!”*
+- **Web:** https://waguri-bot.vercel.app
+- **Danh sách lệnh:** https://waguri-bot.vercel.app/commands
+- **Bảng xếp hạng:** https://waguri-bot.vercel.app/leaderboard
+- **Mời bot:** dùng `/invite` trong Discord (link tự sinh kèm quyền)
+- **Server hỗ trợ:** link trong biến môi trường `SUPPORT_INVITE` (`.env`)
+
+---
+
+## 📄 License
+MIT — xem file `LICENSE`.
+
+> 🌸 *"Cố lên nhé! Hôm nay cậu đã vất vả rồi, Waguri luôn ở sau cổ vũ cậu!"*

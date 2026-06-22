@@ -2,7 +2,7 @@
   "name": "waguri",
   "version": "1.0.0",
   "description": "Waguri - Discord economy & RPG bot bản địa hóa văn hóa Việt Nam",
-  "license": "ISC",
+  "license": "MIT",
   "author": "takei",
   "type": "commonjs",
   "main": "index.js",

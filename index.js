@@ -12,6 +12,7 @@ const client = new Client({
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.MessageContent,
+        GatewayIntentBits.GuildMembers, // cần cho event guildMemberAdd (privileged intent — phải bật trong Developer Portal)
     ],
 });
 

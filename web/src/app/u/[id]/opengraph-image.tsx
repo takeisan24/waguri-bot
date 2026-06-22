@@ -4,7 +4,7 @@ export const alt = "Hồ sơ Waguri";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-const API = "https://chocobot.wispbyte.app";
+const API = "https://waguribot.wispbyte.app";
 // Load cả latin + vietnamese subset -> satori chọn glyph theo từng ký tự (tên/nghề có dấu).
 const FONT_URLS = [
   "https://cdn.jsdelivr.net/npm/@fontsource/inter@5.1.1/files/inter-latin-600-normal.woff",

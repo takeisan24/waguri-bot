@@ -9,7 +9,7 @@ export const metadata = {
   description: "Top đại gia và cao thủ của Waguri — ai giàu nhất, ai chăm chỉ nhất?",
 };
 
-const API = "https://chocobot.wispbyte.app";
+const API = "https://waguribot.wispbyte.app";
 const fmt = (n: number) => Number(n || 0).toLocaleString("vi-VN");
 const MEDALS = ["🥇", "🥈", "🥉"];
 

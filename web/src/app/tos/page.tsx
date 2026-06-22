@@ -27,7 +27,7 @@ export default function TermsOfService() {
 
           <div className="space-y-6 text-sm md:text-base leading-relaxed text-slate-300">
             <p>
-              Chào mừng bạn đến với <strong>Waguri Discord Bot</strong> (sau đây gọi tắt là "Bot"). Bằng việc mời Bot vào server của bạn hoặc tương tác với các dịch vụ của Bot, bạn đồng ý tuân thủ và chấp nhận ràng buộc bởi các Điều khoản Dịch vụ dưới đây. Nếu bạn không đồng ý với bất kỳ phần nào của các điều khoản này, vui lòng ngừng sử dụng Bot.
+              Chào mừng bạn đến với <strong>Waguri Discord Bot</strong> (sau đây gọi tắt là &quot;Bot&quot;). Bằng việc mời Bot vào server của bạn hoặc tương tác với các dịch vụ của Bot, bạn đồng ý tuân thủ và chấp nhận ràng buộc bởi các Điều khoản Dịch vụ dưới đây. Nếu bạn không đồng ý với bất kỳ phần nào của các điều khoản này, vui lòng ngừng sử dụng Bot.
             </p>
 
             <section className="space-y-3">
@@ -35,7 +35,7 @@ export default function TermsOfService() {
                 <span className="text-pink-300">1.</span> <span>Hệ thống Kinh tế Ảo và Vật phẩm</span>
               </h2>
               <ul className="list-disc pl-5 space-y-2 text-slate-400 text-sm">
-                <li>Tất cả tiền tệ ảo (VNĐ), năng lượng (⚡), trang bị, vật phẩm phẩm hoặc tài sản tích lũy trong hệ thống của Waguri hoàn toàn là ảo.</li>
+                <li>Tất cả tiền tệ ảo (VNĐ), năng lượng (⚡), trang bị, vật phẩm hoặc tài sản tích lũy trong hệ thống của Waguri hoàn toàn là ảo.</li>
                 <li>Chúng không có giá trị tiền mặt thực tế và không thể được quy đổi, chuyển nhượng hoặc mua bán bằng tiền thật hoặc các hình thức giao dịch ngoài đời thực dưới mọi hình thức.</li>
                 <li>Mọi hành vi mua bán tài khoản hoặc tài sản ảo trong Bot bằng tiền thật sẽ bị xử phạt nghiêm khắc (bao gồm ban vĩnh viễn và reset toàn bộ dữ liệu).</li>
               </ul>
@@ -61,7 +61,7 @@ export default function TermsOfService() {
                 <span className="text-pink-300">3.</span> <span>Tuyên bố Miễn trừ Trách nhiệm</span>
               </h2>
               <ul className="list-disc pl-5 space-y-2 text-slate-400 text-sm">
-                <li>Bot được cung cấp dưới dạng "nguyên trạng" (as is) và "sẵn có" (as available). Chúng tôi không cam kết Bot sẽ luôn hoạt động liên tục 100% không gián đoạn hoặc không có lỗi.</li>
+                <li>Bot được cung cấp dưới dạng &quot;nguyên trạng&quot; (as is) và &quot;sẵn có&quot; (as available). Chúng tôi không cam kết Bot sẽ luôn hoạt động liên tục 100% không gián đoạn hoặc không có lỗi.</li>
                 <li>Chúng tôi không chịu trách nhiệm đối với bất kỳ mất mát dữ liệu ảo nào (ví dụ: mất tiền ảo, mất cấp độ, mất vật phẩm) do lỗi cơ sở dữ liệu, sự cố mạng hoặc hành vi trái phép từ bên thứ ba.</li>
                 <li>Dịch vụ trò chuyện AI (sử dụng Gemini API) chỉ mang tính chất giải trí. Câu trả lời của AI do máy tạo ra và không đại diện cho quan điểm của nhà phát triển Bot. Chúng tôi không chịu trách nhiệm về tính chính xác của các nội dung này.</li>
               </ul>

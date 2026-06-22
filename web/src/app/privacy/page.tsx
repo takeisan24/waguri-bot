@@ -27,7 +27,7 @@ export default function PrivacyPolicy() {
 
           <div className="space-y-6 text-sm md:text-base leading-relaxed text-slate-300">
             <p>
-              Quyền riêng tư của bạn là ưu tiên hàng đầu của chúng tôi. Chính sách Bảo mật này giải thích cách <strong>Waguri Discord Bot</strong> (sau đây gọi là "Bot") thu thập, lưu trữ, sử dụng và bảo vệ thông tin cá nhân của bạn khi bạn tương tác với Bot.
+              Quyền riêng tư của bạn là ưu tiên hàng đầu của chúng tôi. Chính sách Bảo mật này giải thích cách <strong>Waguri Discord Bot</strong> (sau đây gọi là &quot;Bot&quot;) thu thập, lưu trữ, sử dụng và bảo vệ thông tin cá nhân của bạn khi bạn tương tác với Bot.
             </p>
 
             <section className="space-y-3">

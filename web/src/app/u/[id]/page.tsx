@@ -4,7 +4,7 @@ import CherryBlossom from "../../../components/CherryBlossom";
 import SiteHeader from "../../../components/SiteHeader";
 import SiteFooter from "../../../components/SiteFooter";
 
-const API = "https://chocobot.wispbyte.app";
+const API = "https://waguribot.wispbyte.app";
 const INVITE_URL =
   "https://discord.com/oauth2/authorize?client_id=1482620714690543738&permissions=1099512007760&integration_type=0&scope=bot+applications.commands";
 

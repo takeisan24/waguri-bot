@@ -51,4 +51,4 @@ create table if not exists cooldowns (
     primary key (user_id, command)
 );
 
--- Các hàm RPC nguyên tử nằm ở 0002_functions.sql (ĐÃ áp dụng vào project discord-choco).
+-- Các hàm RPC nguyên tử nằm ở 0002_functions.sql (ĐÃ áp dụng vào project Supabase).

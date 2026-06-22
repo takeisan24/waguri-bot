@@ -220,7 +220,7 @@ export default function Wiki() {
 
         <Card id="he-giam" title="Hệ giam 🚓" emoji="🚓">
           <p>
-            Các hành vi "phạm pháp" — <code>/rob</code> cướp tiền, trộm heo/cây — nếu <strong>thất bại 3 lần</strong> mà
+            Các hành vi &quot;phạm pháp&quot; — <code>/rob</code> cướp tiền, trộm heo/cây — nếu <strong>thất bại 3 lần</strong> mà
             không đủ tiền nộp phạt, cậu sẽ bị <strong>giam giữ</strong>: tạm thời không dùng được các lệnh kiếm tiền, cờ
             bạc và đi trộm cho tới khi được thả. Mua <strong>Bảo Hiểm Học Đường</strong> ở <code>/shop</code> để giảm nửa
             thời gian bị giam. Xem trạng thái giam ở <code>/status</code>.

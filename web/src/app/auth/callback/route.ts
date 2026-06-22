@@ -17,7 +17,7 @@ export async function GET(request: Request) {
         if (token) {
           const [ug, bg] = await Promise.all([
             fetch("https://discord.com/api/users/@me/guilds", { headers: { Authorization: `Bearer ${token}` } }),
-            fetch("https://chocobot.wispbyte.app/api/guilds"),
+            fetch("https://waguribot.wispbyte.app/api/guilds"),
           ]);
           if (ug.ok && bg.ok) {
             const userGuilds = await ug.json();

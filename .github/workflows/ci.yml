@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  bot-test:
+    name: Bot — test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      # Env dummy: database.js process.exit(1) nếu thiếu — test chỉ kiểm logic thuần, không gọi DB.
+      - run: npm test
+        env:
+          SUPABASE_URL: https://dummy.supabase.co
+          SUPABASE_SERVICE_KEY: dummy_key_for_ci
+      # Chặn drift: mọi lệnh slash của bot phải có trên trang commands của web.
+      - run: node scripts/check-command-sync.js
+
+  web-build:
+    name: Web — build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      # npm install (không phải ci): né bug lockfile optional-deps đa nền tảng của Tailwind v4/oxide-emnapi.
+      - run: npm install --no-audit --no-fund
+      # build là cổng chính (không cần secret — trang động render lúc request).
+      - run: npm run build
+      # lint đã sạch (0 errors) -> gate chặn thật.
+      - run: npm run lint

@@ -35,6 +35,8 @@ const CATEGORIES: Cat[] = [
       ["ngu", "đi ngủ hồi đầy năng lượng 😴"],
       ["cosmetic", "trang trí hồ sơ: danh hiệu & màu 🎨"],
       ["craft", "chế tạo đồ từ gỗ/quặng/đá 🔨"],
+      ["repair", "sửa công cụ khai thác (15% giá mua) 🔧"],
+      ["hospital", "nhập viện hồi phục sức khỏe 🏥"],
     ],
   },
   {
@@ -48,11 +50,14 @@ const CATEGORIES: Cat[] = [
       ["trano", "trả nợ 💵"],
       ["donno", "đòi nợ 🧾"],
       ["no", "xem sổ nợ"],
+      ["tangdo", "tặng vật phẩm trong kho cho người khác 🎁"],
     ],
   },
   {
-    name: "🎲 Minigame",
+    name: "🎲 Minigame & Nuôi trồng",
     cmds: [
+      ["heo", "nuôi heo đất 🐷 (mua/chăm/bán/trộm)"],
+      ["cay", "trồng cây 🌱 (giống/tưới/thu hoạch/trộm)"],
       ["coinflip", "tung đồng xu"],
       ["taixiu", "tài xỉu"],
       ["baucua", "bầu cua tôm cá"],
@@ -115,6 +120,7 @@ const CATEGORIES: Cat[] = [
       ["vote", "vote trên Top.gg nhận thưởng 💝"],
       ["about", "giới thiệu bot 🌸"],
       ["support", "vào server hỗ trợ 🛟"],
+      ["ticket", "mở phòng hỗ trợ riêng tư với staff 🎫"],
       ["invite", "mời Waguri về server"],
       ["ping", "độ trễ & trạng thái bot"],
       ["server", "thông tin server"],
@@ -127,7 +133,9 @@ const CATEGORIES: Cat[] = [
     cmds: [
       ["setup", "tạo phòng riêng cho Waguri"],
       ["config", "cấu hình bot cho server (Quản lý Server)"],
+      ["serverinfo", "báo cáo cấu trúc server để audit 🔍"],
       ["eco-admin", "công cụ owner: tiền/ban/premium"],
+      ["premium-admin", "duyệt đơn Premium thủ công (owner) 💎"],
     ],
   },
 ];

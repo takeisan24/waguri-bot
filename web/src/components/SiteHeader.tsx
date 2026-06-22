@@ -36,7 +36,7 @@ export default function SiteHeader() {
       .finally(() => setReady(true));
   }, []);
 
-  const AuthArea = ({ mobile = false }: { mobile?: boolean }) =>
+  const authArea = (mobile = false) =>
     !ready ? null : me ? (
       <Link
         href="/dashboard"
@@ -79,7 +79,7 @@ export default function SiteHeader() {
               </Link>
             )
           )}
-          <AuthArea />
+          {authArea()}
           <a
             href={INVITE_URL}
             target="_blank"
@@ -117,7 +117,7 @@ export default function SiteHeader() {
               </Link>
             )
           )}
-          <AuthArea mobile />
+          {authArea(true)}
           <a
             href={INVITE_URL}
             target="_blank"

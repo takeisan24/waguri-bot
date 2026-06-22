@@ -33,6 +33,13 @@ function verifyV1Signature(rawBody, sigHeader, secret) {
     }
 }
 
+// So sánh chuỗi bí mật chống timing-attack (header webhook so với token cấu hình).
+function safeEqual(a, b) {
+    if (typeof a !== 'string' || typeof b !== 'string') return false;
+    const ba = Buffer.from(a), bb = Buffer.from(b);
+    return ba.length === bb.length && crypto.timingSafeEqual(ba, bb);
+}
+
 // Số server + thành viên toàn bot (gộp mọi shard nếu có) — cho widget công khai trên web.
 async function getPublicStats(client) {
     if (client.shard) {
@@ -276,7 +283,7 @@ function startVoteServer(client) {
             if (isCasso) {
                 // Chưa cấu hình token -> không xác thực được -> từ chối (chống lỗ hổng).
                 if (!cassoToken) { res.writeHead(503); res.end(); return; }
-                if (req.headers['secure-token'] !== cassoToken) { res.writeHead(401); res.end(); return; }
+                if (!safeEqual(req.headers['secure-token'], cassoToken)) { res.writeHead(401); res.end(); return; }
                 let payload;
                 try { payload = JSON.parse(body || '{}'); } catch { res.writeHead(400); res.end(); return; }
                 res.writeHead(200, JSONH); res.end('{"success":true}'); // Casso strict mode cần 200 + success

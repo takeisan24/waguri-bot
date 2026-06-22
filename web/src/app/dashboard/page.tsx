@@ -62,6 +62,7 @@ export default async function Dashboard() {
   const bank = Number(row?.bank || 0);
   const isPublic = row?.profile_public !== false;
   const voteReminder = row?.vote_reminder !== false;
+  // eslint-disable-next-line react-hooks/purity -- server component (force-dynamic): render 1 lần/request nên Date.now() an toàn
   const isPremium = row?.premium_until && new Date(row.premium_until).getTime() > Date.now();
   const voteStreak = Number(row?.vote_streak || 0);
   const expPct = prog.expForNextLevel > 0 ? Math.min((prog.expIntoLevel / prog.expForNextLevel) * 100, 100) : 0;

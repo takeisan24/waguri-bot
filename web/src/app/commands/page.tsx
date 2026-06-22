@@ -6,7 +6,7 @@ import CommandsExplorer from "../../components/CommandsExplorer";
 
 export const metadata = {
   title: "Danh sách lệnh 📜 — Waguri Bot",
-  description: "Tra cứu toàn bộ 77 lệnh của Waguri: kiếm tiền, minigame, bang hội, tình cảm, AI và quản trị.",
+  description: "Tra cứu toàn bộ lệnh của Waguri: kiếm tiền, minigame, nuôi trồng, bang hội, tình cảm, AI và quản trị.",
 };
 
 export default function CommandsPage() {

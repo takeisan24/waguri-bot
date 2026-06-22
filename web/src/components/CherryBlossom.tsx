@@ -25,7 +25,7 @@ export default function CherryBlossom() {
     if (!ctx) return;
 
     let animationFrameId: number;
-    let petals: Petal[] = [];
+    const petals: Petal[] = [];
     const maxPetals = 40;
 
     const resizeCanvas = () => {
