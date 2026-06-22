@@ -6,6 +6,7 @@ import { createAdminClient } from "../../../../../lib/supabase/admin";
 import { getDiscordIdentity } from "../../../../../lib/discord";
 import { fmtVND } from "../../../../../lib/game";
 import { vietqrUrl, VCB_INFO } from "../../../../../lib/premium";
+import { claimPremiumOrder } from "../../actions";
 import PayStatus from "./PayStatus";
 import CopyHint from "./CopyHint";
 
@@ -25,7 +26,7 @@ export default async function PayPage({ params }: { params: Promise<{ code: stri
   const admin = createAdminClient();
   const { data: order } = await admin
     .from("premium_orders")
-    .select("code, user_id, months, amount, status")
+    .select("code, user_id, months, amount, status, claimed_at")
     .eq("code", code)
     .single();
 
@@ -97,9 +98,22 @@ export default async function PayPage({ params }: { params: Promise<{ code: stri
             </div>
 
             <p className="text-[11px] text-amber-200/80 leading-relaxed">
-              ⚠️ <b>Bắt buộc</b> giữ đúng nội dung <b>{order.code}</b> và đúng số tiền để Waguri tự nhận diện. Sai
-              nội dung sẽ không tự kích hoạt được.
+              ⚠️ <b>Bắt buộc</b> giữ đúng nội dung <b>{order.code}</b> để đối chiếu. Chuyển xong, bấm nút bên dưới để
+              báo cho mình nhé!
             </p>
+
+            {order.claimed_at ? (
+              <div className="rounded-2xl bg-emerald-500/10 border border-emerald-400/30 p-4 text-center text-sm text-emerald-200">
+                ✅ Đã ghi nhận! Mình sẽ kiểm tra & kích hoạt Premium sớm nhất (thường trong ít phút). Trang này tự
+                cập nhật khi xong 💕
+              </div>
+            ) : (
+              <form action={claimPremiumOrder.bind(null, order.code)}>
+                <button className="w-full px-4 py-3 rounded-full bg-pink-500 text-white text-sm font-bold hover:bg-pink-400 transition-all">
+                  ✅ Tôi đã chuyển khoản xong
+                </button>
+              </form>
+            )}
 
             <PayStatus code={order.code} />
           </div>

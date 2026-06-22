@@ -1334,6 +1334,36 @@ async function setProfilePublic(userId, isPublic) {
     }
 }
 
+/** Danh sách đơn Premium đang chờ (pending) — đơn buyer đã bấm "đã CK" lên trước. */
+async function getPendingPremiumOrders(limit = 15) {
+    try {
+        const { data, error } = await supabase
+            .from('premium_orders')
+            .select('code, user_id, plan, months, amount, claimed_at, created_at')
+            .eq('status', 'pending')
+            .order('claimed_at', { ascending: false, nullsFirst: false })
+            .order('created_at', { ascending: false })
+            .limit(limit);
+        if (error) throw error;
+        return data || [];
+    } catch (error) {
+        console.error('[DATABASE ERROR] getPendingPremiumOrders:', error);
+        return [];
+    }
+}
+
+/** Owner duyệt thủ công 1 đơn theo mã (không kiểm tra số tiền). Idempotent. */
+async function approvePremiumOrder(code, ref = 'manual') {
+    try {
+        const { data, error } = await supabase.rpc('approve_premium_order', { p_code: code, p_ref: ref });
+        if (error) throw error;
+        return data;
+    } catch (error) {
+        console.error('[DATABASE ERROR] approvePremiumOrder:', error);
+        return { ok: false, reason: 'db_error' };
+    }
+}
+
 /** Ghi nhận thanh toán Premium theo MÃ trong nội dung CK (webhook Casso).
  *  Gia hạn premium_until, idempotent (webhook gọi lại không cộng dồn). */
 async function redeemPremiumOrderByCode(code, amount, ref) {
@@ -1353,6 +1383,8 @@ module.exports = {
     supabase,
     getUser,
     redeemPremiumOrderByCode,
+    getPendingPremiumOrders,
+    approvePremiumOrder,
     claimWelcomeBonus,
     touchLastSeen,
     getPublicProfile,
