@@ -75,6 +75,22 @@ async function addMoney(userId, amount, type = 'wallet') {
 }
 
 /**
+ * Trừ tiền phạt theo TỔNG TÀI SẢN: ví trước, thiếu thì trừ tiếp ngân hàng (atomic).
+ * Dùng cho phạt /rob & công an cờ bạc -> không né được bằng cách gửi tiền vào bank.
+ * @returns {number} số tiền thực sự bị trừ (>= 0).
+ */
+async function chargeAssets(userId, amount) {
+    try {
+        const { data, error } = await supabase.rpc('charge_assets', { p_user: userId, p_amount: amount });
+        if (error) throw error;
+        return Number(data) || 0;
+    } catch (error) {
+        console.error('[DATABASE ERROR] chargeAssets():', error);
+        return 0;
+    }
+}
+
+/**
  * Chuyển tiền giữa 2 user trong 1 transaction (atomic).
  * @returns {boolean} - true nếu thành công, false nếu thiếu tiền / input sai.
  */
@@ -1419,6 +1435,7 @@ module.exports = {
     hospitalHeal,
     useVehicle,
     addHealth,
+    chargeAssets,
     // energy / buff
     spendEnergy,
     getEnergy,

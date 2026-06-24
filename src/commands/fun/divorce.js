@@ -21,7 +21,8 @@ module.exports = {
         }
 
         const fee = config.MARRY.DIVORCE_COST;
-        if (Number(user.wallet) < fee) {
+        // Thu án phí TRƯỚC (atomic) — tránh ly hôn xong mà ví bị rút cạn xen giữa -> mất phí.
+        if (!await db.addMoney(interaction.user.id, -fee, 'wallet')) {
             const embed = buildWaguriEmbed(interaction, 'warning', {
                 description: `Ly hôn cần **${fmt(fee)}** ${config.CURRENCY} án phí 😅 — ví cậu chưa đủ. Kiếm thêm rồi quay lại nhé~`
             });
@@ -29,19 +30,13 @@ module.exports = {
         }
 
         const r = await db.divorceUser(interaction.user.id);
-        if (r === 'single') {
-            const embed = buildWaguriEmbed(interaction, 'warning', {
-                description: 'Cậu đang độc thân mà~ Đâu có ai để chia tay đâu 😅'
-            });
-            return interaction.editReply({ embeds: [embed] });
-        }
         if (r !== 'ok') {
-            const embed = buildWaguriEmbed(interaction, 'error', {
-                description: 'Ơ, có lỗi rồi, thử lại sau nhé~ 🌸'
+            await db.addMoney(interaction.user.id, fee, 'wallet'); // hoàn phí nếu không ly hôn được
+            const embed = buildWaguriEmbed(interaction, r === 'single' ? 'warning' : 'error', {
+                description: r === 'single' ? 'Cậu đang độc thân mà~ Đâu có ai để chia tay đâu 😅' : 'Ơ, có lỗi rồi, thử lại sau nhé~ 🌸'
             });
             return interaction.editReply({ embeds: [embed] });
         }
-        await db.addMoney(interaction.user.id, -fee, 'wallet'); // án phí ly hôn
 
         const embed = buildWaguriEmbed(interaction, 'warning', {
             title: '💔・Quyết định ly hôn',

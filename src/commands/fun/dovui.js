@@ -19,6 +19,12 @@ module.exports = {
             const embed = buildWaguriEmbed(interaction, 'warning', { title: '🧠・Đố Vui', description: 'Kênh này đang có một câu đố rồi, chờ xong đã nhé~ 🌸' });
             return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
         }
+        // Cooldown mỗi người chống spam tạo câu đố để farm (đáp án thuộc bộ cố định).
+        const cd = await db.claimCooldown(interaction.user.id, 'dovui', 60);
+        if (cd) {
+            const embed = buildWaguriEmbed(interaction, 'warning', { title: '🧠・Đố Vui', description: `Cậu vừa ra đố xong~ nghỉ chút rồi tạo câu mới <t:${Math.floor(cd / 1000)}:R> nhé! 🌸` });
+            return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+        }
         const item = QUIZ[Math.floor(Math.random() * QUIZ.length)];
         const accepted = item.a.map(norm);
         active.add(interaction.channelId);

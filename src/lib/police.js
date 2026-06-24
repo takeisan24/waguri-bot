@@ -26,13 +26,15 @@ async function applyPolice(userId) {
     if (Math.random() >= chance) return null;
 
     const u = await db.getUser(userId);
-    let fine = Math.floor(Number(u?.wallet || 0) * config.POLICE.FINE_PCT);
+    // Phạt theo TỔNG TÀI SẢN (ví+bank) -> không né được bằng cách giấu tiền trong bank.
+    const assets = Number(u?.wallet || 0) + Number(u?.bank || 0);
+    let fine = Math.floor(assets * config.POLICE.FINE_PCT);
     const usedIns = await db.useInsurance(userId, 'bh_duong_pho');
     if (usedIns) {
         fine = Math.round(fine * 0.5); // Giảm 50% tiền phạt
     }
     recent.set(userId, { count: 0, ts: Date.now() }); // bị bắt rồi thì reset
-    if (fine > 0) await db.addMoney(userId, -fine, 'wallet');
+    if (fine > 0) await db.chargeAssets(userId, fine); // trừ ví trước, thiếu thì bank
     return { fine, usedIns };
 }
 
