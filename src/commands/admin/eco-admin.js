@@ -80,6 +80,10 @@ module.exports = {
         }
         const C = config.CURRENCY;
 
+        // Audit log: ghi lại mọi thao tác admin (cấp tiền/đồ/premium/ban/reset) để truy vết.
+        console.log(`[ECO-ADMIN AUDIT] owner=${interaction.user.id} action=${sub} target=${target.id} ` +
+            `opts=${JSON.stringify({ amount: interaction.options.getInteger('amount'), value: interaction.options.getInteger('value'), days: interaction.options.getInteger('days'), item: interaction.options.getString('item'), job: interaction.options.getString('job'), field: interaction.options.getString('field') })}`);
+
         if (sub === 'addmoney') {
             const amount = interaction.options.getInteger('amount');
             const field = interaction.options.getString('field') || 'wallet';

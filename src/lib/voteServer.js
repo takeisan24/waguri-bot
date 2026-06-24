@@ -311,8 +311,8 @@ function startVoteServer(client) {
                 return;
             }
 
-            // --- Webhook v0 (legacy): so khớp secret ở header Authorization ---
-            if (req.headers.authorization !== auth) { res.writeHead(401); res.end(); return; }
+            // --- Webhook v0 (legacy): so khớp secret ở header Authorization (timing-safe) ---
+            if (!safeEqual(req.headers.authorization, auth)) { res.writeHead(401); res.end(); return; }
             res.writeHead(200); res.end(); // ACK ngay cho Top.gg (tránh bị retry)
             try {
                 const data = JSON.parse(body || '{}');

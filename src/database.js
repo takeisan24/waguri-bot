@@ -471,17 +471,10 @@ async function useVehicle(userId) {
  */
 async function addHealth(userId, amount) {
     try {
-        const user = await getUser(userId);
-        if (!user) return null;
-        const newHealth = Math.max(0, Math.min(100, (user.health || 100) + amount));
-        const { data, error } = await supabase
-            .from('users')
-            .update({ health: newHealth })
-            .eq('user_id', userId)
-            .select()
-            .single();
+        // Atomic qua RPC add_health (kẹp 0..100) -> tránh lost-update khi nhiều thay đổi đua nhau.
+        const { data, error } = await supabase.rpc('add_health', { p_user_id: userId, p_delta: amount });
         if (error) throw error;
-        return data;
+        return data; // sức khỏe mới (int)
     } catch (error) {
         console.error(`[DATABASE ERROR] Lỗi addHealth(${userId}):`, error);
         return null;

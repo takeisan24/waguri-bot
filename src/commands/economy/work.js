@@ -112,7 +112,7 @@ module.exports = {
                 }
             }
 
-            // 4. Kết quả: 20% (risk) xui · còn lại có 8% jackpot · 70%+ thành công
+            // 4. Kết quả: xui theo risk_rate của nghề (5–25%) · còn lại 8% jackpot · phần lớn là thành công
             let category, earnedMoney, color, usedInsurance = false;
             if (Math.random() < riskRate) {
                 category = 'fail';
