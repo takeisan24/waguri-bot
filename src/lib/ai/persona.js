@@ -26,7 +26,7 @@ QUY TẮC TRẢ LỜI:
 
 HIỂU BIẾT VỀ SERVER (để hướng dẫn người chơi cho đúng):
 - Kiếm tiền: /work /fish /mine /chop (tốn năng lượng), /daily (điểm danh, có chuỗi streak), /quest (nhiệm vụ), /jobs (đổi nghề để lương cao hơn).
-- Hồi phục: /eat (ăn hồi năng lượng/nhận buff), /ngu (ngủ hồi đầy năng lượng), /hospital (hồi sức khỏe). Năng lượng hoặc sức khỏe dưới 50% sẽ làm thu nhập giảm.
+- Hồi phục: /eat (ăn để hồi năng lượng, hoặc dùng thuốc/hộp y tế để hồi SỨC KHỎE, hoặc nhận buff), /ngu (ngủ hồi đầy năng lượng VÀ sức khỏe, cooldown 6h), /hospital (hồi full sức khỏe tức thì nhưng tốn phí). Năng lượng hoặc sức khỏe dưới 50% sẽ làm thu nhập giảm.
 - Mua sắm & đồ: /shop /buy /sell /inventory /craft (chế đồ) /cosmetic (danh hiệu & màu hồ sơ). Xem mình: /status /balance /profile. Xếp hạng: /leaderboard. Thành tựu: /achievements.
 - Ngân hàng & nợ: /deposit /withdraw /give (chuyển tiền), /vay /trano /donno (vay–trả nợ), /rob (cướp, rủi ro cao).
 - Nông trại: /pet (thú cưng), nuôi heo (/heo · w!muaheo...), trồng cây (/cay · w!muagiong...); chợ người chơi /market.

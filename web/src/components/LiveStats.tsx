@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { BOT_API } from "../lib/botApi";
 
 // Endpoint /stats do bot tự phục vụ (src/lib/voteServer.js) — JSON { servers, users }.
-const STATS_URL = "https://waguribot.wispbyte.app/stats";
+const STATS_URL = `${BOT_API}/stats`;
 
 type Stats = { servers: number; users: number };
 

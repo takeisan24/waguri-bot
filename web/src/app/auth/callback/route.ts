@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "../../../lib/supabase/server";
+import { BOT_API } from "../../../lib/botApi";
 
 // Đích redirect sau khi Supabase xử lý OAuth Discord -> đổi code lấy phiên.
 export async function GET(request: Request) {
@@ -17,7 +18,7 @@ export async function GET(request: Request) {
         if (token) {
           const [ug, bg] = await Promise.all([
             fetch("https://discord.com/api/users/@me/guilds", { headers: { Authorization: `Bearer ${token}` } }),
-            fetch("https://waguribot.wispbyte.app/api/guilds"),
+            fetch(`${BOT_API}/api/guilds`),
           ]);
           if (ug.ok && bg.ok) {
             const userGuilds = await ug.json();

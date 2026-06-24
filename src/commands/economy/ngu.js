@@ -18,10 +18,12 @@ module.exports = {
             return interaction.editReply({ embeds: [embed] });
         }
         await db.setEnergy(interaction.user.id, config.ENERGY.MAX);
+        // Ngủ ngon = hồi cả sức khỏe (đỡ phải tốn viện phí /hospital). +100 sẽ kẹp về 100.
+        await db.addHealth(interaction.user.id, 100);
 
         const embed = buildWaguriEmbed(interaction, 'success', {
             title: '😴 Ngủ một giấc thật ngon',
-            description: `Cậu đã nghỉ ngơi, hồi đầy **${config.ENERGY.MAX}** ⚡ năng lượng và **hết mệt mỏi** hẳn! Sẵn sàng làm việc cùng tớ tiếp nào~ 🌸`
+            description: `Cậu đã nghỉ ngơi, hồi đầy **${config.ENERGY.MAX}** ⚡ năng lượng, phục hồi **100 ❤️ sức khỏe** và **hết mệt mỏi** hẳn! Sẵn sàng làm việc cùng tớ tiếp nào~ 🌸`
         });
         await interaction.editReply({ embeds: [embed] });
     },

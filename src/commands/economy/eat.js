@@ -47,6 +47,7 @@ module.exports = {
                 no_have: `Cậu chưa có **${item.name}** trong kho. Ghé \`/shop\` mua trước nhé~`,
                 not_consumable: `**${item.name}** không phải đồ ăn/uống, không dùng kiểu này được đâu~`,
                 no_item: 'Mình không tìm thấy món này~',
+                buff_better_exists: `Cậu đang có hiệu ứng buff xịn hơn/bằng **${item.name}** rồi, dùng tiếp sẽ bị lãng phí đấy~ 🌸`,
             }[lastStatus] || 'Ơ, có lỗi rồi, cậu thử lại sau nhé~';
             const embed = buildWaguriEmbed(interaction, 'warning', {
                 title: '😋・Sử dụng vật phẩm',

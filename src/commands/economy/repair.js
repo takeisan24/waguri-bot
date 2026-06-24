@@ -5,16 +5,32 @@ const config = require('../../config');
 
 const fmt = n => Number(n).toLocaleString('vi-VN');
 
+// Chi phí sửa = 15% giá mua (làm tròn). Gồm cả công cụ khai thác lẫn xe cộ.
 const REPAIR_COSTS = {
     can_cau: 150,
     riu_sat: 225,
     cuoc_sat: 225,
+    // Xe cộ (15% giá): đi làm trừ độ bền, hỏng phải sửa thay vì mua lại từ đầu.
+    xe_dap: 120,
+    xe_wave: 450,
+    xe_sh: 2250,
+    o_to_vinfast: 7500,
+    sh: 12000,
+    o_to_cu: 22500,
+    mercedes: 75000,
 };
 
 const TOOL_NAMES = {
     can_cau: 'Cần câu cá 🎣',
     riu_sat: 'Rìu sắt 🪓',
     cuoc_sat: 'Cuốc sắt ⛏️',
+    xe_dap: 'Xe Đạp Mini Nhật Bản 🚲',
+    xe_wave: 'Xe Honda Wave 🛵',
+    xe_sh: 'Xe Vespa Hồng Cute 🛵',
+    o_to_vinfast: 'Ô tô VinFast VF3 🚗',
+    sh: 'Xe Honda SH Mode 🛵',
+    o_to_cu: 'Ô Tô Cũ Của Rintaro 🚗',
+    mercedes: 'Xe Rolls-Royce Kikyo 🚗',
 };
 
 module.exports = {
@@ -25,7 +41,14 @@ module.exports = {
             .addChoices(
                 { name: 'Cần câu cá 🎣 (150 VNĐ)', value: 'can_cau' },
                 { name: 'Rìu sắt 🪓 (225 VNĐ)', value: 'riu_sat' },
-                { name: 'Cuốc sắt ⛏️ (225 VNĐ)', value: 'cuoc_sat' }
+                { name: 'Cuốc sắt ⛏️ (225 VNĐ)', value: 'cuoc_sat' },
+                { name: 'Xe Đạp Mini 🚲 (120 VNĐ)', value: 'xe_dap' },
+                { name: 'Xe Honda Wave 🛵 (450 VNĐ)', value: 'xe_wave' },
+                { name: 'Xe Vespa Hồng 🛵 (2.250 VNĐ)', value: 'xe_sh' },
+                { name: 'Ô tô VinFast VF3 🚗 (7.500 VNĐ)', value: 'o_to_vinfast' },
+                { name: 'Xe Honda SH Mode 🛵 (12.000 VNĐ)', value: 'sh' },
+                { name: 'Ô Tô Cũ Của Rintaro 🚗 (22.500 VNĐ)', value: 'o_to_cu' },
+                { name: 'Xe Rolls-Royce Kikyo 🚗 (75.000 VNĐ)', value: 'mercedes' }
             )),
 
     async execute(interaction) {

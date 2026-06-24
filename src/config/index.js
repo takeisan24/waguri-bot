@@ -34,14 +34,46 @@ module.exports = {
         ERROR: '❌',
     },
 
-    // Ảnh/GIF thumbnail theo trạng thái (Waguri). ĐỂ TRỐNG = dùng avatar bot.
-    // GIF Tenor (đã verify); đổi link tuỳ thích. Bản nét hơn: đổi đuôi AAAAM -> AAAAd / AAAAC.
+    // Ảnh/GIF Waguri theo trạng thái — MỖI trạng thái là 1 "pool" nhiều ảnh.
+    // Mỗi lần dựng embed sẽ RANDOM 1 ảnh trong pool -> thị giác đa dạng, "xoay tua".
+    // Cách thêm ảnh: dán thêm link Tenor (đuôi .gif) vào mảng tương ứng là xong.
+    // GIF Tenor đã verify; bản nét hơn: đổi đuôi ...AAAAM -> ...AAAAd / ...AAAAC.
+    // ĐỂ MẢNG RỖNG [] cho 1 trạng thái = trạng thái đó dùng avatar bot.
     WAGURI_IMAGES: {
-        MAIN: 'https://media.tenor.com/saOAfF_zx6UAAAAM/kaoruko-waguri-the-fragrant-flower-blooms-with-dignity.gif',
-        SUCCESS: 'https://media.tenor.com/gUP3bf_s600AAAAM/waguri-kaoruko.gif',
-        ERROR: 'https://media.tenor.com/Jz4bNe6EF-wAAAAM/the-fragrant-flower-blooms-with-dignity-kaoru-hana-wa-rin-to-saku.gif',
-        WARNING: 'https://media.tenor.com/WMRHrfBlNmEAAAAM/kaoruko-waguri-waguri-kaoruko.gif',
-        JACKPOT: 'https://media.tenor.com/TdCu1_KQmAcAAAAM/kaoruko-waguri-kaoruko.gif',
+        // Mặc định / info — Waguri dịu dàng, dễ thương
+        MAIN: [
+            'https://media.tenor.com/saOAfF_zx6UAAAAM/kaoruko-waguri-the-fragrant-flower-blooms-with-dignity.gif',
+            'https://media.tenor.com/P8-BVJfuXXYAAAAd/kaoruko-waguri.gif',
+            'https://media.tenor.com/VTxubF9zn9gAAAAd/kaoru-hana-wa-rin-to-saku-waguri-kaoruko.gif',
+            'https://media.tenor.com/y84DDAHiP3gAAAAd/kaoruko-waguri-flag-kaoruko-waguri.gif',
+            'https://media.tenor.com/gUP3bf_s600AAAAM/waguri-kaoruko.gif',
+        ],
+        // Thành công — vui tươi, rạng rỡ, cười
+        SUCCESS: [
+            'https://media.tenor.com/gUP3bf_s600AAAAM/waguri-kaoruko.gif',
+            'https://media.tenor.com/cKRjPvdD-yUAAAAd/kaoruko-kaoruko-waguri.gif',
+            'https://media.tenor.com/saOAfF_zx6UAAAAM/kaoruko-waguri-the-fragrant-flower-blooms-with-dignity.gif',
+            'https://media.tenor.com/TdCu1_KQmAcAAAAd/kaoruko-waguri-kaoruko.gif',
+        ],
+        // Lỗi / thất bại — buồn, bối rối, tiu nghỉu
+        ERROR: [
+            'https://media.tenor.com/Jz4bNe6EF-wAAAAM/the-fragrant-flower-blooms-with-dignity-kaoru-hana-wa-rin-to-saku.gif',
+            'https://media.tenor.com/sBTF0SS7cnMAAAAd/kaoru-hana-wa-rin-to-saku-kaoruko-waguri.gif',
+            'https://media.tenor.com/WMRHrfBlNmEAAAAM/kaoruko-waguri-waguri-kaoruko.gif',
+        ],
+        // Cảnh báo — bối rối, nhắc nhở nhẹ
+        WARNING: [
+            'https://media.tenor.com/WMRHrfBlNmEAAAAM/kaoruko-waguri-waguri-kaoruko.gif',
+            'https://media.tenor.com/sBTF0SS7cnMAAAAd/kaoru-hana-wa-rin-to-saku-kaoruko-waguri.gif',
+            'https://media.tenor.com/saOAfF_zx6UAAAAM/kaoruko-waguri-the-fragrant-flower-blooms-with-dignity.gif',
+        ],
+        // Jackpot — phấn khích, ăn mừng
+        JACKPOT: [
+            'https://media.tenor.com/TdCu1_KQmAcAAAAd/kaoruko-waguri-kaoruko.gif',
+            'https://media.tenor.com/cKRjPvdD-yUAAAAd/kaoruko-kaoruko-waguri.gif',
+            'https://media.tenor.com/gUP3bf_s600AAAAM/waguri-kaoruko.gif',
+            'https://media.tenor.com/saOAfF_zx6UAAAAM/kaoruko-waguri-the-fragrant-flower-blooms-with-dignity.gif',
+        ],
     },
 
     LEVELING: {
@@ -114,12 +146,17 @@ module.exports = {
         FLOOR: 0.5,     // mệt cỡ nào thu nhập cũng không thấp hơn 50%
     },
 
-    // Phương tiện: đi làm bằng xe giúp tiết kiệm năng lượng
+    // Phương tiện: đi làm bằng xe giúp tiết kiệm năng lượng (work cơ bản tốn 10).
+    // energy_cost CÀNG THẤP = càng xịn (giá càng cao). PHẢI khớp item catalog (id + name)
+    // và thứ tự ưu tiên trong RPC use_vehicle. /work tự chọn xe có energy_cost THẤP NHẤT đang sở hữu.
     VEHICLES: {
+        xe_dap: { energy_cost: 9, name: 'Xe Đạp Mini Nhật Bản' },
         xe_wave: { energy_cost: 8, name: 'Xe Honda Wave' },
         xe_sh: { energy_cost: 6, name: 'Xe Vespa Hồng Cute' },
-        sh: { energy_cost: 5, name: 'Xe Honda SH Mode' },
-        o_to_vinfast: { energy_cost: 4, name: 'Ô tô VinFast VF3' },
+        o_to_vinfast: { energy_cost: 5, name: 'Ô tô VinFast VF3' },
+        sh: { energy_cost: 4, name: 'Xe Honda SH Mode' },
+        o_to_cu: { energy_cost: 4, name: 'Ô Tô Cũ Của Rintaro' },
+        mercedes: { energy_cost: 3, name: 'Xe Rolls-Royce Kikyo' },
     },
 
     // Thuế chuyển tiền /give (sink chống lạm phát)
@@ -131,8 +168,8 @@ module.exports = {
     // Kết hôn / ly hôn (sink + có "án phí")
     MARRY: { COST: 5000, DIVORCE_COST: 10000 },
 
-    // Thưởng khi nối từ đúng (/noitu)
-    NOITU: { COINS: 5, EXP: 2 },
+    // Thưởng khi nối từ đúng (/noitu). Có cooldown + cap ngày chống farm (2 acc luân phiên).
+    NOITU: { COINS: 5, EXP: 2, COOLDOWN_MS: 8000, DAILY_CAP: 60 },
 
     // Rương bí ẩn (money sink + cơ hội vật phẩm)
     CRATE: { COST: 1000 },

@@ -3,8 +3,9 @@ import { notFound } from "next/navigation";
 import CherryBlossom from "../../../components/CherryBlossom";
 import SiteHeader from "../../../components/SiteHeader";
 import SiteFooter from "../../../components/SiteFooter";
+import { BOT_API } from "../../../lib/botApi";
 
-const API = "https://waguribot.wispbyte.app";
+const API = BOT_API;
 const INVITE_URL =
   "https://discord.com/oauth2/authorize?client_id=1482620714690543738&permissions=1099512007760&integration_type=0&scope=bot+applications.commands";
 

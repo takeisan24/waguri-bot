@@ -5,6 +5,7 @@ const config = require('../../config');
 const { openLobby } = require('../../lib/lobby');
 const { checkBet } = require('../../lib/bet');
 const { ROLES, assignRoles, checkWin, resolveNight, tallyVotes } = require('../../lib/masoi/engine');
+const { randomUUID } = require('node:crypto');
 
 const fmt = n => Number(n).toLocaleString('vi-VN');
 const EPH = MessageFlags.Ephemeral;
@@ -37,10 +38,12 @@ module.exports = {
         });
         if (!players) return;
 
+        // Thu cược qua DB (ghi dòng cược để hoàn nếu bot restart giữa ván).
+        const sessionId = randomUUID();
         const staked = [];
-        for (const p of players) { if (await db.addMoney(p.id, -bet, 'wallet')) staked.push(p); }
+        for (const p of players) { if (await db.stakeCollect(sessionId, 'masoi', interaction.channelId, p.id, bet)) staked.push(p); }
         if (staked.length < 4) {
-            for (const p of staked) await db.addMoney(p.id, bet, 'wallet');
+            await db.stakeRefundSession(sessionId);
             const embed = buildWaguriEmbed(interaction, 'warning', { description: 'Không đủ người đủ tiền để chơi, đã hoàn cược~ 🌸' });
             return interaction.followUp({ embeds: [embed] });
         }
@@ -241,7 +244,7 @@ module.exports = {
 
         if (!team) {
             // hết vòng / lỗi -> hoàn cược
-            for (const p of staked) await db.addMoney(p.id, bet, 'wallet');
+            await db.stakeRefundSession(sessionId);
             const drawEmbed = buildWaguriEmbed(interaction, 'warning', {
                 title: '🐺・Ván Ma Sói kết thúc bất phân thắng bại',
                 description: `Đã hoàn cược cho mọi người.\n\n${allRoles}`
@@ -255,6 +258,7 @@ module.exports = {
         const prize = Math.floor(pot * (1 - config.PARTY.HOUSE_CUT));
         const share = Math.floor(prize / payees.length);
         for (const id of payees) { await db.addMoney(id, share, 'wallet'); db.questIncr(id, 'gamble_win', 1); }
+        await db.stakeSettle(sessionId); // cược đã thành pot & chia thưởng -> xoá dòng
 
         const winType = team === 'wolves' ? 'error' : 'success';
         const winEmbed = buildWaguriEmbed(interaction, winType, {

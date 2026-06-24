@@ -1,6 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
 const config = require('../../config');
-const { buildWaguriEmbed } = require('../../lib/embed');
+const { buildWaguriEmbed, pickWaguriImage } = require('../../lib/embed');
 const { version } = require('../../../package.json');
 
 module.exports = {
@@ -18,7 +18,7 @@ module.exports = {
 
         const embed = buildWaguriEmbed(interaction, 'info', {
             title: '🌸・Về Waguri',
-            thumbnail: config.WAGURI_IMAGES.MAIN,
+            thumbnail: pickWaguriImage('MAIN'),
             description:
                 'Mình là **Waguri Kaoruko** — cô bạn gái AI kiêm "quản lý tiệm bánh Gekka" 🍰\n' +
                 'Một bot **kinh tế · nhập vai · cộng đồng** bản địa hoá thuần Việt~',

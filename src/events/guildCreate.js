@@ -30,10 +30,10 @@ module.exports = {
             }
             if (!channel) return;
 
-            const { buildWaguriEmbed } = require('../lib/embed');
+            const { buildWaguriEmbed, pickWaguriImage } = require('../lib/embed');
             const embed = buildWaguriEmbed({ client: guild.client }, 'info', {
                 title: '🌸・Xin chào, mình là Waguri!',
-                thumbnail: config.WAGURI_IMAGES.MAIN,
+                thumbnail: pickWaguriImage('MAIN'),
                 description:
                     `*Hân hạnh được chào đón các quý khách ghé thăm tiệm bánh Gekka!* 🍰\n\n` +
                     `Cảm ơn cậu rất nhiều vì đã mời tớ ghé thăm **${guild.name}**! Tớ sẽ là người bạn đồng hành kiêm "quản lý tiệm bánh" siêu năng nổ của cậu đó~\n\n` +

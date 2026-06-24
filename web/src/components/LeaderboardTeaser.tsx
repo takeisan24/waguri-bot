@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { BOT_API } from "../lib/botApi";
 
 // Teaser top đại gia — fetch CLIENT-side (như LiveStats) để KHÔNG chặn render landing.
-const API = "https://waguribot.wispbyte.app";
+const API = BOT_API;
 const MEDALS = ["🥇", "🥈", "🥉"];
 const fmt = (n: number) => Number(n || 0).toLocaleString("vi-VN");
 

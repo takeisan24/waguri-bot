@@ -243,6 +243,14 @@ function startVoteServer(client) {
                     res.writeHead(200, JSONH); res.end(JSON.stringify({ ids: client.guilds.cache.map(g => g.id) }));
                     return;
                 }
+                if (req.url.startsWith('/api/event')) {
+                    // Sự kiện toàn cục đang chạy (để web hiện banner "x2 thu nhập"...).
+                    const { getEventInfo } = require('./event');
+                    const e = getEventInfo();
+                    res.writeHead(200, JSONH);
+                    res.end(JSON.stringify({ active: e.active, mult: e.mult, name: e.name, until: e.until }));
+                    return;
+                }
                 res.writeHead(404, JSONH); res.end('{"error":"not_found"}');
                 return;
             }
@@ -311,8 +319,8 @@ function startVoteServer(client) {
                 return;
             }
 
-            // --- Webhook v0 (legacy): so khớp secret ở header Authorization ---
-            if (req.headers.authorization !== auth) { res.writeHead(401); res.end(); return; }
+            // --- Webhook v0 (legacy): so khớp secret ở header Authorization (timing-safe) ---
+            if (!safeEqual(req.headers.authorization, auth)) { res.writeHead(401); res.end(); return; }
             res.writeHead(200); res.end(); // ACK ngay cho Top.gg (tránh bị retry)
             try {
                 const data = JSON.parse(body || '{}');

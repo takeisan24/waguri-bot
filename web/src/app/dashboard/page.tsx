@@ -7,6 +7,7 @@ import { getDiscordIdentity } from "../../lib/discord";
 import { getLevelProgress, affectionTier, fmtVND } from "../../lib/game";
 import { toggleProfilePublic, toggleVoteReminder } from "./actions";
 import ShareProfileButton from "../../components/ShareProfileButton";
+import EventBanner from "../../components/EventBanner";
 
 export const dynamic = "force-dynamic";
 
@@ -57,6 +58,33 @@ export default async function Dashboard() {
     achievements = count ?? 0;
   }
 
+  // Sức khỏe & năng lượng (năng lượng hồi 1/phút -> tính lại từ mốc lưu, khỏi ghi DB).
+  const health = Math.max(0, Math.min(100, Number(row?.health ?? 100)));
+  const ENERGY_MAX = 100;
+  const storedEnergy = Number(row?.energy ?? ENERGY_MAX);
+  // eslint-disable-next-line react-hooks/purity -- server component (force-dynamic): render 1 lần/request nên Date.now() an toàn
+  const nowMs = Date.now();
+  const eUpdatedAt = row?.energy_updated_at ? new Date(row.energy_updated_at).getTime() : nowMs;
+  const energy = Math.max(0, Math.min(ENERGY_MAX, storedEnergy + Math.floor((nowMs - eUpdatedAt) / 60000)));
+
+  // Trạng thái nông trại / thú cưng (hiển thị thêm cho đúng thông tin user mong).
+  type PigRow = { stage?: string; tier?: number; sick?: boolean };
+  type PlantRow = { stage?: string; type?: string };
+  type PetRow = { name?: string; species?: string; exp?: number };
+  let pig: PigRow | null = null;
+  let plant: PlantRow | null = null;
+  let pet: PetRow | null = null;
+  if (row) {
+    const [pg, pl, pt] = await Promise.all([
+      admin.from("pigs").select("*").eq("user_id", id).maybeSingle(),
+      admin.from("plants").select("*").eq("user_id", id).maybeSingle(),
+      admin.from("pets").select("*").eq("user_id", id).maybeSingle(),
+    ]);
+    pig = (pg.data as unknown as PigRow) ?? null;
+    plant = (pl.data as unknown as PlantRow) ?? null;
+    pet = (pt.data as unknown as PetRow) ?? null;
+  }
+
   const prog = getLevelProgress(Number(row?.exp || 0));
   const wallet = Number(row?.wallet || 0);
   const bank = Number(row?.bank || 0);
@@ -79,6 +107,7 @@ export default async function Dashboard() {
       </header>
 
       <main className="relative flex-1 w-full max-w-4xl mx-auto px-6 py-6 z-10 space-y-6">
+        <EventBanner />
         {/* Header user */}
         <div className="glass-panel rounded-3xl p-7 flex flex-col sm:flex-row items-center gap-5 border border-pink-300/20">
           {avatar ? (
@@ -141,6 +170,53 @@ export default async function Dashboard() {
               <Stat label="💞 Thân thiết Waguri" value={affectionTier(Number(row.affection || 0))} />
               <Stat label="🎖️ Thành tựu" value={`${achievements}`} />
               <Stat label="🗳️ Chuỗi vote" value={`${voteStreak} ngày`} />
+            </div>
+
+            {/* Sức khỏe & năng lượng */}
+            <div className="glass-panel rounded-3xl p-6 space-y-4 border border-pink-300/10">
+              <h2 className="text-lg font-extrabold text-white">❤️ Sức khỏe &amp; ⚡ Năng lượng</h2>
+              <div className="space-y-3">
+                <div>
+                  <div className="flex justify-between text-[11px] text-slate-400 mb-1">
+                    <span>❤️ Sức khỏe</span>
+                    <span>{health}/100</span>
+                  </div>
+                  <div className="h-2.5 rounded-full bg-[#1c1424] overflow-hidden">
+                    <div className="h-full rounded-full bg-gradient-to-r from-rose-400 to-pink-400" style={{ width: `${health}%` }} />
+                  </div>
+                </div>
+                <div>
+                  <div className="flex justify-between text-[11px] text-slate-400 mb-1">
+                    <span>⚡ Năng lượng</span>
+                    <span>{energy}/{ENERGY_MAX}</span>
+                  </div>
+                  <div className="h-2.5 rounded-full bg-[#1c1424] overflow-hidden">
+                    <div className="h-full rounded-full bg-gradient-to-r from-amber-300 to-yellow-400" style={{ width: `${(energy / ENERGY_MAX) * 100}%` }} />
+                  </div>
+                </div>
+              </div>
+              {health < 30 ? (
+                <p className="text-xs text-rose-300">⚠️ Sức khỏe yếu (&lt;30) — dùng <code>/eat</code> thuốc/hộp y tế, <code>/ngu</code> hoặc <code>/hospital</code> để hồi nhé!</p>
+              ) : null}
+            </div>
+
+            {/* Nông trại & thú cưng */}
+            <div className="glass-panel rounded-3xl p-6 space-y-3 border border-pink-300/10">
+              <h2 className="text-lg font-extrabold text-white">🌾 Nông trại &amp; Thú cưng</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+                <div className="rounded-2xl bg-pink-500/5 px-4 py-3">
+                  <p className="text-xs text-pink-300/80">🐷 Heo</p>
+                  <p className="text-white font-semibold">{pig ? (pig.sick ? "Đang bệnh 🤒" : `Giai đoạn: ${pig.stage}`) : "Chưa nuôi"}</p>
+                </div>
+                <div className="rounded-2xl bg-pink-500/5 px-4 py-3">
+                  <p className="text-xs text-pink-300/80">🌱 Cây</p>
+                  <p className="text-white font-semibold">{plant ? `Giai đoạn: ${plant.stage}` : "Chưa trồng"}</p>
+                </div>
+                <div className="rounded-2xl bg-pink-500/5 px-4 py-3">
+                  <p className="text-xs text-pink-300/80">🐾 Thú cưng</p>
+                  <p className="text-white font-semibold">{pet ? (pet.name || pet.species || "Có") : "Chưa có"}</p>
+                </div>
+              </div>
             </div>
 
             {/* Settings */}

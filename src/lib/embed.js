@@ -37,6 +37,23 @@ function createWaguriBar(cur, max, size = 10) {
 }
 
 /**
+ * Lấy NGẪU NHIÊN 1 ảnh Waguri theo trạng thái (xoay tua cho đỡ nhàm).
+ * Hỗ trợ cả pool dạng mảng (mới) lẫn 1 chuỗi URL (cũ) để khỏi vỡ tương thích.
+ * @param {'MAIN'|'SUCCESS'|'ERROR'|'WARNING'|'JACKPOT'} key
+ * @returns {string|undefined} URL ảnh, hoặc undefined nếu pool rỗng.
+ */
+function pickWaguriImage(key = 'MAIN') {
+    const pool = config.WAGURI_IMAGES?.[key];
+    if (!pool) return undefined;
+    if (Array.isArray(pool)) {
+        const list = pool.filter(Boolean);
+        if (!list.length) return undefined;
+        return list[Math.floor(Math.random() * list.length)];
+    }
+    return pool; // chuỗi đơn (định dạng cũ)
+}
+
+/**
  * Tạo và trang trí Embed theo chuẩn Waguri
  * @param {object} interaction - Command interaction
  * @param {'info'|'success'|'error'|'warning'|'jackpot'} type - Trạng thái kết quả
@@ -53,9 +70,9 @@ function buildWaguriEmbed(interaction, type = 'info', opts = {}) {
         jackpot: config.COLORS.JACKPOT
     };
 
-    // Ảnh/GIF Waguri theo type (config.WAGURI_IMAGES) -> hiển thị dạng ẢNH LỚN (image).
+    // Ảnh/GIF Waguri theo type -> RANDOM trong pool để mỗi lần 1 ảnh khác (xoay tua).
     const imgKey = { info: 'MAIN', success: 'SUCCESS', error: 'ERROR', warning: 'WARNING', jackpot: 'JACKPOT' }[type] || 'MAIN';
-    const typeImg = config.WAGURI_IMAGES?.[imgKey];
+    const typeImg = pickWaguriImage(imgKey);
     const botAvatar = interaction.client?.user?.displayAvatarURL();
 
     const embed = new EmbedBuilder()
@@ -82,5 +99,6 @@ module.exports = {
     getWaguriQuote,
     getWaguriFooter,
     createWaguriBar,
+    pickWaguriImage,
     buildWaguriEmbed
 };

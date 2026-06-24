@@ -80,12 +80,14 @@ module.exports = {
             return interaction.editReply({ embeds: [embedSuccess] });
         } else {
             const robber = await db.getUser(robberId);
-            let fine = Math.floor(Number(robber.wallet) * config.ROB.FINE_PCT);
+            // Phạt theo TỔNG TÀI SẢN (ví+bank) -> không né được bằng cách giấu tiền trong bank.
+            const robberAssets = Number(robber.wallet || 0) + Number(robber.bank || 0);
+            let fine = Math.floor(robberAssets * config.ROB.FINE_PCT);
             const usedIns = await db.useInsurance(robberId, 'bh_duong_pho');
             if (usedIns) {
                 fine = Math.round(fine * 0.5); // Giảm 50% tiền phạt
             }
-            if (fine > 0) await db.addMoney(robberId, -fine, 'wallet');
+            if (fine > 0) await db.chargeAssets(robberId, fine); // trừ ví trước, thiếu thì bank
             const robberAfter = await db.getUser(robberId);
             const displayBal = robberAfter ? Number(robberAfter.wallet) : (Number(robber.wallet) - fine);
             

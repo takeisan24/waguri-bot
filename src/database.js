@@ -75,6 +75,49 @@ async function addMoney(userId, amount, type = 'wallet') {
 }
 
 /**
+ * Trừ tiền phạt theo TỔNG TÀI SẢN: ví trước, thiếu thì trừ tiếp ngân hàng (atomic).
+ * Dùng cho phạt /rob & công an cờ bạc -> không né được bằng cách gửi tiền vào bank.
+ * @returns {number} số tiền thực sự bị trừ (>= 0).
+ */
+async function chargeAssets(userId, amount) {
+    try {
+        const { data, error } = await supabase.rpc('charge_assets', { p_user: userId, p_amount: amount });
+        if (error) throw error;
+        return Number(data) || 0;
+    } catch (error) {
+        console.error('[DATABASE ERROR] chargeAssets():', error);
+        return 0;
+    }
+}
+
+// ============================================================
+//  GAME STAKES — cược game đa người (ghi DB để hoàn khi bot restart)
+// ============================================================
+/** Thu cược nguyên tử (trừ ví + ghi dòng cược). Trả true nếu đủ tiền. */
+async function stakeCollect(sessionId, game, channelId, userId, amount) {
+    try {
+        const { data, error } = await supabase.rpc('stake_collect', { p_session: sessionId, p_game: game, p_channel: channelId, p_user: userId, p_amount: amount });
+        if (error) throw error;
+        return data === true;
+    } catch (error) { console.error('[DATABASE ERROR] stakeCollect():', error); return false; }
+}
+/** Ván xong bình thường: xoá dòng cược (cược đã thành pot & trả thưởng). */
+async function stakeSettle(sessionId) {
+    try { const { error } = await supabase.rpc('stake_settle', { p_session: sessionId }); if (error) throw error; return true; }
+    catch (error) { console.error('[DATABASE ERROR] stakeSettle():', error); return false; }
+}
+/** Huỷ ván: hoàn cược cho mọi người chơi rồi xoá. Trả tổng đã hoàn. */
+async function stakeRefundSession(sessionId) {
+    try { const { data, error } = await supabase.rpc('stake_refund_session', { p_session: sessionId }); if (error) throw error; return Number(data) || 0; }
+    catch (error) { console.error('[DATABASE ERROR] stakeRefundSession():', error); return 0; }
+}
+/** Khởi động bot: hoàn mọi cược còn sót (ván chết do restart). Trả { count, total }. */
+async function stakeRefundOrphans() {
+    try { const { data, error } = await supabase.rpc('stake_refund_orphans'); if (error) throw error; return data || { count: 0, total: 0 }; }
+    catch (error) { console.error('[DATABASE ERROR] stakeRefundOrphans():', error); return { count: 0, total: 0 }; }
+}
+
+/**
  * Chuyển tiền giữa 2 user trong 1 transaction (atomic).
  * @returns {boolean} - true nếu thành công, false nếu thiếu tiền / input sai.
  */
@@ -428,17 +471,10 @@ async function useVehicle(userId) {
  */
 async function addHealth(userId, amount) {
     try {
-        const user = await getUser(userId);
-        if (!user) return null;
-        const newHealth = Math.max(0, Math.min(100, (user.health || 100) + amount));
-        const { data, error } = await supabase
-            .from('users')
-            .update({ health: newHealth })
-            .eq('user_id', userId)
-            .select()
-            .single();
+        // Atomic qua RPC add_health (kẹp 0..100) -> tránh lost-update khi nhiều thay đổi đua nhau.
+        const { data, error } = await supabase.rpc('add_health', { p_user_id: userId, p_delta: amount });
         if (error) throw error;
-        return data;
+        return data; // sức khỏe mới (int)
     } catch (error) {
         console.error(`[DATABASE ERROR] Lỗi addHealth(${userId}):`, error);
         return null;
@@ -517,6 +553,32 @@ async function claimDailyCounter(userId, key, max) {
     } catch (error) {
         console.error('[DATABASE ERROR] claimDailyCounter():', error);
         return -1;
+    }
+}
+
+/** Tăng mức độ cờ bạc (police_heat) và trả về count mới. */
+async function bumpPoliceHeat(userId, decayMs) {
+    try {
+        const { data, error } = await supabase.rpc('bump_police_heat', { p_user_id: userId, p_decay_ms: decayMs });
+        if (error) throw error;
+        return Number(data) || 0;
+    } catch (error) {
+        console.error('[DATABASE ERROR] bumpPoliceHeat():', error);
+        return 0;
+    }
+}
+
+/** Reset mức độ cờ bạc về 0 (khi bị bắt). */
+async function resetPoliceHeat(userId) {
+    try {
+        const { error } = await supabase
+            .from('police_heat')
+            .upsert({ user_id: userId, count: 0, last_action_at: Date.now() });
+        if (error) throw error;
+        return true;
+    } catch (error) {
+        console.error('[DATABASE ERROR] resetPoliceHeat():', error);
+        return false;
     }
 }
 
@@ -1419,6 +1481,11 @@ module.exports = {
     hospitalHeal,
     useVehicle,
     addHealth,
+    chargeAssets,
+    stakeCollect,
+    stakeSettle,
+    stakeRefundSession,
+    stakeRefundOrphans,
     // energy / buff
     spendEnergy,
     getEnergy,
@@ -1482,6 +1549,8 @@ module.exports = {
     takeItem,
     transferItem,
     claimDailyCounter,
+    bumpPoliceHeat,
+    resetPoliceHeat,
     // cosmetic
     setCosmetic,
     // loans

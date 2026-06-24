@@ -1,4 +1,5 @@
 const { EmbedBuilder } = require('discord.js');
+const { randomUUID } = require('node:crypto');
 const db = require('../database');
 const config = require('../config');
 const { buildWaguriEmbed } = require('./embed');
@@ -56,6 +57,7 @@ async function handleLotoPrefix(message, cmd, args) {
             hostTag: message.author.tag,
             voiceChannelName: voiceChannel.name,
             status: 'lobby',
+            sessionId: randomUUID(), // để ghi/hoàn cược qua DB (chống mất tiền khi restart)
             players: new Map(),
             called: [],
             pool: shuffle(Array.from({ length: 90 }, (_, i) => i + 1)),
@@ -124,15 +126,14 @@ async function handleLotoPrefix(message, cmd, args) {
             numbers.push(padded);
         }
 
-        const u = await db.getUser(userId);
-        if (Number(u?.wallet || 0) < TICKET_PRICE) {
+        // Thu cược qua DB (atomic: trừ ví + ghi dòng cược để hoàn nếu bot restart).
+        const paid = await db.stakeCollect(game.sessionId, 'loto', channelId, userId, TICKET_PRICE);
+        if (!paid) {
             const embed = buildWaguriEmbed(message, 'error', {
                 description: `Ví cậu không đủ **${TICKET_PRICE.toLocaleString('vi-VN')}** ${config.CURRENCY} để mua vé rồi~ 😟`
             });
             return message.reply({ embeds: [embed] });
         }
-
-        await db.addMoney(userId, -TICKET_PRICE, 'wallet');
         game.players.set(userId, {
             username: message.author.username,
             ticket: numbers
@@ -237,8 +238,9 @@ async function handleLotoPrefix(message, cmd, args) {
             if (curGame.pool.length === 0) {
                 clearInterval(interval);
                 activeLotoGames.delete(channelId);
+                await db.stakeRefundSession(curGame.sessionId); // hoà, không ai trúng -> hoàn vé
                 const embed = buildWaguriEmbed(message, 'warning', {
-                    description: 'Đã gọi hết 90 số mà không ai trúng, ván đấu kết thúc hòa! 🌸'
+                    description: 'Đã gọi hết 90 số mà không ai trúng, ván hoà — đã hoàn vé cho mọi người! 🌸'
                 });
                 return message.channel.send({ embeds: [embed] }).catch(() => {});
             }
@@ -269,6 +271,7 @@ async function handleLotoPrefix(message, cmd, args) {
                     await db.addMoney(wid, splitPrize, 'wallet');
                     db.questIncr(wid, 'gamble_win', 1);
                 }
+                await db.stakeSettle(curGame.sessionId); // cược đã thành pot & trả thưởng -> xoá dòng
 
                 const winnerMentions = winners.map(wid => `<@${wid}>`).join(', ');
                 const winEmbed = buildWaguriEmbed(message, 'jackpot', {
@@ -301,15 +304,11 @@ async function handleLotoPrefix(message, cmd, args) {
             return message.reply({ embeds: [embed] });
         }
 
-        if (game.status === 'lobby') {
-            for (const pid of game.players.keys()) {
-                await db.addMoney(pid, TICKET_PRICE, 'wallet');
-            }
-        }
-
+        // Hoàn vé cho mọi người đã mua (host huỷ ván) — qua DB, an toàn cả khi đang chơi.
+        await db.stakeRefundSession(game.sessionId);
         activeLotoGames.delete(channelId);
         const embed = buildWaguriEmbed(message, 'success', {
-            description: `✅ Đã kết thúc và dọn dẹp ván Loto. Tiền vé đã được hoàn trả (nếu chưa bắt đầu)!`
+            description: `✅ Đã kết thúc và dọn dẹp ván Loto. Tiền vé đã được hoàn trả cho mọi người!`
         });
         return message.reply({ embeds: [embed] });
     }

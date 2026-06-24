@@ -61,12 +61,13 @@ module.exports = {
         if (!players) return; // hủy / không đủ người
 
         // Thu cược (ai hụt tiền do tiêu lúc chờ thì loại)
+        const sessionId = require('crypto').randomUUID();
         const staked = [];
         for (const p of players) {
-            if (await db.addMoney(p.id, -bet, 'wallet')) staked.push(p);
+            if (await db.stakeCollect(sessionId, 'bacay', interaction.channelId, p.id, bet)) staked.push(p);
         }
         if (staked.length < 2) {
-            for (const p of staked) await db.addMoney(p.id, bet, 'wallet');
+            await db.stakeRefundSession(sessionId);
             const embed = buildWaguriEmbed(interaction, 'warning', { description: 'Không đủ người đủ tiền để vào ván, đã hoàn cược~ 🌸' });
             return interaction.followUp({ embeds: [embed] });
         }
@@ -86,6 +87,7 @@ module.exports = {
         const share = Math.floor(prize / winners.length);
         for (const w of winners) await db.addMoney(w.id, share, 'wallet');
         for (const w of winners) db.questIncr(w.id, 'gamble_win', 1);
+        await db.stakeSettle(sessionId);
 
         const lines = results
             .sort((a, b) => cmp(b.hand, a.hand))

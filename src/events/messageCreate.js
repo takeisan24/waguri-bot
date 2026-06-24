@@ -11,37 +11,28 @@ const { PIG_CMDS, handlePigPrefix } = require('../lib/pig');
 const { PLANT_CMDS, handlePlantPrefix } = require('../lib/plant');
 const { recordMembership } = require('../lib/membership');
 
-// Chat-leveling: thưởng xu/EXP khi chat (có cooldown + cap ngày chống farm)
-const chatCD = new Map();    // userId -> hết cooldown (ms)
-const chatDaily = new Map(); // userId -> { date, count }
+// Chat-leveling: thưởng xu/EXP khi chat. Cooldown RAM (chống spam, tiền-lọc); cap NGÀY ở DB
+// (qua claimDailyCounter) -> không farm được qua restart hay nhiều shard.
+const chatCD = new Map(); // userId -> hết cooldown (ms)
 
-// Dọn rác định kỳ (tránh phình RAM trên bot public). .unref() để không giữ tiến trình sống.
+// Dọn rác cooldown định kỳ (tránh phình RAM). .unref() để không giữ tiến trình sống.
 setInterval(() => {
     const now = Date.now();
-    const today = new Date().toISOString().slice(0, 10);
     for (const [uid, exp] of chatCD) if (exp < now) chatCD.delete(uid);
-    for (const [uid, d] of chatDaily) if (d.date !== today) chatDaily.delete(uid);
 }, 30 * 60 * 1000).unref();
 
 const rand = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
-function grantChatReward(message) {
+async function grantChatReward(message) {
     if (message.content.trim().length < config.CHAT.MIN_LEN) return;
     const now = Date.now();
-    if (now < (chatCD.get(message.author.id) || 0)) return;
+    const uid = message.author.id;
+    if (now < (chatCD.get(uid) || 0)) return;
+    chatCD.set(uid, now + config.CHAT.COOLDOWN_MS); // throttle: vừa chống spam vừa giảm gọi DB
 
-    // Cap số lượt thưởng/ngày (reset theo ngày)
-    const today = new Date().toISOString().slice(0, 10);
-    const d = chatDaily.get(message.author.id);
-    if (d && d.date === today) {
-        if (d.count >= config.CHAT.DAILY_CAP) return;
-        d.count++;
-    } else {
-        chatDaily.set(message.author.id, { date: today, count: 1 });
-    }
-
-    chatCD.set(message.author.id, now + config.CHAT.COOLDOWN_MS);
-    db.addMoney(message.author.id, rand(config.CHAT.MIN_COINS, config.CHAT.MAX_COINS), 'wallet');
-    db.updateExp(message.author.id, rand(config.CHAT.MIN_EXP, config.CHAT.MAX_EXP));
+    // Cap ngày ở DB (atomic, đếm theo ngày) -> -1 nghĩa là đã chạm cap hôm nay.
+    if (await db.claimDailyCounter(uid, 'chat', config.CHAT.DAILY_CAP) === -1) return;
+    db.addMoney(uid, rand(config.CHAT.MIN_COINS, config.CHAT.MAX_COINS), 'wallet');
+    db.updateExp(uid, rand(config.CHAT.MIN_EXP, config.CHAT.MAX_EXP));
 }
 
 module.exports = {
@@ -193,7 +184,7 @@ module.exports = {
         }
 
         // --- 3) Chat thường: thưởng chat-leveling + nối từ (nếu có ván) ---
-        grantChatReward(message);
+        grantChatReward(message).catch(() => {}); // fire-and-forget (đã async vì có call DB)
         await handleNoiTu(message);
     },
 };

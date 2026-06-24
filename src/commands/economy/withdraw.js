@@ -2,6 +2,7 @@ const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const { buildWaguriEmbed } = require('../../lib/embed');
 const db = require('../../database.js');
 const config = require('../../config');
+const { parseAmount } = require('../../lib/amount');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -17,9 +18,9 @@ module.exports = {
             return interaction.editReply({ embeds: [embed] });
         }
 
-        let amount = /^(all|hết|max)$/i.test(raw) ? Number(user.bank) : parseInt(raw, 10);
-        if (!Number.isFinite(amount) || amount <= 0) {
-            const embed = buildWaguriEmbed(interaction, 'error', { title: '🏦・Rút tiền', description: 'Số tiền không hợp lệ~ (nhập số hoặc `all`)' });
+        const amount = parseAmount(raw, Number(user.bank)); // hỗ trợ 1k/2m/all
+        if (!amount || amount <= 0) {
+            const embed = buildWaguriEmbed(interaction, 'error', { title: '🏦・Rút tiền', description: 'Số tiền không hợp lệ~ (nhập số, `1k`, hoặc `all`)' });
             return interaction.editReply({ embeds: [embed] });
         }
 

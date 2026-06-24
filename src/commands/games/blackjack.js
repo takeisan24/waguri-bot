@@ -31,6 +31,17 @@ function handValue(cards) {
     return sum;
 }
 const render = cards => cards.map(c => `${c.r}${c.s}`).join(' ');
+// Bài tổng 17 "mềm" (còn 1 Át tính 11) -> nhà cái vẫn rút (luật H17), thêm nhẹ lợi thế nhà cái.
+function isSoft17(cards) {
+    let sum = 0, aces = 0;
+    for (const c of cards) {
+        if (c.r === 'A') { aces++; sum += 11; }
+        else if (['J', 'Q', 'K'].includes(c.r)) sum += 10;
+        else sum += Number(c.r);
+    }
+    while (sum > 21 && aces > 0) { sum -= 10; aces--; }
+    return sum === 17 && aces > 0;
+}
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -129,7 +140,7 @@ module.exports = {
             filter: i => i.user.id === userId,
         });
 
-        const dealerPlay = () => { while (handValue(dealer) < 17) dealer.push(deck.pop()); };
+        const dealerPlay = () => { while (handValue(dealer) < 17 || isSoft17(dealer)) dealer.push(deck.pop()); };
         const resolve = () => {
             const pv = handValue(player), dv = handValue(dealer);
             if (pv > 21) return 'lose';

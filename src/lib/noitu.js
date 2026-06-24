@@ -8,6 +8,32 @@ const config = require('../config');
 const games = new Map(); // channelId -> { lastWord, used:Set, lastPlayer, count }
 const START = ['con cá', 'hoa hồng', 'bầu trời', 'mặt trời', 'học sinh', 'cà phê', 'nụ cười', 'dòng sông', 'mây trắng', 'bông lúa'];
 
+// Chống farm xu/EXP: cooldown + cap ngày cho phần THƯỞNG (nước đi vẫn tính bình thường).
+const rewardCD = new Map();    // userId -> hết cooldown (ms)
+const rewardDaily = new Map(); // userId -> { date, count }
+setInterval(() => {
+    const now = Date.now();
+    const today = new Date().toISOString().slice(0, 10);
+    for (const [uid, exp] of rewardCD) if (exp < now) rewardCD.delete(uid);
+    for (const [uid, d] of rewardDaily) if (d.date !== today) rewardDaily.delete(uid);
+}, 30 * 60 * 1000).unref();
+
+/** Trả true nếu được phép thưởng lần này (đồng thời ghi nhận cooldown + cap ngày). */
+function canRewardNoitu(userId) {
+    const now = Date.now();
+    if (now < (rewardCD.get(userId) || 0)) return false;
+    const today = new Date().toISOString().slice(0, 10);
+    const d = rewardDaily.get(userId);
+    if (d && d.date === today) {
+        if (d.count >= config.NOITU.DAILY_CAP) return false;
+        d.count++;
+    } else {
+        rewardDaily.set(userId, { date: today, count: 1 });
+    }
+    rewardCD.set(userId, now + config.NOITU.COOLDOWN_MS);
+    return true;
+}
+
 function startGame(channelId) {
     const phrase = START[Math.floor(Math.random() * START.length)];
     const lastWord = phrase.split(' ')[1];
@@ -42,8 +68,11 @@ async function handleMessage(message) {
     g.lastPlayer = message.author.id;
     g.count++;
     message.react('✅').catch(() => {});
-    db.addMoney(message.author.id, config.NOITU.COINS, 'wallet'); // thưởng nối đúng
-    db.updateExp(message.author.id, config.NOITU.EXP);
+    // Thưởng nối đúng — chỉ khi qua cooldown + chưa chạm cap ngày (chống 2 acc luân phiên farm).
+    if (canRewardNoitu(message.author.id)) {
+        db.addMoney(message.author.id, config.NOITU.COINS, 'wallet');
+        db.updateExp(message.author.id, config.NOITU.EXP);
+    }
 }
 
 module.exports = { startGame, stopGame, getGame, handleMessage };

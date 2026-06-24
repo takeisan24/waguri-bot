@@ -43,7 +43,7 @@ module.exports = {
         }
 
         const portions = splitMoney(amount, parts);
-        const claimed = new Map(); // userId -> số tiền nhận
+        const claimed = new Map(); // userId -> { net, tax }
 
         const row = (disabled = false) => new ActionRowBuilder().addComponents(
             new ButtonBuilder().setCustomId('grab')
@@ -55,7 +55,7 @@ module.exports = {
             const embed = buildWaguriEmbed(interaction, 'jackpot', {
                 title: '🧧・LÌ XÌ MAY MẮN・🧧',
                 description: `<@${userId}> phát **${fmt(amount)}** ${config.CURRENCY} cho **${parts}** người!\n` +
-                    (claimed.size ? '\n' + [...claimed].map(([u, a]) => `🧧 <@${u}> +${fmt(a)} ${config.CURRENCY}`).join('\n') : '') +
+                    (claimed.size ? '\n' + [...claimed].map(([u, { net, tax }]) => `🧧 <@${u}> +${fmt(net)} ${config.CURRENCY}` + (tax > 0 ? ` *(thuế -${fmt(tax)})*` : '')).join('\n') : '') +
                     (closed ? '\n\n*Hết lì xì rồi~ Cảm ơn cậu đã hào phóng! 🌸*' : '\n\nNhanh tay bấm nút cướp nào! 👇')
             });
             embed.setFooter({
@@ -74,14 +74,16 @@ module.exports = {
             if (portions.length === 0) return i.reply({ content: 'Hết lì xì mất rồi 😢', flags: MessageFlags.Ephemeral });
 
             const got = portions.pop();
-            claimed.set(i.user.id, got);
-            await db.addMoney(i.user.id, got, 'wallet');
+            const tax = Math.floor(got * config.GIVE_TAX_PCT);
+            const net = got - tax;
+            claimed.set(i.user.id, { net, tax });
+            await db.addMoney(i.user.id, net, 'wallet');
             await i.update({ embeds: [render(portions.length === 0)], components: [row(portions.length === 0)] });
             if (portions.length === 0) collector.stop('done');
         });
 
         collector.on('end', async () => {
-            // Hoàn lại các bao chưa ai cướp cho người phát
+            // Hoàn lại các bao chưa ai cướp cho người phát (chưa bị cướp nên hoàn đủ không thuế)
             const leftover = portions.reduce((s, x) => s + x, 0);
             if (leftover > 0) await db.addMoney(userId, leftover, 'wallet');
             await interaction.editReply({ embeds: [render(true)], components: [row(true)] }).catch(() => {});

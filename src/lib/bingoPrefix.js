@@ -1,4 +1,5 @@
 const { EmbedBuilder } = require('discord.js');
+const { randomUUID } = require('node:crypto');
 const db = require('../database');
 const config = require('../config');
 const { buildWaguriEmbed } = require('./embed');
@@ -113,6 +114,7 @@ async function handleBingoPrefix(message, cmd, args) {
             hostTag: message.author.tag,
             voiceChannelName: voiceChannel.name,
             status: 'lobby',
+            sessionId: randomUUID(), // để ghi/hoàn cược qua DB (chống mất tiền khi restart)
             players: new Map(), // userId -> { username, grid: genCard(), marked: new Set() }
             pool: shuffle(Array.from({ length: 75 }, (_, i) => i + 1)),
             called: [],
@@ -154,16 +156,15 @@ async function handleBingoPrefix(message, cmd, args) {
             return message.reply({ embeds: [embed] });
         }
 
-        const u = await db.getUser(userId);
-        if (Number(u?.wallet || 0) < DEFAULT_BET) {
+        // Thu cược qua DB (atomic: trừ ví + ghi dòng cược để hoàn nếu bot restart).
+        const paid = await db.stakeCollect(game.sessionId, 'bingo', channelId, userId, DEFAULT_BET);
+        if (!paid) {
             const embed = buildWaguriEmbed(message, 'error', {
                 description: `Ví cậu không đủ **${DEFAULT_BET.toLocaleString('vi-VN')}** ${config.CURRENCY} để mua vé rồi~ 😟`
             });
             return message.reply({ embeds: [embed] });
         }
 
-        await db.addMoney(userId, -DEFAULT_BET, 'wallet');
-        
         const card = genCard();
         game.players.set(userId, {
             username: message.author.username,
@@ -265,8 +266,9 @@ async function handleBingoPrefix(message, cmd, args) {
             if (curGame.pool.length === 0) {
                 clearInterval(interval);
                 activeBingoGames.delete(channelId);
+                await db.stakeRefundSession(curGame.sessionId); // hoà, không ai trúng -> hoàn vé
                 const embed = buildWaguriEmbed(message, 'warning', {
-                    description: 'Đã gọi hết 75 số mà không ai trúng, ván đấu kết thúc hòa! 🌸'
+                    description: 'Đã gọi hết 75 số mà không ai trúng, ván hoà — đã hoàn vé cho mọi người! 🌸'
                 });
                 return message.channel.send({ embeds: [embed] }).catch(() => {});
             }
@@ -304,6 +306,7 @@ async function handleBingoPrefix(message, cmd, args) {
                     await db.addMoney(wid, splitPrize, 'wallet');
                     db.questIncr(wid, 'gamble_win', 1);
                 }
+                await db.stakeSettle(curGame.sessionId); // cược đã thành pot & trả thưởng -> xoá dòng
 
                 const winnerMentions = winners.map(wid => `<@${wid}>`).join(', ');
                 
@@ -344,15 +347,11 @@ async function handleBingoPrefix(message, cmd, args) {
             return message.reply({ embeds: [embed] });
         }
 
-        if (game.status === 'lobby') {
-            for (const pid of game.players.keys()) {
-                await db.addMoney(pid, DEFAULT_BET, 'wallet');
-            }
-        }
-
+        // Hoàn vé cho mọi người đã mua (host huỷ ván) — qua DB, an toàn cả khi đang chơi.
+        await db.stakeRefundSession(game.sessionId);
         activeBingoGames.delete(channelId);
         const embed = buildWaguriEmbed(message, 'success', {
-            description: `✅ Đã kết thúc và dọn dẹp ván Bingo. Tiền vé đã được hoàn trả (nếu chưa bắt đầu)!`
+            description: `✅ Đã kết thúc và dọn dẹp ván Bingo. Tiền vé đã được hoàn trả cho mọi người!`
         });
         return message.reply({ embeds: [embed] });
     }

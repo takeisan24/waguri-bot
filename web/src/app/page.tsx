@@ -8,6 +8,7 @@ import FaqSection from "../components/FaqSection";
 import Testimonials from "../components/Testimonials";
 import SiteHeader from "../components/SiteHeader";
 import SiteFooter from "../components/SiteFooter";
+import EventBanner from "../components/EventBanner";
 import { PREMIUM_PLANS, PLAN_ORDER } from "../lib/premium";
 
 export default function Home() {
@@ -48,7 +49,18 @@ export default function Home() {
 
       {/* Hero Section */}
       <main className="relative flex-1 flex flex-col items-center justify-center px-6 z-10 py-12 md:py-20 max-w-7xl mx-auto w-full">
+        <div className="w-full max-w-3xl mx-auto mb-6">
+          <EventBanner />
+        </div>
         <div className="text-center max-w-3xl mx-auto mb-16 space-y-6">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="https://media.tenor.com/saOAfF_zx6UAAAAM/kaoruko-waguri-the-fragrant-flower-blooms-with-dignity.gif"
+            alt="Waguri Kaoruko"
+            width={128}
+            height={128}
+            className="mx-auto w-28 h-28 rounded-full border-2 border-pink-300/40 object-cover shadow-[0_0_45px_rgba(255,183,197,0.35)]"
+          />
           <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full border border-pink-300/20 bg-pink-500/5 text-pink-300 text-xs font-semibold tracking-wide backdrop-blur-md">
             <span>🌸 Bạn gái AI waifu & Quản gia kinh tế RPG</span>
           </div>

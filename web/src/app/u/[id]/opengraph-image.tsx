@@ -1,10 +1,11 @@
 import { ImageResponse } from "next/og";
+import { BOT_API } from "../../../lib/botApi";
 
 export const alt = "Hồ sơ Waguri";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-const API = "https://waguribot.wispbyte.app";
+const API = BOT_API;
 // Load cả latin + vietnamese subset -> satori chọn glyph theo từng ký tự (tên/nghề có dấu).
 const FONT_URLS = [
   "https://cdn.jsdelivr.net/npm/@fontsource/inter@5.1.1/files/inter-latin-600-normal.woff",

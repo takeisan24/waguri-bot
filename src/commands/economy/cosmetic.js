@@ -43,7 +43,12 @@ module.exports = {
         }
 
         if (sub === 'title') {
-            const text = interaction.options.getString('text').trim();
+            // Lọc: vô hiệu @everyone/@here, bỏ mention người/role + ký tự markdown (hiện công khai ở /profile, leaderboard).
+            const text = interaction.options.getString('text')
+                .replace(/<@[!&]?\d+>/g, '')
+                .replace(/@(everyone|here)/gi, '$1')
+                .replace(/[`*_~|\\<>@]/g, '')
+                .trim();
             if (!text || text.length > config.COSMETIC.MAX_TITLE_LEN) {
                 return replyEmbed('error', '🎨・Đổi Danh Hiệu', `Danh hiệu tối đa **${config.COSMETIC.MAX_TITLE_LEN}** ký tự nhé~`);
             }

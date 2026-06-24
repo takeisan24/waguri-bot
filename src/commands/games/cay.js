@@ -16,7 +16,7 @@ module.exports = {
         .addSubcommand(s => s.setName('phacay').setDescription('Phá cây hiện tại để trồng cây mới'))
         .addSubcommand(s => s.setName('trom').setDescription('Trộm cây trưởng thành của người khác (rủi ro!)')
             .addUserOption(o => o.setName('user').setDescription('Mục tiêu').setRequired(true)))
-        .addSubcommand(s => s.setName('box').setDescription('Mở Plantbox may mắn (240)')
+        .addSubcommand(s => s.setName('box').setDescription('Mở Plantbox may mắn (600)')
             .addUserOption(o => o.setName('user').setDescription('Tặng Plantbox cho ai (bỏ trống = cho mình)'))),
 
     async execute(interaction) {

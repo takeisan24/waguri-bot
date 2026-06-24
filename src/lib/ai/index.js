@@ -3,6 +3,8 @@ const config = require('../../config');
 const db = require('../../database.js');
 const { WAGURI_SYSTEM_PROMPT, tierOf } = require('./persona');
 const { getLevelFromExp } = require('../leveling');
+const { getEventInfo } = require('../event');
+const { activeSeasons, SEASON_LABEL } = require('../season');
 
 const gemini = require('./gemini'); // provider AI duy nhất: Google Gemini
 
@@ -60,7 +62,8 @@ async function chatWithWaguri(channelId, userId, userName, userText) {
     }
 
     const provider = getProvider();
-    let history = contexts.get(channelId) || [];
+    const ctxKey = `${channelId}:${userId}`; // ngữ cảnh riêng từng người trong kênh (tránh trộn hội thoại)
+    let history = contexts.get(ctxKey) || [];
     const framed = `${userName}: ${userText}`;
 
     // Mức thiện cảm + ngữ cảnh nhẹ (level, đã kết đôi chưa) -> cá nhân hóa persona.
@@ -77,7 +80,15 @@ async function chatWithWaguri(channelId, userId, userName, userText) {
     const t = tierOf(aff);
     const ctxBits = [`Level ${level}`];
     if (hasPartner) ctxBits.push('đã kết đôi với người khác trong game');
-    const systemPrompt = `${WAGURI_SYSTEM_PROMPT}\n\n[Người đang trò chuyện: ${userName} — thân thiết: ${t.name} (${aff} điểm); ${ctxBits.join('; ')}. Hãy trò chuyện ${t.guide}. Có thể nhắc khéo tới tiến độ của cậu ấy khi hợp ngữ cảnh, nhưng tuyệt đối đừng đọc thông số ra như máy.]`;
+    let systemPrompt = `${WAGURI_SYSTEM_PROMPT}\n\n[Người đang trò chuyện: ${userName} — thân thiết: ${t.name} (${aff} điểm); ${ctxBits.join('; ')}. Hãy trò chuyện ${t.guide}. Có thể nhắc khéo tới tiến độ của cậu ấy khi hợp ngữ cảnh, nhưng tuyệt đối đừng đọc thông số ra như máy.]`;
+
+    // Bối cảnh thời sự: sự kiện toàn cục + mùa lễ VN -> Waguri có thể nhắc khéo cho sống động.
+    const nowBits = [];
+    const ev = getEventInfo();
+    if (ev.active) nowBits.push(`đang có sự kiện "${ev.name || 'đặc biệt'}" nhân x${ev.mult} thu nhập/EXP toàn server`);
+    const seas = [...activeSeasons()].map(s => SEASON_LABEL[s]).filter(Boolean);
+    if (seas.length) nowBits.push(`đang vào mùa ${seas.join(' & ')}`);
+    if (nowBits.length) systemPrompt += `\n[Bối cảnh hôm nay: ${nowBits.join('; ')}. Nếu hợp ngữ cảnh, nhắc tới một cách tự nhiên & vui vẻ, đừng gượng ép.]`;
 
     let reply;
     try {
@@ -96,8 +107,8 @@ async function chatWithWaguri(channelId, userId, userName, userText) {
     const max = config.AI.MAX_CONTEXT_TURNS * 2;
     if (history.length > max) history = history.slice(history.length - max);
     if (history[0] && history[0].role === 'assistant') history = history.slice(1);
-    contexts.set(channelId, history);
-    ctxSeen.set(channelId, Date.now()); // mốc hoạt động để dọn ngữ cảnh cũ
+    contexts.set(ctxKey, history);
+    ctxSeen.set(ctxKey, Date.now()); // mốc hoạt động để dọn ngữ cảnh cũ
 
     return { ok: true, reply };
 }

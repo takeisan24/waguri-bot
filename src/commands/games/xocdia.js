@@ -14,6 +14,7 @@ module.exports = {
         .setDescription('Xóc Đĩa 🥢 — nhiều người đặt Chẵn/Lẻ cùng lúc, 1 lần xóc')
         .addIntegerOption(o => o.setName('bet').setDescription('Mức cược (mọi người cược bằng nhau)').setRequired(true).setMinValue(config.GAMBLE.MIN_BET)),
     async execute(interaction) {
+        const sessionId = require('crypto').randomUUID();
         const bet = interaction.options.getInteger('bet');
         const err = await checkBet(bet, interaction.guildId);
         if (err) {
@@ -46,7 +47,7 @@ module.exports = {
 
         collector.on('collect', async (i) => {
             if (bets.has(i.user.id)) return i.reply({ content: `Cậu đã đặt **${bets.get(i.user.id).side === 'chan' ? 'Chẵn' : 'Lẻ'}** rồi nhé~`, flags: MessageFlags.Ephemeral });
-            if (!await db.addMoney(i.user.id, -bet, 'wallet')) return i.reply({ content: `Cậu không đủ **${fmt(bet)}** ${config.CURRENCY} để cược~ 😟`, flags: MessageFlags.Ephemeral });
+            if (!await db.stakeCollect(sessionId, 'xocdia', interaction.channelId, i.user.id, bet)) return i.reply({ content: `Cậu không đủ **${fmt(bet)}** ${config.CURRENCY} để cược~ 😟`, flags: MessageFlags.Ephemeral });
             bets.set(i.user.id, { side: i.customId, username: i.user.username });
             await i.reply({ content: `✅ Cậu đặt **${i.customId === 'chan' ? 'Chẵn 🔴' : 'Lẻ ⚪'}** (${fmt(bet)} ${config.CURRENCY}).`, flags: MessageFlags.Ephemeral });
             await interaction.editReply({ embeds: [render()], components: [row] }).catch(() => {});
@@ -54,6 +55,7 @@ module.exports = {
 
         collector.on('end', async () => {
             if (bets.size === 0) {
+                await db.stakeSettle(sessionId);
                 return interaction.editReply({ embeds: [render().setColor(config.COLORS.WARNING).setTitle('🥢 Xóc Đĩa — không ai cược~')], components: [] }).catch(() => {});
             }
             const coins = [0, 0, 0, 0].map(() => Math.random() < 0.5 ? 1 : 0); // 1 = đỏ
@@ -66,6 +68,7 @@ module.exports = {
                 if (b.side === result) { const payout = Math.round(bet * MULT); await db.addMoney(id, payout, 'wallet'); db.questIncr(id, 'gamble_win', 1); wins.push(`<@${id}> (+${fmt(payout - bet)})`); }
                 else loses.push(`<@${id}> (-${fmt(bet)})`);
             }
+            await db.stakeSettle(sessionId);
             const embedResult = buildWaguriEmbed(interaction, 'jackpot', {
                 title: '🥢・Kết quả Xóc Đĩa',
                 description: `Đĩa mở: ${faces} → **${reds} đỏ** → **${result === 'chan' ? 'CHẴN 🔴' : 'LẺ ⚪'}**!\n\n` +
