@@ -72,6 +72,6 @@ begin
         v_total := v_total + r.amount;
         v_count := v_count + 1;
     end loop;
-    delete from game_stakes;
+    delete from game_stakes where id is not null;  -- WHERE bắt buộc (Supabase chặn DELETE trống)
     return jsonb_build_object('count', v_count, 'total', v_total);
 end; $$;

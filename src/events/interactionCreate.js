@@ -166,6 +166,25 @@ module.exports = {
                 }
                 return;
             }
+
+            // Nút "Đóng ticket" (global fallback khi bot restart)
+            if (interaction.customId === 'ticket_close') {
+                try {
+                    const thread = interaction.channel;
+                    if (thread && thread.isThread()) {
+                        await interaction.reply({
+                            content: `🔒 Ticket đã được đóng bởi <@${interaction.user.id}>. Cảm ơn cậu đã liên hệ~ 🌸`,
+                        });
+                        await thread.setLocked(true, 'Ticket đã đóng');
+                        await thread.setArchived(true, 'Ticket đã đóng');
+                    } else {
+                        await interaction.reply({ content: 'Lệnh này chỉ dùng được trong luồng hỗ trợ (ticket)~', flags: MessageFlags.Ephemeral });
+                    }
+                } catch (error) {
+                    logError('ticket_close_global', error);
+                }
+                return;
+            }
             return;
         }
         // Các component khác: định tuyến theo customId (phase sau sẽ nạp động).
