@@ -4,6 +4,8 @@ import CherryBlossom from "../../components/CherryBlossom";
 import SiteHeader from "../../components/SiteHeader";
 import SiteFooter from "../../components/SiteFooter";
 import { BOT_API } from "../../lib/botApi";
+import { createClient } from "../../lib/supabase/server";
+import { getDiscordIdentity } from "../../lib/discord";
 
 export const metadata = {
   title: "Bảng xếp hạng 🏆 — Waguri",
@@ -74,6 +76,29 @@ export default async function LeaderboardPage({
   const serverName = sp.name ? decodeURIComponent(sp.name) : null;
   const [wealth, level] = await Promise.all([getBoard("wealth", guild), getBoard("level", guild)]);
 
+  // "Hạng của bạn" — chỉ hiện ở BXH toàn cầu khi đang đăng nhập & hồ sơ không ẩn.
+  let myRank: { rank: number; netWorth: number; username: string } | null = null;
+  if (!guild) {
+    try {
+      const supabase = await createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      const myId = user ? getDiscordIdentity(user).id : null;
+      if (myId) {
+        const res = await fetch(`${API}/api/profile/${myId}`, { next: { revalidate: 60 } });
+        if (res.ok) {
+          const p = await res.json();
+          if (p && !p.hidden && typeof p.rank === "number" && p.rank > 0) {
+            myRank = { rank: p.rank, netWorth: Number(p.netWorth || 0), username: p.username };
+          }
+        }
+      }
+    } catch {
+      /* chưa đăng nhập / bot offline -> bỏ qua */
+    }
+  }
+
   return (
     <div className="relative min-h-screen flex flex-col bg-[#0d0812] text-slate-200 overflow-x-hidden">
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
@@ -100,6 +125,16 @@ export default async function LeaderboardPage({
             </Link>
           ) : null}
         </div>
+        {myRank ? (
+          <div className="glass-panel rounded-2xl px-5 py-3 flex items-center justify-between gap-4 border border-pink-400/30">
+            <span className="text-sm text-pink-200">
+              🎯 Hạng của bạn (<strong className="text-white">{myRank.username}</strong>)
+            </span>
+            <span className="text-sm font-bold text-white">
+              #{myRank.rank} · {fmt(myRank.netWorth)} VNĐ
+            </span>
+          </div>
+        ) : null}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <Board title="💎 Đại gia (tài sản)" rows={wealth} suffix=" VNĐ" />
           <Board title="⭐ Cao thủ (cấp độ)" rows={level} prefix="Lv." />
