@@ -136,6 +136,7 @@ const CATEGORIES: Cat[] = [
       ["serverinfo", "báo cáo cấu trúc server để audit 🔍"],
       ["eco-admin", "công cụ owner: tiền/ban/premium"],
       ["premium-admin", "duyệt đơn Premium thủ công (owner) 💎"],
+      ["getinvite", "tạo link mời server gửi owner qua DM (owner)"],
     ],
   },
 ];
