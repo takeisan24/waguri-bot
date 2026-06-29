@@ -5,6 +5,7 @@ const scripts = require('../../data/workScripts');
 const { getLevelFromExp, levelUpReward } = require('../../lib/leveling');
 const { onCooldown } = require('../../lib/cooldown');
 const { conditionMultiplier } = require('../../lib/fatigue');
+const { applyDisease } = require('../../lib/disease');
 const { getEventMult } = require('../../lib/event');
 const { buildWaguriEmbed } = require('../../lib/embed');
 
@@ -146,6 +147,9 @@ module.exports = {
             // Sự kiện toàn cục (vd Tết x2): nhân thu nhập + EXP
             const eventMult = getEventMult();
             if (eventMult !== 1 && earnedMoney > 0) earnedMoney = Math.round(earnedMoney * eventMult);
+            // Hệ Bệnh: làm quá sức có thể đổ bệnh; đang bệnh thì giảm thu nhập + mất máu.
+            const dz = await applyDisease(db, userId, user);
+            if (dz.incomeMult !== 1 && earnedMoney > 0) earnedMoney = Math.round(earnedMoney * dz.incomeMult);
 
             await db.addMoney(userId, earnedMoney, 'wallet');
             const userAfter = await db.getUser(userId);
@@ -166,6 +170,7 @@ module.exports = {
             if (fatigue < 1 && earnedMoney > 0) resultMessage += ` *(mệt -${Math.round((1 - fatigue) * 100)}%)*`;
             if (usedInsurance) resultMessage += `\n🛡️ **Bảo hiểm Lao động** đã kích hoạt giúp gánh 80% thiệt hại!`;
             if (category === 'jackpot' && catBuff) resultMessage += `\n🐱 Bé mèo **${userPetName}** dụi dụi mang lại tài lộc đầy túi!`;
+            if (dz.note) resultMessage += `\n${dz.note}`;
 
             if (usedVehicle) {
                 const vehicleName = config.VEHICLES[usedVehicle.vehicle_id]?.name || usedVehicle.vehicle_id;

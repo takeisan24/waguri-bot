@@ -138,6 +138,15 @@ module.exports = {
         ENERGY_COST: 5,
     },
     GATHER_ENERGY_COST: 5, // /mine, /chop
+
+    // Hệ Bệnh (Disease) — xem .local-brainstorm/disease_design.md
+    DISEASE: {
+        CATCH_CHANCE: 0.04,        // 4% đổ bệnh mỗi hành động kiếm tiền (work/fish/mine/chop)
+        LOW_HEALTH_THRESHOLD: 50,  // máu dưới mức này -> dễ ốm hơn
+        LOW_HEALTH_MULT: 2,        // ×2 tỉ lệ mắc khi máu thấp
+        SICK_INCOME_MULT: 0.7,     // -30% thu nhập khi đang bệnh
+        SICK_HEALTH_LOSS: 4,       // mất 4 máu mỗi hành động khi đang bệnh
+    },
     ACTION_COOLDOWN_MS: 5000, // /work /fish /mine /chop (đỡ spam, đỡ cày máy)
 
     // Mệt mỏi: thu nhập giảm khi NĂNG LƯỢNG hoặc SỨC KHỎE tụt thấp (xem src/lib/fatigue.js)

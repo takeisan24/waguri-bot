@@ -481,6 +481,18 @@ async function addHealth(userId, amount) {
     }
 }
 
+/** Đánh dấu / bỏ trạng thái bệnh (atomic qua RPC set_sick). */
+async function setSick(userId, value) {
+    try {
+        const { data, error } = await supabase.rpc('set_sick', { p_user_id: userId, p_sick: !!value });
+        if (error) throw error;
+        return data;
+    } catch (error) {
+        console.error(`[DATABASE ERROR] Lỗi setSick(${userId}):`, error);
+        return null;
+    }
+}
+
 // ============================================================
 //  ENERGY / BUFF — năng lượng & hiệu ứng
 // ============================================================
@@ -1481,6 +1493,7 @@ module.exports = {
     hospitalHeal,
     useVehicle,
     addHealth,
+    setSick,
     chargeAssets,
     stakeCollect,
     stakeSettle,

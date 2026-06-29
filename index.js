@@ -135,7 +135,7 @@ require('./src/lib/event').loadEvent()
 //    Chịu được mạng host chập chờn / "Opening handshake has timed out".
 // ---------------------------------------------------------
 let lastReady = Date.now();
-client.on('ready', () => { lastReady = Date.now(); });
+client.on('clientReady', () => { lastReady = Date.now(); });
 client.on('shardReady', () => { lastReady = Date.now(); });
 client.on('error', (e) => logError('client_error', e));
 client.on('shardError', (e, id) => logError('shard_error', e, { shard: id }));

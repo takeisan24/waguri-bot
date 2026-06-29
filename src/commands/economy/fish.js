@@ -5,6 +5,7 @@ const config = require('../../config');
 const FISH = require('../../data/fish');
 const { onCooldown } = require('../../lib/cooldown');
 const { conditionMultiplier } = require('../../lib/fatigue');
+const { applyDisease } = require('../../lib/disease');
 const { getLevelFromExp, levelUpReward } = require('../../lib/leveling');
 const { getEventMult } = require('../../lib/event');
 
@@ -72,6 +73,8 @@ module.exports = {
         const fatigue = conditionMultiplier(energyLeft, user.health);
         const gross = payout;
         if (payout > 0) payout = Math.round(payout * fatigue);
+        const dz = await applyDisease(db, userId, user);
+        if (dz.incomeMult !== 1 && payout > 0) payout = Math.round(payout * dz.incomeMult);
         const premium = user.premium_until && new Date(user.premium_until).getTime() > Date.now();
         if (premium && payout > 0) payout = Math.round(payout * (1 + config.PREMIUM.INCOME_BONUS));
         const eventMult = getEventMult();
@@ -88,6 +91,7 @@ module.exports = {
         } else {
             desc = `Cậu chỉ câu phải ${c.emoji} **${c.name}**... chẳng được gì cả 😅 Lần sau may hơn nhé~`;
         }
+        if (dz.note) desc += `\n${dz.note}`;
         
         desc += `\nĐộ bền Cần câu: **${toolResult.durability}/100** 🎣` + (toolResult.broken ? ' *(đã hỏng! Cần mua mới hoặc sửa)*' : '');
 

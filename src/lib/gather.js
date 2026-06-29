@@ -3,6 +3,7 @@ const db = require('../database.js');
 const config = require('../config');
 const { onCooldown } = require('./cooldown');
 const { conditionMultiplier } = require('./fatigue');
+const { applyDisease } = require('./disease');
 const { getLevelFromExp, levelUpReward } = require('./leveling');
 const { getEventMult } = require('./event');
 const { buildWaguriEmbed } = require('./embed');
@@ -69,6 +70,9 @@ async function runGather(interaction, { title, table, energyCost = config.GATHER
     const fatigue = conditionMultiplier(e, user.health);
     const gross = payout;
     if (payout > 0) payout = Math.round(payout * fatigue);
+    // Hệ Bệnh: làm quá sức có thể đổ bệnh; đang bệnh thì giảm thu nhập + mất máu.
+    const dz = await applyDisease(db, userId, user);
+    if (dz.incomeMult !== 1 && payout > 0) payout = Math.round(payout * dz.incomeMult);
     const premium = user.premium_until && new Date(user.premium_until).getTime() > Date.now();
     if (premium && payout > 0) payout = Math.round(payout * (1 + config.PREMIUM.INCOME_BONUS));
     const eventMult = getEventMult();
@@ -85,6 +89,7 @@ async function runGather(interaction, { title, table, energyCost = config.GATHER
     } else {
         desc = `Cậu chỉ nhặt được ${c.emoji} **${c.name}**... chẳng đáng bao nhiêu 😅`;
     }
+    if (dz.note) desc += `\n${dz.note}`;
 
     // Rơi nguyên liệu chế tạo (dùng cho /craft)
     const DROPS = { mine: ['quang_sat', 'da'], chop: ['go'] };

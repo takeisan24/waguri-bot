@@ -41,7 +41,7 @@ module.exports = {
             const u = await db.getUser(userId);
             const embed = buildWaguriEmbed(interaction, 'success', {
                 title: '🏥 Bệnh Viện Waguri',
-                description: `🩺 Cậu đã được bác sĩ chăm sóc đặc biệt và hồi phục sức khỏe về **100/100 ❤️**!\n\n💵 Viện phí đã thanh toán: **-${fmt(result.fee)}** ${config.CURRENCY}.\n💰 Ví: **${fmt(u?.wallet || 0)}** · 🏦 Ngân hàng: **${fmt(u?.bank || 0)}** ${config.CURRENCY}`
+                description: `🩺 Cậu đã được bác sĩ chăm sóc đặc biệt và hồi phục sức khỏe về **100/100 ❤️** và khỏi hẳn bệnh!\n\n💵 Viện phí đã thanh toán: **-${fmt(result.fee)}** ${config.CURRENCY}.\n💰 Ví: **${fmt(u?.wallet || 0)}** · 🏦 Ngân hàng: **${fmt(u?.bank || 0)}** ${config.CURRENCY}`
             }).setTimestamp();
             return interaction.editReply({ embeds: [embed] });
         }
