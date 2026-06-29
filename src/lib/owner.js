@@ -28,4 +28,4 @@ async function isOwner(client, userId) {
     return (await getOwnerIds(client)).has(userId);
 }
 
-module.exports = { isOwner };
+module.exports = { isOwner, getOwnerIds };

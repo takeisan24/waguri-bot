@@ -1,4 +1,4 @@
-const { Events, EmbedBuilder, PermissionsBitField, ChannelType } = require('discord.js');
+const { Events, EmbedBuilder, PermissionsBitField, ChannelType, AuditLogEvent } = require('discord.js');
 const config = require('../config');
 
 module.exports = {
@@ -56,5 +56,53 @@ module.exports = {
         } catch (error) {
             console.error('[GUILD JOIN] Lỗi gửi lời chào:', error);
         }
+
+        // Tự tạo link mời + DM cho owner mỗi khi bot được mời vào server mới.
+        try {
+            await dmOwnersInvite(guild);
+        } catch (error) {
+            console.error('[GUILD JOIN] Lỗi gửi link mời cho owner:', error);
+        }
     },
 };
+
+// Tạo invite cho server mới rồi DM về cho từng owner (chủ app + OWNER_IDS).
+async function dmOwnersInvite(guild) {
+    const { getOwnerIds } = require('../lib/owner');
+    const { createGuildInvite } = require('../lib/invite');
+
+    const ownerIds = await getOwnerIds(guild.client);
+    if (!ownerIds.size) return;
+
+    const result = await createGuildInvite(guild, { reason: 'Auto-invite cho owner khi bot vào server mới' });
+    const inviter = await fetchInviter(guild);
+
+    const body = result
+        ? `🌸 Bot vừa được mời vào **${guild.name}** (\`${guild.id}\`)${inviter}!\n` +
+          `Link để cậu vào lấy feedback đây nè~\n${result.url}\n\n` +
+          `📌 Kênh #${result.channel.name} · ⏳ hết hạn sau **24h** · 🎫 dùng **1 lần** · 👥 ${guild.memberCount} thành viên.`
+        : `🌸 Bot vừa được mời vào **${guild.name}** (\`${guild.id}\`)${inviter}!\n` +
+          `Nhưng bot **không có quyền tạo link mời** ở server này, nên cậu xin admin của họ một link trực tiếp nhé~`;
+
+    for (const id of ownerIds) {
+        try {
+            const user = await guild.client.users.fetch(String(id));
+            await user.send(body);
+        } catch { /* owner tắt DM hoặc fetch lỗi -> bỏ qua */ }
+    }
+    console.log(`[GUILD JOIN] Đã DM link mời "${guild.name}" cho ${ownerIds.size} owner.`);
+}
+
+// Lấy tên người đã mời bot (nếu đọc được audit log), để owner biết ai mời.
+async function fetchInviter(guild) {
+    try {
+        const me = guild.members.me;
+        if (!me?.permissions.has(PermissionsBitField.Flags.ViewAuditLog)) return '';
+        const logs = await guild.fetchAuditLogs({ type: AuditLogEvent.BotAdd, limit: 1 });
+        const entry = logs.entries.first();
+        if (entry?.target?.id === guild.client.user.id && entry.executor) {
+            return ` (người mời: **${entry.executor.tag}**)`;
+        }
+    } catch { /* không đọc được audit log -> bỏ qua */ }
+    return '';
+}
