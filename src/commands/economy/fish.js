@@ -68,6 +68,8 @@ module.exports = {
             return interaction.editReply({ embeds: [embed] });
         }
 
+        db.questIncr(userId, 'fish', 1); // nhiệm vụ: đếm mỗi lần đi câu (kể cả lần trắng tay)
+
         const c = pickCatch();
         let payout = c.max > 0 ? Math.floor(Math.random() * (c.max - c.min + 1)) + c.min : 0;
         const fatigue = conditionMultiplier(energyLeft, user.health);

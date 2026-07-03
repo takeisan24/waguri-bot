@@ -1,7 +1,7 @@
 const { SlashCommandBuilder } = require('discord.js');
 const db = require('../../database.js');
 const config = require('../../config');
-const QUESTS = require('../../data/quests');
+const { pickDailyQuests } = require('../../data/quests');
 const { createWaguriBar, buildWaguriEmbed, getWaguriFooter } = require('../../lib/embed');
 
 const fmt = n => Number(n).toLocaleString('vi-VN');
@@ -13,6 +13,9 @@ module.exports = {
     async execute(interaction) {
         await interaction.deferReply();
         const userId = interaction.user.id;
+
+        // Bộ nhiệm vụ của riêng người này hôm nay (PINNED điểm danh + vote, cộng vài quest random).
+        const QUESTS = pickDailyQuests(userId);
 
         let { counters, claimed } = await db.getQuestRow(userId);
 

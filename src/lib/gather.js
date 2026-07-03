@@ -65,6 +65,8 @@ async function runGather(interaction, { title, table, energyCost = config.GATHER
         return interaction.editReply({ embeds: [embed] });
     }
 
+    db.questIncr(userId, 'gather', 1); // nhiệm vụ: đếm mỗi lần đào mỏ/chặt gỗ (kể cả lần trắng tay)
+
     const c = pick(table);
     let payout = c.max > 0 ? Math.floor(Math.random() * (c.max - c.min + 1)) + c.min : 0;
     const fatigue = conditionMultiplier(e, user.health);

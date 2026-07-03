@@ -135,6 +135,8 @@ async function grantVoteReward(client, userId, isWeekend) {
     const cd = await db.claimCooldown(userId, 'vote_reward', config.VOTE.COOLDOWN_HOURS * 3600);
     if (cd) return; // đã nhận trong chu kỳ 12h này -> bỏ qua
 
+    db.questIncr(userId, 'vote', 1); // nhiệm vụ: vote Top.gg (đếm 1 lần/chu kỳ nhờ guard cooldown ở trên)
+
     // Tăng chuỗi vote (RPC tự tạo user nếu lần đầu) -> tính thưởng theo streak.
     const streak = await db.bumpVoteStreak(userId, config.VOTE.STREAK_GRACE_HOURS * 3600);
     const { coins, exp, bonus } = computeVoteReward(streak, isWeekend);

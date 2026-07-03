@@ -62,6 +62,7 @@ module.exports = {
             return interaction.editReply({ embeds: [embed] });
         }
 
+        db.questIncr(interaction.user.id, 'vote', 1); // nhiệm vụ: vote Top.gg (đếm 1 lần/chu kỳ nhờ guard cooldown ở trên)
         const streak = await db.bumpVoteStreak(interaction.user.id, config.VOTE.STREAK_GRACE_HOURS * 3600);
         const { coins, exp, bonus } = computeVoteReward(streak, false);
         await db.addMoney(interaction.user.id, coins, 'wallet');
