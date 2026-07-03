@@ -15,6 +15,17 @@ const { recordMembership } = require('../lib/membership');
 // (qua claimDailyCounter) -> không farm được qua restart hay nhiều shard.
 const chatCD = new Map(); // userId -> hết cooldown (ms)
 
+// Alias prefix cũ -> lệnh mới (giữ người quen tay không hụt lệnh sau khi đổi tên / gộp lệnh).
+// Giá trị: chuỗi = đổi tên (w!ngu -> nghingoi); {cmd,sub} = gộp vào lệnh con (w!trano -> vay tra).
+const PREFIX_ALIASES = {
+    ngu: 'nghingoi',
+    trano: { cmd: 'vay', sub: 'tra' },
+    donno: { cmd: 'vay', sub: 'doi' },
+    no: { cmd: 'vay', sub: 'so' },
+    deposit: { cmd: 'bank', sub: 'gui' },
+    withdraw: { cmd: 'bank', sub: 'rut' },
+};
+
 // Dọn rác cooldown định kỳ (tránh phình RAM). .unref() để không giữ tiến trình sống.
 setInterval(() => {
     const now = Date.now();
@@ -47,8 +58,18 @@ module.exports = {
         // --- 1) Lệnh prefix (vd: w!work) ---
         if (message.content.startsWith(prefix)) {
             const tokens = message.content.slice(prefix.length).trim().split(/\s+/);
-            const cmdName = (tokens.shift() || '').toLowerCase();
-            if (!cmdName) return;
+            const rawCmd = (tokens.shift() || '').toLowerCase();
+            if (!rawCmd) return;
+            const alias = PREFIX_ALIASES[rawCmd];
+            let cmdName = rawCmd;
+            if (typeof alias === 'string') cmdName = alias;                        // đổi tên (w!ngu -> nghingoi)
+            else if (alias) { cmdName = alias.cmd; tokens.unshift(alias.sub); }     // gộp lệnh con (w!trano -> vay tra)
+
+            // Tương thích prefix CŨ: trước đây w!vay @người 5000 vay trực tiếp (chưa có lệnh con).
+            // Sau khi gộp, nếu token đầu KHÔNG phải lệnh con hợp lệ -> mặc định về lệnh con phổ biến nhất.
+            const DEFAULT_SUB = { vay: { subs: ['muon', 'tra', 'doi', 'so'], def: 'muon' } };
+            const ds = DEFAULT_SUB[cmdName];
+            if (ds && !ds.subs.includes((tokens[0] || '').toLowerCase())) tokens.unshift(ds.def);
 
             // --- Intercept lệnh prefix nuôi heo (w!muaheo, w!heoan, ...) ---
             if (PIG_CMDS.has(cmdName)) {

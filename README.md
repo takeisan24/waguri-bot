@@ -19,7 +19,7 @@ chơi minigame nhiều người, kết đôi, buôn bán… — tất cả bằn
 | Nhóm | Lệnh tiêu biểu |
 |---|---|
 | 💼 **Kiếm tiền** | `/work` `/fish` `/mine` `/chop` `/daily` `/quest` `/jobs` — năng lượng + mệt mỏi + lên cấp + nghề |
-| 🏪 **Cửa hàng & Kho** | `/shop` `/buy` `/sell` `/inventory` `/eat` `/ngu` `/cosmetic` `/craft` — chế tạo từ gỗ/quặng |
+| 🏪 **Cửa hàng & Kho** | `/shop` `/buy` `/sell` `/inventory` `/eat` `/nghingoi` `/cosmetic` `/craft` — chế tạo từ gỗ/quặng |
 | 💸 **Tiền & Nợ** | `/balance` `/deposit` `/withdraw` `/give` `/rob` · vay nợ P2P `/vay` `/trano` `/donno` `/no` |
 | 🎲 **Minigame** | `/coinflip` `/taixiu` `/baucua` `/blackjack` `/crate` |
 | 👥 **Game nhiều người** | `/bacay` `/bingo` `/loto` `/masoi` (Ma Sói) `/xocdia` `/duangua` (đua ngựa) `/dovui` (đố vui) |
@@ -27,7 +27,7 @@ chơi minigame nhiều người, kết đôi, buôn bán… — tất cả bằn
 | 🏰 **Bang hội** | `/clan create·join·info·list·deposit·withdraw·kick·disband·war` (chiến tranh bang PvP) |
 | 🛒 **Chợ** | `/market view·mine·sell·buy·cancel` — mua bán đồ giữa người chơi (ký gửi) |
 | 💬 **AI & Premium** | `/ask` + @tag Waguri trò chuyện · `/premium` (quota AI cao + 10% thu nhập) · `/status` |
-| 🐷 **Nuôi & Trồng** | `/heo` (nuôi heo đất) · `/cay` (trồng cây) · `/pet` (thú cưng) |
+| 🐷 **Nuôi & Trồng** | `/heo` (nuôi heo đất) · `/trongcay` (trồng cây) · `/pet` (thú cưng) |
 | 🏥 **Sức khoẻ & Xe** | `/hospital` (nhập viện) · `/tangdo` (độ xe) · `/repair` (sửa công cụ) |
 | 🗓️ **Thông tin** | `/amlich` (lịch âm) · `/thoitiet` (thời tiết) · `/cat` `/dog` `/waifu` (ảnh ngẫu nhiên) |
 | 🏆 **Bảng xếp hạng** | `/leaderboard` (tài sản / cấp / tình cảm) · `/achievements` · `/event` · `/invite` · `/help` |

@@ -4,7 +4,7 @@ const plant = require('../../lib/plant');
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('cay')
+        .setName('trongcay')
         .setDescription('Trồng cây 🌱 — mua giống, tưới, thu hoạch, trộm (cũng dùng được prefix w!muagiong...)')
         .addSubcommand(s => s.setName('info').setDescription('Xem tình trạng cây của cậu'))
         .addSubcommand(s => s.setName('muagiong').setDescription('Mua giống & trồng cây (500)'))

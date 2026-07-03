@@ -101,7 +101,7 @@ export default function Wiki() {
           <CmdList
             items={[
               { c: "/work /fish /mine /chop", d: "các cách kiếm tiền (tốn năng lượng)" },
-              { c: "/ngu", d: "ngủ hồi đầy năng lượng (có thời gian chờ)" },
+              { c: "/nghingoi", d: "ngủ hồi đầy năng lượng (có thời gian chờ)" },
               { c: "/eat <món>", d: "ăn đồ để hồi năng lượng hoặc nhận buff" },
               { c: "/hospital", d: "hồi đầy sức khỏe (tốn 10% tài sản)" },
               { c: "/jobs", d: "đổi nghề để lương cao hơn khi lên cấp" },
@@ -180,14 +180,14 @@ export default function Wiki() {
           </p>
           <CmdList
             items={[
-              { c: "/cay muagiong · w!muagiong", d: "mua giống & trồng (500)" },
-              { c: "/cay tuoi · w!tuoinuoc [@ai]", d: "tưới nước (hoặc tưới hộ người khác)" },
-              { c: "/cay bonphan · w!bonphan", d: "bón phân để cây thêm 1 nước ngay (200)" },
-              { c: "/cay thuhoach · w!thuhoach", d: "thu hoạch cây trưởng thành" },
-              { c: "/cay hoisinh · w!hoisinh", d: "hồi sinh cây đã chết (1.000)" },
-              { c: "/cay phacay · w!phacay", d: "phá cây hiện tại để trồng cây mới" },
-              { c: "/cay trom · w!trom @ai", d: "trộm cây trưởng thành của người khác (rủi ro!)" },
-              { c: "/cay box · w!plantbox [@ai]", d: "mở/tặng hộp may mắn Plantbox (240, tối đa 10 lần/ngày)" },
+              { c: "/trongcay muagiong · w!muagiong", d: "mua giống & trồng (500)" },
+              { c: "/trongcay tuoi · w!tuoinuoc [@ai]", d: "tưới nước (hoặc tưới hộ người khác)" },
+              { c: "/trongcay bonphan · w!bonphan", d: "bón phân để cây thêm 1 nước ngay (200)" },
+              { c: "/trongcay thuhoach · w!thuhoach", d: "thu hoạch cây trưởng thành" },
+              { c: "/trongcay hoisinh · w!hoisinh", d: "hồi sinh cây đã chết (1.000)" },
+              { c: "/trongcay phacay · w!phacay", d: "phá cây hiện tại để trồng cây mới" },
+              { c: "/trongcay trom · w!trom @ai", d: "trộm cây trưởng thành của người khác (rủi ro!)" },
+              { c: "/trongcay box · w!plantbox [@ai]", d: "mở/tặng hộp may mắn Plantbox (240, tối đa 10 lần/ngày)" },
             ]}
           />
         </Card>

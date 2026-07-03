@@ -14,7 +14,7 @@ const TAI_LOC = [
     'Có khoản thu bất ngờ đang chờ cậu đó.',
     'Chi tiêu hợp lý kẻo cuối tháng "viêm màng túi" nha~',
     'Hôm nay đỏ bạc lắm, thử /baucua một ván nhẹ? 😉',
-    'Giữ tiền trong /deposit cho an toàn nhé.',
+    'Giữ tiền trong /bank cho an toàn nhé.',
 ];
 const MAY_MAN = ['⭐⭐⭐⭐⭐ Cực đỉnh!', '⭐⭐⭐⭐ Rất tốt', '⭐⭐⭐ Ổn áp', '⭐⭐ Tàm tạm', '⭐ Cẩn thận chút nha'];
 const LOI_KHUYEN = [

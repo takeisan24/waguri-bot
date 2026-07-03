@@ -5,8 +5,8 @@ const { buildWaguriEmbed } = require('../../lib/embed');
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('ngu')
-        .setDescription('Đi ngủ một giấc để hồi đầy năng lượng 😴'),
+        .setName('nghingoi')
+        .setDescription('Đi ngủ một giấc để hồi đầy năng lượng 😴 (gõ được cả w!ngu)'),
     async execute(interaction) {
         await interaction.deferReply();
         const cd = await db.claimCooldown(interaction.user.id, 'sleep', config.SLEEP_COOLDOWN_SECONDS);

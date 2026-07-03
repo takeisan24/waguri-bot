@@ -196,7 +196,7 @@ export default async function Dashboard() {
                 </div>
               </div>
               {health < 30 ? (
-                <p className="text-xs text-rose-300">⚠️ Sức khỏe yếu (&lt;30) — dùng <code>/eat</code> thuốc/hộp y tế, <code>/ngu</code> hoặc <code>/hospital</code> để hồi nhé!</p>
+                <p className="text-xs text-rose-300">⚠️ Sức khỏe yếu (&lt;30) — dùng <code>/eat</code> thuốc/hộp y tế, <code>/nghingoi</code> hoặc <code>/hospital</code> để hồi nhé!</p>
               ) : null}
             </div>
 

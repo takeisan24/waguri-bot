@@ -190,7 +190,7 @@ module.exports = {
             if (!user.onboarded) tip = 'Người mới hả? Gõ `/start` nhận **quà chào mừng** từ mình nha~ 🎁';
             else if (category === 'fail') tip = 'Đen một chút thôi mà, đừng buồn nha~ Lần sau may mắn hơn, mình tin cậu! 🌸';
             else if (!user.job_id) tip = 'Cậu đang làm **nghề tự do** — gõ `/jobs` xin nghề để lương cao hơn nha~ 💼';
-            else if (energyLeft < energyCost * 2) tip = 'Năng lượng sắp cạn rồi, `/eat` hoặc `/ngu` nghỉ chút cho lại sức nhé~ 🌸';
+            else if (energyLeft < energyCost * 2) tip = 'Năng lượng sắp cạn rồi, `/eat` hoặc `/nghingoi` nghỉ chút cho lại sức nhé~ 🌸';
             else if (newLevel > oldLevel) tip = 'Lên cấp rồi nè! Ghé `/jobs` xem có mở nghề xịn hơn không nha~ ✨';
             const description = `> ${resultMessage}\n\n` + (tip ? `> 💡 ${tip}\n` : '');
             const fields = [
