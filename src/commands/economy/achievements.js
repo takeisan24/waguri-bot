@@ -33,14 +33,18 @@ module.exports = {
 
         const unlocked = await db.getAchievements(userId);
 
-        // Mở khóa thành tựu mới đạt điều kiện
-        const newly = [];
-        let reward = 0;
+        // Ứng viên thành tựu vừa đạt điều kiện (theo bản đọc `unlocked` hiện tại).
+        let newly = [];
         for (const a of ACH) {
-            if (!unlocked.has(a.id) && a.check(ctx)) { newly.push(a.id); reward += a.reward || 0; }
+            if (!unlocked.has(a.id) && a.check(ctx)) newly.push(a.id);
         }
+        let reward = 0;
         if (newly.length) {
-            await db.unlockAchievements(userId, newly);
+            // CHỈ trao thưởng cho thành tựu THỰC SỰ vừa chèn (RPC trả id đã insert) ->
+            // 2 lần gọi /achievements đua nhau không trao thưởng trùng (upsert chỉ chặn trùng row).
+            const inserted = new Set(await db.unlockAchievements(userId, newly));
+            newly = newly.filter(id => inserted.has(id));
+            reward = ACH.reduce((s, a) => inserted.has(a.id) ? s + (a.reward || 0) : s, 0);
             if (reward > 0) await db.addMoney(userId, reward, 'wallet');
             newly.forEach(id => unlocked.add(id));
         }

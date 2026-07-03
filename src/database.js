@@ -709,17 +709,21 @@ async function getAchievements(userId) {
     }
 }
 
-/** Mở khóa nhiều thành tựu (bỏ qua trùng). */
+/** Mở khóa nhiều thành tựu (bỏ qua trùng). Trả MẢNG id THỰC SỰ vừa chèn
+ *  (ON CONFLICT DO NOTHING -> select chỉ trả dòng mới) để caller trao thưởng ĐÚNG 1 lần,
+ *  chống trả thưởng trùng khi 2 lần gọi /achievements đua nhau. [] nếu không có gì mới / lỗi. */
 async function unlockAchievements(userId, ids) {
     try {
-        if (!ids || !ids.length) return true;
+        if (!ids || !ids.length) return [];
         const rows = ids.map(id => ({ user_id: userId, achievement_id: id }));
-        const { error } = await supabase.from('achievements').upsert(rows, { onConflict: 'user_id,achievement_id', ignoreDuplicates: true });
+        const { data, error } = await supabase.from('achievements')
+            .upsert(rows, { onConflict: 'user_id,achievement_id', ignoreDuplicates: true })
+            .select('achievement_id');
         if (error) throw error;
-        return true;
+        return (data || []).map(r => r.achievement_id);
     } catch (error) {
         console.error('[DATABASE ERROR] unlockAchievements():', error);
-        return false;
+        return [];
     }
 }
 

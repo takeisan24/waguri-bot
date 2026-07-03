@@ -139,6 +139,7 @@ module.exports = {
             let answered = false;
             collector.on('collect', async (i) => {
                 if (i.user.id !== foe.leader_id) return i.reply({ content: 'Chỉ trưởng bang đối thủ mới trả lời được~', flags: MessageFlags.Ephemeral });
+                if (answered) return i.deferUpdate().catch(() => {}); // chống double-click: chỉ xử lý lần bấm đầu (tránh xử chiến 2 lần / cướp quỹ x2)
                 answered = true;
                 if (i.customId === 'decline') {
                     const decEmbed = buildWaguriEmbed(interaction, 'error', {

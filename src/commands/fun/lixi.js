@@ -37,7 +37,10 @@ module.exports = {
         }
         if (parts > amount) parts = amount;
 
-        if (!await db.addMoney(userId, -amount, 'wallet')) {
+        // KHÔNG trừ trước toàn bộ: mỗi lượt cướp chuyển tiền NGUYÊN TỬ giver -> grabber (transferMoneyWithTax).
+        // -> bot restart giữa chừng không làm "bốc hơi" phần chưa ai cướp (không còn ký quỹ trong RAM).
+        // Chỉ kiểm ví đủ tại thời điểm phát (peek); nếu giữa chừng giver tiêu hết, lượt cướp sau báo hết tiền.
+        if (Number(user.wallet) < amount) {
             const embed = buildWaguriEmbed(interaction, 'error', { title: '🧧・Lì Xì May Mắn', description: 'Ví cậu không đủ để phát lì xì rồi 😟' });
             return interaction.editReply({ embeds: [embed] });
         }
@@ -74,18 +77,22 @@ module.exports = {
             if (portions.length === 0) return i.reply({ content: 'Hết lì xì mất rồi 😢', flags: MessageFlags.Ephemeral });
 
             const got = portions.pop();
-            const tax = Math.floor(got * config.GIVE_TAX_PCT);
+            const tax = Math.floor(got * config.GIVE_TAX_PCT); // khớp RPC transfer_money_with_tax (floor)
             const net = got - tax;
-            claimed.set(i.user.id, { net, tax });
-            await db.addMoney(i.user.id, net, 'wallet');
+            claimed.set(i.user.id, { net, tax }); // đặt TRƯỚC await -> chống cùng người double-grab
+            const ok = await db.transferMoneyWithTax(userId, i.user.id, got, config.GIVE_TAX_PCT);
+            if (!ok) {
+                // Giver vừa hết tiền (tiêu chỗ khác) -> nhả bao lại, huỷ đánh dấu.
+                claimed.delete(i.user.id);
+                portions.push(got);
+                return i.reply({ content: 'Ơ, người phát tạm hết tiền rồi nên bao này chưa cướp được~ 😢', flags: MessageFlags.Ephemeral }).catch(() => {});
+            }
             await i.update({ embeds: [render(portions.length === 0)], components: [row(portions.length === 0)] });
             if (portions.length === 0) collector.stop('done');
         });
 
         collector.on('end', async () => {
-            // Hoàn lại các bao chưa ai cướp cho người phát (chưa bị cướp nên hoàn đủ không thuế)
-            const leftover = portions.reduce((s, x) => s + x, 0);
-            if (leftover > 0) await db.addMoney(userId, leftover, 'wallet');
+            // Không cần hoàn gì: giver chỉ bị trừ cho đúng các bao ĐÃ được cướp (chuyển nguyên tử từng lượt).
             await interaction.editReply({ embeds: [render(true)], components: [row(true)] }).catch(() => {});
         });
     },
