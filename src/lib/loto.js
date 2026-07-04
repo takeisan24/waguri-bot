@@ -52,16 +52,30 @@ async function handleLotoPrefix(message, cmd, args) {
             return message.reply({ embeds: [embed] });
         }
 
+        const sessionId = randomUUID();
+        const timeout = setTimeout(async () => {
+            const curGame = activeLotoGames.get(channelId);
+            if (curGame && curGame.status === 'lobby' && curGame.sessionId === sessionId) {
+                activeLotoGames.delete(channelId);
+                await db.stakeRefundSession(curGame.sessionId);
+                const embed = buildWaguriEmbed(message, 'warning', {
+                    description: 'Phòng Loto đã quá 10 phút chưa bắt đầu nên đã tự động hủy và hoàn vé cho mọi người! ⏰🌸'
+                });
+                message.channel.send({ embeds: [embed] }).catch(() => {});
+            }
+        }, 10 * 60 * 1000);
+
         activeLotoGames.set(channelId, {
             hostId: userId,
             hostTag: message.author.tag,
             voiceChannelName: voiceChannel.name,
             status: 'lobby',
-            sessionId: randomUUID(), // để ghi/hoàn cược qua DB (chống mất tiền khi restart)
+            sessionId: sessionId, // để ghi/hoàn cược qua DB (chống mất tiền khi restart)
             players: new Map(),
             called: [],
             pool: shuffle(Array.from({ length: 90 }, (_, i) => i + 1)),
-            msg: null
+            msg: null,
+            lobbyTimeout: timeout
         });
 
         const embed = buildWaguriEmbed(message, 'info', {
@@ -202,6 +216,10 @@ async function handleLotoPrefix(message, cmd, args) {
             return message.reply({ embeds: [embed] });
         }
 
+        if (game.lobbyTimeout) {
+            clearTimeout(game.lobbyTimeout);
+            game.lobbyTimeout = null;
+        }
         game.status = 'playing';
         const pot = game.players.size * TICKET_PRICE;
 
@@ -304,6 +322,10 @@ async function handleLotoPrefix(message, cmd, args) {
             return message.reply({ embeds: [embed] });
         }
 
+        if (game.lobbyTimeout) {
+            clearTimeout(game.lobbyTimeout);
+            game.lobbyTimeout = null;
+        }
         // Hoàn vé cho mọi người đã mua (host huỷ ván) — qua DB, an toàn cả khi đang chơi.
         await db.stakeRefundSession(game.sessionId);
         activeLotoGames.delete(channelId);
