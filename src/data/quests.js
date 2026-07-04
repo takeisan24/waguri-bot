@@ -26,6 +26,7 @@ const POOL = [
     { id: 'gamble2', name: 'Thắng minigame may rủi 2 ván',      key: 'gamble_win', required: 2,    reward: 1000 },
     { id: 'fish3',   name: 'Đi câu cá 3 lần',                   key: 'fish',       required: 3,    reward: 600 },
     { id: 'gather3', name: 'Đào mỏ/chặt gỗ 3 lần',              key: 'gather',     required: 3,    reward: 600 },
+    { id: 'bake1',   name: 'Thu doanh thu Tiệm Bánh Gekka 1 lần', key: 'bake',     required: 1,    reward: 600 },
     // (Đã bỏ quest 'give': đếm theo SỐ LẦN chuyển nên alt-farm được ~400đ/ngày bằng cách gửi 1đ cho acc phụ.)
 ];
 

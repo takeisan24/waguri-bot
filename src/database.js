@@ -1457,6 +1457,34 @@ async function redeemPremiumOrderByCode(code, amount, ref) {
     }
 }
 
+// ============================================================
+//  TIỆM BÁNH GEKKA (bakery) — kinh doanh thụ động
+// ============================================================
+async function getBakery(userId) {
+    try { const { data, error } = await supabase.from('bakeries').select('*').eq('user_id', userId).maybeSingle(); if (error) throw error; return data; }
+    catch (e) { console.error('[DATABASE ERROR] getBakery():', e); return null; }
+}
+/** Mở tiệm. Trả 'ok'|'has'|'no_tool'|'poor'|'no_user'|'error'. */
+async function bakeryOpen(userId, cost, tool) {
+    try { const { data, error } = await supabase.rpc('bakery_open', { p_user_id: userId, p_cost: cost, p_tool: tool }); if (error) throw error; return data; }
+    catch (e) { console.error('[DATABASE ERROR] bakeryOpen():', e); return 'error'; }
+}
+/** Nạp nguyên liệu (trừ item + cộng stock). Trả 'ok'|'no_item'|'no_bakery'|'bad_qty'|'error'. */
+async function bakeryStock(userId, itemId, qty, gain) {
+    try { const { data, error } = await supabase.rpc('bakery_stock', { p_user_id: userId, p_item_id: itemId, p_qty: qty, p_gain: gain }); if (error) throw error; return data; }
+    catch (e) { console.error('[DATABASE ERROR] bakeryStock():', e); return 'error'; }
+}
+/** Thu doanh thu (lazy). Trả {result:'ok',revenue,cakes,stock_left,capped}|{result:'empty'|'no_bakery'|'error'}. */
+async function bakeryCollect(userId, rate, cap, cakeEvery) {
+    try { const { data, error } = await supabase.rpc('bakery_collect', { p_user_id: userId, p_rate: rate, p_cap: cap, p_cake_every: cakeEvery }); if (error) throw error; return data; }
+    catch (e) { console.error('[DATABASE ERROR] bakeryCollect():', e); return { result: 'error' }; }
+}
+/** Nâng cấp tiệm. Trả 'ok'|'poor'|'no_mats'|'max'|'no_bakery'|'error'. */
+async function bakeryUpgrade(userId, cost, mats, maxLevel) {
+    try { const { data, error } = await supabase.rpc('bakery_upgrade', { p_user_id: userId, p_cost: cost, p_mats: mats, p_max_level: maxLevel }); if (error) throw error; return data; }
+    catch (e) { console.error('[DATABASE ERROR] bakeryUpgrade():', e); return 'error'; }
+}
+
 module.exports = {
     supabase,
     getUser,
@@ -1612,4 +1640,10 @@ module.exports = {
     setEnergy,
     giveItemAdmin,
     resetUser,
+    // tiệm bánh
+    getBakery,
+    bakeryOpen,
+    bakeryStock,
+    bakeryCollect,
+    bakeryUpgrade,
 };

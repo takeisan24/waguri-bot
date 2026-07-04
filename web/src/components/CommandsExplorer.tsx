@@ -54,6 +54,7 @@ const CATEGORIES: Cat[] = [
     cmds: [
       ["heo", "nuôi heo đất 🐷 (mua/chăm/bán/trộm)"],
       ["trongcay", "trồng cây 🌱 (giống/tưới/thu hoạch/trộm)"],
+      ["tiembanh", "tiệm bánh Gekka 🍰 (kinh doanh thụ động)"],
       ["coinflip", "tung đồng xu"],
       ["taixiu", "tài xỉu"],
       ["baucua", "bầu cua tôm cá"],

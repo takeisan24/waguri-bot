@@ -253,6 +253,32 @@ module.exports = {
     WELCOME: { BONUS: 5000 },     // quà chào mừng 1 lần (~1 lần /daily, không gây lạm phát)
     RETURN_GREET_DAYS: 3,         // vắng >= 3 ngày thì Waguri chào quay lại (ở /daily)
 
+    // Tiệm Bánh Gekka — kinh doanh thụ động (xem docs/design-tiem-banh-gekka.md).
+    // MÔ HÌNH: nhập nguyên liệu (orphan farm outputs) -> "kho tiềm năng" (stock, VNĐ) ->
+    // tiệm tự nướng RATE/phút, dồn vào doanh thu tới TRẦN capacity -> /thu về ví.
+    // Cân bằng hướng ỔN ĐỊNH: passive < cày chủ động; trần + gate NL chống lạm phát.
+    BAKERY: {
+        OPEN_COST: 50000,          // phí mở tiệm
+        MIN_LEVEL: 15,             // cấp tối thiểu để mở
+        TOOL: 'bo_do_sua_xe',      // vật phẩm "giấy phép" (đã có trong catalog, 8k)
+        BAKE_MARKUP: 0.8,          // 1 nguyên liệu (giá p) -> +p*0.8 vào kho tiềm năng (so với /sell chỉ 0.5)
+        CAKE_EVERY: 15000,         // mỗi 15k doanh thu thu được -> tặng 1 bánh (hybrid: tiền + item)
+        CAKE_ITEM: 've_vip',       // bánh trả ra (Bánh Kem Dâu Gekka — buff item đã có)
+        // Nguyên liệu hợp lệ (orphan outputs đang chờ dùng) + cá mới. Mở rộng sau (xem TODO item).
+        FILLINGS: ['trai_1500','trai_2000','trai_2500','trai_3000','trai_3500',
+                   'hoa_1500','hoa_2000','hoa_2500','hoa_3000','hoa_3500',
+                   'thit_heo_2000','thit_heo_2500','thit_heo_3000','thit_heo_3500','thit_heo_4000',
+                   'ca_tuoi'],
+        // Cấp 1..5 (MVP). rate = VNĐ/phút nướng; cap = trần doanh thu tích giữa 2 lần /thu.
+        LEVELS: [
+            { rate: 20,  cap: 12000,  upCost: 0,      mats: {} },
+            { rate: 30,  cap: 24000,  upCost: 60000,  mats: { noi_that: 2 } },
+            { rate: 45,  cap: 48000,  upCost: 140000, mats: { noi_that: 4 } },
+            { rate: 68,  cap: 96000,  upCost: 320000, mats: { noi_that: 6, trang_suc: 2 } },
+            { rate: 100, cap: 190000, upCost: 700000, mats: { noi_that: 10, trang_suc: 4 } },
+        ],
+    },
+
     // Web app (dashboard, mua Premium...). Đổi qua env WEB_URL nếu deploy domain khác.
     WEB_URL: process.env.WEB_URL || 'https://waguri-bot.vercel.app',
 };

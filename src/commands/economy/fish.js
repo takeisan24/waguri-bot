@@ -94,7 +94,13 @@ module.exports = {
             desc = `Cậu chỉ câu phải ${c.emoji} **${c.name}**... chẳng được gì cả 😅 Lần sau may hơn nhé~`;
         }
         if (dz.note) desc += `\n${dz.note}`;
-        
+
+        // Rơi Cá Tươi (nguyên liệu Tiệm Bánh Gekka) — đóng vòng: câu cá giờ có ĐẦU RA item.
+        if (c.max > 0 && Math.random() < 0.35) {
+            await db.giveItemAdmin(userId, 'ca_tuoi', 1);
+            desc += `\n🐟 Giỏ cá có thêm **1× Cá Tươi** *(nguyên liệu \`/tiembanh\`)*`;
+        }
+
         desc += `\nĐộ bền Cần câu: **${toolResult.durability}/100** 🎣` + (toolResult.broken ? ' *(đã hỏng! Cần mua mới hoặc sửa)*' : '');
 
         const u = await db.getUser(userId);

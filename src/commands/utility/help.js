@@ -16,6 +16,7 @@ const CATEGORIES = [
         ['profile', 'hồ sơ tổng quan'],
         ['jobs', 'xem & xin nghề (list / info / apply)'],
         ['pet', 'thú cưng: nhận nuôi / cho ăn / xem 🐾'],
+        ['tiembanh', 'tiệm bánh Gekka 🍰 (kinh doanh thụ động: xem·mo·nhapnl·thu·nangcap)'],
     ] },
     { name: '🏪 Cửa hàng & Kho', cmds: [
         ['shop', 'xem cửa hàng'],
