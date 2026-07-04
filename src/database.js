@@ -683,6 +683,18 @@ async function newbieQuestIncr(userId, key, amount) {
     }
 }
 
+/** Nhận trợ cấp phá sản. Trả 'ok'|'not_bankrupt'|'cooldown'|'error'. */
+async function claimBankruptcyRelief(userId, amount) {
+    try {
+        const { data, error } = await supabase.rpc('claim_bankruptcy_relief', { p_user_id: userId, p_amount: amount });
+        if (error) throw error;
+        return data;
+    } catch (error) {
+        console.error('[DATABASE ERROR] claimBankruptcyRelief():', error);
+        return 'error';
+    }
+}
+
 /** Lấy tiến độ + đã-nhận của HÔM NAY. */
 async function getQuestRow(userId) {
     try {
@@ -1603,6 +1615,7 @@ module.exports = {
     getQuestRow,
     questClaim,
     newbieQuestIncr,
+    claimBankruptcyRelief,
     // achievements
     getAchievements,
     unlockAchievements,

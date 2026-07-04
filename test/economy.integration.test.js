@@ -270,4 +270,35 @@ if (!hasDb) {
         r = await db.newbieQuestIncr(testUser1, 'daily', 1);
         assert.strictEqual(r.status, 'already_completed');
     });
+
+    test('Integration: Bankruptcy Relief - nhận trợ cấp, chặn trùng, và chặn khi có tiền', async () => {
+        // Reset user 1
+        await supabase.from('users').delete().eq('user_id', testUser1);
+        await db.getUser(testUser1);
+        await supabase.from('users').update({ wallet: 0, bank: 0, last_rescue_at: null }).eq('user_id', testUser1);
+
+        // Nhận trợ cấp thành công
+        let res = await db.claimBankruptcyRelief(testUser1, 500);
+        assert.strictEqual(res, 'ok', 'Trợ cấp thành công');
+
+        let u = await db.getUser(testUser1);
+        assert.strictEqual(Number(u.wallet), 500, 'Ví nhận được 500đ');
+
+        // Đặt ví về 0 để test cooldown khi đang trong thời gian chờ
+        await supabase.from('users').update({ wallet: 0 }).eq('user_id', testUser1);
+
+        // Nhận lại bị cooldown
+        res = await db.claimBankruptcyRelief(testUser1, 500);
+        assert.strictEqual(res, 'cooldown', 'Chặn nhận liên tiếp (cooldown 24h)');
+
+        // Có tiền (wallet > 0) -> not_bankrupt
+        await supabase.from('users').update({ wallet: 10, bank: 0, last_rescue_at: null }).eq('user_id', testUser1);
+        res = await db.claimBankruptcyRelief(testUser1, 500);
+        assert.strictEqual(res, 'not_bankrupt', 'Từ chối cứu trợ khi có tiền trong ví');
+
+        // Có tiền (bank > 0) -> not_bankrupt
+        await supabase.from('users').update({ wallet: 0, bank: 20, last_rescue_at: null }).eq('user_id', testUser1);
+        res = await db.claimBankruptcyRelief(testUser1, 500);
+        assert.strictEqual(res, 'not_bankrupt', 'Từ chối cứu trợ khi có tiền trong ngân hàng');
+    });
 }
