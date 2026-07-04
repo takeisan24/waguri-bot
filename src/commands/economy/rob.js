@@ -83,7 +83,7 @@ module.exports = {
             // Phạt theo TỔNG TÀI SẢN (ví+bank) -> không né được bằng cách giấu tiền trong bank.
             const robberAssets = Number(robber.wallet || 0) + Number(robber.bank || 0);
             let fine = Math.floor(robberAssets * config.ROB.FINE_PCT);
-            const usedIns = await db.useInsurance(robberId, 'bh_duong_pho');
+            const usedIns = await db.useInsurance(robberId, 'bh_hoc_duong');
             if (usedIns) {
                 fine = Math.round(fine * 0.5); // Giảm 50% tiền phạt
             }

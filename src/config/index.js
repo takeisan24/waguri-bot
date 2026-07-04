@@ -161,7 +161,7 @@ module.exports = {
     VEHICLES: {
         xe_dap: { energy_cost: 9, name: 'Xe Đạp Mini Nhật Bản' },
         xe_wave: { energy_cost: 8, name: 'Xe Honda Wave' },
-        xe_sh: { energy_cost: 6, name: 'Xe Vespa Hồng Cute' },
+        xe_vespa: { energy_cost: 6, name: 'Xe Vespa Hồng Cute' },
         o_to_vinfast: { energy_cost: 5, name: 'Ô tô VinFast VF3' },
         sh: { energy_cost: 4, name: 'Xe Honda SH Mode' },
         o_to_cu: { energy_cost: 4, name: 'Ô Tô Cũ Của Rintaro' },
@@ -260,10 +260,10 @@ module.exports = {
     BAKERY: {
         OPEN_COST: 50000,          // phí mở tiệm
         MIN_LEVEL: 15,             // cấp tối thiểu để mở
-        TOOL: 'bo_do_sua_xe',      // vật phẩm "giấy phép" (đã có trong catalog, 8k)
+        TOOL: 'bo_lam_banh',       // vật phẩm "giấy phép" (đã có trong catalog, 8k)
         BAKE_MARKUP: 0.8,          // 1 nguyên liệu (giá p) -> +p*0.8 vào kho tiềm năng (so với /sell chỉ 0.5)
         CAKE_EVERY: 15000,         // mỗi 15k doanh thu thu được -> tặng 1 bánh (hybrid: tiền + item)
-        CAKE_ITEM: 've_vip',       // bánh trả ra (Bánh Kem Dâu Gekka — buff item đã có)
+        CAKE_ITEM: 'banh_kem_dau', // bánh trả ra (Bánh Kem Dâu Gekka — buff item đã có)
         // Nguyên liệu hợp lệ (orphan outputs đang chờ dùng) + cá mới. Mở rộng sau (xem TODO item).
         FILLINGS: ['trai_1500','trai_2000','trai_2500','trai_3000','trai_3500',
                    'hoa_1500','hoa_2000','hoa_2500','hoa_3000','hoa_3500',

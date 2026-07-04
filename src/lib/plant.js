@@ -142,7 +142,7 @@ async function stealPlant(thiefId, target, guildId) {
     if (failN >= STEAL.MAX_FAILS) {
         const r = await db.jailOrFine(thiefId, STEAL.FINE, STEAL.JAIL_HOURS, 'trộm cây bị bắt');
         if (r.result === 'jailed') {
-            if (await db.useInsurance(thiefId, 'bh_duong_pho')) { await db.halveJail(thiefId); pen = ' Cậu bị **giam** (đã giảm nửa nhờ Bảo Hiểm Học Đường)!'; }
+            if (await db.useInsurance(thiefId, 'bh_hoc_duong')) { await db.halveJail(thiefId); pen = ' Cậu bị **giam** (đã giảm nửa nhờ Bảo Hiểm Học Đường)!'; }
             else pen = ` Trộm hụt 3 lần, cậu bị **giam ${STEAL.JAIL_HOURS}h**! 🚓`;
         } else if (r.result === 'fined') pen = ` Trộm hụt 3 lần, bị phạt **${fmt(STEAL.FINE)}** ${C}!`;
     }

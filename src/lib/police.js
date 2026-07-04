@@ -13,7 +13,7 @@ async function applyPolice(userId) {
     // Phạt theo TỔNG TÀI SẢN (ví+bank) -> không né được bằng cách giấu tiền trong bank.
     const assets = Number(u?.wallet || 0) + Number(u?.bank || 0);
     let fine = Math.floor(assets * config.POLICE.FINE_PCT);
-    const usedIns = await db.useInsurance(userId, 'bh_duong_pho');
+    const usedIns = await db.useInsurance(userId, 'bh_hoc_duong');
     if (usedIns) {
         fine = Math.round(fine * 0.5); // Giảm 50% tiền phạt
     }

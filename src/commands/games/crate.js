@@ -4,8 +4,8 @@ const db = require('../../database.js');
 const config = require('../../config');
 
 const fmt = n => Number(n).toLocaleString('vi-VN');
-const COMMON = ['banh_mi', 'ca_phe', 'xoi', 'nuoc_tang_luc'];
-const GOOD = ['the_sinh_vien', 'mu_noi', 'hop_but', 'bo_do_sua_xe'];
+const COMMON = ['banh_mi', 'ca_phe', 'xoi', 'soda_gekka'];
+const GOOD = ['the_sinh_vien', 'mu_noi', 'hop_but', 'bo_lam_banh'];
 const RARE = ['dong_ho_saku', 'xe_wave', 'laptop'];
 const rpick = a => a[Math.floor(Math.random() * a.length)];
 
