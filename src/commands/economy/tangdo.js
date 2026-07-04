@@ -27,16 +27,46 @@ module.exports = {
         const qty = interaction.options.getInteger('quantity') || 1;
         const err = (description) => interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'warning', { title: '🎁・Tặng vật phẩm', description })] });
 
-        if (!target || target.bot) return err('Cậu muốn tặng cho ai? Gắn @người (không phải bot) nhé~ 🌸');
+        const isWaguri = target.id === interaction.client.user.id;
+        if (!target || (target.bot && !isWaguri)) return err('Cậu muốn tặng cho ai? Gắn @người (không phải bot) nhé~ 🌸');
         if (target.id === interaction.user.id) return err('Tặng cho chính mình thì hơi kỳ á~ 😅');
         if (qty < 1) return err('Số lượng phải lớn hơn 0 nhé~');
 
         const item = await db.getItem(itemId);
         if (!item) return err('Mình không tìm thấy vật phẩm này~');
 
+        if (item.type === 'tool' || item.type === 'vehicle') {
+            return err(`Không thể tặng **${item.name}**! Các loại dụng cụ hoặc xe cộ không thể làm quà tặng được nha~ 🌸`);
+        }
+
+        if (isWaguri) {
+            // Tặng quà cho Waguri
+            const gifts = {
+                bo_hoa: { gain: 10, msg: `A, bó hoa thơm ngát quá! Cảm ơn cậu nhiều nha, mình rất thích nó~ 🌸💕` },
+                hop_qua: { gain: 25, msg: `Hộp quà bọc đẹp ghê, không biết bên trong có gì ta? Cậu chu đáo quá đi~ 🎁✨` },
+                gau_bong: { gain: 50, msg: `Kyaaa! Gấu bông thỏ Waguri đáng yêu xỉu luôn á! Mình sẽ ôm nó đi ngủ mỗi tối. Thương cậu nhất! 🧸💖` }
+            };
+            const gift = gifts[itemId];
+            if (!gift) {
+                return err(`Món quà **${item.name}** này hơi kỳ lạ đối với mình... Cậu hãy tặng mình **Bó Hoa Tươi**, **Hộp Quà Gekka** hoặc **Gấu Bông Waguri** nhé! 🌸`);
+            }
+
+            const ok = await db.takeItem(interaction.user.id, itemId, qty);
+            if (!ok) return err(`Cậu không có đủ **${qty}× ${item.name}** trong kho để tặng mình~`);
+
+            const totalGain = gift.gain * qty;
+            const newAff = await db.incrAffection(interaction.user.id, totalGain);
+
+            const embed = buildWaguriEmbed(interaction, 'success', {
+                title: '💖・Tặng quà cho Waguri',
+                description: `${gift.msg}\n\n*Độ thân mật với Waguri tăng **+${totalGain}** → **${newAff || 0}** điểm!*`
+            });
+            return interaction.editReply({ embeds: [embed] });
+        }
+
         await db.getUser(target.id); // đảm bảo người nhận có hồ sơ (tự tạo nếu chưa)
         const ok = await db.transferItem(interaction.user.id, target.id, itemId, qty);
-        if (!ok) return err(`Cậu không có đủ **${item.name}** trong kho để tặng~`);
+        if (!ok) return err(`Cậu không có đủ **${qty}× ${item.name}** trong kho để tặng~`);
 
         const embed = buildWaguriEmbed(interaction, 'success', {
             title: '🎁・Tặng vật phẩm thành công',

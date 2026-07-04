@@ -4,14 +4,21 @@ const config = require('./config');
 // 1. Tải các biến môi trường cấu hình Supabase
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
+const rawClient = (supabaseUrl && supabaseKey) ? createClient(supabaseUrl, supabaseKey) : null;
 
-if (!supabaseUrl || !supabaseKey) {
-    console.error('[ERROR] Thiếu cấu hình SUPABASE_URL hoặc SUPABASE_SERVICE_KEY trong file .env');
-    process.exit(1);
+if (!rawClient) {
+    console.warn('[WARNING] Thiếu cấu hình SUPABASE_URL hoặc SUPABASE_SERVICE_KEY trong file .env. Truy cập DB sẽ bị lỗi.');
 }
 
-// 2. Khởi tạo kết nối Supabase
-const supabase = createClient(supabaseUrl, supabaseKey);
+// 2. Khởi tạo kết nối Supabase bằng Proxy
+const supabase = new Proxy({}, {
+    get(target, prop) {
+        if (!rawClient) {
+            throw new Error('[DATABASE ERROR] Thiếu cấu hình SUPABASE_URL hoặc SUPABASE_SERVICE_KEY trong file .env');
+        }
+        return rawClient[prop];
+    }
+});
 
 /**
  * Lấy thông tin user (nếu chưa có thì tự động tạo mới với 0đ).
@@ -851,6 +858,25 @@ async function nextConfessionNumber(guildId) {
     return n;
 }
 
+/** Lưu vết confession ẩn danh cho admin kiểm tra. */
+async function logConfession(guildId, userId, confessionNum, content) {
+    try {
+        const { error } = await supabase
+            .from('confession_logs')
+            .insert([{
+                guild_id: guildId,
+                user_id: userId,
+                confession_num: confessionNum,
+                content: content
+            }]);
+        if (error) throw error;
+        return true;
+    } catch (error) {
+        console.error('[DATABASE ERROR] logConfession():', error);
+        return false;
+    }
+}
+
 // ============================================================
 //  AI QUOTA & PREMIUM
 // ============================================================
@@ -1484,6 +1510,26 @@ async function bakeryUpgrade(userId, cost, mats, maxLevel) {
     try { const { data, error } = await supabase.rpc('bakery_upgrade', { p_user_id: userId, p_cost: cost, p_mats: mats, p_max_level: maxLevel }); if (error) throw error; return data; }
     catch (e) { console.error('[DATABASE ERROR] bakeryUpgrade():', e); return 'error'; }
 }
+/** Thu doanh thu v2 (trừ lương nhân viên). */
+async function bakeryCollectV2(userId, rate, cap, cakeEvery, wagePct) {
+    try { const { data, error } = await supabase.rpc('bakery_collect_v2', { p_user_id: userId, p_rate: rate, p_cap: cap, p_cake_every: cakeEvery, p_wage_pct: wagePct }); if (error) throw error; return data; }
+    catch (e) { console.error('[DATABASE ERROR] bakeryCollectV2():', e); return { result: 'error' }; }
+}
+/** Thuê nhân viên. Trả 'ok'|'no_bakery'|'already_hired'|'limit_reached'|'poor'|'error'. */
+async function bakeryHire(userId, staffId, cost, maxStaff) {
+    try { const { data, error } = await supabase.rpc('bakery_hire', { p_user_id: userId, p_staff_id: staffId, p_cost: cost, p_max_staff: maxStaff }); if (error) throw error; return data; }
+    catch (e) { console.error('[DATABASE ERROR] bakeryHire():', e); return 'error'; }
+}
+/** Sa thải nhân viên. Trả 'ok'|'no_bakery'|'not_hired'|'error'. */
+async function bakeryFire(userId, staffId) {
+    try { const { data, error } = await supabase.rpc('bakery_fire', { p_user_id: userId, p_staff_id: staffId }); if (error) throw error; return data; }
+    catch (e) { console.error('[DATABASE ERROR] bakeryFire():', e); return 'error'; }
+}
+/** Trang trí tiệm bánh. Trả 'ok'|'no_bakery'|'no_item'|'error'. */
+async function bakeryDecorate(userId, itemId) {
+    try { const { data, error } = await supabase.rpc('bakery_decorate', { p_user_id: userId, p_item_id: itemId }); if (error) throw error; return data; }
+    catch (e) { console.error('[DATABASE ERROR] bakeryDecorate():', e); return 'error'; }
+}
 
 module.exports = {
     supabase,
@@ -1561,6 +1607,7 @@ module.exports = {
     getGuildSettings,
     setGuildSetting,
     nextConfessionNumber,
+    logConfession,
     // ai quota & premium
     consumeAiQuota,
     grantPremium,
@@ -1646,4 +1693,8 @@ module.exports = {
     bakeryStock,
     bakeryCollect,
     bakeryUpgrade,
+    bakeryCollectV2,
+    bakeryHire,
+    bakeryFire,
+    bakeryDecorate,
 };
