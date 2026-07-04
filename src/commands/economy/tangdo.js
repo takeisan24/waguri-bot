@@ -55,11 +55,24 @@ module.exports = {
             if (!ok) return err(`Cậu không có đủ **${qty}× ${item.name}** trong kho để tặng mình~`);
 
             const totalGain = gift.gain * qty;
-            const newAff = await db.incrAffection(interaction.user.id, totalGain);
+            const res = await db.incrAffection(interaction.user.id, totalGain);
+            const newAff = res ? res.affection : 0;
+            const added = res ? res.added : 0;
+            const capped = res ? res.capped : false;
+
+            let desc = `${gift.msg}\n\n`;
+            if (added > 0) {
+                desc += `*Độ thân mật với Waguri tăng **+${added}** → **${newAff}** điểm!*`;
+                if (capped) {
+                    desc += `\n*(Cậu đã đạt giới hạn thiện cảm hằng ngày (+100 điểm) nên điểm nhận được ít hơn nhé~)*`;
+                }
+            } else {
+                desc += `*Hôm nay cậu đã nhận đủ giới hạn thiện cảm hằng ngày (+100 điểm) rồi nên điểm không tăng thêm nữa nhé~ (Độ thân mật hiện tại: **${newAff}** điểm)*`;
+            }
 
             const embed = buildWaguriEmbed(interaction, 'success', {
                 title: '💖・Tặng quà cho Waguri',
-                description: `${gift.msg}\n\n*Độ thân mật với Waguri tăng **+${totalGain}** → **${newAff || 0}** điểm!*`
+                description: desc
             });
             return interaction.editReply({ embeds: [embed] });
         }

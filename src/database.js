@@ -773,12 +773,20 @@ async function marryUsers(a, b) {
     }
 }
 
-/** Tăng điểm thiện cảm với Waguri, trả điểm mới (hoặc null). */
+/** Tăng điểm thiện cảm với Waguri, trả { affection, added, capped } (hoặc null). */
 async function incrAffection(userId, amount) {
     try {
-        const { data, error } = await supabase.rpc('add_affection', { p_user_id: userId, p_amount: amount });
+        const { data, error } = await supabase.rpc('add_affection_v2', { 
+            p_user_id: userId, 
+            p_amount: amount,
+            p_daily_cap: 100
+        });
         if (error) throw error;
-        return Number(data);
+        return {
+            affection: Number(data.affection),
+            added: Number(data.added),
+            capped: Boolean(data.capped)
+        };
     } catch (error) {
         console.error('[DATABASE ERROR] incrAffection():', error);
         return null;

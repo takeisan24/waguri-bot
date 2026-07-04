@@ -301,4 +301,29 @@ if (!hasDb) {
         res = await db.claimBankruptcyRelief(testUser1, 500);
         assert.strictEqual(res, 'not_bankrupt', 'Từ chối cứu trợ khi có tiền trong ngân hàng');
     });
+
+    test('Integration: Affection Daily Cap - cộng thiện cảm giới hạn 100 điểm/ngày', async () => {
+        // Reset user 1
+        await supabase.from('users').delete().eq('user_id', testUser1);
+        await db.getUser(testUser1);
+        await supabase.from('users').update({ affection: 0, last_affection_date: null, daily_affection_sum: 0 }).eq('user_id', testUser1);
+
+        // Cộng 40 điểm đầu tiên -> thành công
+        let res = await db.incrAffection(testUser1, 40);
+        assert.strictEqual(res.affection, 40);
+        assert.strictEqual(res.added, 40);
+        assert.strictEqual(res.capped, false);
+
+        // Cộng tiếp 70 điểm -> vượt cap 100, chỉ nhận 60 điểm, capped = true
+        res = await db.incrAffection(testUser1, 70);
+        assert.strictEqual(res.affection, 100);
+        assert.strictEqual(res.added, 60);
+        assert.strictEqual(res.capped, true);
+
+        // Cộng tiếp 10 điểm -> nhận 0 điểm, capped = true
+        res = await db.incrAffection(testUser1, 10);
+        assert.strictEqual(res.affection, 100);
+        assert.strictEqual(res.added, 0);
+        assert.strictEqual(res.capped, true);
+    });
 }
