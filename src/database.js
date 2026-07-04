@@ -671,6 +671,18 @@ async function questIncr(userId, key, amount) {
     }
 }
 
+/** Cộng tiến độ nhiệm vụ tân thủ. */
+async function newbieQuestIncr(userId, key, amount) {
+    try {
+        const { data, error } = await supabase.rpc('newbie_quest_incr', { p_user_id: userId, p_key: key, p_amount: amount });
+        if (error) throw error;
+        return data;
+    } catch (error) {
+        console.error('[DATABASE ERROR] newbieQuestIncr():', error);
+        return null;
+    }
+}
+
 /** Lấy tiến độ + đã-nhận của HÔM NAY. */
 async function getQuestRow(userId) {
     try {
@@ -1590,6 +1602,7 @@ module.exports = {
     questIncr,
     getQuestRow,
     questClaim,
+    newbieQuestIncr,
     // achievements
     getAchievements,
     unlockAchievements,

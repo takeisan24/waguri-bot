@@ -3,6 +3,7 @@ const { buildWaguriEmbed } = require('../../lib/embed');
 const db = require('../../database.js');
 const config = require('../../config');
 const { isItemInSeason, SEASON_LABEL } = require('../../lib/season');
+const { handleNewbieQuest } = require('../../lib/newbie');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -44,6 +45,7 @@ module.exports = {
         const total = (Number(item.price) * qty).toLocaleString('vi-VN');
 
         if (result === 'ok') {
+            await handleNewbieQuest(interaction, 'buy', 1);
             const u = await db.getUser(interaction.user.id);
             const embed = buildWaguriEmbed(interaction, 'success', {
                 title: '🏪・Mua Vật Phẩm',

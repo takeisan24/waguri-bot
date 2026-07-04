@@ -2,6 +2,7 @@ const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const { buildWaguriEmbed } = require('../../lib/embed');
 const db = require('../../database.js');
 const config = require('../../config');
+const { handleNewbieQuest } = require('../../lib/newbie');
 
 const fmt = n => Number(n).toLocaleString('vi-VN');
 
@@ -26,6 +27,7 @@ module.exports = {
         }
 
         db.questIncr(interaction.user.id, 'daily', 1); // nhiệm vụ điểm danh
+        await handleNewbieQuest(interaction, 'daily', 1);
         const u = await db.getUser(interaction.user.id);
 
         // Chào người vắng lâu (last_seen = mốc điểm danh hiện diện gần nhất).

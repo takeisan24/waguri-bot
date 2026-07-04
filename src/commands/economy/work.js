@@ -8,6 +8,7 @@ const { conditionMultiplier } = require('../../lib/fatigue');
 const { applyDisease } = require('../../lib/disease');
 const { getEventMult } = require('../../lib/event');
 const { buildWaguriEmbed } = require('../../lib/embed');
+const { handleNewbieQuest } = require('../../lib/newbie');
 
 const fmt = n => Number(n).toLocaleString('vi-VN');
 
@@ -158,6 +159,7 @@ module.exports = {
 
             // Nhiệm vụ: đếm số lần làm + tổng tiền kiếm (chỉ khi dương)
             db.questIncr(userId, 'work', 1);
+            await handleNewbieQuest(interaction, 'work', 1);
             if (earnedMoney > 0) db.questIncr(userId, 'earn', earnedMoney);
 
             const amtStr = `${fmt(Math.abs(earnedMoney))} ${config.CURRENCY}`;

@@ -3,6 +3,7 @@ const db = require('../../database.js');
 const config = require('../../config');
 const { getLevelFromExp } = require('../../lib/leveling');
 const { buildWaguriEmbed } = require('../../lib/embed');
+const { handleNewbieQuest } = require('../../lib/newbie');
 
 const fmt = n => Number(n).toLocaleString('vi-VN');
 
@@ -121,6 +122,8 @@ async function applyJob(interaction) {
         });
         return interaction.editReply({ embeds: [embed] });
     }
+
+    await handleNewbieQuest(interaction, 'apply_job', 1);
 
     const embed = buildWaguriEmbed(interaction, 'success', {
         title: '🎉・Nhận việc thành công!',

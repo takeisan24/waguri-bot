@@ -6,13 +6,38 @@ const { createWaguriBar, buildWaguriEmbed, getWaguriFooter } = require('../../li
 
 const fmt = n => Number(n).toLocaleString('vi-VN');
 
+const NEWBIE_STEPS = [
+    null,
+    { name: 'Bước 1: Điểm danh đầu tiên', key: 'daily', required: 1, reward: 1000, hint: 'Gõ `/daily` để nhận lương ngày đầu 📅' },
+    { name: 'Bước 2: Chăm chỉ làm việc', key: 'work', required: 3, reward: 1500, hint: 'Gõ `/work` 3 lần để kiếm tiền ⚡' },
+    { name: 'Bước 3: Mua sắm trải nghiệm', key: 'buy', required: 1, reward: 2000, hint: 'Mua 1 món bất kỳ tại `/shop` hoặc `/buy` 🛒' },
+    { name: 'Bước 4: Xin việc chính thức', key: 'apply_job', required: 1, reward: 2500, hint: 'Nhận một công việc chính thức bằng `/jobs xin` 🧑‍💼' },
+    { name: 'Bước 5: Trải nghiệm may rủi', key: 'gamble', required: 1, reward: 3000, hint: 'Chơi 1 ván game bất kỳ (vd `/taixiu`, `/blackjack`, `/xocdia`...) 🪙' }
+];
+
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('quest')
-        .setDescription('Nhiệm vụ hằng ngày (tự nhận thưởng khi xong)'),
+        .setDescription('Nhiệm vụ hằng ngày & tân thủ (tự nhận thưởng khi xong)'),
     async execute(interaction) {
         await interaction.deferReply();
         const userId = interaction.user.id;
+
+        // Lấy thông tin user để xem tiến trình tân thủ
+        const user = await db.getUser(userId);
+        const step = user ? Number(user.newbie_step || 1) : 1;
+        const progress = user ? Number(user.newbie_progress || 0) : 0;
+
+        let newbieText = '';
+        if (step <= 5) {
+            const ns = NEWBIE_STEPS[step];
+            const cur = Math.min(progress, ns.required);
+            newbieText = `🔰 **[NHIỆM VỤ TÂN THỦ] ${ns.name}**\n` +
+                `　*Yêu cầu:* ${ns.hint}\n` +
+                `　*Tiến trình:* **${cur}/${ns.required}**\n` +
+                `　${createWaguriBar(cur, ns.required, 8)} · 🪙 ${fmt(ns.reward)} ${config.CURRENCY}\n\n` +
+                `──────────────────────────────\n\n`;
+        }
 
         // Bộ nhiệm vụ của riêng người này hôm nay (PINNED điểm danh + vote, cộng vài quest random).
         const QUESTS = pickDailyQuests(userId);
@@ -38,16 +63,16 @@ module.exports = {
         });
 
         const embed = buildWaguriEmbed(interaction, 'info', {
-            title: '📜・Nhiệm vụ hằng ngày của cậu',
-            description: lines.join('\n')
+            title: '📜・Nhiệm vụ của cậu',
+            description: newbieText + lines.join('\n')
         });
 
         const footerObj = getWaguriFooter(interaction.client);
-        footerObj.text = 'Làm xong tự nhận thưởng khi gõ /quest · ' + footerObj.text;
+        footerObj.text = 'Nhiệm vụ tân thủ tự cộng/nhận thưởng · ' + footerObj.text;
         embed.setFooter(footerObj);
 
         if (totalReward > 0) {
-            embed.addFields({ name: '🎉 Vừa nhận', value: `+${fmt(totalReward)} ${config.CURRENCY}!`, inline: false });
+            embed.addFields({ name: '🎉 Vừa nhận thưởng ngày', value: `+${fmt(totalReward)} ${config.CURRENCY}!`, inline: false });
         }
         await interaction.editReply({ embeds: [embed] });
     },

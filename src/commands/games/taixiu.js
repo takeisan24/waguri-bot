@@ -6,6 +6,7 @@ const { checkBet } = require('../../lib/bet');
 const { applyPolice } = require('../../lib/police');
 const { policeJailEnabled } = require('../../lib/guildflags');
 const { buildWaguriEmbed } = require('../../lib/embed');
+const { handleNewbieQuest } = require('../../lib/newbie');
 
 const DICE = ['', '⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
 const fmt = n => Number(n).toLocaleString('vi-VN');
@@ -85,5 +86,6 @@ module.exports = {
         }).setTimestamp();
 
         await interaction.editReply({ embeds: [embed] });
+        await handleNewbieQuest(interaction, 'gamble', 1);
     },
 };

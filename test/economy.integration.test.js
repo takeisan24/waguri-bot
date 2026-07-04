@@ -208,4 +208,66 @@ if (!hasDb) {
         bk = await db.getBakery(testUser1);
         assert.deepStrictEqual(bk.staff, [], 'Mảng nhân viên đã trống');
     });
+
+    test('Integration: Newbie Quest Chain - đi trọn vẹn chu kỳ 5 bước và nhận thưởng dồn', async () => {
+        // Reset user 1
+        await supabase.from('users').delete().eq('user_id', testUser1);
+        const u0 = await db.getUser(testUser1);
+        await supabase.from('users').update({ wallet: 0 }).eq('user_id', testUser1);
+
+        assert.strictEqual(u0.newbie_step, 1, 'Mặc định bước 1');
+        assert.strictEqual(u0.newbie_progress, 0, 'Tiến độ 0');
+
+        // Bước 1: daily (req 1, rew 1000)
+        let r = await db.newbieQuestIncr(testUser1, 'daily', 1);
+        assert.strictEqual(r.status, 'updated');
+        assert.strictEqual(r.step, 2, 'Lên bước 2');
+        assert.strictEqual(r.progress, 0, 'Reset tiến trình');
+        assert.strictEqual(r.claimed, true, 'Đã nhận thưởng');
+        assert.strictEqual(Number(r.reward), 1000, 'Thưởng 1000');
+
+        let u = await db.getUser(testUser1);
+        assert.strictEqual(Number(u.wallet), 1000, 'Ví cộng 1000');
+
+        // Bước 2: work (req 3, rew 1500)
+        r = await db.newbieQuestIncr(testUser1, 'work', 1);
+        assert.strictEqual(r.step, 2, 'Vẫn ở bước 2');
+        assert.strictEqual(r.progress, 1, 'Tiến độ 1/3');
+        assert.strictEqual(r.claimed, false);
+
+        r = await db.newbieQuestIncr(testUser1, 'work', 2);
+        assert.strictEqual(r.step, 3, 'Lên bước 3');
+        assert.strictEqual(r.progress, 0, 'Reset tiến trình');
+        assert.strictEqual(r.claimed, true);
+        assert.strictEqual(Number(r.reward), 1500);
+
+        u = await db.getUser(testUser1);
+        assert.strictEqual(Number(u.wallet), 2500, 'Ví cộng thêm 1500 -> 2500');
+
+        // Bước 3: buy (req 1, rew 2000)
+        r = await db.newbieQuestIncr(testUser1, 'buy', 1);
+        assert.strictEqual(r.step, 4, 'Lên bước 4');
+        assert.strictEqual(Number(r.reward), 2000);
+
+        // Bước 4: apply_job (req 1, rew 2500)
+        r = await db.newbieQuestIncr(testUser1, 'apply_job', 1);
+        assert.strictEqual(r.step, 5, 'Lên bước 5');
+        assert.strictEqual(Number(r.reward), 2500);
+
+        // Bước 5: gamble (req 1, rew 3000) + completed + bonus 5000
+        r = await db.newbieQuestIncr(testUser1, 'gamble', 1);
+        assert.strictEqual(r.step, 6, 'Hoàn thành chuỗi');
+        assert.strictEqual(r.completed, true, 'Đánh dấu completed = true');
+        assert.strictEqual(Number(r.reward), 3000);
+        assert.strictEqual(Number(r.bonus), 5000);
+
+        u = await db.getUser(testUser1);
+        // Tổng tiền: 2500 + 2000 (buy) + 2500 (apply) + 3000 (gamble) + 5000 (bonus) = 15000
+        assert.strictEqual(Number(u.wallet), 15000, 'Ví nhận đủ tiền thưởng');
+        assert.strictEqual(u.title, 'Tân Thủ Ngọt Ngào', 'Nhận danh hiệu đặc biệt');
+
+        // Chạy lại khi đã hoàn thành
+        r = await db.newbieQuestIncr(testUser1, 'daily', 1);
+        assert.strictEqual(r.status, 'already_completed');
+    });
 }
