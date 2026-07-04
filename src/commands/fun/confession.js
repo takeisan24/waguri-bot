@@ -17,6 +17,29 @@ module.exports = {
             return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
         }
 
+        // 1. Chặn Mentions/Pings (User, Role, Everyone, Here)
+        const hasEveryone = content.includes('@everyone') || content.includes('@here');
+        const hasUserOrRoleMention = /<@&?\d+>|<@!\d+>/.test(content);
+        if (hasEveryone || hasUserOrRoleMention) {
+            const embed = buildWaguriEmbed(interaction, 'warning', {
+                description: 'Nội dung confession không được chứa lượt nhắc tên (mention) user, role hoặc everyone/here để tránh phiền toái nha cậu~ 🌸'
+            });
+            return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+        }
+
+        // 2. Kiểm tra và đặt Cooldown (15 phút = 900 giây)
+        const userId = interaction.user.id;
+        const cooldownUntil = await db.claimCooldown(userId, 'confession', 900);
+        if (cooldownUntil) {
+            const remainSec = Math.ceil((cooldownUntil - Date.now()) / 1000);
+            const min = Math.floor(remainSec / 60);
+            const sec = remainSec % 60;
+            const embed = buildWaguriEmbed(interaction, 'warning', {
+                description: `Từ từ thôi nào~ Cậu vừa gửi confession gần đây. Thử lại sau **${min} phút ${sec} giây** nhé~ 🌸`
+            });
+            return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+        }
+
         const s = await db.getGuildSettings(gid);
         if (!s.confession_channel) {
             const embed = buildWaguriEmbed(interaction, 'warning', {
@@ -35,6 +58,10 @@ module.exports = {
         }
 
         const num = await db.nextConfessionNumber(gid);
+
+        // 3. Ghi log lưu vết confession ẩn danh cho admin
+        await db.logConfession(gid, userId, num, content);
+
         const embed = buildWaguriEmbed(interaction, 'info', {
             title: `🤫 Confession #${num}`,
             description: content.slice(0, 4000)

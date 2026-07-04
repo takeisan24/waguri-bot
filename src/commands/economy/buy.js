@@ -27,8 +27,8 @@ module.exports = {
         const qty = interaction.options.getInteger('quantity') || 1;
 
         const item = await db.getItem(itemId);
-        if (!item) {
-            const embed = buildWaguriEmbed(interaction, 'error', { title: '🏪・Mua Vật Phẩm', description: 'Vật phẩm này không tồn tại trong cửa hàng 🤔' });
+        if (!item || item.shop_hidden) {
+            const embed = buildWaguriEmbed(interaction, 'error', { title: '🏪・Mua Vật Phẩm', description: 'Vật phẩm này không bán trong cửa hàng 🤔' });
             return interaction.editReply({ embeds: [embed] });
         }
         // Đồ giới hạn theo mùa lễ -> chỉ mua được đúng mùa.

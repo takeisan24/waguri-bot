@@ -15,7 +15,7 @@ const WMO = {
 };
 
 async function fetchJson(url) {
-    const r = await fetch(url, { headers: { accept: 'application/json' } });
+    const r = await fetch(url, { headers: { accept: 'application/json' }, signal: AbortSignal.timeout(5000) });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     return r.json();
 }

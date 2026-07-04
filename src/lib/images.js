@@ -3,7 +3,7 @@
 const HEADERS = { 'User-Agent': 'WaguriBot/1.0 (Discord)', accept: 'application/json' };
 
 async function fetchJson(url) {
-    const r = await fetch(url, { headers: HEADERS });
+    const r = await fetch(url, { headers: HEADERS, signal: AbortSignal.timeout(5000) });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     return r.json();
 }
