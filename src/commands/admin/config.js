@@ -19,6 +19,10 @@ module.exports = {
             .addBooleanOption(o => o.setName('enabled').setDescription('Bật tạm giam?').setRequired(true)))
         .addSubcommand(s => s.setName('gambling').setDescription('Bật/tắt trò may rủi (bài cào, tài xỉu, xóc đĩa…)')
             .addBooleanOption(o => o.setName('enabled').setDescription('Bật trò may rủi?').setRequired(true)))
+        .addSubcommand(s => s.setName('welcome-channel').setDescription('Đặt kênh chào mừng thành viên mới (bỏ trống để tắt)')
+            .addChannelOption(o => o.setName('channel').setDescription('Kênh text').addChannelTypes(ChannelType.GuildText)))
+        .addSubcommand(s => s.setName('welcome-role').setDescription('Đặt role tự động gán khi có người tham gia (bỏ trống để tắt)')
+            .addRoleOption(o => o.setName('role').setDescription('Role gán tự động')))
         .addSubcommand(s => s.setName('view').setDescription('Xem cấu hình hiện tại')),
     async execute(interaction) {
         // Tự enforce quyền (phòng trường hợp gọi qua prefix)
@@ -92,6 +96,24 @@ module.exports = {
             return interaction.editReply({ embeds: [embed] });
         }
 
+        if (sub === 'welcome-channel') {
+            const ch = interaction.options.getChannel('channel');
+            await db.setGuildSetting(gid, 'welcome_channel', ch ? ch.id : '');
+            const embed = buildWaguriEmbed(interaction, 'success', {
+                description: ch ? `✅ Đã đặt kênh chào mừng là <#${ch.id}>.` : '✅ Đã tắt tính năng chào mừng thành viên mới.'
+            });
+            return interaction.editReply({ embeds: [embed] });
+        }
+
+        if (sub === 'welcome-role') {
+            const role = interaction.options.getRole('role');
+            await db.setGuildSetting(gid, 'welcome_role', role ? role.id : '');
+            const embed = buildWaguriEmbed(interaction, 'success', {
+                description: role ? `✅ Đã đặt auto-role khi tham gia là <@&${role.id}>.` : '✅ Đã tắt tự động gán role khi tham gia.'
+            });
+            return interaction.editReply({ embeds: [embed] });
+        }
+
         if (sub === 'view') {
             const s = await db.getGuildSettings(gid);
             const embed = buildWaguriEmbed(interaction, 'info', {
@@ -102,7 +124,9 @@ module.exports = {
                     { name: 'Kênh AI', value: s.ai_channel ? `<#${s.ai_channel}>` : '*(mọi kênh)*', inline: true },
                     { name: 'PvP (cướp/trộm)', value: s.pvp === '0' ? '🔴 Tắt' : '🟢 Bật', inline: true },
                     { name: 'Trò may rủi', value: s.gambling === '0' ? '🔴 Tắt' : '🟢 Bật', inline: true },
-                    { name: 'Tạm giam (trò may rủi)', value: s.police_jail === '0' ? '🔴 Tắt' : '🟢 Bật', inline: true }
+                    { name: 'Tạm giam (trò may rủi)', value: s.police_jail === '0' ? '🔴 Tắt' : '🟢 Bật', inline: true },
+                    { name: 'Kênh chào mừng', value: s.welcome_channel ? `<#${s.welcome_channel}>` : '*(tắt chào mừng)*', inline: true },
+                    { name: 'Auto-role gán tự động', value: s.welcome_role ? `<@&${s.welcome_role}>` : '*(tắt auto-role)*', inline: true }
                 ]
             });
             return interaction.editReply({ embeds: [embed] });
