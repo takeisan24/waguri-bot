@@ -95,10 +95,32 @@ module.exports = {
         }
         if (dz.note) desc += `\n${dz.note}`;
 
-        // Rơi Cá Tươi (nguyên liệu Tiệm Bánh Gekka) — đóng vòng: câu cá giờ có ĐẦU RA item.
-        if (c.max > 0 && Math.random() < 0.35) {
-            await db.giveItemAdmin(userId, 'ca_tuoi', 1);
-            desc += `\n🐟 Giỏ cá có thêm **1× Cá Tươi** *(nguyên liệu \`/tiembanh\`)*`;
+        // Rơi cá nguyên liệu Tiệm Bánh Gekka (Phase 2 & 3)
+        if (c.max > 0) {
+            const rand = Math.random();
+            if (c.name === 'Cá lòng tong' && rand < 0.35) {
+                await db.giveItemAdmin(userId, 'ca_tuoi', 1);
+                desc += `\n🐟 Giỏ cá có thêm **1× Cá Tươi** *(nguyên liệu \`/tiembanh\`)*`;
+            } else if (c.name === 'Cá rô phi' && rand < 0.45) {
+                await db.giveItemAdmin(userId, 'ca_tuoi', 1);
+                desc += `\n🐟 Giỏ cá có thêm **1× Cá Tươi** *(nguyên liệu \`/tiembanh\`)*`;
+            } else if (c.name === 'Cá lóc bự') {
+                if (rand < 0.30) {
+                    await db.giveItemAdmin(userId, 'ca_ngon', 1);
+                    desc += `\n✨ Giỏ cá có thêm **1× Cá Ngon** *(nguyên liệu làm bánh đặc biệt!)*`;
+                } else if (rand < 0.70) {
+                    await db.giveItemAdmin(userId, 'ca_tuoi', 1);
+                    desc += `\n🐟 Giỏ cá có thêm **1× Cá Tươi** *(nguyên liệu \`/tiembanh\`)*`;
+                }
+            } else if (c.name === 'Cá hiếm') {
+                if (rand < 0.40) {
+                    await db.giveItemAdmin(userId, 'ca_hiem', 1);
+                    desc += `\n🌟 Giỏ cá có thêm **1× Cá Hiếm** *(nguyên liệu siêu hiếm cho tiệm!)*`;
+                } else {
+                    await db.giveItemAdmin(userId, 'ca_ngon', 1);
+                    desc += `\n✨ Giỏ cá có thêm **1× Cá Ngon** *(nguyên liệu làm bánh đặc biệt!)*`;
+                }
+            }
         }
 
         desc += `\nĐộ bền Cần câu: **${toolResult.durability}/100** 🎣` + (toolResult.broken ? ' *(đã hỏng! Cần mua mới hoặc sửa)*' : '');

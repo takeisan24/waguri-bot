@@ -55,4 +55,45 @@ function cakesFromRevenue(prevProgress, revenue) {
     return { cakes, newProgress: total - cakes * B.CAKE_EVERY };
 }
 
-module.exports = { levelInfo, maxLevel, fillingStockGain, computeBake, cakesFromRevenue };
+/** Tính toán tổng số lượng bonus từ staff và decor */
+function computeBonuses(staffList = [], decorList = []) {
+    let rateMult = 1.0;
+    let capMult = 1.0;
+    let wagePct = 0.0;
+    let cakeDiscount = 0.0;
+
+    (staffList || []).forEach(sid => {
+        const sc = B.STAFF[sid];
+        if (sc) {
+            rateMult += (sc.rate || 0) + (sc.rev || 0);
+            capMult += (sc.cap || 0);
+            wagePct += (sc.wage || 0);
+            if (sc.cake_discount) {
+                cakeDiscount += sc.cake_discount;
+            }
+        }
+    });
+
+    (decorList || []).forEach(iid => {
+        const dc = B.DECOR[iid];
+        if (dc) {
+            rateMult += (dc.rate || 0);
+        }
+    });
+
+    return { rateMult, capMult, wagePct, cakeDiscount };
+}
+
+/** Lấy thông số hiệu dụng đã áp dụng bonus */
+function getEffectiveStats(level, staffList = [], decorList = []) {
+    const base = levelInfo(level);
+    const bonuses = computeBonuses(staffList, decorList);
+    return {
+        rate: Math.round(base.rate * bonuses.rateMult),
+        cap: Math.round(base.cap * bonuses.capMult),
+        wagePct: bonuses.wagePct,
+        cakeEvery: Math.round(B.CAKE_EVERY * (1.0 - bonuses.cakeDiscount))
+    };
+}
+
+module.exports = { levelInfo, maxLevel, fillingStockGain, computeBake, cakesFromRevenue, computeBonuses, getEffectiveStats };

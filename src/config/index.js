@@ -264,11 +264,11 @@ module.exports = {
         BAKE_MARKUP: 0.8,          // 1 nguyên liệu (giá p) -> +p*0.8 vào kho tiềm năng (so với /sell chỉ 0.5)
         CAKE_EVERY: 15000,         // mỗi 15k doanh thu thu được -> tặng 1 bánh (hybrid: tiền + item)
         CAKE_ITEM: 'banh_kem_dau', // bánh trả ra (Bánh Kem Dâu Gekka — buff item đã có)
-        // Nguyên liệu hợp lệ (orphan outputs đang chờ dùng) + cá mới. Mở rộng sau (xem TODO item).
+        // Nguyên liệu hợp lệ (orphan outputs đang chờ dùng) + cá mới. Mở rộng sau.
         FILLINGS: ['trai_1500','trai_2000','trai_2500','trai_3000','trai_3500',
                    'hoa_1500','hoa_2000','hoa_2500','hoa_3000','hoa_3500',
                    'thit_heo_2000','thit_heo_2500','thit_heo_3000','thit_heo_3500','thit_heo_4000',
-                   'ca_tuoi'],
+                   'ca_tuoi', 'ca_ngon', 'ca_hiem'],
         // Cấp 1..5 (MVP). rate = VNĐ/phút nướng; cap = trần doanh thu tích giữa 2 lần /thu.
         LEVELS: [
             { rate: 20,  cap: 12000,  upCost: 0,      mats: {} },
@@ -277,6 +277,20 @@ module.exports = {
             { rate: 68,  cap: 96000,  upCost: 320000, mats: { noi_that: 6, trang_suc: 2 } },
             { rate: 100, cap: 190000, upCost: 700000, mats: { noi_that: 10, trang_suc: 4 } },
         ],
+        // Nhân viên NPC (Lore Kaoru Hana wa Rin to Saku)
+        STAFF: {
+            rintaro: { name: '🧑‍🍳 Rintaro Tsumugi', rev: 0.15, wage: 0.08, cost: 30000, desc: 'Thợ làm bánh chính cực kỳ chăm chỉ. (+15% doanh thu, lương 8%)' },
+            subaru: { name: '👓 Subaru Hoshina', cap: 0.25, wage: 0.05, cost: 20000, desc: 'Nghiêm túc, quản két tiền cẩn thận. (+25% két chứa, lương 5%)' },
+            usami: { name: '😆 Shohei Usami', rate: 0.10, wage: 0.04, cost: 15000, desc: 'Vui vẻ, hoạt náo viên cho tiệm. (+10% tốc độ nướng, lương 4%)' },
+            saku: { name: '🤫 Saku Natsui', rate: 0.12, wage: 0.05, cost: 18000, desc: 'Quản lý nguyên liệu và thời gian. (+12% tốc độ nướng, lương 5%)' },
+            ayato: { name: '🎯 Ayato Yorita', cake_discount: 0.20, wage: 0.06, cost: 22000, desc: 'Thông minh, tối ưu quy trình. (Làm bánh nhanh hơn 20%, lương 6%)' },
+            madoka: { name: '🌸 Madoka Yano', rev: 0.08, cap: 0.10, wage: 0.06, cost: 25000, desc: 'Trợ giúp trang trí và thu hút khách. (+8% doanh thu & +10% két chứa, lương 6%)' }
+        },
+        // Đồ trang trí nội thất
+        DECOR: {
+            noi_that: { name: 'Bộ Nội Thất Gỗ', rate: 0.05 },
+            trang_suc: { name: 'Trang Sức Đá Quý', rate: 0.06 }
+        },
     },
 
     // Web app (dashboard, mua Premium...). Đổi qua env WEB_URL nếu deploy domain khác.

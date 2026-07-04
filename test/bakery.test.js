@@ -1,7 +1,7 @@
 // Test thuần cho lib/bakery — tính doanh thu nướng (mirror RPC). Chạy: npm test
 const test = require('node:test');
 const assert = require('node:assert');
-const { levelInfo, maxLevel, fillingStockGain, computeBake, cakesFromRevenue } = require('../src/lib/bakery');
+const { levelInfo, maxLevel, fillingStockGain, computeBake, cakesFromRevenue, computeBonuses, getEffectiveStats } = require('../src/lib/bakery');
 
 const MIN = 60000;
 
@@ -49,4 +49,24 @@ test('fillingStockGain: giá × sl × markup (floor)', () => {
     assert.strictEqual(fillingStockGain(3000, 2), 4800);  // 3000×2×0.8
     assert.strictEqual(fillingStockGain(5000, 1), 4000);
     assert.strictEqual(fillingStockGain(0, 5), 0);
+});
+
+test('computeBonuses & getEffectiveStats: tính toán chính xác và đầy đủ bonus nhân viên và nội thất', () => {
+    const b0 = computeBonuses([], []);
+    assert.strictEqual(b0.rateMult, 1.0);
+    assert.strictEqual(b0.capMult, 1.0);
+    assert.strictEqual(b0.wagePct, 0.0);
+    assert.strictEqual(b0.cakeDiscount, 0.0);
+
+    const b1 = computeBonuses(['rintaro'], ['noi_that']);
+    assert.strictEqual(b1.rateMult, 1.20);
+    assert.strictEqual(b1.capMult, 1.0);
+    assert.strictEqual(b1.wagePct, 0.08);
+
+    const b2 = computeBonuses(['ayato'], []);
+    assert.strictEqual(b2.cakeDiscount, 0.20);
+
+    const eff = getEffectiveStats(1, ['rintaro', 'subaru'], ['noi_that', 'trang_suc']);
+    assert.strictEqual(eff.rate, 25);
+    assert.strictEqual(eff.cap, 15000);
 });
