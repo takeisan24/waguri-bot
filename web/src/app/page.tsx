@@ -10,8 +10,18 @@ import SiteHeader from "../components/SiteHeader";
 import SiteFooter from "../components/SiteFooter";
 import EventBanner from "../components/EventBanner";
 import { PREMIUM_PLANS, PLAN_ORDER } from "../lib/premium";
+import { createAdminClient } from "../lib/supabase/admin";
 
-export default function Home() {
+export default async function Home() {
+  const supabase = createAdminClient();
+  let latestAnnouncement = "";
+  try {
+    const { data } = await supabase.from('guild_settings').select('settings').eq('guild_id', 'global').single();
+    latestAnnouncement = data?.settings?.latest_announcement || "";
+  } catch (err) {
+    console.error('[NEXTJS DB ERROR] Fetching global announcement:', err);
+  }
+
   return (
     <div className="relative min-h-screen flex flex-col bg-[#0d0812]">
       <script
@@ -109,11 +119,24 @@ export default function Home() {
             </div>
 
             <div className="space-y-6">
+              {/* Dynamic Latest Announcement */}
+              {latestAnnouncement && (
+                <div className="border-l-2 border-pink-300/60 pl-4 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-pink-500/20 text-pink-200 border border-pink-300/10">Mới Nhất</span>
+                    <span className="text-xs text-slate-400 font-medium">Bản cập nhật gần đây nhất từ Bot</span>
+                  </div>
+                  <h3 className="text-base font-bold text-white">⚙️ Bản Tin Cập Nhật Tự Động</h3>
+                  <div className="text-xs md:text-sm text-slate-300 whitespace-pre-line leading-relaxed bg-pink-500/5 border border-pink-300/5 p-4 rounded-xl shadow-inner font-sans">
+                    {latestAnnouncement}
+                  </div>
+                </div>
+              )}
+
               {/* Update 1 */}
-              <div className="border-l-2 border-pink-300/40 pl-4 space-y-2">
+              <div className="border-l-2 border-slate-700 pl-4 space-y-2 opacity-80">
                 <div className="flex items-center gap-2">
-                  <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-pink-500/20 text-pink-200 border border-pink-300/10">Mới Nhất</span>
-                  <span className="text-xs text-slate-400 font-medium">05/07/2026</span>
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-pink-500/10 text-pink-200 border border-pink-300/10">05/07/2026</span>
                 </div>
                 <h3 className="text-base font-bold text-white">Đợt 1: Gộp Lệnh Tiện Lợi & Vá Lỗ Hổng Pet</h3>
                 <ul className="text-xs md:text-sm text-slate-300 space-y-1.5 list-disc pl-4">
@@ -127,8 +150,7 @@ export default function Home() {
               {/* Update 2 */}
               <div className="border-l-2 border-slate-700 pl-4 space-y-2 opacity-80">
                 <div className="flex items-center gap-2">
-                  <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-500/20 text-purple-200 border border-purple-300/10">Bakery Phase 2</span>
-                  <span className="text-xs text-slate-400 font-medium">04/07/2026</span>
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-500/20 text-purple-200 border border-purple-300/10">04/07/2026</span>
                 </div>
                 <h3 className="text-base font-bold text-white">Vận Hành Tiệm Bánh Gekka & Thuê Nhân Viên</h3>
                 <ul className="text-xs md:text-sm text-slate-300 space-y-1.5 list-disc pl-4">

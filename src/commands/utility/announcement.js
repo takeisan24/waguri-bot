@@ -1,14 +1,17 @@
 const { SlashCommandBuilder, ChannelType, PermissionFlagsBits, MessageFlags } = require('discord.js');
+const { execSync } = require('child_process');
 const db = require('../../database.js');
 const { isOwner } = require('../../lib/owner');
 const { buildWaguriEmbed } = require('../../lib/embed');
+const gemini = require('../../lib/ai/gemini');
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('announcement')
         .setDescription('Xem hoặc gửi thông báo cập nhật từ nhà phát triển 📢')
         .addSubcommand(s => s.setName('view').setDescription('Xem thông báo cập nhật mới nhất'))
-        .addSubcommand(s => s.setName('send').setDescription('Gửi thông báo mới tới toàn bộ server (chỉ owner)')
+        .addSubcommand(s => s.setName('auto').setDescription('Tự động sinh thông báo từ Git Commit bằng AI (chỉ owner)'))
+        .addSubcommand(s => s.setName('send').setDescription('Gửi thông báo mới tới toàn bộ server thủ công (chỉ owner)')
             .addStringOption(o => o.setName('message').setDescription('Nội dung thông báo (hỗ trợ \\n để xuống dòng)').setRequired(true))),
     async execute(interaction) {
         const sub = interaction.options.getSubcommand();
@@ -38,17 +41,72 @@ module.exports = {
             return interaction.editReply({ embeds: [embed] });
         }
 
-        if (sub === 'send') {
+        if (sub === 'send' || sub === 'auto') {
             if (!await isOwner(interaction.client, interaction.user.id)) {
                 return interaction.reply({ content: 'Chỉ chủ sở hữu bot mới dùng được lệnh này nha~ 🌸', flags: MessageFlags.Ephemeral });
             }
 
             await interaction.deferReply();
-            const rawMessage = interaction.options.getString('message');
-            const message = rawMessage.replace(/\\n/g, '\n');
+            let message = '';
+            let currentCommit = '';
 
-            // 1. Lưu thông báo vào cấu hình global để người dùng có thể xem lại qua /announcement view
+            if (sub === 'auto') {
+                try {
+                    currentCommit = execSync('git rev-parse HEAD', { encoding: 'utf8' }).trim();
+                } catch (e) {
+                    return interaction.editReply({ content: 'Không thể lấy commit hiện tại từ Git (kiểm tra xem bạn đã cài đặt Git chưa nhé)!' });
+                }
+
+                const s = await db.getGuildSettings('global');
+                const lastCommit = s?.latest_announcement_commit;
+
+                if (lastCommit === currentCommit) {
+                    return interaction.editReply({ content: 'Không có thay đổi mới nào kể từ lần phát thông báo trước (Commit hiện tại trùng với commit đã thông báo)!' });
+                }
+
+                let commits = '';
+                try {
+                    if (lastCommit) {
+                        commits = execSync(`git log ${lastCommit}..HEAD --pretty=format:"- %s"`, { encoding: 'utf8' }).trim();
+                    } else {
+                        commits = execSync('git log -n 10 --pretty=format:"- %s"', { encoding: 'utf8' }).trim();
+                    }
+                } catch (err) {
+                    try {
+                        commits = execSync('git log -n 10 --pretty=format:"- %s"', { encoding: 'utf8' }).trim();
+                    } catch (err2) {
+                        commits = '';
+                    }
+                }
+
+                if (!commits || commits.trim() === '') {
+                    return interaction.editReply({ content: 'Không tìm thấy thay đổi/commit mới nào để thông báo!' });
+                }
+
+                const systemPrompt = `Bạn là Waguri Kaoruko, bạn gái AI ngọt ngào và là quản gia đắc lực của bot game nhập vai Discord Waguri.
+Nhiệm vụ của bạn là đọc danh sách các commit kỹ thuật bên dưới và viết thành một bản tin thông báo cập nhật (Changelog) cực kỳ ngọt ngào, dễ thương, truyền cảm hứng và thân thiện bằng tiếng Việt.
+Yêu cầu:
+- Sử dụng nhiều emoji dễ thương (🌸, ✨, 🎀, 💼, 🐷, 🌱...).
+- Tóm tắt và gộp nhóm các thay đổi thành các gạch đầu dòng rõ ràng, dễ hiểu cho người chơi bình thường (không dùng ngôn ngữ quá kỹ thuật của lập trình viên).
+- Giữ độ dài vừa phải để gửi trên Discord (dưới 1500 ký tự).
+- Tuyệt đối không thêm bất kỳ lời chào đầu hay kết bằng chữ "Waguri:" hay "Model:", hãy bắt đầu trực tiếp bằng tiêu đề thông báo.`;
+
+                try {
+                    message = await gemini.chat(systemPrompt, [], `Danh sách commit mới:\n${commits}`);
+                } catch (err) {
+                    console.error('[AUTO ANNOUNCEMENT AI ERROR]', err);
+                    return interaction.editReply({ content: 'Lỗi khi yêu cầu AI tạo thông báo cập nhật!' });
+                }
+            } else {
+                const rawMessage = interaction.options.getString('message');
+                message = rawMessage.replace(/\\n/g, '\n');
+            }
+
+            // 1. Lưu thông báo vào cấu hình global để người dùng và website có thể đọc được
             await db.setGuildSetting('global', 'latest_announcement', message);
+            if (currentCommit) {
+                await db.setGuildSetting('global', 'latest_announcement_commit', currentCommit);
+            }
 
             const embed = buildWaguriEmbed(interaction, 'jackpot', {
                 title: '📢・Thông Báo Cập Nhật Từ Waguri!',
@@ -56,7 +114,7 @@ module.exports = {
             });
             embed.setTimestamp();
             embed.setFooter({
-                text: `Hệ thống thông báo Waguri · Gửi bởi ${interaction.user.username} 🌸`,
+                text: `Hệ thống thông báo Waguri · Gửi tự động bởi ${interaction.user.username} 🌸`,
                 iconURL: interaction.client.user.displayAvatarURL()
             });
 
