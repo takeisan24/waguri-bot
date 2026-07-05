@@ -2,11 +2,14 @@ require('dotenv').config();
 const test = require('node:test');
 const assert = require('node:assert');
 
-// Chỉ chạy integration test thực tế nếu có biến môi trường Supabase đầy đủ
-const hasDb = process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY;
+// Chỉ chạy integration test thực tế nếu có biến môi trường Supabase đầy đủ và không phải dummy của CI
+const hasDb = process.env.SUPABASE_URL && 
+              process.env.SUPABASE_SERVICE_KEY && 
+              !process.env.SUPABASE_URL.includes('dummy') &&
+              process.env.SUPABASE_SERVICE_KEY !== 'dummy_key_for_ci';
 
 if (!hasDb) {
-    test('Bỏ qua Integration Test vì thiếu cấu hình SUPABASE_URL hoặc SUPABASE_SERVICE_KEY', () => {
+    test('Bỏ qua Integration Test vì thiếu cấu hình SUPABASE_URL thực tế hoặc đang chạy trên CI', () => {
         assert.ok(true);
     });
 } else {
