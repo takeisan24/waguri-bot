@@ -71,10 +71,12 @@ async function chatWithWaguri(channelId, userId, userName, userText) {
     // Mức thiện cảm + ngữ cảnh thực tế -> cá nhân hóa persona sinh động.
     let aff = 0, level = 1, hasPartner = false;
     let jobName = null, petInfo = null, bakeryInfo = null, conditionInfo = null;
+    let memory = null; // ký ức Waguri về người này (Key-Value)
     try {
         const u = await db.getUser(userId);
         if (u) {
             aff = Number(u.affection || 0);
+            if (u.ai_memory && typeof u.ai_memory === 'object') memory = u.ai_memory;
             level = getLevelFromExp(Number(u.exp || 0));
             hasPartner = !!u.partner_id;
             if (u.job_id) {
@@ -110,6 +112,16 @@ async function chatWithWaguri(channelId, userId, userName, userText) {
     
     let systemPrompt = `${WAGURI_SYSTEM_PROMPT}\n\n[Người đang trò chuyện: ${userName} — thân thiết: ${t.name} (${aff} điểm); ${ctxBits.join('; ')}. Hãy trò chuyện ${t.guide}. Có thể nhắc khéo tới tiến độ hoặc thông tin này khi hợp ngữ cảnh một cách tự nhiên.]`;
 
+    // Ký ức Waguri: những mẩu thông tin cô ấy đã nhớ về người này -> nhắc lại tự nhiên cho thân mật.
+    if (memory) {
+        const bits = Object.entries(memory)
+            .filter(([k, v]) => k && v != null && String(v).trim())
+            .map(([k, v]) => `${k}: ${String(v).slice(0, 200)}`);
+        if (bits.length) {
+            systemPrompt += `\n[Điều Waguri còn nhớ về ${userName}: ${bits.join('; ')}. Nếu hợp ngữ cảnh, nhắc lại một cách tự nhiên & ấm áp để thể hiện mình nhớ họ, đừng liệt kê máy móc.]`;
+        }
+    }
+
     // Bối cảnh thời sự: sự kiện toàn cục + mùa lễ VN -> Waguri có thể nhắc khéo cho sống động.
     const nowBits = [];
     const ev = getEventInfo();
@@ -123,12 +135,10 @@ async function chatWithWaguri(channelId, userId, userName, userText) {
         reply = await provider.chat(systemPrompt, history, framed);
     } catch (error) {
         console.error('[AI ERROR] Gemini API bị chập chờn hoặc quá 20s không phản hồi:', error.message);
-        
-        // Gọi RPC hoàn trả quota AI hằng ngày cho người dùng
-        await db.supabase.rpc('refund_ai_quota', { p_user_id: userId }).catch(err => {
-            console.error('[DATABASE ERROR] Gọi refund_ai_quota thất bại:', err);
-        });
-        
+
+        // Hoàn lại lượt quota đã trừ ở đầu hàm (qua helper, theo quy ước database.js)
+        await db.refundAiQuota(userId);
+
         return { ok: false, reason: 'error' };
     }
     if (!reply) return { ok: false, reason: 'error' };

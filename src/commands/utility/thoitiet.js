@@ -17,6 +17,7 @@ const WMO = {
 // Cấu hình Caching in-memory tránh lạm dụng gọi API Open-Meteo
 const weatherCache = new Map(); // city_lower_key -> { data, expiresAt }
 const CACHE_TTL_MS = 60 * 60 * 1000; // 1 tiếng
+const CACHE_MAX = 500; // chặn phình RAM: bỏ mục cũ nhất khi vượt ngưỡng (Map giữ thứ tự chèn)
 
 // Thời tiết mặc định dự phòng khi Open-Meteo bị sập
 const FALLBACK_WEATHER = {
@@ -85,7 +86,10 @@ module.exports = {
                 placeName
             };
 
-            // Lưu vào bộ nhớ đệm
+            // Lưu vào bộ nhớ đệm (dọn mục cũ nhất nếu vượt ngưỡng để tránh rò rỉ RAM)
+            if (weatherCache.size >= CACHE_MAX) {
+                weatherCache.delete(weatherCache.keys().next().value);
+            }
             weatherCache.set(cacheKey, {
                 data: weatherData,
                 expiresAt: Date.now() + CACHE_TTL_MS

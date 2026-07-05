@@ -941,6 +941,39 @@ async function consumeAiQuota(userId, freeCap, premiumCap) {
     }
 }
 
+/**
+ * Hoàn lại 1 lượt quota AI đã tiêu (dùng khi Gemini lỗi/timeout SAU khi đã trừ quota).
+ * An toàn: RPC chỉ trừ nếu còn đúng ngày dùng, kẹp greatest(0,...) nên không âm.
+ * Trả true nếu gọi được, false nếu lỗi (không ném ra ngoài).
+ */
+async function refundAiQuota(userId) {
+    try {
+        const { error } = await supabase.rpc('refund_ai_quota', { p_user_id: userId });
+        if (error) throw error;
+        return true;
+    } catch (error) {
+        console.error('[DATABASE ERROR] refundAiQuota():', error);
+        return false;
+    }
+}
+
+/**
+ * Ghi/cập nhật 1 mẩu ký ức của Waguri về người dùng (Key-Value, vd 'ten_pet' -> 'Miu').
+ * Trả object ai_memory mới hoặc null nếu lỗi.
+ */
+async function updateAiMemory(userId, key, value) {
+    try {
+        const { data, error } = await supabase.rpc('update_ai_memory', {
+            p_user_id: userId, p_key: key, p_value: value,
+        });
+        if (error) throw error;
+        return data;
+    } catch (error) {
+        console.error('[DATABASE ERROR] updateAiMemory():', error);
+        return null;
+    }
+}
+
 /** Cấp/gia hạn Premium thêm số ngày. Trả mốc hết hạn mới (ISO) hoặc null. */
 async function grantPremium(userId, days) {
     try {
@@ -1659,6 +1692,8 @@ module.exports = {
     logConfession,
     // ai quota & premium
     consumeAiQuota,
+    refundAiQuota,
+    updateAiMemory,
     grantPremium,
     // jail
     getJail,
