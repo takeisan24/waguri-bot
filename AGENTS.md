@@ -35,6 +35,27 @@ Waguri là **Discord economy/RPG bot bản địa hóa văn hóa Việt**. Bot N
 
 ---
 
+## 2.5. Vệ sinh repo & Git tracking (⚠️ repo PUBLIC)
+
+**Repo là PUBLIC** → mọi file được track ai cũng xem được, **kể cả trong lịch sử git** (untrack sau không xoá được quá khứ). Trước khi thêm/commit BẤT KỲ file nào, phân loại:
+
+| ✅ TRACK (commit + push) | 🚫 IGNORE (local-only) |
+|---|---|
+| Mã nguồn: `src/`, `index.js`, `shard.js`, `clear-commands.js`, `scripts/` | **Secret:** `.env`, `.env.local`, mọi key/token thật |
+| Migration: `supabase/migrations/*.sql` (**KHÔNG xoá file đã áp**) | Deps/build: `node_modules/`, `web/.next/`, `web/out/`, `*.tsbuildinfo`, `next-env.d.ts` |
+| Test: `test/*.test.js` | Tooling local: `.claude/`, `.omc/`, `.vercel/`, `web/.omc/` |
+| **Template env**: `.env.example`, `web/.env.example` (BẮT BUỘC track — chỉ placeholder, KHÔNG giá trị thật) | **Kế hoạch nội bộ:** `docs/` (roadmap/HANDOFF/audit/design — chiến lược/pháp lý, giữ kín) |
+| Doc công khai: `README.md`, `CONTRIBUTING.md`, `WORKFLOW.md`, `BRANDING.md`, `LICENSE`, `AGENTS.md`, `.github/` | File tạm/rác/backup local, output test, `.DS_Store`/`Thumbs.db` |
+
+**Luật bắt buộc:**
+1. **KHÔNG BAO GIỜ commit secret** (`.env`, service key, VietQR, token). Chỉ commit `.env.example` với placeholder `<value>`.
+2. **KHÔNG xoá migration đã áp** — là bản ghi lịch sử tái tạo DB. Sai thì viết migration MỚI đè (idempotent).
+3. **KHÔNG track file sinh tự động/build** (`.next`, `node_modules`, `*.tsbuildinfo`, `next-env.d.ts`).
+4. **Template `.env.example` PHẢI được track** (contributor cần). Nếu `.gitignore` nuốt (`.env*`) → thêm dòng `!.env.example`.
+5. **Nội dung nội bộ/nhạy cảm → `docs/` (đã ignore) hoặc scratchpad local**, KHÔNG để lộ trên repo public.
+6. Thêm file mới → tự hỏi: *source / template / test / public-doc?* → **track**. *secret / generated / deps / tooling / internal-plan?* → **ignore**.
+7. Trước khi commit: chạy `git status` — không được dính secret hay file rác; nếu lỡ track nhầm secret, **đổi key ngay** (lịch sử public không xoá được bằng untrack).
+
 ## 3. Quy trình thêm 1 tính năng (chi tiết ở WORKFLOW.md §2)
 
 `Thiết kế ngắn` → `Migration (bảng + RPC) + test RPC ngay trên DB` → `Helper trong database.js` → `Command trong src/commands/<nhóm>/` → `Hook nếu cần (vd quest)` → `config/ + data/` → `Cập nhật /help + web CommandsExplorer` → `Verify đầy đủ` → `Commit nhỏ` → `Push`.
