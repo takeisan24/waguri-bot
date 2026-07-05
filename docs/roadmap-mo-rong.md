@@ -85,3 +85,23 @@
 3. 🟠 **Bakery P2** (nhân viên/trang trí) + **mở rộng catalog** nhóm buff/cá/quà (nối bakery↔affection).
 4. 🟠 **Harden /confession** + **welcome per-server & newbie chain** (giữ chân).
 5. 🔴-chiến lược **Trí nhớ Waguri** khi sẵn sàng đầu tư lớn (moat).
+
+---
+
+## Phụ lục — Bảo tồn từ `.local-brainstorm/` (đã xóa 2026-07-05, giữ lại phần còn giá trị)
+
+**A. Quyết định cân bằng đã CHỐT (đã áp vào `config` — giữ để tra lý do):**
+- `/work` tốn **6** năng lượng · `/mine`+`/chop` tốn **5** · regen **1/30s** (2/phút) · viện phí **cố định 3.000 VNĐ**.
+- Phạt thu nhập **chỉ theo năng lượng** (bỏ `health` khỏi `conditionMultiplier`). Sức khỏe **chỉ giảm khi có BỆNH** (đã ship disease `0065`), không giảm ở `/work`.
+
+**B. 🟠 Kích hoạt Top.gg (env chưa set — actionable):** đặt `TOPGG_TOKEN` (autopost số server), `TOPGG_WEBHOOK_AUTH` (webhook `…/topgg/vote` đã có trong `voteServer.js` → thưởng vote tức thì), tùy chọn `CASSO_WEBHOOK_TOKEN` (Premium tự kích hoạt). Web: thêm badge/nút Vote Top.gg.
+
+**C. 🔴 Chiến lược/pháp lý khi public (cân nhắc trước khi scale):**
+- **Monetization ToS Discord:** bán Premium qua VietQR ngoài có thể vướng chính sách → rà Developer Policy, cân nhắc Discord App Subscriptions/SKU.
+- **GDPR:** cần `/deletedata` (user EU có quyền xóa dữ liệu).
+- **Anti-abuse public:** farm alt-account (daily/vote/welcome), RMT, **jailbreak persona AI** (test prompt-injection cho Waguri).
+- **Staging:** hiện đổi balance vào thẳng economy live → cần bot/guild test + checklist deploy kinh tế.
+- **Catch-up cho người mới:** tránh whale thống trị BXH làm nản người mới.
+- **Defer-first audit:** mọi lệnh gọi API ngoài/DB nặng phải `deferReply()` ngay dòng đầu (đặc biệt `/ask`) để tránh `10062`.
+
+**D. 🟠 Bản quyền media (từ review vòng 2):** ảnh/GIF nhân vật official mang rủi ro bản quyền ở **MỌI lệnh** (free lẫn premium — không có "vùng an toàn phi thương mại"). GIF Tenor trong `WAGURI_IMAGES` = **nợ kỹ thuật**, lộ trình thay dần sang art gốc/commission qua `mediaPool.json` dễ swap.
