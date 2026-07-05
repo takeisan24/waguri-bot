@@ -122,7 +122,13 @@ async function chatWithWaguri(channelId, userId, userName, userText) {
     try {
         reply = await provider.chat(systemPrompt, history, framed);
     } catch (error) {
-        console.error('[AI ERROR]', error.message);
+        console.error('[AI ERROR] Gemini API bị chập chờn hoặc quá 20s không phản hồi:', error.message);
+        
+        // Gọi RPC hoàn trả quota AI hằng ngày cho người dùng
+        await db.supabase.rpc('refund_ai_quota', { p_user_id: userId }).catch(err => {
+            console.error('[DATABASE ERROR] Gọi refund_ai_quota thất bại:', err);
+        });
+        
         return { ok: false, reason: 'error' };
     }
     if (!reply) return { ok: false, reason: 'error' };
