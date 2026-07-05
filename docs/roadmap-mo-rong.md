@@ -1,12 +1,18 @@
 # Roadmap Mở Rộng Waguri — Backlog cần thiết kế chi tiết
 
+> **⭐ ĐÂY LÀ NGUỒN SỰ THẬT DUY NHẤT cho backlog & trạng thái.** Mọi bản kế hoạch theo lịch-ngày (Sprint theo "Ngày 1→30") KHÔNG được duy trì — đã lưu trữ, chỉ tham khảo ý tưởng. Xem `AGENTS.md` để định hướng phiên làm việc.
 > Tổng hợp mọi hạng mục mở rộng tích lũy qua các phiên. Mỗi task ghi: **cần thiết kế gì · phụ thuộc · ưu tiên**.
 > Ưu tiên: 🔴 gấp/nền tảng · 🟠 giá trị cao · 🟢 nice-to-have. Trạng thái: ✅ xong · 🔨 đang · ⬜ chưa.
 
-## 0. Đã xong phiên này (tham chiếu)
+## 0. Đã xong (tham chiếu — cập nhật 2026-07-05)
 - ✅ Hệ quest random + ghim daily/vote · ✅ vá tiền (achievements/vay/clan/lixi) · ✅ đổi tên & gộp lệnh (/nghingoi /trongcay /vay /bank)
-- ✅ **Tiệm Bánh Gekka Phase 1** (đã áp DB prod, RPC verified) · ✅ audit catalog + cột `category` · ✅ đổi 7 id item lệch nghĩa
-- ⏳ **CHỜ DEPLOY:** code bakery + rename ở nhánh `feat/bakery-phase1` — cần **push→master→pull server→restart** thì mới chơi được `/tiembanh` và alias mới.
+- ✅ **Tiệm Bánh Gekka Phase 1 + migration Phase 2** (`0070`, đã áp DB prod) · ✅ audit catalog + cột `category` · ✅ đổi 7 id item lệch nghĩa
+- ✅ **Integration test luồng tiền** (`test/economy.integration.test.js` đã có — gap 🔴 mục §5 đã đóng)
+- ✅ **`database.js` không còn `process.exit` cứng** — đã dùng Proxy throw có kiểm soát (require được trong test)
+- ✅ **`confession_logs`** bảng đã tạo + đang ghi log
+- ✅ **Ký ức AI (hạ tầng):** migration `0074` (cột `ai_memory` + RPC `update_ai_memory`) & `0074b` (`refund_ai_quota`) đã áp DB + verified; helper `updateAiMemory`/`refundAiQuota`; **đọc `ai_memory` đã wire vào system prompt** (`src/lib/ai/index.js`).
+- ✅ **Fail-safe:** hoàn quota AI khi Gemini lỗi · cache 1h + fallback thời tiết `/thoitiet`.
+- ✅ **Release `v2.0.0`** (GitHub tag + `package.json` đồng bộ).
 
 ---
 
@@ -51,7 +57,7 @@
 ## 5. 🧹 Chất lượng & Nợ kỹ thuật
 | Task | Cần thiết kế | Ưu tiên |
 |---|---|---|
-| **Integration test luồng tiền** | Test RPC trên Supabase test env (gap lớn nhất — 0 lưới an toàn runtime cho tiền) | 🔴 |
+| ✅ **Integration test luồng tiền** | ĐÃ XONG — `test/economy.integration.test.js` phủ addMoney/transfer/buy/consume | ✅ |
 | **`lib/messages.js`** | Gom chuỗi lỗi lặp + `formatCooldown` (chuẩn hóa `<t:R>` vs "Ns") + giọng persona (mình/tớ, /ask embed) | 🟠 |
 | **Paginate embed dài** | `/jobs`, `/vay so` (chống tràn 1024/4096 + mobile) | 🟠 |
 | **Telemetry kinh tế** | Log tổng cung tiền/ngày, top earner → tune cân bằng (đặc biệt sau khi thêm bakery faucet) | 🟠 |
@@ -61,7 +67,7 @@
 ## 6. 🏛️ Chiến lược lớn (đầu tư cao, cần thiết kế sâu riêng)
 | Task | Mô tả | Ưu tiên |
 |---|---|---|
-| **⭐ Trí nhớ bền Waguri** | Lưu vài "mẩu ký ức"/người trong DB → cô nhớ & phản ứng theo hành trình. Moat cảm xúc. | 🔴-chiến lược |
+| 🔨 **⭐ Trí nhớ bền Waguri** | Hạ tầng XONG (DB `ai_memory`, RPC, helper, đọc vào prompt). **CÒN THIẾU: đường GHI** — lệnh `/nho` hoặc auto-extract để thật sự lưu ký ức. Moat cảm xúc. | 🔴-chiến lược |
 | **Battle Pass theo mùa** | Vé mùa free+premium track gắn lễ hội VN → retention + doanh thu | 🟠 |
 | **Đường tình cảm Waguri** (dating-sim nhẹ) | Affection mở khóa hội thoại/cảnh/quà; gate 1 phần Premium | 🟠 |
 | **Bộ sưu tập (album)** | Pokédex cá/quặng/công thức, thưởng hoàn thành | 🟢 |
