@@ -19,8 +19,8 @@
 ## 1. 🍰 Tiệm Bánh Gekka — Phase 2 & 3
 | Task | Cần thiết kế chi tiết | Ưu tiên | Phụ thuộc |
 |---|---|---|---|
-| **Nhân viên NPC** | Bảng/jsonb staff, RPC hire/fire, công thức bonus (Rintaro +15% rev, Subaru +cap, Usami +rate) + lương %; UI `/tiembanh thue` | 🟠 | P1 |
-| **Trang trí tiệm** | Danh mục decor (tái dùng `noi_that` + item mới), bonus "khách hài lòng", hiển thị /profile | 🟠 | P1 |
+| ✅ **Nhân viên NPC** | XONG — RPC hire/fire + lương %, `/tiembanh thue`. (QA runtime khi rảnh) | ✅ | P1 |
+| ✅ **Trang trí tiệm** | XONG — `/tiembanh trangtri` (RPC `bakery_decorate`). | ✅ | P1 |
 | **Sự kiện Waguri quản lý** | Nối `eventCalendar`/`season`: x2 doanh thu, mẻ đặc biệt; bánh mùa lễ (Tết/Trung Thu) | 🟢 | P1 |
 | **BXH tiệm + trang web /tiem/[id]** | RPC `bakery_leaderboard`, API voteServer, trang Next.js khoe tiệm | 🟢 | P1 |
 | **Tích hợp AI** | Đưa trạng thái tiệm vào context persona (nối "trí nhớ Waguri") | 🟢 | Memory |
@@ -39,17 +39,17 @@
 ## 3. ❤️ Giữ chân & Onboarding
 | Task | Cần thiết kế | Ưu tiên |
 |---|---|---|
-| **Welcome member per-server** | `/config welcome-channel` + `welcome-role`; guildMemberAdd đọc guild setting thay hardcode support | 🟠 |
-| **Newbie quest chain** | Chuỗi 1-lần 5 bước (daily→work×3→mua món→xin nghề→chơi game), thưởng dồn; tận dụng hệ quest | 🟠 |
+| ✅ **Welcome member per-server** | XONG — `guildMemberAdd.js` đọc `welcome_channel`/`welcome_role` từ guild settings. |  ✅ |
+| ✅ **Newbie quest chain** | XONG — `src/lib/newbie.js` + `newbieQuestIncr`, wired vào `/quest`+`/achievements`, có `/start`. | ✅ |
 | **Cứu trợ phá sản + streak freeze** | wallet+bank=0 → trợ cấp nhỏ; nới grace streak (đã có 48h) | 🟢 |
 | **Season ladder / prestige** | Mục tiêu dài hạn sau max level | 🟢 |
 
 ## 4. 🔧 Hardening & lỗi tồn (từ review per-command)
 | Task | Vị trí | Ưu tiên |
 |---|---|---|
-| **Harden /confession** | cooldown + audit trail + chặn @mention (chống quấy rối ẩn danh) | 🟠 |
-| /buy bỏ qua `shop_hidden` (mua đồ ẩn bằng id) | `buy.js` | 🟠 |
-| fetch không timeout (treo interaction) | cat/dog/waifu/thoitiet | 🟢 |
+| ✅ **Harden /confession** | XONG — cooldown 900s + chặn @mention/@everyone + audit trail `confession_logs`. | ✅ |
+| ✅ /buy bỏ qua `shop_hidden` | XONG — `store.js:79` chặn mua item ẩn bằng id. | ✅ |
+| fetch không timeout (treo interaction) | cat/dog/waifu (`/image`) — thoitiet đã có timeout | 🟢 |
 | /tangdo tặng cả tool/xe (mô tả chỉ hoa/đồ ăn) | `tangdo.js` | 🟢 |
 | bingo/loto lobby bỏ hoang khóa tiền tới restart | `bingoPrefix/loto` | 🟢 |
 | cosmetic/pet/nghingoi trừ-tiền-trước-thao-tác-sau (gộp RPC atomic) | 3 lệnh | 🟢 |
@@ -61,13 +61,13 @@
 | **`lib/messages.js`** | Gom chuỗi lỗi lặp + `formatCooldown` (chuẩn hóa `<t:R>` vs "Ns") + giọng persona (mình/tớ, /ask embed) | 🟠 |
 | **Paginate embed dài** | `/jobs`, `/vay so` (chống tràn 1024/4096 + mobile) | 🟠 |
 | **Telemetry kinh tế** | Log tổng cung tiền/ngày, top earner → tune cân bằng (đặc biệt sau khi thêm bakery faucet) | 🟠 |
-| **Cap affection/ngày** | Chống farm "Tri kỷ" (RPC add_affection hiện cộng vô điều kiện) | 🟢 |
+| ✅ **Cap affection/ngày** | XONG — migration `0073` (`daily_affection_sum`/`last_affection_date`). | ✅ |
 | Đổi id item còn lại (nếu muốn) | Nay chỉ NEW item dùng id sạch; legacy đã map | 🟢 |
 
 ## 6. 🏛️ Chiến lược lớn (đầu tư cao, cần thiết kế sâu riêng)
 | Task | Mô tả | Ưu tiên |
 |---|---|---|
-| ✅ **⭐ Trí nhớ bền Waguri** | XONG end-to-end: DB `ai_memory` + RPC + helper + **đọc** vào prompt + **ghi** qua trích xuất marker `[[NHO:...]]` (`extractAndStoreMemory`, có test). Moat cảm xúc. Xoá ký ức: qua `/deletedata` (GDPR). Nice-to-have sau: `/nho` thủ công. | ✅ |
+| ✅ **⭐ Trí nhớ bền Waguri** | XONG end-to-end: DB `ai_memory` + RPC + helper + **đọc** vào prompt + **ghi** qua trích xuất marker `[[NHO:...]]` (`extractAndStoreMemory`, có test). Moat cảm xúc. Xoá ký ức: qua `/deletedata` (GDPR). | ✅ |
 | **Battle Pass theo mùa** | Vé mùa free+premium track gắn lễ hội VN → retention + doanh thu | 🟠 |
 | **Đường tình cảm Waguri** (dating-sim nhẹ) | Affection mở khóa hội thoại/cảnh/quà; gate 1 phần Premium | 🟠 |
 | **Bộ sưu tập (album)** | Pokédex cá/quặng/công thức, thưởng hoàn thành | 🟢 |
@@ -79,12 +79,17 @@
 
 ---
 
-## Thứ tự đề xuất (nếu hỏi tôi)
-1. **Deploy** bakery P1 (push) + **QA runtime** trên server.
-2. 🔴 **Integration test luồng tiền** (nền tảng an toàn cho mọi thay đổi tiền sau này).
-3. 🟠 **Bakery P2** (nhân viên/trang trí) + **mở rộng catalog** nhóm buff/cá/quà (nối bakery↔affection).
-4. 🟠 **Harden /confession** + **welcome per-server & newbie chain** (giữ chân).
-5. 🔴-chiến lược **Trí nhớ Waguri** khi sẵn sàng đầu tư lớn (moat).
+## Thứ tự đề xuất (cập nhật 2026-07-05 — SAU khi public Top.gg; phần lớn backlog cũ đã XONG)
+
+> Bối cảnh mới: bot đã public trên Top.gg → user thật đổ vào. Ưu tiên xoay quanh **thấy được chuyện gì đang xảy ra** + **giữ chân**.
+
+1. 🟠 **Telemetry kinh tế** — log cung tiền/ngày + top earner (đang MÙ dữ liệu; cần để phát hiện lạm phát/exploit khi traffic thật vào). *Nền tảng cho mọi quyết định tune sau này.*
+2. 🟠 **Feature giữ chân sâu (chọn 1)** — **Album/Bộ sưu tập** (Pokédex cá/quặng/công thức, thưởng hoàn thành) HOẶC **Battle Pass mùa** (free+premium track gắn lễ hội VN). Mục tiêu dài hạn cho người chơi mới.
+3. 🟢 **Hardening nhỏ** — thêm timeout fetch cho `/image` (cat/dog/waifu) chống treo interaction.
+4. 🟢 **DX/chất lượng** — gom `lib/messages.js` (chuỗi lỗi lặp + `formatCooldown`); mở rộng catalog item (§2) khi cần thêm chiều sâu.
+5. 🟢 **Chiến lược lớn khác** (§6) — dating-sim nhẹ, world event, referral, clan nâng cao — khi muốn đầu tư sâu.
+
+*(Đã xong gần đây: trí nhớ Waguri end-to-end, `/deletedata` GDPR, bakery P2 staff/decor, newbie chain, welcome per-server, harden /confession & /buy, integration test, affection cap.)*
 
 ---
 
