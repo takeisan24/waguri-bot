@@ -78,17 +78,19 @@ export default function WaguriFloat() {
         {/* Tròn Avatar Waguri */}
         <div 
           onClick={() => setShowBubble(!showBubble)}
-          className="relative w-12 h-12 rounded-full border border-pink-300/30 overflow-hidden shadow-2xl cursor-pointer hover:border-pink-300 hover:scale-105 active:scale-95 transition-all duration-300 bg-[#120c1a]"
+          className="relative w-12 h-12 cursor-pointer hover:scale-105 active:scale-95 transition-all duration-300"
           title="Trò chuyện với Waguri"
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="https://media.tenor.com/saOAfF_zx6UAAAAM/kaoruko-waguri-the-fragrant-flower-blooms-with-dignity.gif"
-            alt="Waguri Kaoruko"
-            className="w-full h-full object-cover"
-          />
-          {/* Online Indicator Green Dot */}
-          <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border border-[#0d0812] rounded-full animate-pulse" />
+          <div className="w-full h-full rounded-full border border-pink-300/30 overflow-hidden bg-[#120c1a]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="https://media.tenor.com/saOAfF_zx6UAAAAM/kaoruko-waguri-the-fragrant-flower-blooms-with-dignity.gif"
+              alt="Waguri Kaoruko"
+              className="w-full h-full object-cover"
+            />
+          </div>
+          {/* Online Indicator Green Dot (Nằm ngoài khung overflow-hidden để không bị cắt) */}
+          <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-[#0d0812] rounded-full animate-pulse z-10" />
         </div>
       </div>
     </div>
