@@ -76,7 +76,7 @@ Waguri là **Discord economy/RPG bot bản địa hóa văn hóa Việt**. Bot N
 
 ## 4. TRẠNG THÁI HIỆN TẠI (cập nhật 2026-07-05 — sửa khi đổi lớn)
 
-- **Release:** GitHub tag mới nhất `v2.0.0` ("Đợt 1: Tái Cấu Trúc UX & Trỗi Dậy Sức Mạnh Thú Cưng"). `package.json` = `2.0.0`.
+- **Release:** GitHub tag mới nhất `v2.1.0` ("Đợt 2: Tối ưu DX, Chống Clone & Khử Treo Game"). `package.json` = `2.1.0`.
 - **Tiệm Bánh Gekka:** Phase 1 + migration Phase 2 (`0070`) đã có; **cần QA runtime** vòng lặp nạp→nướng→thu hoạch + lương nhân viên.
 - **Ký ức AI Waguri (Sprint "trí nhớ") — ĐÃ HOÀN THIỆN end-to-end:** migration `0074` (cột `users.ai_memory` JSONB + RPC `update_ai_memory`) và `0074b` (`refund_ai_quota`) đã áp DB + verified. Helper `updateAiMemory`/`refundAiQuota` trong database.js.
   - **ĐỌC:** `ai_memory` được chèn vào system prompt Gemini (`src/lib/ai/index.js`).
