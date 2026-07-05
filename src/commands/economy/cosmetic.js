@@ -52,10 +52,9 @@ module.exports = {
             if (!text || text.length > config.COSMETIC.MAX_TITLE_LEN) {
                 return replyEmbed('error', '🎨・Đổi Danh Hiệu', `Danh hiệu tối đa **${config.COSMETIC.MAX_TITLE_LEN}** ký tự nhé~`);
             }
-            if (!await db.addMoney(userId, -config.COSMETIC.TITLE_COST, 'wallet')) {
-                return replyEmbed('error', '🎨・Đổi Danh Hiệu', `Cần **${fmt(config.COSMETIC.TITLE_COST)}** ${config.CURRENCY} để đổi danh hiệu mà ví chưa đủ~ 😟`);
+            if (!await db.setCosmeticWithFee(userId, 'title', text, config.COSMETIC.TITLE_COST)) {
+                return replyEmbed('error', '🎨・Đổi Danh Hiệu', `Cần **${fmt(config.COSMETIC.TITLE_COST)}** ${config.CURRENCY} để đổi danh hiệu mà ví chưa đủ (hoặc có lỗi xảy ra)~ 😟`);
             }
-            await db.setCosmetic(userId, 'title', text);
             return replyEmbed('success', '🎨・Đổi Danh Hiệu', `Danh hiệu mới của cậu: **${text}** — xem ở \`/profile\` nhé 🏷️`);
         }
 
@@ -65,10 +64,9 @@ module.exports = {
                 return replyEmbed('error', '🎨・Đổi Màu Hồ Sơ', 'Mã màu chưa đúng~ Nhập 6 ký tự hex, vd `F1C40F` hoặc `#5865F2`.');
             }
             hex = hex.replace('#', '').toUpperCase();
-            if (!await db.addMoney(userId, -config.COSMETIC.COLOR_COST, 'wallet')) {
-                return replyEmbed('error', '🎨・Đổi Màu Hồ Sơ', `Cần **${fmt(config.COSMETIC.COLOR_COST)}** ${config.CURRENCY} để đổi màu mà ví chưa đủ~ 😟`);
+            if (!await db.setCosmeticWithFee(userId, 'profile_color', hex, config.COSMETIC.COLOR_COST)) {
+                return replyEmbed('error', '🎨・Đổi Màu Hồ Sơ', `Cần **${fmt(config.COSMETIC.COLOR_COST)}** ${config.CURRENCY} để đổi màu mà ví chưa đủ (hoặc có lỗi xảy ra)~ 😟`);
             }
-            await db.setCosmetic(userId, 'profile_color', hex);
             const embedSuccess = buildWaguriEmbed(interaction, 'success', {
                 title: '🎨・Đổi Màu Hồ Sơ',
                 description: `Màu hồ sơ mới: **#${hex}** — xem ở \`/profile\` nhé 🎨`

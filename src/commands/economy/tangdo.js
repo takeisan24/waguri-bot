@@ -5,7 +5,7 @@ const db = require('../../database.js');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('tangdo')
-        .setDescription('Tặng vật phẩm trong kho cho người khác (hoa, thịt, đồ ăn...) 🎁')
+        .setDescription('Tặng vật phẩm trong kho cho người khác (mọi loại: đồ ăn, dụng cụ, xe...) 🎁')
         .addUserOption(o => o.setName('user').setDescription('Người nhận').setRequired(true))
         .addStringOption(o => o.setName('item').setDescription('Vật phẩm muốn tặng').setRequired(true).setAutocomplete(true))
         .addIntegerOption(o => o.setName('quantity').setDescription('Số lượng (mặc định 1)').setMinValue(1)),
@@ -34,10 +34,6 @@ module.exports = {
 
         const item = await db.getItem(itemId);
         if (!item) return err('Mình không tìm thấy vật phẩm này~');
-
-        if (item.type === 'tool' || item.type === 'vehicle') {
-            return err(`Không thể tặng **${item.name}**! Các loại dụng cụ hoặc xe cộ không thể làm quà tặng được nha~ 🌸`);
-        }
 
         if (isWaguri) {
             // Tặng quà cho Waguri

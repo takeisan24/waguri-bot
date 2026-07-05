@@ -147,6 +147,52 @@ module.exports = {
                 .catch(e => console.error('[STAKES] Lỗi hoàn cược treo:', e?.message || e));
         }
 
+        // Tự động dọn dẹp và hoàn vé cho các ván Loto/Bingo bị bỏ hoang (không hoạt động > 10 phút)
+        setInterval(async () => {
+            const { activeLotoGames } = require('../lib/loto');
+            const { activeBingoGames } = require('../lib/bingoPrefix');
+            const db = require('../database.js');
+            const { buildWaguriEmbed } = require('../lib/embed');
+            const now = Date.now();
+            const TIMEOUT_MS = 10 * 60 * 1000; // 10 phút
+
+            // 1. Quét Loto
+            for (const [channelId, game] of activeLotoGames.entries()) {
+                if (now - game.lastActiveAt > TIMEOUT_MS) {
+                    if (game.lobbyTimeout) {
+                        clearTimeout(game.lobbyTimeout);
+                    }
+                    activeLotoGames.delete(channelId);
+                    await db.stakeRefundSession(game.sessionId);
+                    const channel = client.channels.cache.get(channelId) || await client.channels.fetch(channelId).catch(() => null);
+                    if (channel) {
+                        const embed = buildWaguriEmbed({ client }, 'warning', {
+                            description: 'Ván Loto đã bị tự động hủy và hoàn vé do không có hoạt động nào trong 10 phút qua! ⏰🌸'
+                        });
+                        channel.send({ embeds: [embed] }).catch(() => {});
+                    }
+                }
+            }
+
+            // 2. Quét Bingo
+            for (const [channelId, game] of activeBingoGames.entries()) {
+                if (now - game.lastActiveAt > TIMEOUT_MS) {
+                    if (game.lobbyTimeout) {
+                        clearTimeout(game.lobbyTimeout);
+                    }
+                    activeBingoGames.delete(channelId);
+                    await db.stakeRefundSession(game.sessionId);
+                    const channel = client.channels.cache.get(channelId) || await client.channels.fetch(channelId).catch(() => null);
+                    if (channel) {
+                        const embed = buildWaguriEmbed({ client }, 'warning', {
+                            description: 'Ván Bingo đã bị tự động hủy và hoàn vé do không có hoạt động nào trong 10 phút qua! ⏰🌸'
+                        });
+                        channel.send({ embeds: [embed] }).catch(() => {});
+                    }
+                }
+            }
+        }, 2 * 60 * 1000).unref(); // chạy mỗi 2 phút
+
         let i = 0;
         const rotate = () => {
             const list = buildStatuses(client); // tính lại mỗi lần -> số liệu luôn mới

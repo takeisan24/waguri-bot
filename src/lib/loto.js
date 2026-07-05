@@ -75,7 +75,9 @@ async function handleLotoPrefix(message, cmd, args) {
             called: [],
             pool: shuffle(Array.from({ length: 90 }, (_, i) => i + 1)),
             msg: null,
-            lobbyTimeout: timeout
+            lobbyTimeout: timeout,
+            createdAt: Date.now(),
+            lastActiveAt: Date.now()
         });
 
         const embed = buildWaguriEmbed(message, 'info', {
@@ -152,6 +154,7 @@ async function handleLotoPrefix(message, cmd, args) {
             username: message.author.username,
             ticket: numbers
         });
+        game.lastActiveAt = Date.now();
 
         const embed = buildWaguriEmbed(message, 'success', {
             description: `✅ **${message.author.username}** đã mua vé thành công: \`${numbers.join('  ')}\` (**-${TICKET_PRICE.toLocaleString('vi-VN')}** ${config.CURRENCY}). Chúc cậu may mắn!`
@@ -167,6 +170,7 @@ async function handleLotoPrefix(message, cmd, args) {
             });
             return message.reply({ embeds: [embed] });
         }
+        game.lastActiveAt = Date.now();
 
         if (game.players.size === 0) {
             const embed = buildWaguriEmbed(message, 'info', {
@@ -221,6 +225,7 @@ async function handleLotoPrefix(message, cmd, args) {
             game.lobbyTimeout = null;
         }
         game.status = 'playing';
+        game.lastActiveAt = Date.now();
         const pot = game.players.size * TICKET_PRICE;
 
         const renderProgress = (lastNum) => {
@@ -252,6 +257,7 @@ async function handleLotoPrefix(message, cmd, args) {
                 clearInterval(interval);
                 return;
             }
+            curGame.lastActiveAt = Date.now();
 
             if (curGame.pool.length === 0) {
                 clearInterval(interval);

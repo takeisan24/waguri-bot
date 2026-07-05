@@ -78,14 +78,20 @@ module.exports = {
             }
             const oldLvl = petLevel(pet.exp);
             const cost = config.PET.FEED_COST + config.PET.FEED_PER_LEVEL * oldLvl; // cấp càng cao ăn càng tốn
-            if (!await db.addMoney(userId, -cost, 'wallet')) {
+            const gain = Math.floor(Math.random() * (config.PET.FEED_EXP_MAX - config.PET.FEED_EXP_MIN + 1)) + config.PET.FEED_EXP_MIN;
+            const newExp = await db.feedPetWithFee(userId, gain, cost);
+            if (newExp === -1) {
                 const embed = buildWaguriEmbed(interaction, 'warning', {
                     description: `Cậu không đủ **${fmt(cost)}** ${config.CURRENCY} để cho bé ăn (cấp càng cao ăn càng tốn)~ 😟`
                 });
                 return interaction.editReply({ embeds: [embed] });
             }
-            const gain = Math.floor(Math.random() * (config.PET.FEED_EXP_MAX - config.PET.FEED_EXP_MIN + 1)) + config.PET.FEED_EXP_MIN;
-            const newExp = await db.feedPet(userId, gain);
+            if (newExp === -2 || newExp === null) {
+                const embed = buildWaguriEmbed(interaction, 'warning', {
+                    description: `Ơ, có lỗi khi cho bé ăn hoặc cậu chưa nhận nuôi thú cưng, thử lại sau nhé~ 🌸`
+                });
+                return interaction.editReply({ embeds: [embed] });
+            }
             const newLvl = petLevel(newExp);
             const sp = findSpecies(pet.species);
             let desc = `${sp?.emoji || '🐾'} **${pet.name || sp?.name}** ăn ngon lành! +${gain} EXP 😋 *(tốn ${fmt(cost)} ${config.CURRENCY})*`;

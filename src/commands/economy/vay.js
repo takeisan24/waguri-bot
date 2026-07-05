@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, MessageFlags } = require('discord.js');
 const { buildWaguriEmbed } = require('../../lib/embed');
+const { sendPaginated } = require('../../lib/paginate');
 const db = require('../../database.js');
 const config = require('../../config');
 
@@ -109,15 +110,33 @@ async function subSo(interaction) {
     const owingTotal = owing.reduce((s, l) => s + Number(l.remaining), 0);
     const owedTotal = owed.reduce((s, l) => s + Number(l.remaining), 0);
 
-    const embed = buildWaguriEmbed(interaction, 'info', {
+    const lines = [];
+    lines.push(`💸 **Tổng đang nợ:** ${fmt(owingTotal)} ${config.CURRENCY}`);
+    lines.push(`🤝 **Tổng cho vay:** ${fmt(owedTotal)} ${config.CURRENCY}`);
+    lines.push('');
+
+    lines.push('__**💸 CẬU ĐANG NỢ:**__');
+    if (owing.length) {
+        owing.forEach(l => lines.push(loanLine(l, l.lender_id)));
+    } else {
+        lines.push('*(không nợ ai cả~)*');
+    }
+    lines.push('');
+
+    lines.push('__**🤝 NGƯỜI KHÁC NỢ CẬU:**__');
+    if (owed.length) {
+        owed.forEach(l => lines.push(loanLine(l, l.borrower_id)));
+    } else {
+        lines.push('*(chưa cho ai vay)*');
+    }
+
+    await sendPaginated(interaction, {
         title: '🧾 Sổ nợ của cậu',
-        fields: [
-            { name: `💸 Cậu đang nợ (tổng ${fmt(owingTotal)} ${config.CURRENCY})`, value: owing.length ? owing.map(l => loanLine(l, l.lender_id)).join('\n') : '*(không nợ ai cả~)*', inline: false },
-            { name: `🤝 Người khác nợ cậu (tổng ${fmt(owedTotal)} ${config.CURRENCY})`, value: owed.length ? owed.map(l => loanLine(l, l.borrower_id)).join('\n') : '*(chưa cho ai vay)*', inline: false },
-        ]
+        color: config.COLORS.INFO,
+        lines,
+        perPage: 10,
+        footerNote: 'Trả nợ: /vay tra · Đòi nợ quá hạn: /vay doi',
     });
-    embed.setFooter({ text: `Trả nợ: /vay tra · Đòi nợ quá hạn: /vay doi • ${embed.data.footer.text}`, iconURL: embed.data.footer.icon_url });
-    return interaction.editReply({ embeds: [embed] });
 }
 
 module.exports = {

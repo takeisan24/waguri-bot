@@ -870,6 +870,18 @@ async function feedPet(userId, exp) {
     }
 }
 
+/** Cho thú cưng ăn và trừ tiền đồng thời (atomic). Trả exp mới, hoặc -1 nếu không đủ tiền, -2 nếu chưa có pet, null nếu lỗi. */
+async function feedPetWithFee(userId, exp, cost) {
+    try {
+        const { data, error } = await supabase.rpc('feed_pet_with_fee', { p_user: userId, p_exp: exp, p_cost: cost });
+        if (error) throw error;
+        return data === null ? null : Number(data);
+    } catch (error) {
+        console.error('[DATABASE ERROR] feedPetWithFee():', error);
+        return null;
+    }
+}
+
 // ============================================================
 //  GUILD SETTINGS — cấu hình theo server
 // ============================================================
@@ -1177,6 +1189,24 @@ async function setCosmetic(userId, field, value) {
         return true;
     } catch (error) {
         console.error('[DATABASE ERROR] setCosmetic():', error);
+        return false;
+    }
+}
+
+/** Đặt cosmetic và trừ tiền đồng thời (atomic). Trả true nếu thành công, false nếu không đủ tiền/lỗi. */
+async function setCosmeticWithFee(userId, field, value, cost) {
+    if (!['title', 'profile_color'].includes(field)) return false;
+    try {
+        const { data, error } = await supabase.rpc('set_cosmetic_with_fee', {
+            p_user: userId,
+            p_field: field,
+            p_value: value,
+            p_cost: cost
+        });
+        if (error) throw error;
+        return !!data;
+    } catch (error) {
+        console.error('[DATABASE ERROR] setCosmeticWithFee():', error);
         return false;
     }
 }
@@ -1728,6 +1758,7 @@ module.exports = {
     adoptPet,
     renamePet,
     feedPet,
+    feedPetWithFee,
     // guild settings
     getGuildSettings,
     setGuildSetting,
@@ -1776,6 +1807,7 @@ module.exports = {
     resetPoliceHeat,
     // cosmetic
     setCosmetic,
+    setCosmeticWithFee,
     // loans
     loanCreate,
     loanRepay,

@@ -1,6 +1,6 @@
 const { Events } = require('discord.js');
 const { buildWaguriEmbed } = require('../lib/embed');
-const { logError } = require('../lib/logger');
+const { logError, skipLog } = require('../lib/logger');
 const db = require('../database.js');
 
 module.exports = {
@@ -30,11 +30,17 @@ module.exports = {
                 channel = member.guild.systemChannel;
             }
 
-            if (!channel) return;
+            if (!channel) {
+                skipLog('Không tìm thấy kênh chào mừng (welcome_channel chưa cấu hình hoặc không có systemChannel)', { source: 'guildMemberAdd', guildId: member.guild.id });
+                return;
+            }
 
             // Kiểm tra bot có thể gửi tin vào kênh không
             const me = member.guild.members.me;
-            if (me && !channel.permissionsFor(me)?.has('SendMessages')) return;
+            if (me && !channel.permissionsFor(me)?.has('SendMessages')) {
+                skipLog(`Bot thiếu quyền SendMessages trong kênh ${channel.id}`, { source: 'guildMemberAdd', guildId: member.guild.id, channelId: channel.id });
+                return;
+            }
 
             const embed = buildWaguriEmbed({ client: member.client }, 'info', {
                 title: '🌸・Chào mừng thành viên mới!',

@@ -132,7 +132,9 @@ async function handleBingoPrefix(message, cmd, args) {
             pool: shuffle(Array.from({ length: 75 }, (_, i) => i + 1)),
             called: [],
             msg: null,
-            lobbyTimeout: timeout
+            lobbyTimeout: timeout,
+            createdAt: Date.now(),
+            lastActiveAt: Date.now()
         });
 
         const embed = buildWaguriEmbed(message, 'info', {
@@ -185,6 +187,7 @@ async function handleBingoPrefix(message, cmd, args) {
             grid: card,
             marked: new Set()
         });
+        game.lastActiveAt = Date.now();
 
         const embed = buildWaguriEmbed(message, 'success', {
             description: `✅ **${message.author.username}** đã mua vé Bingo thành công (**-${DEFAULT_BET.toLocaleString('vi-VN')}** ${config.CURRENCY}).\n*Gõ \`${config.PREFIX}check\` để xem vé của mình.* 🌸`
@@ -200,6 +203,7 @@ async function handleBingoPrefix(message, cmd, args) {
             });
             return message.reply({ embeds: [embed] });
         }
+        game.lastActiveAt = Date.now();
 
         const player = game.players.get(userId);
         if (!player) {
@@ -252,6 +256,7 @@ async function handleBingoPrefix(message, cmd, args) {
             game.lobbyTimeout = null;
         }
         game.status = 'playing';
+        game.lastActiveAt = Date.now();
         const pot = game.players.size * DEFAULT_BET;
 
         const renderProgress = (lastNum) => {
@@ -280,6 +285,7 @@ async function handleBingoPrefix(message, cmd, args) {
                 clearInterval(interval);
                 return;
             }
+            curGame.lastActiveAt = Date.now();
 
             if (curGame.pool.length === 0) {
                 clearInterval(interval);

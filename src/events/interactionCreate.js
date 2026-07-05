@@ -4,7 +4,7 @@ const { isBanned } = require('../lib/bans');
 const { isBlocked, getJail } = require('../lib/jail');
 const { buildWaguriEmbed } = require('../lib/embed');
 const { recordMembership } = require('../lib/membership');
-const { logError } = require('../lib/logger');
+const { logError, skipLog } = require('../lib/logger');
 const db = require('../database.js');
 const config = require('../config');
 
@@ -28,7 +28,7 @@ module.exports = {
             const command = interaction.client.commands.get(interaction.commandName);
 
             if (!command) {
-                console.error(`Không tìm thấy lệnh nào khớp với ${interaction.commandName}.`);
+                skipLog(`Không tìm thấy lệnh khớp với ${interaction.commandName}`, { source: 'interactionCreate' });
                 return;
             }
 
@@ -110,6 +110,10 @@ module.exports = {
             if (interaction.customId === 'start:claim') {
                 const fmt = n => Number(n).toLocaleString('vi-VN');
                 try {
+                    const minAgeMs = 7 * 24 * 60 * 60 * 1000; // 7 ngày
+                    if (Date.now() - interaction.user.createdTimestamp < minAgeMs) {
+                        return interaction.reply({ content: '⚠️ Tài khoản Discord của cậu phải được tạo từ ít nhất **7 ngày** trước mới nhận được quà chào mừng chống clone nha~ 🌸', flags: MessageFlags.Ephemeral });
+                    }
                     const bonus = await db.claimWelcomeBonus(interaction.user.id, config.WELCOME.BONUS);
                     if (bonus > 0) {
                         await interaction.update({

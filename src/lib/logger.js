@@ -30,4 +30,11 @@ async function logError(title, err, meta = {}) {
     } catch { /* nuốt lỗi: log không bao giờ được làm sập bot */ }
 }
 
-module.exports = { logError };
+/** Log chuẩn hoá khi bot bỏ qua/thoát sớm (im lặng). Chỉ console.warn, không gửi webhook. */
+function skipLog(reason, ctx = {}) {
+    const tag = ctx.source ? `[SKIP:${ctx.source}]` : '[SKIP]';
+    const extra = Object.keys(ctx).filter(k => k !== 'source').map(k => `${k}=${ctx[k]}`).join(' ');
+    console.warn(`${tag} ${reason}${extra ? ' — ' + extra : ''}`);
+}
+
+module.exports = { logError, skipLog };

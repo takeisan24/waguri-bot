@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const { buildWaguriEmbed } = require('../../lib/embed');
+const { sendPaginated } = require('../../lib/paginate');
 const db = require('../../database.js');
 const config = require('../../config');
 const ACH = require('../../data/achievements');
@@ -57,22 +58,25 @@ module.exports = {
             newly.forEach(id => unlocked.add(id));
         }
 
-        const lines = ACH.map(a => unlocked.has(a.id)
-            ? `🏅 **${a.name}** — ${a.desc}`
-            : `🔒 ${a.name} — ${a.desc} · 🪙 ${fmt(a.reward)}`);
-
-        const embed = buildWaguriEmbed(interaction, 'jackpot', {
-            title: '🏅・Thành tựu',
-            description: lines.join('\n')
-        });
-        embed.setFooter({
-            text: `Đã mở khóa ${unlocked.size}/${ACH.length} • ${embed.data.footer.text}`,
-            iconURL: embed.data.footer.icon_url
-        });
-
+        const lines = [];
         if (newly.length) {
-            embed.addFields({ name: '🎉 Vừa mở khóa!', value: `${newly.length} thành tựu · +${fmt(reward)} ${config.CURRENCY}`, inline: false });
+            lines.push(`🎉 **Vừa mở khóa ${newly.length} thành tựu mới! Nhận +${fmt(reward)} ${config.CURRENCY}**`);
+            lines.push('──────────────────────────────');
         }
-        await interaction.editReply({ embeds: [embed] });
+
+        ACH.forEach(a => {
+            lines.push(unlocked.has(a.id)
+                ? `🏅 **${a.name}** — ${a.desc}`
+                : `🔒 ${a.name} — ${a.desc} · 🪙 ${fmt(a.reward)}`
+            );
+        });
+
+        await sendPaginated(interaction, {
+            title: '🏅・Thành tựu',
+            color: config.COLORS.JACKPOT,
+            lines,
+            perPage: 12,
+            footerNote: `Đã mở khóa ${unlocked.size}/${ACH.length}`,
+        });
     },
 };
