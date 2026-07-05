@@ -10,7 +10,7 @@
 - ✅ **Integration test luồng tiền** (`test/economy.integration.test.js` đã có — gap 🔴 mục §5 đã đóng)
 - ✅ **`database.js` không còn `process.exit` cứng** — đã dùng Proxy throw có kiểm soát (require được trong test)
 - ✅ **`confession_logs`** bảng đã tạo + đang ghi log
-- ✅ **Ký ức AI (hạ tầng):** migration `0074` (cột `ai_memory` + RPC `update_ai_memory`) & `0074b` (`refund_ai_quota`) đã áp DB + verified; helper `updateAiMemory`/`refundAiQuota`; **đọc `ai_memory` đã wire vào system prompt** (`src/lib/ai/index.js`).
+- ✅ **Ký ức AI Waguri (end-to-end):** migration `0074`/`0074b` áp DB + verified; helper `updateAiMemory`/`refundAiQuota`; **đọc** `ai_memory` vào prompt + **ghi** qua trích xuất marker `[[NHO:...]]` (có test `test/ai_memory.test.js`).
 - ✅ **Fail-safe:** hoàn quota AI khi Gemini lỗi · cache 1h + fallback thời tiết `/thoitiet`.
 - ✅ **Release `v2.0.0`** (GitHub tag + `package.json` đồng bộ).
 
@@ -67,7 +67,7 @@
 ## 6. 🏛️ Chiến lược lớn (đầu tư cao, cần thiết kế sâu riêng)
 | Task | Mô tả | Ưu tiên |
 |---|---|---|
-| 🔨 **⭐ Trí nhớ bền Waguri** | Hạ tầng XONG (DB `ai_memory`, RPC, helper, đọc vào prompt). **CÒN THIẾU: đường GHI** — lệnh `/nho` hoặc auto-extract để thật sự lưu ký ức. Moat cảm xúc. | 🔴-chiến lược |
+| ✅ **⭐ Trí nhớ bền Waguri** | XONG end-to-end: DB `ai_memory` + RPC + helper + **đọc** vào prompt + **ghi** qua trích xuất marker `[[NHO:...]]` (`extractAndStoreMemory`, có test). Moat cảm xúc. Nice-to-have sau: `/nho` thủ công + `/quenki` (xem/xoá, GDPR). | ✅ |
 | **Battle Pass theo mùa** | Vé mùa free+premium track gắn lễ hội VN → retention + doanh thu | 🟠 |
 | **Đường tình cảm Waguri** (dating-sim nhẹ) | Affection mở khóa hội thoại/cảnh/quà; gate 1 phần Premium | 🟠 |
 | **Bộ sưu tập (album)** | Pokédex cá/quặng/công thức, thưởng hoàn thành | 🟢 |

@@ -37,6 +37,59 @@ function formatReply(text, userId, userName) {
     return t;
 }
 
+// ---- Ký ức Waguri: trích & lưu thông tin đáng nhớ từ chính câu trả lời ----
+// Waguri tự gắn marker ẩn [[NHO: khoá | giá trị]] khi biết điều đáng nhớ; ta lưu rồi XOÁ khỏi reply.
+const MEMORY_MAX_KEYS = 25;       // trần số khoá/người -> chống phình JSONB
+const MEMORY_KEY_MAX = 40;
+const MEMORY_VALUE_MAX = 150;
+const MEMORY_MAX_PER_REPLY = 2;   // tối đa 2 điều mỗi lượt -> tránh nhồi
+const MEMORY_MARKER = () => /\[\[\s*NHO\s*:\s*([^|\]]+?)\s*\|\s*([^\]]+?)\s*\]\]/gi;
+
+// Chuẩn hoá khoá: bỏ dấu tiếng Việt, còn a-z0-9_ ngắn gọn (vd "Món ăn yêu thích" -> "mon_an_yeu_thich").
+function sanitizeMemoryKey(raw) {
+    return String(raw).toLowerCase().trim()
+        .normalize('NFD').replace(/[̀-ͯ]/g, '')
+        .replace(/đ/g, 'd')
+        .replace(/[^a-z0-9]+/g, '_')
+        .replace(/^_+|_+$/g, '')
+        .slice(0, MEMORY_KEY_MAX);
+}
+
+/** PURE: tách marker khỏi câu trả lời. Trả { facts:[{key,value}], cleaned }. (testable) */
+function parseMemoryMarkers(rawReply) {
+    const facts = [];
+    if (rawReply && rawReply.includes('[[')) {
+        const re = MEMORY_MARKER();
+        let m;
+        while ((m = re.exec(rawReply)) !== null) {
+            const key = sanitizeMemoryKey(m[1]);
+            const value = String(m[2]).trim().slice(0, MEMORY_VALUE_MAX);
+            if (key && value) facts.push({ key, value });
+        }
+    }
+    const cleaned = typeof rawReply === 'string'
+        ? rawReply.replace(MEMORY_MARKER(), '').replace(/\n{3,}/g, '\n\n').trim()
+        : rawReply;
+    return { facts, cleaned };
+}
+
+/** Trích marker -> lưu (fire-and-forget, tôn trọng trần) -> trả câu trả lời đã loại marker. */
+function extractAndStoreMemory(rawReply, userId, existingMemory) {
+    const { facts, cleaned } = parseMemoryMarkers(rawReply);
+    if (!facts.length) return cleaned;
+    const existing = existingMemory && typeof existingMemory === 'object' ? existingMemory : {};
+    let stored = 0;
+    for (const { key, value } of facts) {
+        if (stored >= MEMORY_MAX_PER_REPLY) break;
+        // Khoá cũ luôn cho cập nhật (vd tâm trạng); khoá mới chỉ thêm khi chưa vượt trần.
+        const isNew = !(key in existing);
+        if (isNew && Object.keys(existing).length + stored >= MEMORY_MAX_KEYS) continue;
+        db.updateAiMemory(userId, key, value); // helper tự try/catch, không chặn reply
+        stored++;
+    }
+    return cleaned;
+}
+
 function getProvider() {
     return gemini;
 }
@@ -122,6 +175,9 @@ async function chatWithWaguri(channelId, userId, userName, userText) {
         }
     }
 
+    // Hướng dẫn Waguri TỰ lưu ký ức: gắn marker ẩn khi biết điều đáng nhớ (marker sẽ bị lược trước khi gửi).
+    systemPrompt += `\n[Ghi nhớ: nếu trong lúc trò chuyện cậu biết được một điều đáng nhớ & lâu dài về ${userName} (tên thật/biệt danh, sở thích, món ăn yêu thích, tên thú cưng, dự định quan trọng, tâm trạng nổi bật...), hãy ghi lại bằng cách thêm vào CUỐI câu trả lời một dòng ẩn đúng định dạng: [[NHO: khoa | gia tri]] — khoá ngắn không dấu (vd ten, mon_an_yeu_thich, ten_pet, tam_trang). Tối đa 1 điều mỗi lần, chỉ khi thật sự đáng nhớ, KHÔNG bịa. Người dùng sẽ không nhìn thấy dòng này.]`;
+
     // Bối cảnh thời sự: sự kiện toàn cục + mùa lễ VN -> Waguri có thể nhắc khéo cho sống động.
     const nowBits = [];
     const ev = getEventInfo();
@@ -142,6 +198,7 @@ async function chatWithWaguri(channelId, userId, userName, userText) {
         return { ok: false, reason: 'error' };
     }
     if (!reply) return { ok: false, reason: 'error' };
+    reply = extractAndStoreMemory(reply, userId, memory); // trích & lưu ký ức, loại marker khỏi hiển thị
     reply = formatReply(reply, userId, userName); // @mention + bọc lệnh trong `code`
 
     db.incrAffection(userId, 1); // trò chuyện làm Waguri thân thiết hơn
@@ -157,4 +214,4 @@ async function chatWithWaguri(channelId, userId, userName, userText) {
     return { ok: true, reply };
 }
 
-module.exports = { chatWithWaguri, onCooldown };
+module.exports = { chatWithWaguri, onCooldown, parseMemoryMarkers, sanitizeMemoryKey };

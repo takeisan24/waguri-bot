@@ -57,8 +57,10 @@ Waguri là **Discord economy/RPG bot bản địa hóa văn hóa Việt**. Bot N
 
 - **Release:** GitHub tag mới nhất `v2.0.0` ("Đợt 1: Tái Cấu Trúc UX & Trỗi Dậy Sức Mạnh Thú Cưng"). `package.json` = `2.0.0`.
 - **Tiệm Bánh Gekka:** Phase 1 + migration Phase 2 (`0070`) đã có; **cần QA runtime** vòng lặp nạp→nướng→thu hoạch + lương nhân viên.
-- **Ký ức AI Waguri (Sprint "trí nhớ"):** migration `0074` (cột `users.ai_memory` JSONB + RPC `update_ai_memory`) và `0074b` (`refund_ai_quota`) **đã áp DB thật + verified**. Helper `updateAiMemory`/`refundAiQuota` đã có trong database.js. Đọc `ai_memory` đã được **wire vào system prompt** (`src/lib/ai/index.js`).
-  - ⏳ **CÒN THIẾU (việc tiếp theo):** *đường GHI* ký ức — chưa có trigger nào gọi `updateAiMemory`. Cần lệnh `/nho`/auto-extract để Waguri thật sự lưu được thông tin. Đến khi đó, phần "nhớ" vẫn rỗng dù hạ tầng đã sẵn sàng.
+- **Ký ức AI Waguri (Sprint "trí nhớ") — ĐÃ HOÀN THIỆN end-to-end:** migration `0074` (cột `users.ai_memory` JSONB + RPC `update_ai_memory`) và `0074b` (`refund_ai_quota`) đã áp DB + verified. Helper `updateAiMemory`/`refundAiQuota` trong database.js.
+  - **ĐỌC:** `ai_memory` được chèn vào system prompt Gemini (`src/lib/ai/index.js`).
+  - **GHI:** trích xuất inline — Waguri tự gắn marker ẩn `[[NHO: khoá | giá trị]]` khi biết điều đáng nhớ; `extractAndStoreMemory()` parse → `db.updateAiMemory` → xoá marker trước khi hiển thị. Chống lạm dụng: sanitize khoá (bỏ dấu), cap 25 khoá/người, ≤2 điều/lượt. Logic parse thuần có test (`test/ai_memory.test.js`).
+  - 🔜 *Nice-to-have sau:* lệnh `/nho` thủ công + UI xem/xoá ký ức (`/quenki`) cho minh bạch (GDPR).
 - **Fail-safe đã có:** hoàn quota AI khi Gemini lỗi; cache 1h + fallback thời tiết (Học viện Kikyo, 25°C, trời quang) cho `/thoitiet`; `game_stakes` hoàn cược mồ côi khi restart.
 - **Gap nền tảng:** xem `docs/roadmap-mo-rong.md §5` (telemetry kinh tế, paginate embed dài, gom `lib/messages.js`).
 
