@@ -14,13 +14,18 @@ import { createAdminClient } from "../lib/supabase/admin";
 import WaguriFloat from "../components/WaguriFloat";
 
 export default async function Home() {
-  const supabase = createAdminClient();
   let latestAnnouncement = "";
-  try {
-    const { data } = await supabase.from('guild_settings').select('settings').eq('guild_id', 'global').single();
-    latestAnnouncement = data?.settings?.latest_announcement || "";
-  } catch (err) {
-    console.error('[NEXTJS DB ERROR] Fetching global announcement:', err);
+  const hasUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+  const hasKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (hasUrl && hasKey) {
+    try {
+      const supabase = createAdminClient();
+      const { data } = await supabase.from('guild_settings').select('settings').eq('guild_id', 'global').single();
+      latestAnnouncement = data?.settings?.latest_announcement || "";
+    } catch (err) {
+      console.error('[NEXTJS DB ERROR] Fetching global announcement:', err);
+    }
   }
 
   return (
