@@ -60,6 +60,7 @@
 | ✅ **Integration test luồng tiền** | ĐÃ XONG — `test/economy.integration.test.js` phủ addMoney/transfer/buy/consume | ✅ |
 | **`lib/messages.js`** | Gom chuỗi lỗi lặp + `formatCooldown` (chuẩn hóa `<t:R>` vs "Ns") + giọng persona (mình/tớ, /ask embed) | 🟠 |
 | **Paginate embed dài** | `/jobs`, `/vay so` (chống tràn 1024/4096 + mobile) | 🟠 |
+| **Observability: log mọi điểm `return`/skip im lặng** | Rà **mọi command + event handler**, thêm log nhẹ nhất quán tại các nhánh thoát sớm (thiếu kênh/quyền, validation fail, `catch` nuốt lỗi) để **audit được từ log** — không còn "im lặng không rõ vì sao". Chuẩn hoá 1 helper `skipLog(reason, ctx)` (vd `console.warn('[SKIP] <lệnh>: <lý do>', ctx)`). *Động cơ:* `guildMemberAdd` return im lặng khi chưa cấu hình `welcome_channel`/thiếu quyền → rất khó chẩn đoán. | 🟠 |
 | ✅ **Telemetry kinh tế** | XONG — migration `0076` (`economy_snapshots` + RPC `snapshot_economy`), scheduler chụp mỗi 12h, xem qua `/eco-admin report` (cung tiền/phân bố/xu hướng). | ✅ |
 | ✅ **Cap affection/ngày** | XONG — migration `0073` (`daily_affection_sum`/`last_affection_date`). | ✅ |
 | Đổi id item còn lại (nếu muốn) | Nay chỉ NEW item dùng id sạch; legacy đã map | 🟢 |
