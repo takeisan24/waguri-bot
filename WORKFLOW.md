@@ -74,3 +74,23 @@ Tài liệu này mô tả cách làm việc trên Waguri: nên theo gì, tránh 
 - **Theo dõi lạm phát:** nhiều nguồn thu (work/fish/daily/quest/lixi/gamble) → quan sát ai giàu bất thường, chỉnh số trong `config/`.
 - **Tăng độ phủ test** cho logic thuần (leveling, parse, chia lì xì...).
 - **Khi public/multi-server:** thêm `guild_settings` (config per-guild), cân nhắc deploy-lệnh-khi-đổi (thay vì mỗi lần khởi động), observability (log/metrics).
+
+---
+
+## 6. An toàn DB & Test (KHÔNG chạy test trên prod)
+
+- **DB test riêng:** integration test chỉ chạy khi có `TEST_SUPABASE_URL` + `TEST_SUPABASE_SERVICE_KEY` trong `.env`, trỏ vào project Supabase **test** (`waguri-test`) — KHÔNG bao giờ dùng URL/key prod. Thiếu 2 biến này → test tự **SKIP** (mặc định an toàn, gồm cả CI).
+- **Migration:** áp lên **DB test trước** (`waguri-test`), chạy `npm test` xanh, RỒI mới áp prod. Đừng prod-first.
+- **Tự động hoá (solo dev):** hook `scripts/git-hooks/pre-push` tự chạy `npm test` + `check-command-sync` trước mỗi `git push` (tự bật qua `npm install` nhờ script `prepare`). Push chỉ đi khi xanh. Khẩn cấp mới `git push --no-verify`.
+
+## 7. Sự cố & Rollback (⚠️ ĐIỀU TRA nguyên nhân TRƯỚC, revert SAU)
+
+Khi phát hiện lỗi sau deploy, **KHÔNG revert phản xạ**. Theo thứ tự:
+1. **Khoanh vùng:** lỗi gì, ai bị ảnh hưởng, từ commit/deploy nào (git log, kênh `#logs`/`LOG_WEBHOOK_URL`, `/eco-admin report`).
+2. **Điều tra nguyên nhân gốc:** đọc log lỗi, **tái hiện**, xác định đúng commit/migration gây ra **và VÌ SAO** — đừng đoán, đừng vá mù.
+3. **Quyết định (sau khi đã hiểu):**
+   - Lỗi nhỏ, rõ cách sửa → **forward-fix**: viết fix (+ migration đè idempotent nếu cần), test trên `waguri-test`, deploy.
+   - Lỗi nặng/đang "chảy máu" (mất tiền, sập, dupe) → **revert để cầm máu trước** (`git revert <commit>` + Restart), rồi mới bình tĩnh điều tra & fix đàng hoàng, deploy lại.
+4. **DB forward-only:** sai thì sửa bằng migration MỚI đè, **KHÔNG xoá migration cũ**. Lỗi làm hỏng dữ liệu → viết script sửa dữ liệu riêng, **chạy thử trên `waguri-test` trước**.
+5. **Verify thật sự khỏi** (tái hiện lại kịch bản lỗi thấy đã hết), không chỉ "chắc là khỏi".
+6. **Ghi lại 1–2 dòng** nguyên nhân gốc + cách phòng để không lặp lại.

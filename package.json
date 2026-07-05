@@ -12,7 +12,8 @@
     "dev": "nodemon index.js",
     "clear": "node clear-commands.js",
     "backup": "node scripts/backup-db.js",
-    "test": "node --test"
+    "test": "node --test",
+    "prepare": "git config core.hooksPath scripts/git-hooks || exit 0"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

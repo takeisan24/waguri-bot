@@ -1,0 +1,17 @@
+#!/bin/sh
+# ============================================================
+# pre-push — lưới an toàn tự động cho solo dev.
+# Chặn push nếu test đỏ hoặc lệnh bot/web lệch. KHÔNG cần nhớ chạy tay.
+# Kích hoạt: tự bật qua `npm install` (script "prepare" đặt core.hooksPath),
+#            hoặc chạy 1 lần: git config core.hooksPath scripts/git-hooks
+# Bỏ qua khẩn cấp (hạn chế dùng): git push --no-verify
+# ============================================================
+set -e
+
+echo "[pre-push] Chạy test..."
+npm test || { echo "[pre-push] ❌ Test ĐỎ — huỷ push. Sửa rồi push lại (hoặc --no-verify nếu thật sự cần)."; exit 1; }
+
+echo "[pre-push] Kiểm tra đồng bộ lệnh bot ↔ web..."
+node scripts/check-command-sync.js || { echo "[pre-push] ❌ Lệnh bot/web LỆCH — huỷ push. Cập nhật web/CommandsExplorer.tsx."; exit 1; }
+
+echo "[pre-push] ✅ Qua cổng an toàn — cho push."

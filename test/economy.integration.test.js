@@ -2,14 +2,20 @@ require('dotenv').config();
 const test = require('node:test');
 const assert = require('node:assert');
 
-// Chỉ chạy integration test thực tế nếu có biến môi trường Supabase đầy đủ và không phải dummy của CI
-const hasDb = process.env.SUPABASE_URL && 
-              process.env.SUPABASE_SERVICE_KEY && 
-              !process.env.SUPABASE_URL.includes('dummy') &&
-              process.env.SUPABASE_SERVICE_KEY !== 'dummy_key_for_ci';
+// AN TOÀN: integration test CHỈ chạy trên DB TEST riêng (TEST_SUPABASE_*), KHÔNG BAO GIỜ đụng prod.
+// Không có TEST_ vars -> SKIP (mặc định an toàn, kể cả CI). Đừng bao giờ trỏ test vào SUPABASE_* của prod.
+const hasTestDb = process.env.TEST_SUPABASE_URL &&
+                  process.env.TEST_SUPABASE_SERVICE_KEY &&
+                  !process.env.TEST_SUPABASE_URL.includes('dummy');
 
-if (!hasDb) {
-    test('Bỏ qua Integration Test vì thiếu cấu hình SUPABASE_URL thực tế hoặc đang chạy trên CI', () => {
+// Ghi đè để src/database.js trỏ vào DB test — PHẢI làm TRƯỚC khi require('../src/database').
+if (hasTestDb) {
+    process.env.SUPABASE_URL = process.env.TEST_SUPABASE_URL;
+    process.env.SUPABASE_SERVICE_KEY = process.env.TEST_SUPABASE_SERVICE_KEY;
+}
+
+if (!hasTestDb) {
+    test('Bỏ qua Integration Test — thiếu TEST_SUPABASE_* (không chạy để tránh đụng prod)', () => {
         assert.ok(true);
     });
 } else {
