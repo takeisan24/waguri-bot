@@ -55,3 +55,7 @@ backups/
 prompt.md
 .vercel
 .local-brainstorm/
+
+# Tài liệu kế hoạch/thiết kế nội bộ — repo public nên giữ LOCAL, không track
+# (roadmap-mo-rong, HANDOFF-AND-ROADMAP, audit-catalog, design-tiem-banh-gekka)
+docs/
