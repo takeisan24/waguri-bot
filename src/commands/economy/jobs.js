@@ -4,6 +4,7 @@ const config = require('../../config');
 const { getLevelFromExp } = require('../../lib/leveling');
 const { buildWaguriEmbed } = require('../../lib/embed');
 const { handleNewbieQuest } = require('../../lib/newbie');
+const { sendPaginated } = require('../../lib/paginate');
 
 const fmt = n => Number(n).toLocaleString('vi-VN');
 
@@ -39,14 +40,13 @@ async function jobList(interaction) {
     const jobs = await db.getJobs();
     const lines = jobs.map(j => `• **${j.name}** (Lv.${j.required_level}) · 🪙 Lương: **${fmt(j.min_wage)}–${fmt(j.max_wage)}**`);
     
-    const embed = buildWaguriEmbed(interaction, 'info', {
+    await sendPaginated(interaction, {
         title: '💼・Danh sách nghề nghiệp',
-        description: lines.join('\n')
+        color: config.COLORS.INFO,
+        lines: lines,
+        perPage: 8,
+        footerNote: 'Xem chi tiết: /jobs info <nghề>'
     });
-    const footerObj = embed.data.footer;
-    footerObj.text = 'Xem chi tiết: /jobs info <nghề> · ' + footerObj.text;
-    embed.setFooter(footerObj);
-    await interaction.editReply({ embeds: [embed] });
 }
 
 async function jobInfo(interaction) {
