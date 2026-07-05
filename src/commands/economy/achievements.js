@@ -19,6 +19,10 @@ module.exports = {
         if (!user) return interaction.editReply('Hơ, mình chưa lấy được dữ liệu của cậu~ 🌸');
 
         const inv = await db.getInventory(userId);
+        const bakery = await db.getBakery(userId);
+        const pet = await db.getPet(userId);
+        const { petLevel } = require('../../data/pets');
+
         const ctx = {
             level: getLevelFromExp(Number(user.exp)),
             networth: Number(user.wallet) + Number(user.bank),
@@ -29,6 +33,10 @@ module.exports = {
             clan: !!user.clan_id,
             premium: !!(user.premium_until && new Date(user.premium_until).getTime() > Date.now()),
             streak: Number(user.daily_streak || 0),
+            bakeryLevel: bakery ? Number(bakery.level || 0) : 0,
+            petLevel: pet ? petLevel(pet.exp) : 0,
+            newbieStep: Number(user.newbie_step || 1),
+            affection: Number(user.affection || 0),
         };
 
         const unlocked = await db.getAchievements(userId);

@@ -1,5 +1,5 @@
 // Thành tựu — điều kiện tính từ trạng thái hiện tại (ctx). Mở khóa 1 lần, có thưởng.
-// ctx = { level, networth, jobId, items: Set<item_id>, married, love, clan, premium, streak }
+// ctx = { level, networth, jobId, items: Set<item_id>, married, love, clan, premium, streak, bakeryLevel, petLevel, newbieStep, affection }
 module.exports = [
     { id: 'lv5',          name: '🌱 Tập Sự',     desc: 'Đạt Level 5',                 reward: 1000,   check: c => c.level >= 5 },
     { id: 'lv15',         name: '💼 Chuyên Nghiệp', desc: 'Đạt Level 15',             reward: 3000,   check: c => c.level >= 15 },
@@ -22,4 +22,15 @@ module.exports = [
     { id: 'has_clan',     name: '🏰 Bang Chúng', desc: 'Gia nhập một bang hội',       reward: 2000,   check: c => c.clan },
     { id: 'is_premium',   name: '💎 Quý Tộc',    desc: 'Sở hữu gói Premium',          reward: 5000,   check: c => c.premium },
     { id: 'streak_30',    name: '🔥 Chuyên Cần', desc: 'Điểm danh 30 ngày liên tiếp', reward: 10000,  check: c => c.streak >= 30 },
+
+    // 9 Achievements mới được bổ sung
+    { id: 'bakery_open',   name: '🍰 Chủ Tiệm',     desc: 'Mở tiệm bánh Gekka',                 reward: 5000,   check: c => c.bakeryLevel >= 1 },
+    { id: 'bakery_lv5',    name: '🧁 Vua Bánh Ngọt', desc: 'Tiệm bánh đạt Lv.5',                 reward: 50000,  check: c => c.bakeryLevel >= 5 },
+    { id: 'pet_lv10',      name: '🐾 Bạn Đồng Hành', desc: 'Thú cưng đạt Level 10',               reward: 10000,  check: c => c.petLevel >= 10 },
+    { id: 'fish_shark',    name: '🦈 Ngư Ông',      desc: 'Câu được Cá hiếm (giữ trong kho)',    reward: 3000,   check: c => c.items.has('ca_hiem') },
+    { id: 'fish_treasure', name: '🐟 Cá Hảo Hạng',  desc: 'Câu được Cá ngon (giữ trong kho)',    reward: 2000,   check: c => c.items.has('ca_ngon') },
+    { id: 'newbie_done',   name: '🔰 Tốt Nghiệp',    desc: 'Hoàn thành chuỗi 5 bước Tân thủ',    reward: 5000,   check: c => c.newbieStep > 5 },
+    { id: 'affection_300', name: '💞 Tri Kỷ Waguri', desc: 'Thiện cảm Waguri đạt 300',           reward: 10000,  check: c => c.affection >= 300 },
+    { id: 'streak_7',      name: '📅 Siêng Năng',   desc: 'Điểm danh 7 ngày liên tiếp',          reward: 3000,   check: c => c.streak >= 7 },
+    { id: 'craft_5',       name: '🔨 Thợ Rèn',      desc: 'Chế tạo Bộ Nội Thất Gỗ (trong kho)',  reward: 5000,   check: c => c.items.has('noi_that') },
 ];

@@ -649,6 +649,21 @@ async function sellItem(userId, itemId, quantity = 1) {
             p_user_id: userId, p_item_id: itemId, p_quantity: quantity,
         });
         if (error) throw error;
+        
+        if (data && data.status === 'ok') {
+            const pet = await getPet(userId);
+            if (pet && pet.species === 'gau') {
+                const { petLevel } = require('./data/pets');
+                const lvl = petLevel(pet.exp);
+                if (lvl >= 5) {
+                    const bonus = Math.round(Number(data.gain) * 0.1);
+                    if (bonus > 0) {
+                        await addMoney(userId, bonus, 'wallet');
+                        data.gain = Number(data.gain) + bonus;
+                    }
+                }
+            }
+        }
         return data;
     } catch (error) {
         console.error('[DATABASE ERROR] sellItem():', error);

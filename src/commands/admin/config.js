@@ -23,6 +23,8 @@ module.exports = {
             .addChannelOption(o => o.setName('channel').setDescription('Kênh text').addChannelTypes(ChannelType.GuildText)))
         .addSubcommand(s => s.setName('welcome-role').setDescription('Đặt role tự động gán khi có người tham gia (bỏ trống để tắt)')
             .addRoleOption(o => o.setName('role').setDescription('Role gán tự động')))
+        .addSubcommand(s => s.setName('announcement-channel').setDescription('Đặt kênh nhận thông báo cập nhật tự động của Waguri (bỏ trống để tắt)')
+            .addChannelOption(o => o.setName('channel').setDescription('Kênh text').addChannelTypes(ChannelType.GuildText)))
         .addSubcommand(s => s.setName('view').setDescription('Xem cấu hình hiện tại')),
     async execute(interaction) {
         // Tự enforce quyền (phòng trường hợp gọi qua prefix)
@@ -114,6 +116,15 @@ module.exports = {
             return interaction.editReply({ embeds: [embed] });
         }
 
+        if (sub === 'announcement-channel') {
+            const ch = interaction.options.getChannel('channel');
+            await db.setGuildSetting(gid, 'announcement_channel', ch ? ch.id : '');
+            const embed = buildWaguriEmbed(interaction, 'success', {
+                description: ch ? `✅ Đã đặt kênh nhận thông báo cập nhật tự động là <#${ch.id}>.` : '✅ Đã tắt nhận thông báo cập nhật tự động.'
+            });
+            return interaction.editReply({ embeds: [embed] });
+        }
+
         if (sub === 'view') {
             const s = await db.getGuildSettings(gid);
             const embed = buildWaguriEmbed(interaction, 'info', {
@@ -126,7 +137,8 @@ module.exports = {
                     { name: 'Trò may rủi', value: s.gambling === '0' ? '🔴 Tắt' : '🟢 Bật', inline: true },
                     { name: 'Tạm giam (trò may rủi)', value: s.police_jail === '0' ? '🔴 Tắt' : '🟢 Bật', inline: true },
                     { name: 'Kênh chào mừng', value: s.welcome_channel ? `<#${s.welcome_channel}>` : '*(tắt chào mừng)*', inline: true },
-                    { name: 'Auto-role gán tự động', value: s.welcome_role ? `<@&${s.welcome_role}>` : '*(tắt auto-role)*', inline: true }
+                    { name: 'Auto-role gán tự động', value: s.welcome_role ? `<@&${s.welcome_role}>` : '*(tắt auto-role)*', inline: true },
+                    { name: 'Kênh nhận thông báo cập nhật', value: s.announcement_channel ? `<#${s.announcement_channel}>` : '*(tắt thông báo)*', inline: false }
                 ]
             });
             return interaction.editReply({ embeds: [embed] });

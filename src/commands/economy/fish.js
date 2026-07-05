@@ -58,12 +58,40 @@ module.exports = {
             return interaction.editReply({ embeds: [embed] });
         }
 
-        const energyLeft = await db.spendEnergy(userId, config.FISH.ENERGY_COST);
+        // Kiểm tra Pet để kích hoạt buff
+        const userPet = await db.getPet(userId);
+        const { petLevel } = require('../../data/pets');
+
+        // 1) Thỏ con: giảm năng lượng tiêu hao
+        let actualEnergyCost = config.FISH.ENERGY_COST;
+        let thoBuff = false;
+        let thoName = '';
+        if (userPet && userPet.species === 'tho') {
+            const thoLvl = petLevel(userPet.exp);
+            if (thoLvl >= 5) {
+                thoBuff = true;
+                thoName = userPet.name || 'Thỏ con';
+                actualEnergyCost = Math.round(config.FISH.ENERGY_COST * 0.85);
+            }
+        }
+
+        // 2) Rồng con: tăng EXP
+        let rongBuff = false;
+        let rongName = '';
+        if (userPet && userPet.species === 'rong') {
+            const rongLvl = petLevel(userPet.exp);
+            if (rongLvl >= 5) {
+                rongBuff = true;
+                rongName = userPet.name || 'Rồng con';
+            }
+        }
+
+        const energyLeft = await db.spendEnergy(userId, actualEnergyCost);
         if (energyLeft < 0) {
             const cur = await db.getEnergy(userId);
             const embed = buildWaguriEmbed(interaction, 'warning', {
                 title: '🎣・Đi câu cá',
-                description: `Cậu hết năng lượng để câu rồi (${cur}/${config.ENERGY.MAX} ⚡, cần ${config.FISH.ENERGY_COST}). Nghỉ chút hoặc \`/eat\` nhé~ 🌸`
+                description: `Cậu hết năng lượng để câu rồi (${cur}/${config.ENERGY.MAX} ⚡, cần ${actualEnergyCost}). Nghỉ chút hoặc \`/eat\` nhé~ 🌸`
             });
             return interaction.editReply({ embeds: [embed] });
         }
@@ -93,6 +121,8 @@ module.exports = {
         } else {
             desc = `Cậu chỉ câu phải ${c.emoji} **${c.name}**... chẳng được gì cả 😅 Lần sau may hơn nhé~`;
         }
+        
+        if (thoBuff) desc += `\n🐰 Bé thỏ **${thoName}** nhanh nhẹn giúp cậu tiết kiệm 15% năng lượng!`;
         if (dz.note) desc += `\n${dz.note}`;
 
         // Rơi cá nguyên liệu Tiệm Bánh Gekka (Phase 2 & 3)
@@ -127,10 +157,15 @@ module.exports = {
 
         const u = await db.getUser(userId);
         let gainedExp = 4 + Math.floor(Math.random() * 3); // 4..6 EXP
+        if (rongBuff) {
+            gainedExp = Math.round(gainedExp * 1.15);
+        }
         if (eventMult !== 1) gainedExp = Math.round(gainedExp * eventMult);
         const oldLevel = getLevelFromExp(Number(u?.exp || 0));
         const newExp = await db.updateExp(userId, gainedExp);
         const newLevel = newExp === null ? oldLevel : getLevelFromExp(newExp);
+        
+        if (rongBuff) desc += `\n🐲 Bé rồng **${rongName}** truyền long lực giúp cậu nhận thêm 15% EXP!`;
         if (newLevel > oldLevel) {
             const bonus = levelUpReward(oldLevel, newLevel);
             if (bonus > 0) await db.addMoney(userId, bonus, 'wallet');

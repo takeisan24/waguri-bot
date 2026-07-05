@@ -97,6 +97,50 @@ export default function Home() {
           <LiveStats />
         </div>
 
+        {/* Bản Tin Cập Nhật / Announcements */}
+        <section id="announcements" className="w-full max-w-4xl mx-auto py-8 md:py-12 scroll-mt-20">
+          <div className="glass-panel p-6 md:p-8 rounded-3xl border border-pink-300/15 relative overflow-hidden shadow-2xl">
+            {/* Gradient glow */}
+            <div className="absolute top-0 right-0 w-32 h-32 rounded-full bg-pink-500/10 blur-3xl pointer-events-none" />
+            
+            <div className="flex items-center gap-3 mb-6">
+              <span className="text-2xl">📢</span>
+              <h2 className="text-xl md:text-2xl font-black text-white">Bản Tin Cập Nhật Waguri Bot</h2>
+            </div>
+
+            <div className="space-y-6">
+              {/* Update 1 */}
+              <div className="border-l-2 border-pink-300/40 pl-4 space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-pink-500/20 text-pink-200 border border-pink-300/10">Mới Nhất</span>
+                  <span className="text-xs text-slate-400 font-medium">05/07/2026</span>
+                </div>
+                <h3 className="text-base font-bold text-white">Đợt 1: Gộp Lệnh Tiện Lợi & Vá Lỗ Hổng Pet</h3>
+                <ul className="text-xs md:text-sm text-slate-300 space-y-1.5 list-disc pl-4">
+                  <li><strong>Tái cấu trúc UX:</strong> Gộp 15 lệnh thành 6 lệnh hợp nhất: <code>/image</code>, <code>/action</code>, <code>/couple</code>, <code>/store</code>, <code>/bank</code>, <code>/bot</code> giúp menu lệnh mượt mà, dễ cày cuốc.</li>
+                  <li><strong>Thú cưng trỗi dậy:</strong> Mở khoá passive skill cấp 5+ cho Rồng con (+15% EXP), Cáo nhỏ (+10% trộm & giảm phạt), Thỏ con (giảm 15% năng lượng), Gấu con (+10% sản lượng & tăng giá bán).</li>
+                  <li><strong>AI thông minh hơn:</strong> Waguri giờ đã tự động hiểu nghề nghiệp, tên/loài pet, tiệm bánh, và sức khỏe thực tế của bạn khi chat.</li>
+                  <li><strong>Thông báo tự động:</strong> Tích hợp cấu hình kênh cập nhật <code>/config announcement-channel</code> để tự động nhận tin tức từ dev.</li>
+                </ul>
+              </div>
+
+              {/* Update 2 */}
+              <div className="border-l-2 border-slate-700 pl-4 space-y-2 opacity-80">
+                <div className="flex items-center gap-2">
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-500/20 text-purple-200 border border-purple-300/10">Bakery Phase 2</span>
+                  <span className="text-xs text-slate-400 font-medium">04/07/2026</span>
+                </div>
+                <h3 className="text-base font-bold text-white">Vận Hành Tiệm Bánh Gekka & Thuê Nhân Viên</h3>
+                <ul className="text-xs md:text-sm text-slate-300 space-y-1.5 list-disc pl-4">
+                  <li><strong>Thuê bạn bè Waguri làm thợ:</strong> Thuê Rintaro, Subaru, Usami, Saku, Ayato, Madoka làm nhân viên phụ tiệm bánh.</li>
+                  <li><strong>Đồ trang trí tiệm bánh:</strong> Chế tạo Bộ nội thất gỗ, Trang sức đá quý để tăng tốc độ nướng bánh thụ động.</li>
+                  <li><strong>Tặng quà tăng thiện cảm:</strong> Mua bó hoa, hộp quà, gấu bông để tặng Waguri tăng điểm thân thiết.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Live Discord Interactive Demo Section */}
         <section id="commands" className="w-full py-8 md:py-12 scroll-mt-20">
           <div className="text-center mb-8">

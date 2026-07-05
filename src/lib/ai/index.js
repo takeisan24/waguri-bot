@@ -30,7 +30,9 @@ const escapeRegex = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 // Hậu xử lý câu trả lời: thay tên người dùng bằng @mention + bọc /lệnh trong `code`
 function formatReply(text, userId, userName) {
     let t = text;
-    if (userName) t = t.replace(new RegExp(escapeRegex(userName), 'g'), `**${userName}**`);
+    if (userName && userId) {
+        t = t.replace(new RegExp(escapeRegex(userName), 'g'), `<@${userId}>`);
+    }
     t = t.replace(/(?<!`)\/([a-zA-Z]{2,})(?!`)/g, '`/$1`'); // /work -> `/work`
     return t;
 }
@@ -66,21 +68,47 @@ async function chatWithWaguri(channelId, userId, userName, userText) {
     let history = contexts.get(ctxKey) || [];
     const framed = `${userName}: ${userText}`;
 
-    // Mức thiện cảm + ngữ cảnh nhẹ (level, đã kết đôi chưa) -> cá nhân hóa persona.
-    // Tất cả lấy từ MỘT query getUser duy nhất, không tốn thêm DB.
+    // Mức thiện cảm + ngữ cảnh thực tế -> cá nhân hóa persona sinh động.
     let aff = 0, level = 1, hasPartner = false;
+    let jobName = null, petInfo = null, bakeryInfo = null, conditionInfo = null;
     try {
         const u = await db.getUser(userId);
         if (u) {
             aff = Number(u.affection || 0);
             level = getLevelFromExp(Number(u.exp || 0));
             hasPartner = !!u.partner_id;
+            if (u.job_id) {
+                const job = await db.getJob(u.job_id);
+                if (job) jobName = job.name;
+            }
+            const health = u.health !== undefined ? u.health : 100;
+            if (u.sick) {
+                conditionInfo = `đang bị bệnh 🤒 (sức khỏe ${health}/100)`;
+            } else if (health < 50) {
+                conditionInfo = `đang hơi yếu/mệt mỏi (sức khỏe ${health}/100)`;
+            }
+        }
+        const pet = await db.getPet(userId);
+        if (pet) {
+            const { petLevel, findSpecies } = require('../../data/pets');
+            const sp = findSpecies(pet.species);
+            const pLvl = petLevel(pet.exp);
+            petInfo = `nuôi bé ${sp ? sp.name : pet.species} tên "${pet.name || (sp ? sp.name : 'thú cưng')}" Lv.${pLvl}`;
+        }
+        const bakery = await db.getBakery(userId);
+        if (bakery) {
+            bakeryInfo = `làm chủ Tiệm Bánh Gekka Lv.${bakery.level}`;
         }
     } catch { /* bỏ qua */ }
     const t = tierOf(aff);
     const ctxBits = [`Level ${level}`];
     if (hasPartner) ctxBits.push('đã kết đôi với người khác trong game');
-    let systemPrompt = `${WAGURI_SYSTEM_PROMPT}\n\n[Người đang trò chuyện: ${userName} — thân thiết: ${t.name} (${aff} điểm); ${ctxBits.join('; ')}. Hãy trò chuyện ${t.guide}. Có thể nhắc khéo tới tiến độ của cậu ấy khi hợp ngữ cảnh, nhưng tuyệt đối đừng đọc thông số ra như máy.]`;
+    if (jobName) ctxBits.push(`làm nghề "${jobName}"`);
+    if (conditionInfo) ctxBits.push(conditionInfo);
+    if (petInfo) ctxBits.push(petInfo);
+    if (bakeryInfo) ctxBits.push(bakeryInfo);
+    
+    let systemPrompt = `${WAGURI_SYSTEM_PROMPT}\n\n[Người đang trò chuyện: ${userName} — thân thiết: ${t.name} (${aff} điểm); ${ctxBits.join('; ')}. Hãy trò chuyện ${t.guide}. Có thể nhắc khéo tới tiến độ hoặc thông tin này khi hợp ngữ cảnh một cách tự nhiên.]`;
 
     // Bối cảnh thời sự: sự kiện toàn cục + mùa lễ VN -> Waguri có thể nhắc khéo cho sống động.
     const nowBits = [];

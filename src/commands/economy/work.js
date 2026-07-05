@@ -114,6 +114,18 @@ module.exports = {
                 }
             }
 
+            // Kiểm tra xem user có nuôi Rồng con không (Level >= 5)
+            let rongBuff = false;
+            let rongName = '';
+            if (userPet && userPet.species === 'rong') {
+                const { petLevel } = require('../../data/pets');
+                const rongLvl = petLevel(userPet.exp);
+                if (rongLvl >= 5) {
+                    rongBuff = true;
+                    rongName = userPet.name || 'Rồng con';
+                }
+            }
+
             // 4. Kết quả: xui theo risk_rate của nghề (5–25%) · còn lại 8% jackpot · phần lớn là thành công
             let category, earnedMoney, color, usedInsurance = false;
             if (Math.random() < riskRate) {
@@ -172,6 +184,7 @@ module.exports = {
             if (fatigue < 1 && earnedMoney > 0) resultMessage += ` *(mệt -${Math.round((1 - fatigue) * 100)}%)*`;
             if (usedInsurance) resultMessage += `\n🛡️ **Bảo hiểm Lao động** đã kích hoạt giúp gánh 80% thiệt hại!`;
             if (category === 'jackpot' && catBuff) resultMessage += `\n🐱 Bé mèo **${userPetName}** dụi dụi mang lại tài lộc đầy túi!`;
+            if (rongBuff) resultMessage += `\n🐲 Bé rồng **${rongName}** truyền long lực giúp cậu nhận thêm 15% EXP!`;
             if (dz.note) resultMessage += `\n${dz.note}`;
 
             if (usedVehicle) {
@@ -182,6 +195,9 @@ module.exports = {
             // 5. EXP theo cấp nghề
             let gainedExp = Math.round(config.WORK.EXP_BASE + config.WORK.EXP_PER_LEVEL * jobLevel)
                 + Math.floor(Math.random() * (config.WORK.EXP_RANDOM + 1));
+            if (rongBuff) {
+                gainedExp = Math.round(gainedExp * 1.15);
+            }
             if (eventMult !== 1) gainedExp = Math.round(gainedExp * eventMult);
             const oldLevel = getLevelFromExp(Number(user.exp));
             const newExp = await db.updateExp(userId, gainedExp);

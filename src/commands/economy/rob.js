@@ -52,6 +52,19 @@ module.exports = {
             }
         }
 
+        // Kiểm tra xem kẻ trộm có nuôi Cáo nhỏ ranh mãnh không (Level >= 5)
+        let caoBuff = false;
+        let robberPetName = '';
+        const robberPet = await db.getPet(robberId);
+        if (robberPet && robberPet.species === 'cao') {
+            const { petLevel } = require('../../data/pets');
+            const caoLvl = petLevel(robberPet.exp);
+            if (caoLvl >= 5) {
+                caoBuff = true;
+                robberPetName = robberPet.name || 'Cáo nhỏ';
+            }
+        }
+
         // Cooldown (atomic) — chỉ tính khi mục tiêu hợp lệ
         const cd = await db.claimCooldown(robberId, 'rob', config.ROB.COOLDOWN_SECONDS);
         if (cd) {
@@ -66,16 +79,23 @@ module.exports = {
         const successRate = dogBuff ? (config.ROB.SUCCESS_RATE - 0.2) : config.ROB.SUCCESS_RATE;
         if (Math.random() < successRate) {
             const pct = config.ROB.STEAL_MIN_PCT + Math.random() * (config.ROB.STEAL_MAX_PCT - config.ROB.STEAL_MIN_PCT);
-            const amount = Math.max(1, Math.floor(Number(tgt.wallet) * pct));
+            let amount = Math.max(1, Math.floor(Number(tgt.wallet) * pct));
+            if (caoBuff) {
+                amount = Math.round(amount * 1.1);
+            }
             const ok = await db.transferMoney(target.id, robberId, amount);
             if (!ok) {
                 const embed = buildWaguriEmbed(interaction, 'error', { title: '🦹・Thất bại', description: 'Hụt rồi, con mồi nhanh tay cất tiền mất tiêu~' });
                 return interaction.editReply({ embeds: [embed] });
             }
             const me = await db.getUser(robberId);
+            let desc = `Cậu lén lấy được **${fmt(amount)}** ${config.CURRENCY} từ ví <@${target.id}>.\n💵 Số dư của cậu: **${fmt(me?.wallet || 0)}** ${config.CURRENCY}\n*(Waguri giả vờ không thấy gì~ 🙈)*`;
+            if (caoBuff) {
+                desc += `\n🦊 Bé cáo **${robberPetName}** ranh mãnh giúp cậu trộm thêm 10% số tiền!`;
+            }
             const embedSuccess = buildWaguriEmbed(interaction, 'success', {
                 title: '🦹・Trộm thành công!',
-                description: `Cậu lén lấy được **${fmt(amount)}** ${config.CURRENCY} từ ví <@${target.id}>.\n💵 Số dư của cậu: **${fmt(me?.wallet || 0)}** ${config.CURRENCY}\n*(Waguri giả vờ không thấy gì~ 🙈)*`
+                description: desc
             });
             return interaction.editReply({ embeds: [embedSuccess] });
         } else {
@@ -83,6 +103,9 @@ module.exports = {
             // Phạt theo TỔNG TÀI SẢN (ví+bank) -> không né được bằng cách giấu tiền trong bank.
             const robberAssets = Number(robber.wallet || 0) + Number(robber.bank || 0);
             let fine = Math.floor(robberAssets * config.ROB.FINE_PCT);
+            if (caoBuff) {
+                fine = Math.round(fine * 0.85); // Giảm 15% tiền phạt
+            }
             const usedIns = await db.useInsurance(robberId, 'bh_hoc_duong');
             if (usedIns) {
                 fine = Math.round(fine * 0.5); // Giảm 50% tiền phạt
@@ -94,6 +117,9 @@ module.exports = {
             let desc = `Cậu bị bắt quả tang và phải nộp phạt **${fmt(fine)}** ${config.CURRENCY}.`;
             if (usedIns) {
                 desc += `\n🛡️ **Bảo hiểm Đường phố** đã kích hoạt giúp giảm 50% tiền phạt!`;
+            }
+            if (caoBuff) {
+                desc += `\n🦊 Bé cáo **${robberPetName}** ranh mãnh tẩu tán bớt tang vật giúp cậu giảm 15% tiền phạt!`;
             }
             if (dogBuff) {
                 desc += `\n🐕 Bé cún **${targetPetName}** của <@${target.id}> sủa vang làm cậu giật mình bị phát hiện!`;

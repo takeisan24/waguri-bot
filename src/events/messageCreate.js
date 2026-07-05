@@ -18,12 +18,45 @@ const chatCD = new Map(); // userId -> hết cooldown (ms)
 // Alias prefix cũ -> lệnh mới (giữ người quen tay không hụt lệnh sau khi đổi tên / gộp lệnh).
 // Giá trị: chuỗi = đổi tên (w!ngu -> nghingoi); {cmd,sub} = gộp vào lệnh con (w!trano -> vay tra).
 const PREFIX_ALIASES = {
+    // 1. Ảnh
+    cat: { cmd: 'image', sub: 'cat' },
+    dog: { cmd: 'image', sub: 'dog' },
+    waifu: { cmd: 'image', sub: 'waifu' },
+
+    // 2. Tương tác
+    hug: { cmd: 'action', sub: 'hug' },
+    kiss: { cmd: 'action', sub: 'kiss' },
+    pat: { cmd: 'action', sub: 'pat' },
+    poke: { cmd: 'action', sub: 'poke' },
+    slap: { cmd: 'action', sub: 'slap' },
+
+    // 3. Hôn nhân
+    marry: { cmd: 'couple', sub: 'marry' },
+    divorce: { cmd: 'couple', sub: 'divorce' },
+    relationship: { cmd: 'couple', sub: 'status' },
+
+    // 4. Cửa hàng
+    shop: { cmd: 'store', sub: 'list' },
+    buy: { cmd: 'store', sub: 'buy' },
+    sell: { cmd: 'store', sub: 'sell' },
+
+    // 5. Tài chính & Ngân hàng
+    balance: { cmd: 'bank', sub: 'balance' },
+    bal: { cmd: 'bank', sub: 'balance' },
+    deposit: { cmd: 'bank', sub: 'gui' },
+    withdraw: { cmd: 'bank', sub: 'rut' },
+
+    // 6. Bot
+    ping: { cmd: 'bot', sub: 'ping' },
+    about: { cmd: 'bot', sub: 'about' },
+    support: { cmd: 'bot', sub: 'support' },
+    invite: { cmd: 'bot', sub: 'invite' },
+
+    // Giữ nguyên các alias cũ khác
     ngu: 'nghingoi',
     trano: { cmd: 'vay', sub: 'tra' },
     donno: { cmd: 'vay', sub: 'doi' },
     no: { cmd: 'vay', sub: 'so' },
-    deposit: { cmd: 'bank', sub: 'gui' },
-    withdraw: { cmd: 'bank', sub: 'rut' },
 };
 
 // Dọn rác cooldown định kỳ (tránh phình RAM). .unref() để không giữ tiến trình sống.

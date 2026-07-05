@@ -24,16 +24,113 @@ function Card({ title, emoji, id, children }: { title: string; emoji: string; id
 
 function CmdList({ items }: { items: Cmd[] }) {
   return (
-    <ul className="space-y-1.5">
+    <ul className="space-y-2">
       {items.map((it) => (
         <li key={it.c} className="flex flex-col sm:flex-row sm:items-baseline gap-x-3">
-          <code className="text-pink-300 bg-pink-500/10 border border-pink-300/15 rounded px-2 py-0.5 text-[13px] whitespace-nowrap">
+          <code className="text-pink-300 bg-pink-500/10 border border-pink-300/15 rounded px-2 py-0.5 text-[13px] font-mono whitespace-nowrap">
             {it.c}
           </code>
           <span className="text-slate-400">{it.d}</span>
         </li>
       ))}
     </ul>
+  );
+}
+
+// Custom SVG Icons for Catalog Items
+function ItemIcon({ type }: { type: string }) {
+  const base = "w-6 h-6 text-pink-300 drop-shadow-[0_0_6px_rgba(244,63,94,0.4)]";
+  
+  if (type === "banh_mi") {
+    return (
+      <svg className={base} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M3 12c0-3.3 2.7-6 6-6h6c3.3 0 6 2.7 6 6s-2.7 6-6 6H9c-3.3 0-6-2.7-6-6z" />
+        <path d="M8 8l2 8M14 8l2 8" />
+      </svg>
+    );
+  }
+  if (type === "xoi_xeo") {
+    return (
+      <svg className={base} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M12 2a10 10 0 0 1 10 10H2A10 10 0 0 1 12 2z" />
+        <path d="M2 12c0 5.5 4.5 10 10 10s10-4.5 10-10" />
+        <path d="M6 12v3M18 12v3" />
+      </svg>
+    );
+  }
+  if (type === "cafe") {
+    return (
+      <svg className={base} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M18 8h2a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-2M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z" />
+        <path d="M6 2v2M10 2v2M14 2v2" />
+      </svg>
+    );
+  }
+  if (type === "soda") {
+    return (
+      <svg className={base} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M5 8h14l-2 13H7L5 8z" />
+        <path d="M14 2L10 8" />
+        <path d="M8 2h6" />
+      </svg>
+    );
+  }
+  if (type === "pill") {
+    return (
+      <svg className={base} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <rect x="2" y="9" width="20" height="6" rx="3" transform="rotate(45 12 12)" />
+        <line x1="8.5" y1="8.5" x2="15.5" y2="15.5" />
+      </svg>
+    );
+  }
+  if (type === "medkit") {
+    return (
+      <svg className={base} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <rect x="3" y="6" width="18" height="14" rx="2" />
+        <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
+        <path d="M12 10v6M9 13h6" />
+      </svg>
+    );
+  }
+  if (type === "rice") {
+    return (
+      <svg className={base} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+      </svg>
+    );
+  }
+  if (type === "cake") {
+    return (
+      <svg className={base} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M12 2L2 9v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9L12 2z" />
+        <path d="M2 9h20M2 15h20" />
+      </svg>
+    );
+  }
+  
+  return (
+    <svg className={base} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <circle cx="12" cy="12" r="10" />
+    </svg>
+  );
+}
+
+function ItemWidget({ type, name, effect, price }: { type: string; name: string; effect: string; price: string }) {
+  return (
+    <div className="flex items-center gap-3 p-3.5 rounded-xl bg-pink-500/5 border border-pink-300/10 hover:border-pink-300/30 hover:bg-pink-500/10 transition-all shadow-md">
+      <div className="flex items-center justify-center p-2.5 rounded-lg bg-[#140c1a] border border-pink-300/10">
+        <ItemIcon type={type} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-bold text-white truncate">{name}</p>
+        <p className="text-xs text-pink-200/80 font-semibold">{effect}</p>
+      </div>
+      <div className="text-right flex-shrink-0">
+        <span className="text-xs px-2 py-1 rounded bg-pink-500/10 text-pink-300 font-bold border border-pink-300/15">
+          {price}
+        </span>
+      </div>
+    </div>
   );
 }
 
@@ -86,6 +183,7 @@ export default function Wiki() {
             items={[
               { c: "/daily", d: "điểm danh nhận thưởng mỗi ngày (có chuỗi streak)" },
               { c: "/work", d: "đi làm kiếm tiền — nguồn thu chính lúc đầu" },
+              { c: "/bank balance", d: "xem ví / ngân hàng / cấp độ / năng lượng" },
               { c: "/status", d: "xem năng lượng, sức khỏe, buff, Premium, sự kiện" },
               { c: "/help", d: "xem toàn bộ lệnh" },
             ]}
@@ -112,29 +210,36 @@ export default function Wiki() {
 
         <Card id="cua-hang" title="Cửa hàng · Mua bán · Đồ ăn & Buff" emoji="🏪">
           <p>
-            <code className="text-pink-300">/shop</code> xem hàng, <code className="text-pink-300">/buy</code> mua,{" "}
-            <code className="text-pink-300">/sell</code> bán lại (thu về <strong>50% giá</strong> — nên đừng mua đi bán
-            lại). <code className="text-pink-300">/craft</code> chế đồ từ nguyên liệu <code>/mine</code>,{" "}
-            <code>/chop</code>.
+            Dùng lệnh <code className="text-pink-300">/store list</code> xem hàng, <code className="text-pink-300">/store buy &lt;vật phẩm&gt;</code> mua, và{" "}
+            <code className="text-pink-300">/store sell &lt;vật phẩm&gt;</code> bán lại vật phẩm trong kho đồ (thu về <strong>50% giá</strong>). Cậu cũng có thể chạy <code className="text-pink-300">/craft</code> để chế tạo đồ xịn từ gỗ/đá/quặng.
           </p>
-          <p className="font-semibold text-white pt-1">Đồ ăn hồi năng lượng (⚡):</p>
-          <CmdList
-            items={[
-              { c: "Bánh Mì Việt Nam", d: "+25 ⚡ · 150đ" },
-              { c: "Xôi Xéo Hà Nội", d: "+40 ⚡ · 250đ" },
-              { c: "Cà Phê Sữa Đá", d: "+60 ⚡ · 500đ" },
-              { c: "Soda Trái Cây Gekka", d: "+100 ⚡ · 1.000đ (đầy 1 phát)" },
-            ]}
-          />
-          <p className="font-semibold text-white pt-1">Hồi sức khỏe (❤️) & Buff thu nhập (🍗):</p>
-          <CmdList
-            items={[
-              { c: "Thuốc cảm cúm / Hộp Y Tế Kikyo", d: "+20 / +50 sức khỏe" },
-              { c: "Cơm Gà Việt", d: "+20% thu nhập trong 1 giờ · 2.000đ" },
-              { c: "Bánh Kem Dâu Gekka", d: "+50% thu nhập trong 6 giờ · 20.000đ" },
-              { c: "Bánh Cheesecake Gekka", d: "+100% thu nhập trong 8 giờ · 35.000đ" },
-            ]}
-          />
+          
+          <div className="space-y-4 pt-2">
+            <div>
+              <p className="font-bold text-white mb-2.5 text-sm flex items-center gap-1.5">
+                <span>🥤</span> Đồ ăn hồi năng lượng (⚡):
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <ItemWidget type="banh_mi" name="Bánh Mì Việt Nam" effect="+25 ⚡" price="150đ" />
+                <ItemWidget type="xoi_xeo" name="Xôi Xéo Hà Nội" effect="+40 ⚡" price="250đ" />
+                <ItemWidget type="cafe" name="Cà Phê Sữa Đá" effect="+60 ⚡" price="500đ" />
+                <ItemWidget type="soda" name="Soda Trái Cây Gekka" effect="+100 ⚡ (Đầy năng lượng)" price="1.000đ" />
+              </div>
+            </div>
+
+            <div>
+              <p className="font-bold text-white mb-2.5 text-sm flex items-center gap-1.5">
+                <span>💊</span> Hồi sức khỏe (❤️) & Buff thu nhập (🍗):
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <ItemWidget type="pill" name="Thuốc cảm cúm" effect="+20 ❤️" price="1.000đ" />
+                <ItemWidget type="medkit" name="Hộp Y Tế Kikyo" effect="+50 ❤️" price="3.500đ" />
+                <ItemWidget type="rice" name="Cơm Gà Việt" effect="+20% thu nhập trong 1 giờ" price="2.000đ" />
+                <ItemWidget type="cake" name="Bánh Kem Dâu Gekka" effect="+50% thu nhập trong 6 giờ" price="20.000đ" />
+                <ItemWidget type="cake" name="Bánh Cheesecake Gekka" effect="+100% thu nhập trong 8 giờ" price="35.000đ" />
+              </div>
+            </div>
+          </div>
         </Card>
 
         <Card id="minigame" title="Minigame May Rủi" emoji="🎲">
@@ -154,7 +259,7 @@ export default function Wiki() {
           <p>
             Chu trình: <strong>mua → cho ăn → tắm → cho ngủ → cho ăn lần 2 (trưởng thành) → bán</strong>. Mỗi bước chăm
             sóc cách nhau ~15 phút; bỏ bê quá 4 tiếng heo sẽ bệnh. Bán heo cho ra <strong>Thịt Heo</strong> (vào kho){" "}
-            <code>/eat</code> hồi sức hoặc <code>/sell</code> lấy tiền. Heo càng hiếm giá càng cao (2.000 → 50.000 với
+            <code>/eat</code> hồi sức hoặc <code>/store sell</code> lấy tiền. Heo càng hiếm giá càng cao (2.000 → 50.000 với
             Heo Hologram huyền thoại).
           </p>
           <CmdList
@@ -175,7 +280,7 @@ export default function Wiki() {
           <p>
             Chu trình: <strong>mua giống → tưới 3 lần (mỗi lần cách 3 tiếng) → trưởng thành → thu hoạch (sau 1 giờ)</strong>.
             Bón phân hoặc nhờ người tưới hộ để nhanh hơn. Bỏ tưới quá 5 tiếng cây chết (cần hồi sinh). Thu hoạch ra{" "}
-            <strong>trái cây</strong> (<code>/eat</code> hồi sức / <code>/sell</code>) hoặc <strong>hoa</strong> (<code>/sell</code>).
+            <strong>trái cây</strong> (<code>/eat</code> hồi sức / <code>/store sell</code>) hoặc <strong>hoa</strong> (<code>/store sell</code>).
             Để mặc quá 1h30 người khác có thể trộm; quá 4 tiếng bị sâu bọ phá mất trắng.
           </p>
           <CmdList
@@ -222,7 +327,7 @@ export default function Wiki() {
           <p>
             Các hành vi &quot;phạm pháp&quot; — <code>/rob</code> cướp tiền, trộm heo/cây — nếu <strong>thất bại 3 lần</strong> mà
             không đủ tiền nộp phạt, cậu sẽ bị <strong>giam giữ</strong>: tạm thời không dùng được các lệnh kiếm tiền, cờ
-            bạc và đi trộm cho tới khi được thả. Mua <strong>Bảo Hiểm Học Đường</strong> ở <code>/shop</code> để giảm nửa
+            bạc và đi trộm cho tới khi được thả. Mua <strong>Bảo Hiểm Học Đường</strong> ở <code>/store list</code> để giảm nửa
             thời gian bị giam. Xem trạng thái giam ở <code>/status</code>.
           </p>
         </Card>
@@ -231,7 +336,7 @@ export default function Wiki() {
           <CmdList
             items={[
               { c: "/ask · @Waguri", d: "trò chuyện với Waguri Kaoruko (AI dịu dàng)" },
-              { c: "/relationship", d: "xem mức thân thiết với Waguri 💞" },
+              { c: "/couple status", d: "xem mức thân thiết với Waguri & tình cảm bạn đời 💞" },
               { c: "/premium", d: "gói Premium: thêm lượt chat AI + 10% thu nhập" },
             ]}
           />

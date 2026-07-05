@@ -56,11 +56,50 @@ async function runGather(interaction, { title, table, energyCost = config.GATHER
         return interaction.editReply({ embeds: [embed] });
     }
 
-    const e = await db.spendEnergy(userId, energyCost);
+    // Kiểm tra Pet để kích hoạt buff
+    const userPet = await db.getPet(userId);
+    const { petLevel } = require('../data/pets');
+    
+    // 1) Thỏ con: giảm năng lượng tiêu hao
+    let actualEnergyCost = energyCost;
+    let thoBuff = false;
+    let thoName = '';
+    if (userPet && userPet.species === 'tho') {
+        const thoLvl = petLevel(userPet.exp);
+        if (thoLvl >= 5) {
+            thoBuff = true;
+            thoName = userPet.name || 'Thỏ con';
+            actualEnergyCost = Math.round(energyCost * 0.85);
+        }
+    }
+
+    // 2) Gấu con: tăng sản lượng payout
+    let gauBuff = false;
+    let gauName = '';
+    if (userPet && userPet.species === 'gau') {
+        const gauLvl = petLevel(userPet.exp);
+        if (gauLvl >= 5) {
+            gauBuff = true;
+            gauName = userPet.name || 'Gấu con';
+        }
+    }
+
+    // 3) Rồng con: tăng EXP
+    let rongBuff = false;
+    let rongName = '';
+    if (userPet && userPet.species === 'rong') {
+        const rongLvl = petLevel(userPet.exp);
+        if (rongLvl >= 5) {
+            rongBuff = true;
+            rongName = userPet.name || 'Rồng con';
+        }
+    }
+
+    const e = await db.spendEnergy(userId, actualEnergyCost);
     if (e < 0) {
         const cur = await db.getEnergy(userId);
         const embed = buildWaguriEmbed(interaction, 'warning', {
-            description: `Cậu hết năng lượng rồi (${cur}/${config.ENERGY.MAX} ⚡, cần ${energyCost}). Nghỉ chút hoặc \`/eat\` nhé~ 🌸`
+            description: `Cậu hết năng lượng rồi (${cur}/${config.ENERGY.MAX} ⚡, cần ${actualEnergyCost}). Nghỉ chút hoặc \`/eat\` nhé~ 🌸`
         });
         return interaction.editReply({ embeds: [embed] });
     }
@@ -69,6 +108,10 @@ async function runGather(interaction, { title, table, energyCost = config.GATHER
 
     const c = pick(table);
     let payout = c.max > 0 ? Math.floor(Math.random() * (c.max - c.min + 1)) + c.min : 0;
+    if (gauBuff && payout > 0) {
+        payout = Math.round(payout * 1.1);
+    }
+    
     const fatigue = conditionMultiplier(e, user.health);
     const gross = payout;
     if (payout > 0) payout = Math.round(payout * fatigue);
@@ -91,6 +134,9 @@ async function runGather(interaction, { title, table, energyCost = config.GATHER
     } else {
         desc = `Cậu chỉ nhặt được ${c.emoji} **${c.name}**... chẳng đáng bao nhiêu 😅`;
     }
+    
+    if (thoBuff) desc += `\n🐰 Bé thỏ **${thoName}** nhanh nhẹn giúp cậu tiết kiệm 15% năng lượng!`;
+    if (gauBuff && payout > 0) desc += `\n🐻 Bé gấu **${gauName}** sức mạnh giúp cậu khai thác hăng hái hơn (+10% sản lượng)!`;
     if (dz.note) desc += `\n${dz.note}`;
 
     // Rơi nguyên liệu chế tạo (dùng cho /craft)
@@ -106,10 +152,15 @@ async function runGather(interaction, { title, table, energyCost = config.GATHER
 
     const u = await db.getUser(userId);
     let gainedExp = 4 + Math.floor(Math.random() * 3); // 4..6 EXP
+    if (rongBuff) {
+        gainedExp = Math.round(gainedExp * 1.15);
+    }
     if (eventMult !== 1) gainedExp = Math.round(gainedExp * eventMult);
     const oldLevel = getLevelFromExp(Number(u?.exp || 0));
     const newExp = await db.updateExp(userId, gainedExp);
     const newLevel = newExp === null ? oldLevel : getLevelFromExp(newExp);
+    
+    if (rongBuff) desc += `\n🐲 Bé rồng **${rongName}** truyền long lực giúp cậu nhận thêm 15% EXP!`;
     if (newLevel > oldLevel) {
         const bonus = levelUpReward(oldLevel, newLevel);
         if (bonus > 0) await db.addMoney(userId, bonus, 'wallet');
