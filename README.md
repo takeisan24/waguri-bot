@@ -59,8 +59,8 @@ waguri/
 │   ├── lib/                  # embed, leveling, fatigue, lobby, couple, loto, bingoPrefix, masoi/engine, ...
 │   ├── commands/{economy,games,fun,utility,admin}/*.js
 │   └── events/{ready,interactionCreate,messageCreate,guildCreate}.js
-├── supabase/migrations/      # 0001 → 0055 (schema + RPC; đã áp qua Supabase)
-└── test/*.test.js            # Unit test (amlich, amount, fatigue, leveling, loto_bingo, masoi, paymatch, sprint3)
+├── supabase/migrations/      # 0001 → 0074b (schema + RPC; đã áp qua Supabase)
+└── test/*.test.js            # Unit + integration test (amlich, amount, fatigue, leveling, loto_bingo, masoi, paymatch, sprint3, bakery, disease, quest, economy.integration)
 ```
 
 ---
@@ -84,7 +84,7 @@ waguri/
 | `SKIP_DEPLOY` | ❌ | `=1` để bỏ qua đăng ký lệnh mỗi lần restart (đặt sau lần deploy đầu) |
 
 ### 3) Database (1 lần)
-Chạy lần lượt các file trong `supabase/migrations/` (`0001` → `0055`) trên **Supabase SQL Editor**
+Chạy lần lượt các file trong `supabase/migrations/` (`0001` → `0074b`) trên **Supabase SQL Editor**
 (hoặc Supabase CLI). Đã được thiết kế idempotent (`create ... if not exists` / `or replace`).
 
 ### 4) Chạy

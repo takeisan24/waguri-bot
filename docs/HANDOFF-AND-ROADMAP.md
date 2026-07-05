@@ -3,6 +3,10 @@
 > Mục đích: tài liệu này viết cho **AI agent / dev** tiếp nhận. Mỗi mục có đủ *vấn đề → cách làm → file liên quan → tiêu chí hoàn thành → công sức* để thực thi ngay.
 > Bối cảnh: Discord bot economy/RPG VN. Bot Node.js (root, host Wispbyte/Pterodactyl), web Next.js (`web/`, Vercel), Supabase, Gemini. discord.js 14.26.4 · ws 8.21.0 · @discordjs/ws 1.2.3 · undici 6.24.1.
 
+> **⚠️ CẬP NHẬT 2026-07-05:**
+> - **PHẦN A (vá WebSocket) ĐÃ ÁP DỤNG** trong `index.js` (ipv4first, login retry/backoff, listener vòng đời, watchdog 5 phút). Giữ lại đây làm phân tích gốc-rễ & phần host/monitoring (P1/P2) chưa xong.
+> - **PHẦN B (backlog) KHÔNG còn là nguồn sự thật** — dùng `docs/roadmap-mo-rong.md` cho trạng thái/ưu tiên. Phần B dưới đây chỉ là spec chi tiết bổ sung; một số mục (integration test, `database.js` Proxy) **đã xong**.
+
 ---
 
 # PHẦN A — Lỗi WebSocket: "Opening handshake has timed out"
