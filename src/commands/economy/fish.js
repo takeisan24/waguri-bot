@@ -130,25 +130,43 @@ module.exports = {
             const rand = Math.random();
             if (c.name === 'Cá lòng tong' && rand < 0.35) {
                 await db.giveItemAdmin(userId, 'ca_tuoi', 1);
+                await db.discoverItem(userId, 'ca_tuoi');
                 desc += `\n🐟 Giỏ cá có thêm **1× Cá Tươi** *(nguyên liệu \`/tiembanh\`)*`;
             } else if (c.name === 'Cá rô phi' && rand < 0.45) {
                 await db.giveItemAdmin(userId, 'ca_tuoi', 1);
+                await db.discoverItem(userId, 'ca_tuoi');
                 desc += `\n🐟 Giỏ cá có thêm **1× Cá Tươi** *(nguyên liệu \`/tiembanh\`)*`;
             } else if (c.name === 'Cá lóc bự') {
                 if (rand < 0.30) {
                     await db.giveItemAdmin(userId, 'ca_ngon', 1);
+                    await db.discoverItem(userId, 'ca_ngon');
                     desc += `\n✨ Giỏ cá có thêm **1× Cá Ngon** *(nguyên liệu làm bánh đặc biệt!)*`;
                 } else if (rand < 0.70) {
                     await db.giveItemAdmin(userId, 'ca_tuoi', 1);
+                    await db.discoverItem(userId, 'ca_tuoi');
                     desc += `\n🐟 Giỏ cá có thêm **1× Cá Tươi** *(nguyên liệu \`/tiembanh\`)*`;
                 }
             } else if (c.name === 'Cá hiếm') {
-                if (rand < 0.40) {
+                const dropRates = config.COLLECTIONS?.DROP_RATES || { FISH_CA_RONG_VANG: 0.10 };
+                if (rand < dropRates.FISH_CA_RONG_VANG) {
+                    await db.giveItemAdmin(userId, 'ca_rong_vang', 1);
+                    await db.discoverItem(userId, 'ca_rong_vang');
+                    desc += `\n🏮 Giỏ cá có thêm **1× Cá Rồng Kim Long** 👑 *(vật phẩm Sử Thi siêu hiếm!)*`;
+                } else if (rand < 0.40) {
                     await db.giveItemAdmin(userId, 'ca_hiem', 1);
+                    await db.discoverItem(userId, 'ca_hiem');
                     desc += `\n🌟 Giỏ cá có thêm **1× Cá Hiếm** *(nguyên liệu siêu hiếm cho tiệm!)*`;
                 } else {
                     await db.giveItemAdmin(userId, 'ca_ngon', 1);
+                    await db.discoverItem(userId, 'ca_ngon');
                     desc += `\n✨ Giỏ cá có thêm **1× Cá Ngon** *(nguyên liệu làm bánh đặc biệt!)*`;
+                }
+            } else if (c.name === 'Rương kho báu') {
+                const dropRates = config.COLLECTIONS?.DROP_RATES || { FISH_CA_KOI_NHAT: 0.10 };
+                if (rand < dropRates.FISH_CA_KOI_NHAT) {
+                    await db.giveItemAdmin(userId, 'ca_koi_nhat', 1);
+                    await db.discoverItem(userId, 'ca_koi_nhat');
+                    desc += `\n👑 Giỏ cá có thêm **1× Cá Koi Hoàng Gia** ⭐ *(vật phẩm HUYỀN THOẠI cực hiếm!)*`;
                 }
             }
         }

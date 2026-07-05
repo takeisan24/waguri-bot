@@ -139,6 +139,16 @@ module.exports = {
     },
     GATHER_ENERGY_COST: 5, // /mine, /chop
 
+    // Bộ Sưu Tập (Sổ Tay Sưu Tầm) — tỉ lệ rơi vật phẩm siêu hiếm cày cuốc
+    COLLECTIONS: {
+        DROP_RATES: {
+            MINE_VANG_DONG_TRIEU: 0.010, // 1% tỉ lệ rơi Vàng Đông Triều khi /mine
+            CHOP_KY_NAM: 0.005,          // 0.5% tỉ lệ rơi Kỳ Nam khi /chop
+            FISH_CA_RONG_VANG: 0.10,     // 10% cơ hội rơi Cá Rồng Vàng khi trúng Cá Hiếm (thực tế 4% * 10% = 0.4%)
+            FISH_CA_KOI_NHAT: 0.10,      // 10% cơ hội rơi Cá Koi Nhật khi trúng Rương Kho Báu (thực tế 1% * 10% = 0.1%)
+        }
+    },
+
     // Hệ Bệnh (Disease) — xem .local-brainstorm/disease_design.md
     DISEASE: {
         CATCH_CHANCE: 0.04,        // 4% đổ bệnh mỗi hành động kiếm tiền (work/fish/mine/chop)

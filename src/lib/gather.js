@@ -141,11 +141,27 @@ async function runGather(interaction, { title, table, energyCost = config.GATHER
 
     // Rơi nguyên liệu chế tạo (dùng cho /craft)
     const DROPS = { mine: ['quang_sat', 'da'], chop: ['go'] };
-    if (DROPS[key] && Math.random() < 0.45) {
-        const matId = DROPS[key][Math.floor(Math.random() * DROPS[key].length)];
-        await db.giveItemAdmin(userId, matId, 1);
-        const it = await db.getItem(matId);
-        desc += `\n🎒 Nhặt thêm: **1× ${it?.name || matId}** *(để \`/craft\`)*`;
+    if (DROPS[key]) {
+        const rand = Math.random();
+        if (rand < 0.45) {
+            const matId = DROPS[key][Math.floor(Math.random() * DROPS[key].length)];
+            await db.giveItemAdmin(userId, matId, 1);
+            await db.discoverItem(userId, matId);
+            const it = await db.getItem(matId);
+            desc += `\n🎒 Nhặt thêm: **1× ${it?.name || matId}** *(để \`/craft\`)*`;
+        }
+        
+        // Vật phẩm cực hiếm (Độ hiếm nâng cao)
+        const dropRates = config.COLLECTIONS?.DROP_RATES || { MINE_VANG_DONG_TRIEU: 0.01, CHOP_KY_NAM: 0.005 };
+        if (key === 'mine' && Math.random() < dropRates.MINE_VANG_DONG_TRIEU) {
+            await db.giveItemAdmin(userId, 'vang_dong_tren', 1);
+            await db.discoverItem(userId, 'vang_dong_tren');
+            desc += `\n✨ Đất đá sụt lở để lộ ra: **1× Vàng Đông Triều** 🟡 *(Quặng hiếm!)*`;
+        } else if (key === 'chop' && Math.random() < dropRates.CHOP_KY_NAM) {
+            await db.giveItemAdmin(userId, 'ky_nam', 1);
+            await db.discoverItem(userId, 'ky_nam');
+            desc += `\n🌲 Nhựa cây tụ lại thành khối: **1× Kỳ Nam** 🌟 *(Gỗ Sử Thi cực hiếm!)*`;
+        }
     }
 
     desc += `\nĐộ bền ${tool.name}: **${toolResult.durability}/100** ${tool.emoji}` + (toolResult.broken ? ' *(đã hỏng! Cần mua mới hoặc sửa)*' : '');

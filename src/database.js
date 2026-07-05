@@ -334,6 +334,63 @@ async function getItem(itemId) {
     }
 }
 
+// ============================================================
+//  ALBUM / COLLECTIONS — bộ sưu tập
+// ============================================================
+
+/** Ghi nhận vật phẩm tự thu thập vào album của người chơi. Trả true/false. */
+async function discoverItem(userId, itemId) {
+    try {
+        const { error } = await supabase
+            .from('user_discoveries')
+            .insert({ user_id: userId, item_id: itemId });
+        
+        // Nếu đã có từ trước (conflict), Postgres trả lỗi 23505 nhưng ta bỏ qua vì đó là mong muốn (ON CONFLICT DO NOTHING)
+        if (error && error.code !== '23505' && error.code !== 'PGRST116') throw error;
+        return true;
+    } catch (error) {
+        // Nuốt lỗi trùng khoá chính (đã phát hiện từ trước)
+        if (error?.message?.includes('duplicate key') || error?.code === '23505') return true;
+        console.error('[DATABASE ERROR] discoverItem():', error);
+        return false;
+    }
+}
+
+/** Lấy toàn bộ danh sách item_id đã mở khóa trong album của người chơi. Trả về Set. */
+async function getDiscoveries(userId) {
+    try {
+        const { data, error } = await supabase
+            .from('user_discoveries')
+            .select('item_id')
+            .eq('user_id', userId);
+        if (error) throw error;
+        return new Set((data || []).map(r => r.item_id));
+    } catch (error) {
+        console.error('[DATABASE ERROR] getDiscoveries():', error);
+        return new Set();
+    }
+}
+
+/** Nhận thưởng bộ sưu tập nguyên tử qua RPC claim_collection_reward. 
+ * Trả về: 'ok' | 'already_claimed' | 'not_completed' | 'user_not_found' | 'error'
+ */
+async function claimCollectionReward(userId, setId, requiredItems, rewardCoins, title) {
+    try {
+        const { data, error } = await supabase.rpc('claim_collection_reward', {
+            p_user: userId,
+            p_set_id: setId,
+            p_required_items: requiredItems,
+            p_reward_coins: rewardCoins,
+            p_title: title
+        });
+        if (error) throw error;
+        return data;
+    } catch (error) {
+        console.error('[DATABASE ERROR] claimCollectionReward():', error);
+        return 'error';
+    }
+}
+
 /**
  * Mua vật phẩm NGUYÊN TỬ qua RPC buy_item.
  * @returns {string} 'ok' | 'no_item' | 'insufficient_funds' | 'bad_quantity' | 'error'
@@ -1376,6 +1433,9 @@ async function craftItem(userId, recipe) {
             p_user: userId, p_mats: recipe.mats, p_result: recipe.result, p_qty: recipe.qty, p_cost: recipe.cost,
         });
         if (error) throw error;
+        if (data && data.status === 'ok') {
+            await discoverItem(userId, recipe.result);
+        }
         return data;
     } catch (error) { console.error('[DATABASE ERROR] craftItem():', error); return null; }
 }
@@ -1808,6 +1868,10 @@ module.exports = {
     // cosmetic
     setCosmetic,
     setCosmeticWithFee,
+    // album
+    discoverItem,
+    getDiscoveries,
+    claimCollectionReward,
     // loans
     loanCreate,
     loanRepay,

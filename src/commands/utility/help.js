@@ -21,6 +21,7 @@ const CATEGORIES = [
         ['store', 'cửa hàng: xem/mua/bán vật phẩm (list / buy / sell)'],
         ['market', 'chợ mua bán đồ giữa người chơi 🛒'],
         ['inventory', 'xem kho đồ'],
+        ['album', 'xem sổ tay sưu tầm vật phẩm và nhận thưởng bộ sưu tập 📖'],
         ['eat', 'dùng đồ ăn/uống (hồi năng lượng / buff)'],
         ['nghingoi', 'đi ngủ hồi đầy năng lượng (6 tiếng/lần) 😴 (w!ngu)'],
         ['cosmetic', 'trang trí hồ sơ: danh hiệu & màu 🎨'],

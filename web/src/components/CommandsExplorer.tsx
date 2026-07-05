@@ -29,6 +29,7 @@ const CATEGORIES: Cat[] = [
       ["store", "cửa hàng: xem danh sách, mua bán vật phẩm (list · buy · sell) 🏪"],
       ["market", "chợ mua bán giữa người chơi 🛒"],
       ["inventory", "xem kho đồ"],
+      ["album", "xem sổ tay sưu tầm vật phẩm và nhận thưởng bộ sưu tập 📖"],
       ["eat", "dùng đồ ăn (hồi năng lượng / buff)"],
       ["nghingoi", "đi ngủ hồi đầy năng lượng 😴"],
       ["cosmetic", "trang trí hồ sơ: danh hiệu & màu 🎨"],
