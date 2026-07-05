@@ -108,6 +108,40 @@ function ItemIcon({ type }: { type: string }) {
       </svg>
     );
   }
+  if (type === "fish") {
+    return (
+      <svg className={base} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M23 12c-2.2 1.8-5.3 2-8 1.5-1.5-.3-3-.3-4.5 0-2.7.5-5.8.3-8-1.5 2.2-1.8 5.3-2 8-1.5 1.5.3 3 .3 4.5 0 2.7-.5 5.8-.3 8 1.5z" />
+        <path d="M3 12l-2 3V9l2 3zM18 10.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z" />
+      </svg>
+    );
+  }
+  if (type === "gold") {
+    return (
+      <svg className={base} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M4 22h16l-2-6H6l-2 6zM2 9h20l-2-6H4l-2 6z" />
+        <path d="M12 3v19M6 9h12" />
+      </svg>
+    );
+  }
+  if (type === "wood") {
+    return (
+      <svg className={base} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M12 22c5.5 0 10-4.5 10-10S17.5 2 12 2 2 6.5 2 12s4.5 10 10 10z" />
+        <path d="M12 6a6 6 0 1 0 0 12 6 6 0 0 0 0-12z" />
+        <path d="M12 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4z" />
+      </svg>
+    );
+  }
+  if (type === "gift") {
+    return (
+      <svg className={base} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <rect x="3" y="8" width="18" height="13" rx="2" />
+        <path d="M12 8V2M5 8c0-3 2-5 7-5s7 2 7 5" />
+        <path d="M3 12h18" />
+      </svg>
+    );
+  }
   
   return (
     <svg className={base} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -167,6 +201,7 @@ export default function Wiki() {
               ["#minigame", "🎲 Minigame"],
               ["#nuoi-heo", "🐷 Nuôi heo"],
               ["#trong-cay", "🌱 Trồng cây"],
+              ["#che-tao", "🔨 Chế tạo"],
               ["#nong-trai", "🔁 Nông trại"],
               ["#he-giam", "🚓 Hệ giam"],
               ["#ai-chat", "💬 Trò chuyện AI"],
@@ -240,6 +275,18 @@ export default function Wiki() {
                 <ItemWidget type="cake" name="Bánh Cheesecake Gekka" effect="+100% thu nhập trong 8 giờ" price="35.000đ" />
               </div>
             </div>
+
+            <div>
+              <p className="font-bold text-white mb-2.5 text-sm flex items-center gap-1.5">
+                <span>💎</span> Vật phẩm khai thác & Sưu tầm siêu hiếm:
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <ItemWidget type="fish" name="Cá Rồng Kim Long" effect="Sử Thi • Tỉ lệ 0.4% khi đi câu / Nguyên liệu" price="20.000đ" />
+                <ItemWidget type="fish" name="Cá Koi Hoàng Gia" effect="Huyền Thoại • Tỉ lệ 0.1% khi đi câu / Flex" price="80.000đ" />
+                <ItemWidget type="gold" name="Vàng Đông Triều" effect="Hiếm • Tỉ lệ 1% khi đào mỏ / Chế tác" price="5.000đ" />
+                <ItemWidget type="wood" name="Kỳ Nam" effect="Sử Thi • Tỉ lệ 0.5% khi chặt gỗ / Chế tác" price="15.000đ" />
+              </div>
+            </div>
           </div>
         </Card>
 
@@ -296,6 +343,67 @@ export default function Wiki() {
               { c: "/trongcay box · w!plantbox [@ai]", d: "mở/tặng hộp may mắn Plantbox (240, tối đa 10 lần/ngày)" },
             ]}
           />
+        </Card>
+
+        <Card id="che-tao" title="Chế tạo & Khai thác 🔨" emoji="🔨">
+          <p>
+            Khai thác nguyên liệu từ thiên nhiên bằng cách đi câu cá, đào mỏ, chặt gỗ. Sau đó dùng lệnh{" "}
+            <code>/craft make</code> để chế tạo các thành phẩm cao cấp hơn để bán lấy VNĐ hoặc dùng làm nguyên liệu nâng cấp tiệm bánh!
+          </p>
+          
+          <div className="space-y-4 pt-2">
+            <div>
+              <p className="font-bold text-white mb-2 text-sm flex items-center gap-1.5">
+                <span>⛏️</span> Hoạt động khai thác:
+              </p>
+              <ul className="list-disc pl-5 space-y-1.5 text-slate-400 text-sm">
+                <li>
+                  <strong>Đào mỏ</strong> <code>/mine</code> (cần Cuốc Sắt) &rarr; nhận VNĐ, có cơ hội nhặt thêm <strong>Đá</strong>, <strong>Quặng Sắt</strong> và siêu hiếm 🟡 <strong>Vàng Đông Triều</strong> (1%).
+                </li>
+                <li>
+                  <strong>Chặt gỗ</strong> <code>/chop</code> (cần Rìu Sắt) &rarr; nhận VNĐ, có cơ hội nhặt thêm <strong>Gỗ</strong> và siêu hiếm 🌲 <strong>Kỳ Nam</strong> (0.5%).
+                </li>
+                <li>
+                  <strong>Câu cá</strong> <code>/fish</code> (cần Cần Câu Cá) &rarr; nhận VNĐ, có cơ hội nhặt thêm <strong>Cá Tươi</strong>, <strong>Cá Ngon</strong>, <strong>Cá Hiếm</strong>, siêu hiếm 🏮 <strong>Cá Rồng Kim Long</strong> (0.4%) và 👑 <strong>Cá Koi Hoàng Gia</strong> (0.1%).
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <p className="font-bold text-white mb-2 text-sm flex items-center gap-1.5">
+                <span>📜</span> Bảng công thức chế tạo (<code>/craft list</code>):
+              </p>
+              <div className="grid grid-cols-1 gap-3.5 text-sm">
+                {[
+                  { name: "Tấm Gỗ", id: "tam_go", mats: "3× Gỗ Thô", fee: "Miễn phí", desc: "Nguyên liệu chế tạo nội thất." },
+                  { name: "Thỏi Sắt", id: "thoi_sat", mats: "3× Quặng Sắt", fee: "Miễn phí", desc: "Nguyên liệu chế tạo nội thất & trang sức." },
+                  { name: "Đồ Nghề Trộm", id: "do_trom", mats: "2× Gỗ + 1× Quặng Sắt", fee: "Miễn phí", desc: "Dùng để đi trộm heo/cây mà không tốn tiền mua đồ nghề." },
+                  { name: "Vòng Tay Trầm Hương", id: "tram_huong_vong", mats: "1× Kỳ Nam + 2× Thỏi Sắt", fee: "Miễn phí", desc: "Quà tặng Waguri tăng cực lớn thiện cảm (+50 Love) hoặc flex." },
+                  { name: "Bộ Nội Thất Gỗ", id: "noi_that", mats: "4× Tấm Gỗ + 2× Thỏi Sắt", fee: "1.300đ", desc: "Dùng nâng cấp Tiệm bánh Gekka hoặc bán lại 2.500đ." },
+                  { name: "Trang Sức Đá Quý", id: "trang_suc", mats: "6× Đá + 2× Thỏi Sắt", fee: "2.200đ", desc: "Dùng nâng cấp Tiệm bánh Gekka hoặc bán lại 3.000đ." },
+                  { name: "Vương Miện Đá Quý", id: "vuong_mieng_gold", mats: "1× Vàng Đông Triều + 2× Thỏi Sắt + 6× Đá + 1× Trang Sức Đá Quý", fee: "Miễn phí", desc: "Tuyệt phẩm chế tác xa xỉ thể hiện đẳng cấp hoàng gia." },
+                ].map((recipe) => (
+                  <div key={recipe.id} className="p-3.5 rounded-xl bg-pink-500/5 border border-pink-300/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-pink-300/30 hover:bg-pink-500/10 transition-all shadow-md">
+                    <div>
+                      <p className="font-bold text-white flex items-center gap-1.5">
+                        <span>🔨</span> {recipe.name} 
+                        <code className="text-xs bg-pink-500/10 text-pink-300 border border-pink-300/15 px-1.5 py-0.5 rounded font-mono">
+                          {recipe.id}
+                        </code>
+                      </p>
+                      <p className="text-xs text-slate-400 mt-1">{recipe.desc}</p>
+                      <p className="text-xs text-pink-200/80 mt-1 font-semibold">Công thức: {recipe.mats}</p>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <span className="text-xs px-2.5 py-1 rounded bg-pink-500/10 text-pink-300 font-bold border border-pink-300/15 whitespace-nowrap">
+                        Công: {recipe.fee}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </Card>
 
         <Card id="nong-trai" title="Vòng khép kín nông trại 🔁" emoji="🔁">

@@ -11,4 +11,7 @@ module.exports = [
     { id: 'trang_suc', name: 'Trang Sức Đá Quý', result: 'trang_suc', qty: 1, cost: 2200, mats: { da: 6, thoi_sat: 2 } },
     // Đồ nghề đi trộm (heo/cây) — chế từ gỗ + quặng, dùng thay tiền mua đồ nghề
     { id: 'do_trom', name: 'Đồ Nghề Trộm', result: 'do_trom', qty: 1, cost: 0, mats: { go: 2, quang_sat: 1 } },
+    // Đồ cực hiếm (Sử Thi & Huyền Thoại) chế từ nguyên liệu cày cuốc
+    { id: 'tram_huong_vong', name: 'Vòng Tay Trầm Hương', result: 'tram_huong_vong', qty: 1, cost: 0, mats: { ky_nam: 1, thoi_sat: 2 } },
+    { id: 'vuong_mieng_gold', name: 'Vương Miện Đá Quý', result: 'vuong_mieng_gold', qty: 1, cost: 0, mats: { vang_dong_tren: 1, thoi_sat: 2, da: 6, trang_suc: 1 } },
 ];
