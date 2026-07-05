@@ -2,6 +2,7 @@ import React from "react";
 import CherryBlossom from "../../components/CherryBlossom";
 import SiteHeader from "../../components/SiteHeader";
 import SiteFooter from "../../components/SiteFooter";
+import WaguriFloat from "../../components/WaguriFloat";
 
 export const metadata = {
   title: "Wiki 🌸 - Hướng dẫn chơi Waguri Bot",
@@ -26,7 +27,7 @@ function CmdList({ items }: { items: Cmd[] }) {
   return (
     <ul className="space-y-2">
       {items.map((it) => (
-        <li key={it.c} className="flex flex-col sm:flex-row sm:items-baseline gap-x-3">
+        <li key={it.c} className="flex flex-col sm:flex-row sm:items-baseline gap-y-1 sm:gap-y-0 gap-x-3 py-1.5 border-b border-pink-300/5 last:border-0">
           <code className="text-pink-300 bg-pink-500/10 border border-pink-300/15 rounded px-2 py-0.5 text-[13px] font-mono whitespace-nowrap">
             {it.c}
           </code>
@@ -368,6 +369,7 @@ export default function Wiki() {
       </main>
 
       <SiteFooter />
+      <WaguriFloat />
     </div>
   );
 }

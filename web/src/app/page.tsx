@@ -11,6 +11,7 @@ import SiteFooter from "../components/SiteFooter";
 import EventBanner from "../components/EventBanner";
 import { PREMIUM_PLANS, PLAN_ORDER } from "../lib/premium";
 import { createAdminClient } from "../lib/supabase/admin";
+import WaguriFloat from "../components/WaguriFloat";
 
 export default async function Home() {
   const supabase = createAdminClient();
@@ -69,6 +70,7 @@ export default async function Home() {
             alt="Waguri Kaoruko"
             width={128}
             height={128}
+            loading="lazy"
             className="mx-auto w-28 h-28 rounded-full border-2 border-pink-300/40 object-cover shadow-[0_0_45px_rgba(255,183,197,0.35)]"
           />
           <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full border border-pink-300/20 bg-pink-500/5 text-pink-300 text-xs font-semibold tracking-wide backdrop-blur-md">
@@ -367,6 +369,7 @@ export default async function Home() {
       </main>
 
       <SiteFooter />
+      <WaguriFloat />
     </div>
   );
 }
