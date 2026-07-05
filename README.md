@@ -14,25 +14,25 @@ chơi minigame nhiều người, kết đôi, buôn bán… — tất cả bằn
 
 ---
 
-## ✨ Tính năng (82 lệnh)
+## ✨ Tính năng (71 lệnh)
 
 | Nhóm | Lệnh tiêu biểu |
 |---|---|
-| 💼 **Kiếm tiền** | `/work` `/fish` `/mine` `/chop` `/daily` `/quest` `/jobs` — năng lượng + mệt mỏi + lên cấp + nghề |
-| 🏪 **Cửa hàng & Kho** | `/shop` `/buy` `/sell` `/inventory` `/eat` `/nghingoi` `/cosmetic` `/craft` — chế tạo từ gỗ/quặng |
-| 💸 **Tiền & Nợ** | `/balance` `/deposit` `/withdraw` `/give` `/rob` · vay nợ P2P `/vay` `/trano` `/donno` `/no` |
+| 💼 **Kiếm tiền** | `/work` `/fish` `/mine` `/chop` `/daily` `/quest` `/jobs` `/cuutro` — năng lượng + mệt mỏi + lên cấp + nghề |
+| 🏪 **Cửa hàng & Kho** | `/store list·buy·sell` `/inventory` `/eat` `/nghingoi` `/cosmetic` `/craft` — mua bán, chế tạo từ gỗ/quặng |
+| 💸 **Tiền & Nợ** | `/bank balance·deposit·withdraw` `/give` `/rob` · vay nợ P2P `/vay` `/trano` `/donno` `/no` |
 | 🎲 **Minigame** | `/coinflip` `/taixiu` `/baucua` `/blackjack` `/crate` |
 | 👥 **Game nhiều người** | `/bacay` `/bingo` `/loto` `/masoi` (Ma Sói) `/xocdia` `/duangua` (đua ngựa) `/dovui` (đố vui) |
-| 💞 **Cộng đồng** | `/marry` `/hug` `/kiss` `/date` `/divorce` `/relationship` `/lixi` `/confession` `/noitu` `/ship` `/boi` |
+| 💞 **Cộng đồng** | `/couple status·marry·divorce` `/action hug·kiss·pat·poke·slap` `/date` `/lixi` `/confession` `/noitu` `/ship` `/boi` |
 | 🏰 **Bang hội** | `/clan create·join·info·list·deposit·withdraw·kick·disband·war` (chiến tranh bang PvP) |
 | 🛒 **Chợ** | `/market view·mine·sell·buy·cancel` — mua bán đồ giữa người chơi (ký gửi) |
 | 💬 **AI & Premium** | `/ask` + @tag Waguri trò chuyện · `/premium` (quota AI cao + 10% thu nhập) · `/status` |
 | 🐷 **Nuôi & Trồng** | `/heo` (nuôi heo đất) · `/trongcay` (trồng cây) · `/pet` (thú cưng) |
 | 🏥 **Sức khoẻ & Xe** | `/hospital` (nhập viện) · `/tangdo` (độ xe) · `/repair` (sửa công cụ) |
-| 🗓️ **Thông tin** | `/amlich` (lịch âm) · `/thoitiet` (thời tiết) · `/cat` `/dog` `/waifu` (ảnh ngẫu nhiên) |
+| 🗓️ **Thông tin** | `/amlich` (lịch âm) · `/thoitiet` (thời tiết) · `/image cat·dog·waifu` (ảnh ngẫu nhiên) |
 | 🏆 **Bảng xếp hạng** | `/leaderboard` (tài sản / cấp / tình cảm) · `/achievements` · `/event` · `/invite` · `/help` |
-| ℹ️ **Tiện ích** | `/about` (thông tin bot) · `/ping` (độ trễ) · `/user` (hồ sơ) · `/server` (thông tin server) |
-| ⚙️ **Quản trị** | `/setup` (tạo phòng + cấu hình) · `/config` (AI toggle/kênh) · `/eco-admin` (owner: tiền/ban/premium) |
+| ℹ️ **Tiện ích & Bot** | `/bot ping·about·support·invite` · `/announcement view·send·auto` · `/user` · `/server` |
+| ⚙️ **Quản trị** | `/setup` (tạo phòng + cấu hình) · `/config` (AI/PvP/nhiệm vụ/thông báo) · `/eco-admin` |
 
 **Hệ thống nền:** năng lượng & hồi lười (lazy regen) · mệt mỏi giảm thu nhập · sức khỏe & nhập viện ·
 xe cộ tiết kiệm năng lượng · độ bền & sửa công cụ · bảo hiểm · thú cưng · **chống lạm phát**
