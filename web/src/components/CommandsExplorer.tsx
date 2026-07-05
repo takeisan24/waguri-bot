@@ -113,6 +113,7 @@ const CATEGORIES: Cat[] = [
       ["ticket", "mở phòng hỗ trợ riêng tư với staff 🎫"],
       ["server", "thông tin server"],
       ["user", "thông tin người dùng"],
+      ["deletedata", "xoá toàn bộ dữ liệu cá nhân của bạn (không hoàn tác) 🗑️"],
       ["help", "bảng trợ giúp trong Discord"],
     ],
   },

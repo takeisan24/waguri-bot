@@ -67,7 +67,7 @@
 ## 6. 🏛️ Chiến lược lớn (đầu tư cao, cần thiết kế sâu riêng)
 | Task | Mô tả | Ưu tiên |
 |---|---|---|
-| ✅ **⭐ Trí nhớ bền Waguri** | XONG end-to-end: DB `ai_memory` + RPC + helper + **đọc** vào prompt + **ghi** qua trích xuất marker `[[NHO:...]]` (`extractAndStoreMemory`, có test). Moat cảm xúc. Nice-to-have sau: `/nho` thủ công + `/quenki` (xem/xoá, GDPR). | ✅ |
+| ✅ **⭐ Trí nhớ bền Waguri** | XONG end-to-end: DB `ai_memory` + RPC + helper + **đọc** vào prompt + **ghi** qua trích xuất marker `[[NHO:...]]` (`extractAndStoreMemory`, có test). Moat cảm xúc. Xoá ký ức: qua `/deletedata` (GDPR). Nice-to-have sau: `/nho` thủ công. | ✅ |
 | **Battle Pass theo mùa** | Vé mùa free+premium track gắn lễ hội VN → retention + doanh thu | 🟠 |
 | **Đường tình cảm Waguri** (dating-sim nhẹ) | Affection mở khóa hội thoại/cảnh/quà; gate 1 phần Premium | 🟠 |
 | **Bộ sưu tập (album)** | Pokédex cá/quặng/công thức, thưởng hoàn thành | 🟢 |
@@ -98,7 +98,7 @@
 
 **C. 🔴 Chiến lược/pháp lý khi public (cân nhắc trước khi scale):**
 - **Monetization ToS Discord:** bán Premium qua VietQR ngoài có thể vướng chính sách → rà Developer Policy, cân nhắc Discord App Subscriptions/SKU.
-- **GDPR:** cần `/deletedata` (user EU có quyền xóa dữ liệu).
+- ✅ **GDPR:** `/deletedata` đã có (migration `0075`, RPC `delete_user_data`) — user tự xoá toàn bộ dữ liệu, chặn khi còn nợ/chủ clan, giữ premium_orders + confession_logs.
 - **Anti-abuse public:** farm alt-account (daily/vote/welcome), RMT, **jailbreak persona AI** (test prompt-injection cho Waguri).
 - **Staging:** hiện đổi balance vào thẳng economy live → cần bot/guild test + checklist deploy kinh tế.
 - **Catch-up cho người mới:** tránh whale thống trị BXH làm nản người mới.

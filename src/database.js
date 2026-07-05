@@ -974,6 +974,21 @@ async function updateAiMemory(userId, key, value) {
     }
 }
 
+/**
+ * GDPR: xoá toàn bộ dữ liệu chơi cá nhân của user (giữ premium_orders + confession_logs).
+ * Trả 'ok' | 'blocked_loans' | 'blocked_clan_leader' | 'error'.
+ */
+async function deleteUserData(userId) {
+    try {
+        const { data, error } = await supabase.rpc('delete_user_data', { p_user_id: userId });
+        if (error) throw error;
+        return data;
+    } catch (error) {
+        console.error('[DATABASE ERROR] deleteUserData():', error);
+        return 'error';
+    }
+}
+
 /** Cấp/gia hạn Premium thêm số ngày. Trả mốc hết hạn mới (ISO) hoặc null. */
 async function grantPremium(userId, days) {
     try {
@@ -1694,6 +1709,7 @@ module.exports = {
     consumeAiQuota,
     refundAiQuota,
     updateAiMemory,
+    deleteUserData,
     grantPremium,
     // jail
     getJail,

@@ -80,6 +80,7 @@ const CATEGORIES = [
         ['bot', 'thông tin, trạng thái, hỗ trợ, mời bot (ping · about · support · invite)'],
         ['server', 'thông tin server'],
         ['user', 'thông tin người dùng'],
+        ['deletedata', 'xoá toàn bộ dữ liệu cá nhân của bạn (không hoàn tác) 🗑️'],
         ['help', 'bảng trợ giúp này'],
     ] },
 ];
