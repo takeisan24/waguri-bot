@@ -989,6 +989,34 @@ async function deleteUserData(userId) {
     }
 }
 
+// ============================================================
+//  TELEMETRY KINH TẾ
+// ============================================================
+/** Chụp nhanh tổng cung tiền/phân bố hôm nay (upsert). Trả dòng snapshot hoặc null. */
+async function snapshotEconomy() {
+    try {
+        const { data, error } = await supabase.rpc('snapshot_economy');
+        if (error) throw error;
+        return Array.isArray(data) ? data[0] : data; // hàm trả composite -> chuẩn hoá về object
+    } catch (error) {
+        console.error('[DATABASE ERROR] snapshotEconomy():', error);
+        return null;
+    }
+}
+
+/** Lấy N ảnh chụp kinh tế gần nhất (mới -> cũ) để dựng xu hướng. Trả mảng (có thể rỗng). */
+async function getEconomySnapshots(days = 14) {
+    try {
+        const { data, error } = await supabase.from('economy_snapshots')
+            .select('*').order('taken_on', { ascending: false }).limit(days);
+        if (error) throw error;
+        return data || [];
+    } catch (error) {
+        console.error('[DATABASE ERROR] getEconomySnapshots():', error);
+        return [];
+    }
+}
+
 /** Cấp/gia hạn Premium thêm số ngày. Trả mốc hết hạn mới (ISO) hoặc null. */
 async function grantPremium(userId, days) {
     try {
@@ -1710,6 +1738,9 @@ module.exports = {
     refundAiQuota,
     updateAiMemory,
     deleteUserData,
+    // telemetry kinh tế
+    snapshotEconomy,
+    getEconomySnapshots,
     grantPremium,
     // jail
     getJail,

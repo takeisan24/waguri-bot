@@ -59,7 +59,7 @@ waguri/
 │   ├── lib/                  # embed, leveling, fatigue, lobby, couple, loto, bingoPrefix, masoi/engine, ...
 │   ├── commands/{economy,games,fun,utility,admin}/*.js
 │   └── events/{ready,interactionCreate,messageCreate,guildCreate}.js
-├── supabase/migrations/      # 0001 → 0075 (schema + RPC; đã áp qua Supabase)
+├── supabase/migrations/      # 0001 → 0076 (schema + RPC; đã áp qua Supabase)
 └── test/*.test.js            # Unit + integration test (amlich, amount, fatigue, leveling, loto_bingo, masoi, paymatch, sprint3, bakery, disease, quest, economy.integration)
 ```
 

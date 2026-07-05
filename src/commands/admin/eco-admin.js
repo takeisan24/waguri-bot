@@ -40,7 +40,8 @@ module.exports = {
         .addSubcommand(s => s.setName('unban').setDescription('Bỏ chặn user')
             .addUserOption(o => o.setName('user').setDescription('Người chơi').setRequired(true)))
         .addSubcommand(s => s.setName('resetuser').setDescription('Xóa sạch dữ liệu một người chơi')
-            .addUserOption(o => o.setName('user').setDescription('Người chơi').setRequired(true))),
+            .addUserOption(o => o.setName('user').setDescription('Người chơi').setRequired(true)))
+        .addSubcommand(s => s.setName('report').setDescription('📊 Báo cáo telemetry kinh tế (cung tiền, phân bố, xu hướng)')),
 
     async autocomplete(interaction) {
         const focused = interaction.options.getFocused().toLowerCase();
@@ -71,6 +72,42 @@ module.exports = {
         await interaction.deferReply();
 
         const sub = interaction.options.getSubcommand();
+
+        // --- Báo cáo telemetry kinh tế (không cần target user) ---
+        if (sub === 'report') {
+            console.log(`[ECO-ADMIN AUDIT] owner=${interaction.user.id} action=report`);
+            await db.snapshotEconomy(); // cập nhật ảnh chụp hôm nay trước khi xem
+            const snaps = await db.getEconomySnapshots(14);
+            if (!snaps.length) {
+                return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'warning', {
+                    description: 'Chưa có dữ liệu telemetry kinh tế. Thử lại sau chút nhé~ 🌸'
+                })] });
+            }
+            const C = config.CURRENCY;
+            const cur = snaps[0];
+            const prev = snaps[1];
+            const weekRef = snaps[Math.min(snaps.length - 1, 7)];
+            const delta = (a, b) => {
+                if (b == null) return '';
+                const d = Number(a) - Number(b);
+                return ` (${d >= 0 ? '+' : ''}${fmt(d)})`;
+            };
+            const embed = buildWaguriEmbed(interaction, 'info', {
+                title: `📊・Telemetry Kinh Tế — ${cur.taken_on}`,
+                description:
+                    `**Tổng cung tiền:** ${fmt(cur.total_supply)} ${C}${delta(cur.total_supply, prev && prev.total_supply)}\n` +
+                    `　_so với ~tuần trước:${delta(cur.total_supply, weekRef && weekRef !== cur ? weekRef.total_supply : null) || ' —'}_\n` +
+                    `**Ví:** ${fmt(cur.total_wallet)} · **Ngân hàng:** ${fmt(cur.total_bank)}\n` +
+                    `**Người chơi:** ${fmt(cur.user_count)} (hoạt động 7d: ${fmt(cur.active_7d)} · Premium: ${fmt(cur.premium_count)})\n` +
+                    `**Giàu nhất:** ${fmt(cur.richest)} · **Trung bình:** ${fmt(cur.avg_supply)}`,
+                fields: [{
+                    name: '📈 Xu hướng cung tiền (mới → cũ)',
+                    value: snaps.slice(0, 10).map(s => `\`${s.taken_on}\` ${fmt(s.total_supply)} ${C}`).join('\n')
+                }]
+            });
+            return interaction.editReply({ embeds: [embed] });
+        }
+
         const target = interaction.options.getUser('user');
         if (!target) {
             const embed = buildWaguriEmbed(interaction, 'error', {

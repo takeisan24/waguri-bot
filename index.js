@@ -157,6 +157,17 @@ setInterval(() => {
     }
 }, 60_000).unref();
 
+// Telemetry kinh tế: chụp tổng cung tiền/phân bố định kỳ (upsert 1 dòng/ngày) để theo dõi lạm phát/exploit.
+const db = require('./src/database.js');
+async function runEconomySnapshot() {
+    try {
+        const snap = await db.snapshotEconomy();
+        if (snap) console.log(`[TELEMETRY] Kinh tế ${snap.taken_on}: cung tiền ${snap.total_supply}, ${snap.user_count} user (${snap.active_7d} hoạt động 7d).`);
+    } catch (e) { logError('economy_snapshot', e); }
+}
+setTimeout(runEconomySnapshot, 30_000).unref();            // chụp lần đầu sau khi khởi động ổn định
+setInterval(runEconomySnapshot, 12 * 60 * 60_000).unref(); // rồi mỗi 12h
+
 // Đăng nhập có retry/backoff (5s, 10s, ... tối đa 60s) — không bỏ cuộc khi bắt tay timeout lúc khởi động.
 (async function startBot() {
     let attempt = 0;

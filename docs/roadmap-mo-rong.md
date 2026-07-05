@@ -60,7 +60,7 @@
 | ✅ **Integration test luồng tiền** | ĐÃ XONG — `test/economy.integration.test.js` phủ addMoney/transfer/buy/consume | ✅ |
 | **`lib/messages.js`** | Gom chuỗi lỗi lặp + `formatCooldown` (chuẩn hóa `<t:R>` vs "Ns") + giọng persona (mình/tớ, /ask embed) | 🟠 |
 | **Paginate embed dài** | `/jobs`, `/vay so` (chống tràn 1024/4096 + mobile) | 🟠 |
-| **Telemetry kinh tế** | Log tổng cung tiền/ngày, top earner → tune cân bằng (đặc biệt sau khi thêm bakery faucet) | 🟠 |
+| ✅ **Telemetry kinh tế** | XONG — migration `0076` (`economy_snapshots` + RPC `snapshot_economy`), scheduler chụp mỗi 12h, xem qua `/eco-admin report` (cung tiền/phân bố/xu hướng). | ✅ |
 | ✅ **Cap affection/ngày** | XONG — migration `0073` (`daily_affection_sum`/`last_affection_date`). | ✅ |
 | Đổi id item còn lại (nếu muốn) | Nay chỉ NEW item dùng id sạch; legacy đã map | 🟢 |
 
@@ -83,13 +83,12 @@
 
 > Bối cảnh mới: bot đã public trên Top.gg → user thật đổ vào. Ưu tiên xoay quanh **thấy được chuyện gì đang xảy ra** + **giữ chân**.
 
-1. 🟠 **Telemetry kinh tế** — log cung tiền/ngày + top earner (đang MÙ dữ liệu; cần để phát hiện lạm phát/exploit khi traffic thật vào). *Nền tảng cho mọi quyết định tune sau này.*
-2. 🟠 **Feature giữ chân sâu (chọn 1)** — **Album/Bộ sưu tập** (Pokédex cá/quặng/công thức, thưởng hoàn thành) HOẶC **Battle Pass mùa** (free+premium track gắn lễ hội VN). Mục tiêu dài hạn cho người chơi mới.
-3. 🟢 **Hardening nhỏ** — thêm timeout fetch cho `/image` (cat/dog/waifu) chống treo interaction.
-4. 🟢 **DX/chất lượng** — gom `lib/messages.js` (chuỗi lỗi lặp + `formatCooldown`); mở rộng catalog item (§2) khi cần thêm chiều sâu.
-5. 🟢 **Chiến lược lớn khác** (§6) — dating-sim nhẹ, world event, referral, clan nâng cao — khi muốn đầu tư sâu.
+1. 🟠 **Feature giữ chân sâu (chọn 1)** — **Album/Bộ sưu tập** (Pokédex cá/quặng/công thức, thưởng hoàn thành) HOẶC **Battle Pass mùa** (free+premium track gắn lễ hội VN). Mục tiêu dài hạn cho người chơi mới. *← Việc lớn tiếp theo; giờ đã có telemetry để đo hiệu quả.*
+2. 🟢 **Hardening nhỏ** — thêm timeout fetch cho `/image` (cat/dog/waifu) chống treo interaction.
+3. 🟢 **DX/chất lượng** — gom `lib/messages.js` (chuỗi lỗi lặp + `formatCooldown`); mở rộng catalog item (§2) khi cần thêm chiều sâu.
+4. 🟢 **Chiến lược lớn khác** (§6) — dating-sim nhẹ, world event, referral, clan nâng cao — khi muốn đầu tư sâu.
 
-*(Đã xong gần đây: trí nhớ Waguri end-to-end, `/deletedata` GDPR, bakery P2 staff/decor, newbie chain, welcome per-server, harden /confession & /buy, integration test, affection cap.)*
+*(Đã xong gần đây: **telemetry kinh tế** `/eco-admin report`, trí nhớ Waguri end-to-end, `/deletedata` GDPR, bakery P2 staff/decor, newbie chain, welcome per-server, harden /confession & /buy, integration test, affection cap.)*
 
 ---
 
