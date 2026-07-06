@@ -4,24 +4,27 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "../lib/supabase/client";
 import { getDiscordIdentity } from "../lib/discord";
+import { useLanguage } from "./LanguageProvider";
+import LanguageSelector from "./LanguageSelector";
 
 const BOT_ID = "1482620714690543738";
 const INVITE_URL = `https://discord.com/oauth2/authorize?client_id=${BOT_ID}&permissions=1099512007760&integration_type=0&scope=bot+applications.commands`;
 const VOTE_URL = `https://top.gg/bot/${BOT_ID}/vote`;
 
-const NAV = [
-  { href: "/commands", label: "Lệnh" },
-  { href: "/wiki", label: "Wiki" },
-  { href: "/leaderboard", label: "Bảng xếp hạng" },
-  { href: VOTE_URL, label: "💝 Vote", external: true },
-];
-
 type Me = { username: string; avatar: string | null } | null;
 
 export default function SiteHeader() {
+  const { t } = useLanguage();
   const [me, setMe] = useState<Me>(null);
   const [ready, setReady] = useState(false);
   const [open, setOpen] = useState(false);
+
+  const NAV = [
+    { href: "/commands", label: t("nav.commands") },
+    { href: "/wiki", label: t("nav.wiki") },
+    { href: "/leaderboard", label: t("nav.leaderboard") },
+    { href: VOTE_URL, label: t("nav.vote"), external: true },
+  ];
 
   useEffect(() => {
     const supabase = createClient();
@@ -46,14 +49,14 @@ export default function SiteHeader() {
           // eslint-disable-next-line @next/next/no-img-element
           <img src={me.avatar} alt="" width={20} height={20} className="rounded-full" />
         ) : null}
-        Dashboard
+        {t("nav.dashboard")}
       </Link>
     ) : (
       <Link
         href="/login"
         className={`${mobile ? "w-full text-center px-4 py-2" : "px-4 py-2"} rounded-full text-xs font-bold border border-pink-300/30 text-pink-200 hover:text-white hover:border-pink-300/60 bg-pink-500/5 transition-all`}
       >
-        Đăng nhập
+        {t("nav.login")}
       </Link>
     );
 
@@ -79,6 +82,7 @@ export default function SiteHeader() {
               </Link>
             )
           )}
+          <LanguageSelector />
           {authArea()}
           <a
             href={INVITE_URL}
@@ -86,7 +90,7 @@ export default function SiteHeader() {
             rel="noopener noreferrer"
             className="px-5 py-2.5 rounded-full text-xs font-bold bg-pink-300 text-[#0d0812] hover:bg-pink-400 shadow-[0_0_20px_rgba(255,183,197,0.3)] transition-all duration-300 hover:-translate-y-0.5"
           >
-            Mời Waguri 🌸
+            {t("nav.invite")}
           </a>
         </nav>
 
@@ -117,6 +121,9 @@ export default function SiteHeader() {
               </Link>
             )
           )}
+          <div className="flex justify-center py-1">
+            <LanguageSelector />
+          </div>
           {authArea(true)}
           <a
             href={INVITE_URL}
@@ -124,7 +131,7 @@ export default function SiteHeader() {
             rel="noopener noreferrer"
             className="w-full text-center px-5 py-2.5 rounded-full text-sm font-bold bg-pink-300 text-[#0d0812] hover:bg-pink-400 transition-all"
           >
-            Mời Waguri 🌸
+            {t("nav.invite")}
           </a>
         </div>
       ) : null}

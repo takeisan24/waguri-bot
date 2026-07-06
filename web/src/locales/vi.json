@@ -1,0 +1,59 @@
+{
+  "nav": {
+    "commands": "Lệnh",
+    "wiki": "Wiki",
+    "leaderboard": "Bảng xếp hạng",
+    "vote": "💝 Vote",
+    "invite": "Mời Waguri 🌸",
+    "login": "Đăng nhập",
+    "dashboard": "Dashboard",
+    "logout": "Đăng xuất"
+  },
+  "footer": {
+    "desc": "Bot Discord RPG kinh tế và AI Waifu bản địa hóa văn hóa Việt Nam.",
+    "links": "Liên kết nhanh",
+    "support": "Hỗ trợ (Discord)",
+    "tos": "Điều khoản",
+    "privacy": "Quyền riêng tư",
+    "copyright": "© {year} Waguri Bot. Bản quyền thuộc về team phát triển Waguri."
+  },
+  "home": {
+    "hero": {
+      "badge": "Waifu AI & RPG Việt Nam 🌸",
+      "title_1": "Trò chuyện AI Waifu &",
+      "title_2": "Game Kinh Tế RPG Việt Nam",
+      "subtitle": "Trải nghiệm thế giới nhập vai vui nhộn, đi làm, thăng tiến nghề nghiệp, minigame may rủi, bang hội, và trò chuyện cùng bé Waguri Kaoruko ngọt ngào ngay trên server Discord của bạn!",
+      "invite_btn": "Mời Waguri vào Discord 🌸",
+      "login_btn": "Đăng nhập Dashboard ⚡"
+    },
+    "features": {
+      "title": "Tính năng nổi bật",
+      "subtitle": "Khám phá các mảnh ghép độc đáo tạo nên thế giới đầy màu sắc của Waguri",
+      "ai_chat_title": "💬 Trò chuyện AI Waifu",
+      "ai_chat_desc": "Tích hợp Gemini AI siêu mượt, nhớ tên biệt danh, tự lưu ký ức để cuộc trò chuyện thêm ngọt ngào gắn kết.",
+      "economy_title": "💼 Game Kinh Tế Chi Tiết",
+      "economy_desc": "Hệ thống đi làm, mở 13 nghề, mua xe di chuyển, thăng tiến cấp bậc và nâng cấp tiệm bánh Gekka nướng bánh kiếm xu.",
+      "minigames_title": "🎲 Minigames Giải Trí",
+      "minigames_desc": "Thử thách vận may cùng Loto, Bingo, Tài Xỉu, Bầu Cua, và các ván bài kịch tính ngay trong Discord server.",
+      "clans_title": "🏰 Bang Hội & Tiệm Bánh",
+      "clans_desc": "Lập bang cày cuốc, chia cổ tức bang hội, cùng quản lý Tiệm Bánh Gekka, thuê NPC làm việc để làm giàu tập thể."
+    },
+    "stats": {
+      "servers": "Server hoạt động",
+      "users": "Người dùng đã chơi",
+      "commands": "Lượt dùng lệnh/ngày",
+      "uptime": "Uptime ổn định"
+    },
+    "faq": {
+      "title": "Câu hỏi thường gặp",
+      "q1": "Làm thế nào để bắt đầu chơi?",
+      "a1": "Cực kỳ đơn giản! Chỉ cần nhấn nút 'Mời Waguri vào Discord', thêm bot vào server của bạn và gõ lệnh `/start` hoặc `/help` để xem hướng dẫn chi tiết nhé.",
+      "q2": "Lệnh điểm danh hàng ngày là gì?",
+      "a2": "Bạn dùng lệnh `/daily` để nhận xu điểm danh hàng ngày. Nếu chăm chỉ điểm danh liên tiếp (streak), bạn sẽ nhận được phần thưởng nhân lên cực kỳ lớn đó!",
+      "q3": "Tính năng trò chuyện AI hoạt động thế nào?",
+      "a3": "Bạn có thể gõ lệnh `/ask <nội dung>` hoặc ping trực tiếp bot trong kênh chat. Waguri sẽ tự động nhận diện ngôn ngữ và phản hồi cậu thật ngọt ngào.",
+      "q4": "Làm sao để kiếm được nhiều xu nhất?",
+      "a4": "Hãy đi `/work` đều đặn, hoàn thành nhiệm vụ `/quest`, chăm chỉ đi `/fish` hay `/mine` kiếm nguyên liệu, sau đó nướng bánh ở `/tiembanh` để bán bánh thu tiền nhé!"
+    }
+  }
+}

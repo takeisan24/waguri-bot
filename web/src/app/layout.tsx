@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Nunito, Baloo_2 } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import { getLocaleServer } from "../lib/i18n";
+import { LanguageProvider } from "../components/LanguageProvider";
 import "./globals.css";
 
 // Body: Nunito (bo tròn, ấm áp) · Tiêu đề: Baloo 2 (dễ thương) — cả hai đủ dấu tiếng Việt.
@@ -43,18 +45,22 @@ export const viewport = {
   themeColor: "#ffb7c5",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocaleServer();
+
   return (
     <html
-      lang="vi"
+      lang={locale}
       className={`${nunito.variable} ${baloo.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col font-sans bg-[#0a060d] text-slate-100 overflow-x-hidden">
-        {children}
+        <LanguageProvider locale={locale}>
+          {children}
+        </LanguageProvider>
         <Analytics />
       </body>
     </html>

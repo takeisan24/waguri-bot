@@ -12,6 +12,8 @@ import EventBanner from "../components/EventBanner";
 import { PREMIUM_PLANS, PLAN_ORDER } from "../lib/premium";
 import { createAdminClient } from "../lib/supabase/admin";
 import WaguriFloat from "../components/WaguriFloat";
+import HeroContent from "../components/HeroContent";
+import FeaturesGrid from "../components/FeaturesGrid";
 
 export default async function Home() {
   let latestAnnouncement = "";
@@ -68,51 +70,10 @@ export default async function Home() {
         <div className="w-full max-w-3xl mx-auto mb-6">
           <EventBanner />
         </div>
-        <div className="text-center max-w-3xl mx-auto mb-16 space-y-6">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="https://media.tenor.com/saOAfF_zx6UAAAAM/kaoruko-waguri-the-fragrant-flower-blooms-with-dignity.gif"
-            alt="Waguri Kaoruko"
-            width={128}
-            height={128}
-            loading="lazy"
-            className="mx-auto w-28 h-28 rounded-full border-2 border-pink-300/40 object-cover shadow-[0_0_45px_rgba(255,183,197,0.35)]"
-          />
-          <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full border border-pink-300/20 bg-pink-500/5 text-pink-300 text-xs font-semibold tracking-wide backdrop-blur-md">
-            <span>🌸 Bạn gái AI waifu & Quản gia kinh tế RPG</span>
-          </div>
-
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-white leading-tight">
-            Nâng tầm Server của bạn cùng{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-300 via-rose-300 to-purple-400 text-glow">
-              Waguri
-            </span>
-          </h1>
-
-          <p className="text-base sm:text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed">
-            Một cô bạn AI waifu dịu dàng biết trò chuyện tâm sự, vừa là game kinh tế nhập vai đậm chất Việt Nam (đi làm, mở nghề, minigame may rủi, lì xì, bang hội...) cực kỳ vui nhộn ngay trên Discord!
-          </p>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-            <a
-              href="https://discord.com/oauth2/authorize?client_id=1482620714690543738&permissions=1099512007760&integration_type=0&scope=bot+applications.commands"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full sm:w-auto px-8 py-4 rounded-full font-bold bg-pink-300 text-[#0d0812] hover:bg-pink-400 shadow-[0_0_30px_rgba(255,183,197,0.35)] hover:shadow-[0_0_35px_rgba(255,183,197,0.55)] transition-all duration-300 transform hover:-translate-y-1 text-center cursor-pointer"
-            >
-              Mời Waguri 🌸
-            </a>
-            <a
-              href="#features"
-              className="w-full sm:w-auto px-8 py-4 rounded-full font-bold border border-slate-700 text-slate-300 hover:text-white hover:border-pink-300/50 bg-[#120c1a]/30 backdrop-blur-md transition-all duration-300 text-center cursor-pointer"
-            >
-              Khám Phá Tính Năng
-            </a>
-          </div>
+        <HeroContent />
 
           {/* Số liệu live (ẩn nếu bot offline / chưa mở cổng) */}
           <LiveStats />
-        </div>
 
         {/* Bản Tin Cập Nhật / Announcements */}
         <section id="announcements" className="w-full max-w-4xl mx-auto py-8 md:py-12 scroll-mt-20">
@@ -180,68 +141,7 @@ export default async function Home() {
         </section>
 
         {/* Feature Grid Section */}
-        <section id="features" className="w-full py-16 md:py-24 scroll-mt-20">
-          <div className="text-center max-w-2xl mx-auto mb-16 space-y-3">
-            <h2 className="text-3xl md:text-4xl font-extrabold text-white">Tính Năng Nổi Bật</h2>
-            <p className="text-slate-400 text-sm md:text-base">Waguri sở hữu hệ thống trò chơi nhập vai cực kỳ phong phú và cân bằng sâu sắc.</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Feature 1 */}
-            <div className="glass-panel glass-panel-hover p-6 rounded-2xl flex flex-col space-y-3">
-              <span className="text-3xl">💬</span>
-              <h3 className="text-lg font-bold text-white">Bạn Gái AI Trò Chuyện</h3>
-              <p className="text-slate-400 text-sm leading-relaxed">
-                Persona ngọt ngào, dịu dàng lấy cảm hứng từ Waguri Kaoruko. Chat thông minh qua Gemini API, hỗ trợ ghi nhớ ngữ cảnh trò chuyện linh hoạt.
-              </p>
-            </div>
-
-            {/* Feature 2 */}
-            <div className="glass-panel glass-panel-hover p-6 rounded-2xl flex flex-col space-y-3">
-              <span className="text-3xl">💼</span>
-              <h3 className="text-lg font-bold text-white">Kinh Tế Nhập Vai Việt</h3>
-              <p className="text-slate-400 text-sm leading-relaxed">
-                Hơn 70 lệnh đi làm kiếm tiền, mua sắm vật phẩm. Đăng ký nghề nghiệp thực tế: bán trà đá vỉa hè, chạy xe ôm, đầu bếp tiệm Gekka, hay đại gia.
-              </p>
-            </div>
-
-            {/* Feature 3 */}
-            <div className="glass-panel glass-panel-hover p-6 rounded-2xl flex flex-col space-y-3">
-              <span className="text-3xl">⚡</span>
-              <h3 className="text-lg font-bold text-white">Thể Lực & Mệt Mỏi</h3>
-              <p className="text-slate-400 text-sm leading-relaxed">
-                Hệ thống năng lượng giới hạn lượt cày cuốc. Mức độ mệt mỏi tăng cao nếu làm việc quá sức làm giảm thu nhập thực tế, chống lạm phát tối đa.
-              </p>
-            </div>
-
-            {/* Feature 4 */}
-            <div className="glass-panel glass-panel-hover p-6 rounded-2xl flex flex-col space-y-3">
-              <span className="text-3xl">🎲</span>
-              <h3 className="text-lg font-bold text-white">Minigame May Rủi Đa Dạng</h3>
-              <p className="text-slate-400 text-sm leading-relaxed">
-                Tài Xỉu, Bầu Cua, Coinflip, Blackjack, Ba Cây. Đặc biệt là Loto và Bingo chơi nhiều người ngay trong phòng voice, máy tự gọi số trực tiếp.
-              </p>
-            </div>
-
-            {/* Feature 5 */}
-            <div className="glass-panel glass-panel-hover p-6 rounded-2xl flex flex-col space-y-3">
-              <span className="text-3xl">🏰</span>
-              <h3 className="text-lg font-bold text-white">Bang Hội & Đại Chiến</h3>
-              <p className="text-slate-400 text-sm leading-relaxed">
-                Thành lập bang hội, nộp quỹ xây dựng thế lực. Kích hoạt chiến tranh bang phái PvP cướp tiền quỹ của bang đối thủ cực kịch tính.
-              </p>
-            </div>
-
-            {/* Feature 6 */}
-            <div className="glass-panel glass-panel-hover p-6 rounded-2xl flex flex-col space-y-3">
-              <span className="text-3xl">🏦</span>
-              <h3 className="text-lg font-bold text-white">Tài Chính & Vay Nợ</h3>
-              <p className="text-slate-400 text-sm leading-relaxed">
-                Gửi tiết kiệm ngân hàng có giới hạn lãi suất. Chuyển tiền P2P tiện lợi, hệ thống vay nợ có kỳ hạn và cưỡng chế đòi nợ tự động.
-              </p>
-            </div>
-          </div>
-        </section>
+        <FeaturesGrid />
 
         {/* Đặc sản Việt */}
         <section className="w-full py-16 md:py-20">
