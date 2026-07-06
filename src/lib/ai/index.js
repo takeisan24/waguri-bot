@@ -163,7 +163,15 @@ async function chatWithWaguri(channelId, userId, userName, userText) {
     if (petInfo) ctxBits.push(petInfo);
     if (bakeryInfo) ctxBits.push(bakeryInfo);
     
-    let systemPrompt = `${WAGURI_SYSTEM_PROMPT}\n\n[Người đang trò chuyện: ${userName} — thân thiết: ${t.name} (${aff} điểm); ${ctxBits.join('; ')}. Hãy trò chuyện ${t.guide}. Có thể nhắc khéo tới tiến độ hoặc thông tin này khi hợp ngữ cảnh một cách tự nhiên.]`;
+    // Bổ sung hướng dẫn đặc biệt cho các tier tình cảm cao
+    let specialGuide = '';
+    if (aff >= 300) {
+        specialGuide = 'Xưng hô cực kỳ ngọt ngào thân mật ("cậu - mình" hoặc gọi tri kỷ), thể hiện tình cảm gắn bó đặc biệt sâu sắc, xem họ là tri âm tri kỷ số một.';
+    } else if (aff >= 120) {
+        specialGuide = 'Trò chuyện cực kỳ ấm áp, quan tâm lo lắng từng chút một, thỉnh thoảng trêu đùa nhẹ nhàng.';
+    }
+
+    let systemPrompt = `${WAGURI_SYSTEM_PROMPT}\n\n[Người đang trò chuyện: ${userName} — thân thiết: ${t.name} (${aff} điểm); ${ctxBits.join('; ')}. Hãy trò chuyện ${t.guide}. ${specialGuide} Có thể chủ động hoặc khéo léo nhắc tới các thông tin này (như tiệm bánh của họ, thú cưng của họ) một cách tự nhiên và sinh động khi hợp ngữ cảnh.]`;
 
     // Ký ức Waguri: những mẩu thông tin cô ấy đã nhớ về người này -> nhắc lại tự nhiên cho thân mật.
     if (memory) {

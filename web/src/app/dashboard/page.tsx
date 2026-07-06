@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "../../lib/supabase/server";
 import { createAdminClient } from "../../lib/supabase/admin";
 import { getDiscordIdentity } from "../../lib/discord";
-import { getLevelProgress, affectionTier, fmtVND, getCurrentSeasonId, getSeasonLabel } from "../../lib/game";
+import { getLevelProgress, affectionTier, fmtVND, getCurrentSeasonId, getSeasonLabel, findPetSpecies, getPetLevelProgress } from "../../lib/game";
 import { toggleProfilePublic, toggleVoteReminder } from "./actions";
 import ShareProfileButton from "../../components/ShareProfileButton";
 import EventBanner from "../../components/EventBanner";
@@ -78,7 +78,7 @@ export default async function Dashboard() {
     const [pg, pl, pt] = await Promise.all([
       admin.from("pigs").select("*").eq("user_id", id).maybeSingle(),
       admin.from("plants").select("*").eq("user_id", id).maybeSingle(),
-      admin.from("pets").select("*").eq("user_id", id).maybeSingle(),
+      admin.from("user_pets").select("*").eq("user_id", id).maybeSingle(),
     ]);
     pig = (pg.data as unknown as PigRow) ?? null;
     plant = (pl.data as unknown as PlantRow) ?? null;
@@ -215,6 +215,34 @@ export default async function Dashboard() {
               ) : null}
             </div>
 
+            {/* Thiện cảm với Waguri */}
+            <div className="glass-panel rounded-3xl p-6 space-y-4 border border-pink-300/10 bg-gradient-to-br from-pink-500/5 to-purple-500/5">
+              <h2 className="text-lg font-extrabold text-white flex items-center gap-1.5">💖 Thiện cảm với Waguri</h2>
+              <div className="space-y-3">
+                <div className="flex justify-between items-baseline">
+                  <span className="text-xs text-slate-400 font-medium">Bậc quan hệ:</span>
+                  <span className="text-sm font-extrabold text-pink-300">{affectionTier(row?.affection ?? 0)}</span>
+                </div>
+                <div>
+                  <div className="flex justify-between text-[11px] text-slate-400 mb-1">
+                    <span>Điểm thiện cảm</span>
+                    <span>{row?.affection ?? 0} điểm</span>
+                  </div>
+                  {(() => {
+                    const aff = Number(row?.affection ?? 0);
+                    const tiers = [0, 15, 50, 120, 300];
+                    const next = tiers.find(t => t > aff) || 300;
+                    const pct = Math.min(Math.floor((aff / next) * 100), 100);
+                    return (
+                      <div className="h-2.5 rounded-full bg-[#1c1424] overflow-hidden">
+                        <div className="h-full rounded-full bg-gradient-to-r from-pink-400 to-rose-500" style={{ width: `${pct}%` }} />
+                      </div>
+                    );
+                  })()}
+                </div>
+              </div>
+            </div>
+
             {/* Sổ Sứ Mệnh */}
             <div className="glass-panel rounded-3xl p-6 space-y-4 border border-pink-300/10">
               <div className="flex justify-between items-center">
@@ -249,7 +277,7 @@ export default async function Dashboard() {
             {/* Nông trại & thú cưng */}
             <div className="glass-panel rounded-3xl p-6 space-y-3 border border-pink-300/10">
               <h2 className="text-lg font-extrabold text-white">🌾 Nông trại &amp; Thú cưng</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                 <div className="rounded-2xl bg-pink-500/5 px-4 py-3">
                   <p className="text-xs text-pink-300/80">🐷 Heo</p>
                   <p className="text-white font-semibold">{pig ? (pig.sick ? "Đang bệnh 🤒" : `Giai đoạn: ${pig.stage}`) : "Chưa nuôi"}</p>
@@ -258,9 +286,40 @@ export default async function Dashboard() {
                   <p className="text-xs text-pink-300/80">🌱 Cây</p>
                   <p className="text-white font-semibold">{plant ? `Giai đoạn: ${plant.stage}` : "Chưa trồng"}</p>
                 </div>
-                <div className="rounded-2xl bg-pink-500/5 px-4 py-3">
+                
+                <div className="rounded-2xl bg-pink-500/5 px-4 py-4 sm:col-span-2 flex flex-col gap-2">
                   <p className="text-xs text-pink-300/80">🐾 Thú cưng</p>
-                  <p className="text-white font-semibold">{pet ? (pet.name || pet.species || "Có") : "Chưa có"}</p>
+                  {pet ? (() => {
+                    const sp = findPetSpecies(pet.species || "");
+                    const { level, expIntoLevel, expForNextLevel } = getPetLevelProgress(pet.exp || 0);
+                    const pct = expForNextLevel > 0 ? Math.min((expIntoLevel / expForNextLevel) * 100, 100) : 0;
+                    const activeSkills = sp?.skills.filter(s => level >= s.lvl) || [];
+
+                    return (
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-3">
+                          <span className="text-3xl">{sp?.emoji || "🐾"}</span>
+                          <div>
+                            <p className="text-white font-bold text-base">{pet.name || sp?.name} <span className="text-xs text-pink-300 font-normal bg-pink-500/10 px-2 py-0.5 rounded-full ml-1">Lv.{level}</span></p>
+                            <p className="text-[10px] text-slate-400 mt-0.5">{expIntoLevel}/{expForNextLevel} EXP ({Math.round(pct)}%)</p>
+                          </div>
+                        </div>
+                        <div className="h-2 rounded-full bg-[#1c1424] overflow-hidden">
+                          <div className="h-full bg-pink-400 rounded-full" style={{ width: `${pct}%` }} />
+                        </div>
+                        {activeSkills.length > 0 && (
+                          <div className="mt-2 pt-2 border-t border-slate-800/60 space-y-1">
+                            <p className="text-xs text-pink-300 font-bold">✨ Kỹ năng đang kích hoạt:</p>
+                            {activeSkills.map((sk, idx) => (
+                              <p key={idx} className="text-xs text-slate-300 leading-relaxed">• {sk.desc}</p>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })() : (
+                    <p className="text-white font-semibold">Chưa nuôi thú cưng</p>
+                  )}
                 </div>
               </div>
             </div>

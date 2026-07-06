@@ -136,8 +136,23 @@ async function subThu(interaction) {
 
     let cakeMsg = '';
     if (r.cakes > 0) {
-        await db.giveItemAdmin(interaction.user.id, B.CAKE_ITEM, r.cakes);
-        cakeMsg = `\n🍓 Tiệm ra lò **${r.cakes}× Bánh Kem Dâu Gekka**! (vào kho — /eat nhận buff hoặc tặng người thương 💕)`;
+        let cakeId = B.CAKE_ITEM;
+        let cakeName = 'Bánh Kem Dâu Gekka';
+        let cakeEmoji = '🍓';
+
+        const seasonId = require('../../lib/battlepass').getCurrentSeasonId();
+        if (seasonId.startsWith('tet_')) {
+            cakeId = 'banh_chung';
+            cakeName = 'Bánh Chưng Xanh Tết';
+            cakeEmoji = '🎍';
+        } else if (seasonId.startsWith('trungthu_')) {
+            cakeId = 'banh_trung_thu';
+            cakeName = 'Bánh Trung Thu Thập Cẩm';
+            cakeEmoji = '🥮';
+        }
+
+        await db.giveItemAdmin(interaction.user.id, cakeId, r.cakes);
+        cakeMsg = `\n${cakeEmoji} Tiệm ra lò **${r.cakes}× ${cakeName}**! (vào kho — /eat nhận buff hoặc tặng người thương 💕)`;
     }
     db.questIncr(interaction.user.id, 'bake', 1);
 

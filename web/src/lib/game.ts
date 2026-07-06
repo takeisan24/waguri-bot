@@ -106,3 +106,50 @@ export function getSeasonLabel(seasonId: string) {
   return "Mùa Giải Mới 🌸";
 }
 
+// Thú cưng (đồng bộ với src/data/pets.js)
+export const PET_SPECIES = [
+  { id: "meo", name: "Mèo con", emoji: "🐱", skills: [
+      { lvl: 1, desc: "🐱 Tăng 2% cơ hội câu cá ngon." },
+      { lvl: 5, desc: "💫 Tăng 5% cơ hội câu cá siêu hiếm (Cá Rồng Vàng/Cá Koi Nhật)." },
+      { lvl: 10, desc: "💰 Kỹ năng [Chiêu tài tiến bảo]: Tặng ngẫu nhiên 1,000 - 3,000 xu mỗi ngày khi đăng nhập." }
+  ]},
+  { id: "cun", name: "Cún con", emoji: "🐶", skills: [
+      { lvl: 1, desc: "🐶 Tăng 5% tỉ lệ làm việc thành công." },
+      { lvl: 5, desc: "🚨 Giảm 15% mức tăng độ nghi ngờ cảnh sát khi làm việc mờ ám." },
+      { lvl: 10, desc: "🐕 Kỹ năng [Trung thành]: Bảo vệ 25% số tiền ví không bị mất khi bị cướp." }
+  ]},
+  { id: "rong", name: "Rồng con", emoji: "🐲", skills: [
+      { lvl: 1, desc: "🐲 Tăng 5% EXP nhận được cho mọi hoạt động cày cuốc." },
+      { lvl: 5, desc: "✨ Nhận thêm +15% EXP toàn bộ các hoạt động cày cuốc." },
+      { lvl: 10, desc: "⏳ Kỹ năng [Bá chủ thời gian]: Giảm 50% thời gian chờ cooldown của lệnh cày cuốc." }
+  ]},
+  { id: "cao", name: "Cáo nhỏ", emoji: "🦊", skills: [
+      { lvl: 1, desc: "🦊 Tăng 5% tỉ lệ cướp tiền thành công." },
+      { lvl: 5, desc: "🌾 Tăng 10% năng suất thu hoạch nông sản trồng trọt." },
+      { lvl: 10, desc: "🎭 Kỹ năng [Ảo ảnh]: Nhìn thấy trước 1 ô Bingo chưa mở khi chơi minigame." }
+  ]},
+  { id: "tho", name: "Thỏ con", emoji: "🐰", skills: [
+      { lvl: 1, desc: "🐰 Giảm 5% năng lượng tiêu hao khi chặt gỗ / đào mỏ." },
+      { lvl: 5, desc: "🥗 Giảm 15% năng lượng tiêu hao khi làm việc." },
+      { lvl: 10, desc: "💤 Kỹ năng [Mơ mộng]: Ngủ (/nghingoi) hồi đầy năng lượng nhanh gấp đôi." }
+  ]},
+  { id: "gau", name: "Gấu con", emoji: "🐻", skills: [
+      { lvl: 1, desc: "🐻 Tăng 5% lương cơ bản khi làm việc (/work)." },
+      { lvl: 5, desc: "💎 Tăng 10% tỉ lệ rơi quặng quý (Kim cương/Vàng) khi đào mỏ." },
+      { lvl: 10, desc: "🌋 Kỹ năng [Địa chấn]: Mỗi lần đào mỏ có 2% cơ hội x5 sản lượng nhận được." }
+  ]}
+];
+
+export function getPetLevelProgress(exp: number) {
+  const e = Math.max(0, exp || 0);
+  const level = Math.floor(Math.sqrt(e / 30)) + 1;
+  const floor = 30 * (level - 1) * (level - 1);
+  const next = 30 * level * level;
+  return { level, expIntoLevel: e - floor, expForNextLevel: next - floor };
+}
+
+export function findPetSpecies(speciesId: string) {
+  return PET_SPECIES.find((s) => s.id === speciesId) || null;
+}
+
+

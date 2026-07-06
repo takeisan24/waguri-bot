@@ -96,6 +96,7 @@ const CATEGORIES: Cat[] = [
     cmds: [
       ["ask", "trò chuyện với Waguri (hoặc @tag)"],
       ["premium", "gói Premium 💎 (thêm lượt chat AI)"],
+      ["henho", "hẹn hò và tặng quà cho Waguri để bồi đắp tình cảm 💖"],
     ],
   },
   {
