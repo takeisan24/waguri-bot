@@ -46,11 +46,16 @@ module.exports = {
 
         // Tự nhận thưởng các nhiệm vụ đã hoàn thành mà chưa nhận
         let totalReward = 0;
+        let claimedCount = 0;
         for (const q of QUESTS) {
             const cur = Number(counters[q.key] || 0);
             if (cur >= q.required && !claimed[q.id]) {
                 const r = await db.questClaim(userId, q);
-                if (r === 'ok') { totalReward += q.reward; claimed[q.id] = true; }
+                if (r === 'ok') { 
+                    totalReward += q.reward; 
+                    claimed[q.id] = true; 
+                    claimedCount++;
+                }
             }
         }
 
@@ -71,8 +76,25 @@ module.exports = {
         footerObj.text = 'Nhiệm vụ tân thủ tự cộng/nhận thưởng · ' + footerObj.text;
         embed.setFooter(footerObj);
 
+        // Cộng XP Sổ Sứ Mệnh (+150 XP mỗi quest)
+        let bpMsg = '';
+        if (claimedCount > 0) {
+            const bpRes = await require('../../lib/battlepass').addXp(userId, claimedCount * 150);
+            if (bpRes && bpRes.levelUp) {
+                bpMsg = `🎉 **Sổ Sứ Mệnh**: Cậu đã đạt **Cấp ${bpRes.newLevel}**! Gõ \`/pass\` nhận quà nha~ 🎁`;
+            }
+        }
+
         if (totalReward > 0) {
-            embed.addFields({ name: '🎉 Vừa nhận thưởng ngày', value: `+${fmt(totalReward)} ${config.CURRENCY}!`, inline: false });
+            let val = `+${fmt(totalReward)} ${config.CURRENCY}!`;
+            if (claimedCount > 0) {
+                val += `\n+${claimedCount * 150} XP Sổ Sứ Mệnh 📖`;
+            }
+            embed.addFields({ name: '🎉 Vừa nhận thưởng ngày', value: val, inline: false });
+        }
+
+        if (bpMsg) {
+            embed.addFields({ name: '🎉 Lên Cấp Sổ Sứ Mệnh', value: bpMsg, inline: false });
         }
         await interaction.editReply({ embeds: [embed] });
     },

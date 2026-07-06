@@ -24,6 +24,18 @@ module.exports = {
             });
             return interaction.editReply({ embeds: [embed] });
         }
+        
+        // Cộng XP Sổ Sứ Mệnh (30% cơ hội, max 50 XP/ngày)
+        if (Math.random() < 0.30) {
+            const bpRes = await require('../../lib/battlepass').addAiXp(interaction.user.id);
+            if (bpRes && bpRes.success && bpRes.levelUp) {
+                await interaction.followUp({
+                    content: `🎉 **Sổ Sứ Mệnh**: Cậu đã đạt **Cấp ${bpRes.newLevel}**! Gõ \`/pass\` nhận quà nha~ 🎁`,
+                    ephemeral: true
+                }).catch(() => null);
+            }
+        }
+
         await interaction.editReply(res.reply.slice(0, 2000));
     },
 };

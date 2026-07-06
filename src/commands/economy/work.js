@@ -203,6 +203,15 @@ module.exports = {
             const newExp = await db.updateExp(userId, gainedExp);
             const newLevel = newExp === null ? oldLevel : getLevelFromExp(newExp);
 
+            // Cộng XP Sổ Sứ Mệnh (20% cơ hội rơi 20-30 XP)
+            if (Math.random() < 0.20) {
+                const bpXp = Math.floor(Math.random() * 11) + 20; // 20-30 XP
+                const bpRes = await require('../../lib/battlepass').addXp(userId, bpXp);
+                if (bpRes && bpRes.levelUp) {
+                    resultMessage += `\n🎉 **Sổ Sứ Mệnh**: Cậu đã đạt **Cấp ${bpRes.newLevel}**! Gõ \`/pass\` nhận quà nha~ 🎁`;
+                }
+            }
+
             // 6. Embed — kèm 1 gợi ý "bước tiếp theo" theo ngữ cảnh (dẫn dắt người mới)
             let tip = '';
             if (!user.onboarded) tip = 'Người mới hả? Gõ `/start` nhận **quà chào mừng** từ mình nha~ 🎁';

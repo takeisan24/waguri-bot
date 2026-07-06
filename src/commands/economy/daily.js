@@ -52,6 +52,12 @@ module.exports = {
             desc += `\n🏰 Cổ tức bang hội: **+${fmt(r.clan_dividend)}** ${config.CURRENCY}`;
         }
 
+        // Cộng XP Battle Pass (+100 XP)
+        const bpRes = await require('../../lib/battlepass').addXp(interaction.user.id, 100);
+        if (bpRes && bpRes.levelUp) {
+            desc += `\n🎉 **Sổ Sứ Mệnh**: Cậu đã đạt **Cấp ${bpRes.newLevel}**! Gõ \`/pass\` nhận quà nha~ 🎁`;
+        }
+
         const nudge = (u && !u.onboarded)
             ? '> 💡 Người mới hả? Gõ `/start` nhận **quà chào mừng** nha~ 🎁\n'
             : '> 💡 Giờ thì đi `/work` kiếm thêm và xem `/quest` nhận nhiệm vụ hôm nay nha~ 🌸\n';

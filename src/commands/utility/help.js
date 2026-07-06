@@ -22,6 +22,7 @@ const CATEGORIES = [
         ['market', 'chợ mua bán đồ giữa người chơi 🛒'],
         ['inventory', 'xem kho đồ'],
         ['album', 'xem sổ tay sưu tầm vật phẩm và nhận thưởng bộ sưu tập 📖'],
+        ['pass', 'xem và nhận thưởng Sổ Sứ Mệnh (Battle Pass) 📖'],
         ['eat', 'dùng đồ ăn/uống (hồi năng lượng / buff)'],
         ['nghingoi', 'đi ngủ hồi đầy năng lượng (6 tiếng/lần) 😴 (w!ngu)'],
         ['cosmetic', 'trang trí hồ sơ: danh hiệu & màu 🎨'],

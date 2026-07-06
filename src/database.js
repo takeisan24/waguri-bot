@@ -1099,6 +1099,108 @@ async function grantPremium(userId, days) {
 }
 
 // ============================================================
+//  BATTLE PASS / SỔ SỨ MỆNH
+// ============================================================
+
+async function getBattlePass(userId, seasonId) {
+    try {
+        const { data, error } = await supabase
+            .from('battle_pass_users')
+            .select('*')
+            .eq('user_id', userId)
+            .eq('season_id', seasonId)
+            .maybeSingle();
+        if (error) throw error;
+        return data || null;
+    } catch (error) {
+        console.error('[DATABASE ERROR] getBattlePass():', error);
+        return null;
+    }
+}
+
+async function addPassXp(userId, seasonId, xpAmount, xpPerLevel) {
+    try {
+        const { data, error } = await supabase.rpc('add_pass_xp', {
+            p_user_id: userId,
+            p_season_id: seasonId,
+            p_xp_amount: xpAmount,
+            p_xp_per_level: xpPerLevel
+        });
+        if (error) throw error;
+        return data && data.length > 0 ? {
+            xp: data[0].xp,
+            isPremium: data[0].is_premium,
+            oldLevel: data[0].old_level,
+            newLevel: data[0].new_level,
+            levelUp: data[0].new_level > data[0].old_level
+        } : null;
+    } catch (error) {
+        console.error('[DATABASE ERROR] addPassXp():', error);
+        return null;
+    }
+}
+
+async function addAiChatPassXp(userId, seasonId, xpAmount, xpPerLevel, maxDailyXp) {
+    try {
+        const { data, error } = await supabase.rpc('add_ai_chat_pass_xp', {
+            p_user_id: userId,
+            p_season_id: seasonId,
+            p_xp_amount: xpAmount,
+            p_xp_per_level: xpPerLevel,
+            p_max_daily_xp: maxDailyXp
+        });
+        if (error) throw error;
+        return data && data.length > 0 ? {
+            success: data[0].success,
+            xp: data[0].xp,
+            isPremium: data[0].is_premium,
+            oldLevel: data[0].old_level,
+            newLevel: data[0].new_level,
+            gainedXp: data[0].gained_xp,
+            levelUp: data[0].success && (data[0].new_level > data[0].old_level)
+        } : null;
+    } catch (error) {
+        console.error('[DATABASE ERROR] addAiChatPassXp():', error);
+        return null;
+    }
+}
+
+async function buyPremiumPass(userId, seasonId, cost) {
+    try {
+        const { data, error } = await supabase.rpc('buy_premium_pass', {
+            p_user_id: userId,
+            p_season_id: seasonId,
+            p_cost: cost
+        });
+        if (error) throw error;
+        return data; // 'ok', 'user_not_found', 'insufficient_funds', 'already_premium'
+    } catch (error) {
+        console.error('[DATABASE ERROR] buyPremiumPass():', error);
+        return null;
+    }
+}
+
+async function claimPassRewardsBulk(userId, seasonId, freeLevels, premiumLevels, rewardCoins, rewardItems, rewardTitle, xpPerLevel) {
+    try {
+        const { data, error } = await supabase.rpc('claim_pass_rewards_bulk', {
+            p_user_id: userId,
+            p_season_id: seasonId,
+            p_free_levels: freeLevels,
+            p_premium_levels: premiumLevels,
+            p_reward_coins: rewardCoins,
+            p_reward_items: rewardItems, // Mảng JSONB
+            p_reward_title: rewardTitle,
+            p_xp_per_level: xpPerLevel
+        });
+        if (error) throw error;
+        return data; // 'ok', 'pass_not_found', 'already_claimed', 'level_locked', 'premium_locked'
+    } catch (error) {
+        console.error('[DATABASE ERROR] claimPassRewardsBulk():', error);
+        return null;
+    }
+}
+
+// ============================================================
 //  GIAM GIỮ (jail) — chặn kiếm tiền/cờ bạc/trộm khi phạm pháp thất bại
 // ============================================================
 /** Lấy thông tin giam (nhẹ). Trả { jailed_until, jail_reason } hoặc null. */
@@ -1833,6 +1935,14 @@ module.exports = {
     snapshotEconomy,
     getEconomySnapshots,
     grantPremium,
+    // ============================================================
+    //  BATTLE PASS / SỔ SỨ MỆNH
+    // ============================================================
+    getBattlePass,
+    addPassXp,
+    addAiChatPassXp,
+    buyPremiumPass,
+    claimPassRewardsBulk,
     // jail
     getJail,
     jailOrFine,
@@ -1923,5 +2033,20 @@ module.exports = {
     bakeryCollectV2,
     bakeryHire,
     bakeryFire,
+    // tiệm bánh
+    getBakery,
+    bakeryOpen,
+    bakeryStock,
+    bakeryCollect,
+    bakeryUpgrade,
+    bakeryCollectV2,
+    bakeryHire,
+    bakeryFire,
     bakeryDecorate,
+    // battle pass
+    getBattlePass,
+    addPassXp,
+    addAiChatPassXp,
+    buyPremiumPass,
+    claimPassRewardsBulk,
 };

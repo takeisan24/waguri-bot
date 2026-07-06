@@ -190,6 +190,15 @@ module.exports = {
             desc += `\n🎉 Lên **Level ${newLevel}**! Thưởng **+${fmt(bonus)}** ${config.CURRENCY} 🎁`;
         }
 
+        // Cộng XP Sổ Sứ Mệnh (20% cơ hội rơi 20-30 XP)
+        if (Math.random() < 0.20) {
+            const bpXp = Math.floor(Math.random() * 11) + 20; // 20-30 XP
+            const bpRes = await require('../../lib/battlepass').addXp(userId, bpXp);
+            if (bpRes && bpRes.levelUp) {
+                desc += `\n🎉 **Sổ Sứ Mệnh**: Cậu đã đạt **Cấp ${bpRes.newLevel}**! Gõ \`/pass\` nhận quà nha~ 🎁`;
+            }
+        }
+
         const embedType = payout > 0 ? 'success' : 'warning';
         const embed = buildWaguriEmbed(interaction, embedType, {
             title: '🎣・Đi câu cá',

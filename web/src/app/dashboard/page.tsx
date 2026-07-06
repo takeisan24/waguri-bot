@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "../../lib/supabase/server";
 import { createAdminClient } from "../../lib/supabase/admin";
 import { getDiscordIdentity } from "../../lib/discord";
-import { getLevelProgress, affectionTier, fmtVND } from "../../lib/game";
+import { getLevelProgress, affectionTier, fmtVND, getCurrentSeasonId, getSeasonLabel } from "../../lib/game";
 import { toggleProfilePublic, toggleVoteReminder } from "./actions";
 import ShareProfileButton from "../../components/ShareProfileButton";
 import EventBanner from "../../components/EventBanner";
@@ -84,6 +84,21 @@ export default async function Dashboard() {
     plant = (pl.data as unknown as PlantRow) ?? null;
     pet = (pt.data as unknown as PetRow) ?? null;
   }
+
+  const seasonId = getCurrentSeasonId();
+  const seasonLabel = getSeasonLabel(seasonId);
+  const { data: bp } = await admin
+    .from("battle_pass_users")
+    .select("*")
+    .eq("user_id", id)
+    .eq("season_id", seasonId)
+    .maybeSingle();
+
+  const bpXp = bp?.xp ?? 0;
+  const bpLevel = Math.floor(bpXp / 1000);
+  const bpXpIntoLevel = bpXp % 1000;
+  const bpXpPct = Math.min(Math.floor((bpXpIntoLevel / 1000) * 100), 100);
+  const isPassPremium = bp?.is_premium ?? false;
 
   const prog = getLevelProgress(Number(row?.exp || 0));
   const wallet = Number(row?.wallet || 0);
@@ -198,6 +213,37 @@ export default async function Dashboard() {
               {health < 30 ? (
                 <p className="text-xs text-rose-300">⚠️ Sức khỏe yếu (&lt;30) — dùng <code>/eat</code> thuốc/hộp y tế, <code>/nghingoi</code> hoặc <code>/hospital</code> để hồi nhé!</p>
               ) : null}
+            </div>
+
+            {/* Sổ Sứ Mệnh */}
+            <div className="glass-panel rounded-3xl p-6 space-y-4 border border-pink-300/10">
+              <div className="flex justify-between items-center">
+                <h2 className="text-lg font-extrabold text-white flex items-center gap-1.5">📖 Sổ Sứ Mệnh</h2>
+                <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${isPassPremium ? "bg-amber-400/20 text-amber-300 border border-amber-400/30" : "bg-slate-400/15 text-slate-300"}`}>
+                  {isPassPremium ? "👑 Premium" : "🔓 Thường"}
+                </span>
+              </div>
+              <div className="space-y-3">
+                <div className="flex justify-between items-baseline">
+                  <span className="text-xs text-slate-400 font-medium">{seasonLabel}</span>
+                  <span className="text-sm font-extrabold text-pink-300">Cấp {bpLevel}</span>
+                </div>
+                <div>
+                  <div className="flex justify-between text-[11px] text-slate-400 mb-1">
+                    <span>Tiến trình cấp</span>
+                    <span>{bpXpIntoLevel.toLocaleString("vi-VN")}/1,000 XP ({bpXpPct}%)</span>
+                  </div>
+                  <div className="h-2.5 rounded-full bg-[#1c1424] overflow-hidden">
+                    <div className="h-full rounded-full bg-gradient-to-r from-pink-400 to-purple-500" style={{ width: `${bpXpPct}%` }} />
+                  </div>
+                </div>
+              </div>
+              <Link
+                href="/dashboard/pass"
+                className="mt-2 block w-full text-center text-xs py-2.5 rounded-xl bg-pink-500/10 border border-pink-500/20 text-pink-300 font-bold hover:bg-pink-500/15 transition-all"
+              >
+                Xem Chi Tiết &amp; Nhận Quà →
+              </Link>
             </div>
 
             {/* Nông trại & thú cưng */}
