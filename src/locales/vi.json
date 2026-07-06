@@ -1,0 +1,103 @@
+{
+  "common": {
+    "currency": "VNĐ",
+    "error_title": "❌ Lỗi",
+    "warning_title": "⚠️ Cảnh báo",
+    "success_title": "✅ Thành công",
+    "info_title": "ℹ️ Thông tin",
+    "db_error": "Hơ, mình chưa lấy được dữ liệu của cậu, thử lại sau nhé~ 🌸",
+    "retry_later": "Ơ, có lỗi rồi, cậu thử lại sau nhé~ 🌸",
+    "generic_error": "Đã có lỗi xảy ra khi thực thi lệnh này! 🥺",
+    "banned": "Cậu đã bị chặn sử dụng bot~ Liên hệ admin nếu có nhầm lẫn nhé.",
+    "rate_limited": "Cậu thao tác hơi nhanh rồi~ chờ vài giây nhé! 🌸",
+    "item_not_found": "Mình không tìm thấy vật phẩm này~",
+    "insufficient_funds": "Ví cậu không đủ **{cost}** {currency} rồi~ 😟",
+    "no_energy": "Cậu hết năng lượng rồi ({current}/{max} ⚡, cần {cost}). Nghỉ ngơi chút hoặc ăn gì đó bằng `/eat` nhé~ 🌸",
+    "low_health": "Sức khỏe của cậu quá yếu (**{current}/100** ❤️). Cậu cần ít nhất **30** sức khỏe để làm việc. Hãy dùng thuốc/hộp y tế (`/eat`) hoặc chạy lệnh `/hospital` để nhập viện nhé!",
+    "cooldown": "Từ từ thôi nào~ nghỉ {time}s rồi làm tiếp nhé! 🌸",
+    "jailed": "Cậu chưa thể làm việc này khi đang bị giam đâu~\nLý do: **{reason}**\nĐược thả {time}. 🌸",
+    "jailed_no_reason": "Cậu chưa thể làm việc này khi đang bị giam đâu~\nĐược thả {time}. 🌸",
+    "btn": {
+      "confirm": "Xác nhận",
+      "cancel": "Hủy bỏ",
+      "claim_all": "Nhận tất cả 🎁",
+      "back": "Quay lại",
+      "next": "Tiếp theo"
+    }
+  },
+
+  "commands": {
+    "daily": {
+      "success_title": "🎁・Điểm danh thành công!",
+      "already_claimed": "Hôm nay cậu điểm danh rồi mà~ Quay lại sau {time} nhé! 🌸",
+      "nudge_newbie": "> 💡 Người mới hả? Gõ `/start` nhận **quà chào mừng** nha~ 🎁\n",
+      "nudge_member": "> 💡 Giờ thì đi `/work` kiếm thêm và xem `/quest` nhận nhiệm vụ hôm nay nha~ 🌸\n",
+      "greet_return": "🌸 Lâu rồi mới gặp cậu ({days} ngày)~ Mừng cậu quay lại nha, mình nhớ cậu lắm đó! 💕\n\n",
+      "milestone": "\n🏆 **Mốc {streak} ngày liên tiếp!** Thưởng thêm **+{amount}** {currency} 🎉",
+      "interest": "\n📈 Lãi tiết kiệm ngân hàng (0.2%/ngày): **+{amount}** {currency} *(đã cộng vào bank)*.",
+      "tax": "\n🏛️ Thuế tài sản (1% phần vượt 100k): **-{amount}** {currency} *(người giàu góp ngân sách~)*.",
+      "dividend": "\n🏰 Cổ tức bang hội: **+{amount}** {currency}",
+      "bp_levelup": "\n🎉 **Sổ Sứ Mệnh**: Cậu đã đạt **Cấp {level}**! Gõ `/pass` nhận quà nha~ 🎁",
+      "field_streak": "🔥 Chuỗi ngày",
+      "field_streak_val": "{streak} ngày liên tiếp",
+      "field_wallet": "💵 Số dư ví"
+    },
+    "work": {
+      "success_title": "💼・Làm việc chăm chỉ",
+      "fail_title": "❌・Làm việc thất bại",
+      "earn_desc": "\n💵 Nhận lương: **+{amount}** {currency} *(đã cộng vào ví)*",
+      "energy_desc": "\n⚡ Năng lượng còn lại: **{energy}/{max} ⚡** (-{cost})",
+      "event_bonus": "\n🎉 Sự kiện x{mult} đang hoạt động!",
+      "premium_bonus": " *(+10% Premium)*",
+      "disease_warning": "\n🤒 Cậu đang bị bệnh nên bị giảm 30% thu nhập và mất thêm -4 sức khỏe mỗi lần làm việc nha.",
+      "fatigue_warning": "\n⚠️ Cậu đang mệt (năng lượng < 50) nên làm việc kém hiệu quả hơn đó.",
+      "health_lost": "\n💔 Sức khỏe: **{health}/100** (-{loss} ❤️)",
+      "vehicle_used": "\n🚗 Sử dụng **{name}** di chuyển (Năng lượng tiêu hao: {cost} ⚡, độ bền còn: {durability}%)",
+      "vehicle_broken": "\n💥 Xe **{name}** của cậu đã bị hỏng do hết độ bền! Cậu cần dùng `/repair` để sửa xe trước khi sử dụng lại nhé~ 😟"
+    },
+    "fish": {
+      "success_title": "🎣・Câu cá thành công",
+      "fail_title": "❌・Câu cá thất bại",
+      "earn_desc": "\n💵 Bán cá: **+{amount}** {currency} *(cộng thẳng vào ví)*",
+      "energy_desc": "\n⚡ Năng lượng còn lại: **{energy}/{max} ⚡** (-{cost})",
+      "xp_desc": "\n⭐ Kinh nghiệm: +**{xp}** EXP",
+      "bp_levelup": "\n🎉 **Sổ Sứ Mệnh**: Cậu đã đạt **Cấp {level}**! Gõ `/pass` nhận quà nha~ 🎁",
+      "rare_drop": "\n✨ **Siêu phẩm**: Cậu đã câu được **1x {name}**! 🏆",
+      "item_drop": "\n🍓 Cậu nhận được **{qty}x {name}** (đã cất vào kho đồ)."
+    },
+    "gather": {
+      "mine_success_title": "⛏️・Khai thác mỏ thành công",
+      "chop_success_title": "🪓・Chặt gỗ thành công",
+      "earn_desc": "\n💵 Bán khoáng sản/gỗ: **+{amount}** {currency}",
+      "energy_desc": "\n⚡ Năng lượng còn lại: **{energy}/{max} ⚡** (-{cost})",
+      "xp_desc": "\n⭐ Kinh nghiệm: +**{xp}** EXP",
+      "bp_levelup": "\n🎉 **Sổ Sứ Mệnh**: Cậu đã đạt **Cấp {level}**! Gõ `/pass` nhận quà nha~ 🎁",
+      "rare_drop": "\n✨ **Siêu phẩm**: Cậu đã khai thác được **1x {name}**! 🏆",
+      "item_drop": "\n📦 Cậu nhận được **{qty}x {name}** (đã cất vào kho đồ)."
+    },
+    "dating": {
+      "view_title": "💖 Trạng thái Tình Cảm với Waguri",
+      "view_desc": "Mối quan hệ hiện tại của cậu với mình:\n**Bậc tình cảm**: **{tier}**\n**Điểm thiện cảm**: **{score}** điểm\n**Tiến trình bậc**: `[{bar}]` ({pct}%)\n{next_info}",
+      "next_info": "*Còn thiếu **{needed}** điểm để đạt bậc **{next_tier}**!*",
+      "max_info": "*Cậu đã đạt mức độ Tri kỷ cao nhất rồi! Cảm ơn cậu đã luôn ở bên mình nha~ 💞*",
+      "energy_warning": "Cậu hết năng lượng mất rồi ({current}/{max} ⚡, cần {cost}). Nghỉ chút hoặc ăn gì đó rồi đi chơi với mình nha~ 🌸",
+      "capped_msg": "\n💝 *Hôm nay tụi mình đi chơi nhiều rồi, Waguri khẽ cười nhắc: \"Hôm nay đi nhiều mỏi chân rồi á, mai mình dạo phố tiếp nha cậu!\" (Đã đạt giới hạn 100 thiện cảm/ngày)*",
+      "capped_gift": "\n💝 *Waguri xua tay bẽn lẽn: \"Cậu tặng mình nhiều quá chừng rồi á, mình nhận nhiêu đây là vui lắm rồi, cất đi mai tặng mình tiếp nhé!\" (Đã đạt giới hạn 100 thiện cảm/ngày)*",
+      "energy_left": "\n\n⚡ Năng lượng còn lại: **{energy}/{max} ⚡**",
+      "gift_title": "🎁 Tặng quà cho Waguri"
+    },
+    "pet": {
+      "adopt_warning": "Cậu đã có thú cưng rồi mà~ Gõ `/pet view` để xem nhé.",
+      "adopt_success_title": "🐾・Nhận nuôi thành công!",
+      "adopt_success_desc": "Chào mừng {emoji} **{name}** đến với cậu! Nhớ `/pet feed` cho bé lớn nhé~",
+      "view_title": "{emoji}・{name}",
+      "view_field_species": "Loài",
+      "view_field_level": "Cấp độ",
+      "view_field_progress": "Tiến trình EXP ({exp}/{next})",
+      "feed_warning_no_pet": "Cậu chưa có thú cưng để cho ăn~ Gõ `/pet adopt` nhé!",
+      "feed_success_title": "🍖・Cho thú cưng ăn",
+      "feed_success_desc_money": "{emoji} **{name}** ăn ngon lành! +{gain} EXP 😋 *(tốn {cost} {currency})*",
+      "feed_success_desc_item": "{emoji} **{name}** măm măm ngon lành món **{item_name}**! +{gain} EXP 😋 *(nhận x{mult} EXP)*"
+    }
+  }
+}

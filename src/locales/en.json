@@ -1,0 +1,103 @@
+{
+  "common": {
+    "currency": "VND",
+    "error_title": "❌ Error",
+    "warning_title": "⚠️ Warning",
+    "success_title": "✅ Success",
+    "info_title": "ℹ️ Info",
+    "db_error": "Hmm, I couldn't fetch your data, please try again later~ 🌸",
+    "retry_later": "Oops, an error occurred, please try again later~ 🌸",
+    "generic_error": "An error occurred while executing this command! 🥺",
+    "banned": "You have been banned from using the bot~ Contact the admin if there is any mistake.",
+    "rate_limited": "You are doing that too fast~ please wait a few seconds! 🌸",
+    "item_not_found": "I couldn't find this item~",
+    "insufficient_funds": "Your wallet doesn't have enough **{cost}** {currency}~ 😟",
+    "no_energy": "You are out of energy ({current}/{max} ⚡, need {cost}). Rest a bit or eat something with `/eat`~ 🌸",
+    "low_health": "Your health is too low (**{current}/100** ❤️). You need at least **30** health to work. Please use medicine/medical kit (`/eat`) or use `/hospital` to heal! 🏥",
+    "cooldown": "Slow down~ wait {time}s and try again! 🌸",
+    "jailed": "You cannot do this while in jail~\nReason: **{reason}**\nReleased in {time}. 🌸",
+    "jailed_no_reason": "You cannot do this while in jail~\nReleased in {time}. 🌸",
+    "btn": {
+      "confirm": "Confirm",
+      "cancel": "Cancel",
+      "claim_all": "Claim All 🎁",
+      "back": "Back",
+      "next": "Next"
+    }
+  },
+
+  "commands": {
+    "daily": {
+      "success_title": "🎁・Daily Attendance Successful!",
+      "already_claimed": "You have already checked in today~ Come back in {time}! 🌸",
+      "nudge_newbie": "> 💡 New here? Type `/start` to claim your **welcome gift**~ 🎁\n",
+      "nudge_member": "> 💡 Now, go to `/work` to earn more and check `/quest` for today's tasks~ 🌸\n",
+      "greet_return": "🌸 Long time no see ({days} days)~ Welcome back, I missed you so much! 💕\n\n",
+      "milestone": "\n🏆 **{streak}-day Streak!** Bonus: **+{amount}** {currency} 🎉",
+      "interest": "\n📈 Bank savings interest (0.2%/day): **+{amount}** {currency} *(added to bank)*.",
+      "tax": "\n🏛️ Wealth tax (1% of amount over 100k): **-{amount}** {currency} *(the rich contribution~)*.",
+      "dividend": "\n🏰 Clan dividend: **+{amount}** {currency}",
+      "bp_levelup": "\n🎉 **Battle Pass**: You have reached **Level {level}**! Type `/pass` to claim rewards~ 🎁",
+      "field_streak": "🔥 Streak",
+      "field_streak_val": "{streak} days consecutive",
+      "field_wallet": "💵 Wallet Balance"
+    },
+    "work": {
+      "success_title": "💼・Work Hard",
+      "fail_title": "❌・Work Failed",
+      "earn_desc": "\n💵 Earned wage: **+{amount}** {currency} *(added to wallet)*",
+      "energy_desc": "\n⚡ Energy left: **{energy}/{max} ⚡** (-{cost})",
+      "event_bonus": "\n🎉 Event x{mult} is active!",
+      "premium_bonus": " *(+10% Premium)*",
+      "disease_warning": "\n🤒 You are sick! Income reduced by 30% and lost -4 health per work.",
+      "fatigue_warning": "\n⚠️ You are tired (energy < 50) so you work less efficiently.",
+      "health_lost": "\n💔 Health: **{health}/100** (-{loss} ❤️)",
+      "vehicle_used": "\n🚗 Used **{name}** to travel (Energy cost: {cost} ⚡, durability left: {durability}%)",
+      "vehicle_broken": "\n💥 Your **{name}** broke due to zero durability! You need to `/repair` it before using again~ 😟"
+    },
+    "fish": {
+      "success_title": "🎣・Fishing Success",
+      "fail_title": "❌・Fishing Failed",
+      "earn_desc": "\n💵 Sold fish: **+{amount}** {currency} *(added to wallet)*",
+      "energy_desc": "\n⚡ Energy left: **{energy}/{max} ⚡** (-{cost})",
+      "xp_desc": "\n⭐ Experience: +**{xp}** EXP",
+      "bp_levelup": "\n🎉 **Battle Pass**: You have reached **Level {level}**! Type `/pass` to claim rewards~ 🎁",
+      "rare_drop": "\n✨ **Super Drop**: You caught a **1x {name}**! 🏆",
+      "item_drop": "\n🍓 You received **{qty}x {name}** (added to inventory)."
+    },
+    "gather": {
+      "mine_success_title": "⛏️・Mining Success",
+      "chop_success_title": "🪓・Chop Wood Success",
+      "earn_desc": "\n💵 Sold minerals/wood: **+{amount}** {currency}",
+      "energy_desc": "\n⚡ Energy left: **{energy}/{max} ⚡** (-{cost})",
+      "xp_desc": "\n⭐ Experience: +**{xp}** EXP",
+      "bp_levelup": "\n🎉 **Battle Pass**: You have reached **Level {level}**! Type `/pass` to claim rewards~ 🎁",
+      "rare_drop": "\n✨ **Super Drop**: You mined a **1x {name}**! 🏆",
+      "item_drop": "\n📦 You received **{qty}x {name}** (added to inventory)."
+    },
+    "dating": {
+      "view_title": "💖 Relationship Status with Waguri",
+      "view_desc": "My current relationship with you:\n**Relationship Status**: **{tier}**\n**Affection Score**: **{score}** points\n**Tier Progress**: `[{bar}]` ({pct}%)\n{next_info}",
+      "next_info": "*Need **{needed}** more points to reach **{next_tier}**!*",
+      "max_info": "*You have reached the highest Soulmate level! Thank you for always being with me~ 💞*",
+      "energy_warning": "I'm a bit tired now, let's walk later! (Need {cost} ⚡ energy)",
+      "capped_msg": "\n💝 *We walked a lot today, Waguri smiled and said: \"My feet are a bit tired today, let's walk again tomorrow!\" (Daily affection limit reached)*",
+      "capped_gift": "\n💝 *Waguri waved her hands shyly: \"You've given me so many gifts today, I'm already very happy, keep it and give it to me tomorrow!\" (Daily affection limit reached)*",
+      "energy_left": "\n\n⚡ Energy left: **{energy}/{max} ⚡**",
+      "gift_title": "🎁 Give Gift to Waguri"
+    },
+    "pet": {
+      "adopt_warning": "You already have a pet~ Type `/pet view` to check them out.",
+      "adopt_success_title": "🐾・Adopt Successful!",
+      "adopt_success_desc": "Welcome {emoji} **{name}** to your family! Remember to `/pet feed` them~",
+      "view_title": "{emoji}・{name}",
+      "view_field_species": "Species",
+      "view_field_level": "Level",
+      "view_field_progress": "EXP Progress ({exp}/{next})",
+      "feed_warning_no_pet": "You don't have a pet to feed~ Type `/pet adopt` first!",
+      "feed_success_title": "🍖・Feed Pet",
+      "feed_success_desc_money": "{emoji} **{name}** ate happily! +{gain} EXP 😋 *(spent {cost} {currency})*",
+      "feed_success_desc_item": "{emoji} **{name}** ate **{item_name}** happily! +{gain} EXP 😋 *(received x{mult} EXP)*"
+    }
+  }
+}

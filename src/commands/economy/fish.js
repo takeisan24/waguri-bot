@@ -9,7 +9,9 @@ const { applyDisease } = require('../../lib/disease');
 const { getLevelFromExp, levelUpReward } = require('../../lib/leveling');
 const { getEventMult } = require('../../lib/event');
 
-const fmt = n => Number(n).toLocaleString('vi-VN');
+const { t } = require('../../lib/i18n');
+
+const fmt = (n, locale) => Number(n).toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN');
 
 function pickCatch() {
     const total = FISH.reduce((s, f) => s + f.weight, 0);
@@ -28,13 +30,14 @@ module.exports = {
     async execute(interaction) {
         await interaction.deferReply();
         const userId = interaction.user.id;
+        const locale = interaction.locale;
 
         const user = await db.getUser(userId);
         const userHealth = user && user.health !== undefined ? user.health : 100;
         if (userHealth < 30) {
             const embed = buildWaguriEmbed(interaction, 'error', {
-                title: '🎣・Đi câu cá',
-                description: `🏥 Sức khỏe của cậu quá yếu (**${userHealth}/100** ❤️). Cậu cần ít nhất **30** sức khỏe để câu cá. Hãy dùng thuốc/hộp y tế (\`/eat\`) hoặc chạy lệnh \`/hospital\` để nhập viện nhé!`
+                title: locale.startsWith('en') ? '🎣・Go Fishing' : '🎣・Đi câu cá',
+                description: t(locale, 'common.low_health', { current: userHealth })
             });
             return interaction.editReply({ embeds: [embed] });
         }
@@ -43,8 +46,10 @@ module.exports = {
         const toolResult = await db.useTool(userId, 'can_cau');
         if (!toolResult || toolResult.status === 'no_tool') {
             const embed = buildWaguriEmbed(interaction, 'error', {
-                title: '🎣・Đi câu cá',
-                description: 'Cậu cần mua **Cần câu cá** 🎣 ở `/shop` mới đi câu được nhé~ 🌸'
+                title: locale.startsWith('en') ? '🎣・Go Fishing' : '🎣・Đi câu cá',
+                description: locale.startsWith('en')
+                    ? 'You need to buy a **Fishing Rod** 🎣 at `/shop` first! 🌸'
+                    : 'Cậu cần mua **Cần câu cá** 🎣 ở `/shop` mới đi câu được nhé~ 🌸'
             });
             return interaction.editReply({ embeds: [embed] });
         }
@@ -52,8 +57,8 @@ module.exports = {
         const cd = onCooldown('fish', userId, config.ACTION_COOLDOWN_MS);
         if (cd) {
             const embed = buildWaguriEmbed(interaction, 'warning', {
-                title: '🎣・Đi câu cá',
-                description: `Từ từ thôi nào~ nghỉ ${cd}s rồi câu tiếp nhé! 🌸`
+                title: locale.startsWith('en') ? '🎣・Go Fishing' : '🎣・Đi câu cá',
+                description: t(locale, 'common.cooldown', { time: cd })
             });
             return interaction.editReply({ embeds: [embed] });
         }
@@ -90,8 +95,8 @@ module.exports = {
         if (energyLeft < 0) {
             const cur = await db.getEnergy(userId);
             const embed = buildWaguriEmbed(interaction, 'warning', {
-                title: '🎣・Đi câu cá',
-                description: `Cậu hết năng lượng để câu rồi (${cur}/${config.ENERGY.MAX} ⚡, cần ${actualEnergyCost}). Nghỉ chút hoặc \`/eat\` nhé~ 🌸`
+                title: locale.startsWith('en') ? '🎣・Go Fishing' : '🎣・Đi câu cá',
+                description: t(locale, 'common.no_energy', { current: cur, max: config.ENERGY.MAX, cost: actualEnergyCost })
             });
             return interaction.editReply({ embeds: [embed] });
         }
@@ -110,19 +115,41 @@ module.exports = {
         const eventMult = getEventMult();
         if (eventMult !== 1 && payout > 0) payout = Math.round(payout * eventMult);
 
+        const fishNames = {
+            'Rác / lốp xe cũ': { en: 'Trash / Old Tire', vi: 'Rác / lốp xe cũ' },
+            'Cá lòng tong': { en: 'Small Fish', vi: 'Cá lòng tong' },
+            'Cá rô phi': { en: 'Tilapia', vi: 'Cá rô phi' },
+            'Cá lóc bự': { en: 'Big Snakehead Fish', vi: 'Cá lóc bự' },
+            'Cá hiếm': { en: 'Rare Fish', vi: 'Cá hiếm' },
+            'Rương kho báu': { en: 'Treasure Chest', vi: 'Rương kho báu' }
+        };
+        const displayFishName = (fishNames[c.name]?.[locale.startsWith('en') ? 'en' : 'vi']) || c.name;
+
         let desc;
         if (payout > 0) {
             await db.addMoney(userId, payout, 'wallet');
             db.questIncr(userId, 'earn', payout);
-            desc = `Cậu câu được ${c.emoji} **${c.name}** và bán được **+${fmt(payout)}** ${config.CURRENCY}!`
-                + (fatigue < 1 && gross > 0 ? ` *(gốc ${fmt(gross)}, mệt -${Math.round((1 - fatigue) * 100)}%)*` : '')
-                + (premium ? ` *(Premium +${Math.round(config.PREMIUM.INCOME_BONUS * 100)}% 💎)*` : '')
-                + (eventMult > 1 ? ` *(Sự kiện x${eventMult} 🎉)*` : '');
+            
+            const grossStr = fatigue < 1 && gross > 0
+                ? (locale.startsWith('en') ? ` *(base ${fmt(gross, locale)}, tired -${Math.round((1 - fatigue) * 100)}%)` : ` *(gốc ${fmt(gross, locale)}, mệt -${Math.round((1 - fatigue) * 100)}%)*`)
+                : '';
+            const premStr = premium ? ` *(Premium +${Math.round(config.PREMIUM.INCOME_BONUS * 100)}% 💎)*` : '';
+            const evStr = eventMult > 1 ? ` *(Sự kiện x${eventMult} 🎉)*` : '';
+
+            desc = locale.startsWith('en')
+                ? `You caught ${c.emoji} **${displayFishName}** and sold it for **+${fmt(payout, locale)}** ${config.CURRENCY}!${grossStr}${premStr}${evStr}`
+                : `Cậu câu được ${c.emoji} **${displayFishName}** và bán được **+${fmt(payout, locale)}** ${config.CURRENCY}!${grossStr}${premStr}${evStr}`;
         } else {
-            desc = `Cậu chỉ câu phải ${c.emoji} **${c.name}**... chẳng được gì cả 😅 Lần sau may hơn nhé~`;
+            desc = locale.startsWith('en')
+                ? `You only caught ${c.emoji} **${displayFishName}**... and got nothing 😅 Better luck next time~`
+                : `Cậu chỉ câu phải ${c.emoji} **${displayFishName}**... chẳng được gì cả 😅 Lần sau may hơn nhé~`;
         }
         
-        if (thoBuff) desc += `\n🐰 Bé thỏ **${thoName}** nhanh nhẹn giúp cậu tiết kiệm 15% năng lượng!`;
+        if (thoBuff) {
+            desc += locale.startsWith('en')
+                ? `\n🐰 Kitten/Rabbit **${thoName}** helped you save 15% energy!`
+                : `\n🐰 Bé thỏ **${thoName}** nhanh nhẹn giúp cậu tiết kiệm 15% năng lượng!`;
+        }
         if (dz.note) desc += `\n${dz.note}`;
 
         // Rơi cá nguyên liệu Tiệm Bánh Gekka (Phase 2 & 3)
@@ -131,47 +158,74 @@ module.exports = {
             if (c.name === 'Cá lòng tong' && rand < 0.35) {
                 await db.giveItemAdmin(userId, 'ca_tuoi', 1);
                 await db.discoverItem(userId, 'ca_tuoi');
-                desc += `\n🐟 Giỏ cá có thêm **1× Cá Tươi** *(nguyên liệu \`/tiembanh\`)*`;
+                const iName = t(locale, 'items.ca_tuoi.name') || 'Cá Tươi';
+                desc += locale.startsWith('en')
+                    ? `\n🐟 Your bucket has **1× ${iName}** *(ingredient for \`/tiembanh\`)*`
+                    : `\n🐟 Giỏ cá có thêm **1× Cá Tươi** *(nguyên liệu \`/tiembanh\`)*`;
             } else if (c.name === 'Cá rô phi' && rand < 0.45) {
                 await db.giveItemAdmin(userId, 'ca_tuoi', 1);
                 await db.discoverItem(userId, 'ca_tuoi');
-                desc += `\n🐟 Giỏ cá có thêm **1× Cá Tươi** *(nguyên liệu \`/tiembanh\`)*`;
+                const iName = t(locale, 'items.ca_tuoi.name') || 'Cá Tươi';
+                desc += locale.startsWith('en')
+                    ? `\n🐟 Your bucket has **1× ${iName}** *(ingredient for \`/tiembanh\`)*`
+                    : `\n🐟 Giỏ cá có thêm **1× Cá Tươi** *(nguyên liệu \`/tiembanh\`)*`;
             } else if (c.name === 'Cá lóc bự') {
                 if (rand < 0.30) {
                     await db.giveItemAdmin(userId, 'ca_ngon', 1);
                     await db.discoverItem(userId, 'ca_ngon');
-                    desc += `\n✨ Giỏ cá có thêm **1× Cá Ngon** *(nguyên liệu làm bánh đặc biệt!)*`;
+                    const iName = t(locale, 'items.ca_ngon.name') || 'Cá Ngon';
+                    desc += locale.startsWith('en')
+                        ? `\n✨ Your bucket has **1× ${iName}** *(special bakery ingredient!)*`
+                        : `\n✨ Giỏ cá có thêm **1× Cá Ngon** *(nguyên liệu làm bánh đặc biệt!)*`;
                 } else if (rand < 0.70) {
                     await db.giveItemAdmin(userId, 'ca_tuoi', 1);
                     await db.discoverItem(userId, 'ca_tuoi');
-                    desc += `\n🐟 Giỏ cá có thêm **1× Cá Tươi** *(nguyên liệu \`/tiembanh\`)*`;
+                    const iName = t(locale, 'items.ca_tuoi.name') || 'Cá Tươi';
+                    desc += locale.startsWith('en')
+                        ? `\n🐟 Your bucket has **1× ${iName}** *(ingredient for \`/tiembanh\`)*`
+                        : `\n🐟 Giỏ cá có thêm **1× Cá Tươi** *(nguyên liệu \`/tiembanh\`)*`;
                 }
             } else if (c.name === 'Cá hiếm') {
                 const dropRates = config.COLLECTIONS?.DROP_RATES || { FISH_CA_RONG_VANG: 0.10 };
                 if (rand < dropRates.FISH_CA_RONG_VANG) {
                     await db.giveItemAdmin(userId, 'ca_rong_vang', 1);
                     await db.discoverItem(userId, 'ca_rong_vang');
-                    desc += `\n🏮 Giỏ cá có thêm **1× Cá Rồng Kim Long** 👑 *(vật phẩm Sử Thi siêu hiếm!)*`;
+                    const iName = t(locale, 'items.ca_rong_vang.name') || 'Cá Rồng Kim Long';
+                    desc += locale.startsWith('en')
+                        ? `\n🏮 Your bucket has **1× ${iName}** 👑 *(super rare Epic item!)*`
+                        : `\n🏮 Giỏ cá có thêm **1× Cá Rồng Kim Long** 👑 *(vật phẩm Sử Thi siêu hiếm!)*`;
                 } else if (rand < 0.40) {
                     await db.giveItemAdmin(userId, 'ca_hiem', 1);
                     await db.discoverItem(userId, 'ca_hiem');
-                    desc += `\n🌟 Giỏ cá có thêm **1× Cá Hiếm** *(nguyên liệu siêu hiếm cho tiệm!)*`;
+                    const iName = t(locale, 'items.ca_hiem.name') || 'Cá Hiếm';
+                    desc += locale.startsWith('en')
+                        ? `\n🌟 Your bucket has **1× ${iName}** *(rare ingredient for bakery!)*`
+                        : `\n🌟 Giỏ cá có thêm **1× Cá Hiếm** *(nguyên liệu siêu hiếm cho tiệm!)*`;
                 } else {
                     await db.giveItemAdmin(userId, 'ca_ngon', 1);
                     await db.discoverItem(userId, 'ca_ngon');
-                    desc += `\n✨ Giỏ cá có thêm **1× Cá Ngon** *(nguyên liệu làm bánh đặc biệt!)*`;
+                    const iName = t(locale, 'items.ca_ngon.name') || 'Cá Ngon';
+                    desc += locale.startsWith('en')
+                        ? `\n✨ Your bucket has **1× ${iName}** *(special bakery ingredient!)*`
+                        : `\n✨ Giỏ cá có thêm **1× Cá Ngon** *(nguyên liệu làm bánh đặc biệt!)*`;
                 }
             } else if (c.name === 'Rương kho báu') {
                 const dropRates = config.COLLECTIONS?.DROP_RATES || { FISH_CA_KOI_NHAT: 0.10 };
                 if (rand < dropRates.FISH_CA_KOI_NHAT) {
                     await db.giveItemAdmin(userId, 'ca_koi_nhat', 1);
                     await db.discoverItem(userId, 'ca_koi_nhat');
-                    desc += `\n👑 Giỏ cá có thêm **1× Cá Koi Hoàng Gia** ⭐ *(vật phẩm HUYỀN THOẠI cực hiếm!)*`;
+                    const iName = t(locale, 'items.ca_koi_nhat.name') || 'Cá Koi Hoàng Gia';
+                    desc += locale.startsWith('en')
+                        ? `\n👑 Your bucket has **1× ${iName}** ⭐ *(super rare LEGENDARY item!)*`
+                        : `\n👑 Giỏ cá có thêm **1× Cá Koi Hoàng Gia** ⭐ *(vật phẩm HUYỀN THOẠI cực hiếm!)*`;
                 }
             }
         }
 
-        desc += `\nĐộ bền Cần câu: **${toolResult.durability}/100** 🎣` + (toolResult.broken ? ' *(đã hỏng! Cần mua mới hoặc sửa)*' : '');
+        const brokenStr = toolResult.broken ? (locale.startsWith('en') ? ' *(broken! Need repair or buy new)*' : ' *(đã hỏng! Cần mua mới hoặc sửa)*') : '';
+        desc += locale.startsWith('en')
+            ? `\nFishing rod durability: **${toolResult.durability}/100** 🎣${brokenStr}`
+            : `\nĐộ bền Cần câu: **${toolResult.durability}/100** 🎣${brokenStr}`;
 
         const u = await db.getUser(userId);
         let gainedExp = 4 + Math.floor(Math.random() * 3); // 4..6 EXP
@@ -183,11 +237,17 @@ module.exports = {
         const newExp = await db.updateExp(userId, gainedExp);
         const newLevel = newExp === null ? oldLevel : getLevelFromExp(newExp);
         
-        if (rongBuff) desc += `\n🐲 Bé rồng **${rongName}** truyền long lực giúp cậu nhận thêm 15% EXP!`;
+        if (rongBuff) {
+            desc += locale.startsWith('en')
+                ? `\n🐲 Baby Dragon **${rongName}** lent dragon power, giving +15% EXP!`
+                : `\n🐲 Bé rồng **${rongName}** truyền long lực giúp cậu nhận thêm 15% EXP!`;
+        }
         if (newLevel > oldLevel) {
             const bonus = levelUpReward(oldLevel, newLevel);
             if (bonus > 0) await db.addMoney(userId, bonus, 'wallet');
-            desc += `\n🎉 Lên **Level ${newLevel}**! Thưởng **+${fmt(bonus)}** ${config.CURRENCY} 🎁`;
+            desc += locale.startsWith('en')
+                ? `\n🎉 Reached **Level ${newLevel}**! Bonus: **+${fmt(bonus, locale)}** ${config.CURRENCY} 🎁`
+                : `\n🎉 Lên **Level ${newLevel}**! Thưởng **+${fmt(bonus, locale)}** ${config.CURRENCY} 🎁`;
         }
 
         // Cộng XP Sổ Sứ Mệnh (20% cơ hội rơi 20-30 XP)
@@ -195,19 +255,24 @@ module.exports = {
             const bpXp = Math.floor(Math.random() * 11) + 20; // 20-30 XP
             const bpRes = await require('../../lib/battlepass').addXp(userId, bpXp);
             if (bpRes && bpRes.levelUp) {
-                desc += `\n🎉 **Sổ Sứ Mệnh**: Cậu đã đạt **Cấp ${bpRes.newLevel}**! Gõ \`/pass\` nhận quà nha~ 🎁`;
+                desc += t(locale, 'commands.daily.bp_levelup', { level: bpRes.newLevel });
             }
         }
 
+        const fieldWalletName = locale.startsWith('en') ? '💵 Wallet Balance' : '💵 Số dư ví';
+        const fieldXpName = locale.startsWith('en') ? 'Experience' : 'Kinh nghiệm';
+        const fieldEnergyName = locale.startsWith('en') ? 'Energy' : 'Năng lượng';
+        const fieldHealthName = locale.startsWith('en') ? '❤️ Health' : '❤️ Sức khỏe';
+
         const embedType = payout > 0 ? 'success' : 'warning';
         const embed = buildWaguriEmbed(interaction, embedType, {
-            title: '🎣・Đi câu cá',
+            title: locale.startsWith('en') ? '🎣・Go Fishing' : '🎣・Đi câu cá',
             description: desc,
             fields: [
-                { name: '💵 Số dư ví', value: `${payout > 0 ? '+' + fmt(payout) + ' → ' : ''}**${fmt(u?.wallet || 0)}** ${config.CURRENCY}`, inline: false },
-                { name: 'Kinh nghiệm', value: `+${gainedExp} EXP`, inline: true },
-                { name: 'Năng lượng', value: `${energyLeft}/${config.ENERGY.MAX} ⚡`, inline: true },
-                { name: '❤️ Sức khỏe', value: `${u && u.health !== undefined ? u.health : 100}/100`, inline: true }
+                { name: fieldWalletName, value: `${payout > 0 ? '+' + fmt(payout, locale) + ' → ' : ''}**${fmt(u?.wallet || 0, locale)}** ${config.CURRENCY}`, inline: false },
+                { name: fieldXpName, value: `+${gainedExp} EXP`, inline: true },
+                { name: fieldEnergyName, value: `${energyLeft}/${config.ENERGY.MAX} ⚡`, inline: true },
+                { name: fieldHealthName, value: `${u && u.health !== undefined ? u.health : 100}/100`, inline: true }
             ]
         }).setTimestamp();
         await interaction.editReply({ embeds: [embed] });

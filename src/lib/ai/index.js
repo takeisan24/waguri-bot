@@ -106,7 +106,7 @@ function onCooldown(userId) {
  * Trò chuyện với Waguri.
  * Trả object: {ok:true, reply} | {ok:false, reason:'quota', used, cap, premium} | {ok:false, reason:'error'}
  */
-async function chatWithWaguri(channelId, userId, userName, userText) {
+async function chatWithWaguri(channelId, userId, userName, userText, locale) {
     // Quota AI hằng ngày (Premium nhiều lượt hơn).
     // FAIL-CLOSED: DB lỗi (q == null) -> KHÔNG gọi AI, tránh rò rỉ chi phí / lạm dụng khi quota
     // không đếm được. (Khác cooldown game vốn fail-open vì không tốn tiền.)
@@ -193,6 +193,13 @@ async function chatWithWaguri(channelId, userId, userName, userText) {
     const seas = [...activeSeasons()].map(s => SEASON_LABEL[s]).filter(Boolean);
     if (seas.length) nowBits.push(`đang vào mùa ${seas.join(' & ')}`);
     if (nowBits.length) systemPrompt += `\n[Bối cảnh hôm nay: ${nowBits.join('; ')}. Nếu hợp ngữ cảnh, nhắc tới một cách tự nhiên & vui vẻ, đừng gượng ép.]`;
+
+    // 💡 Chỉ thị ngôn ngữ ép Gemini phản hồi theo locale
+    if (locale && locale.toLowerCase().startsWith('en')) {
+        systemPrompt += `\n[Ngôn ngữ: Người dùng đang sử dụng tiếng Anh (English). Hãy trả lời hoàn toàn bằng tiếng Anh. Giữ nguyên tính cách Waguri dịu dàng, xưng hô thân thiết (chọn xưng hô cậu - mình hoặc tri kỷ bằng tiếng Anh tự nhiên như "you - I", "my soulmate", hoặc các từ gọi thân mật ngọt ngào khác phù hợp với điểm thiện cảm ${aff}).]`;
+    } else {
+        systemPrompt += `\n[Ngôn ngữ: Trả lời hoàn toàn bằng tiếng Việt chuẩn, tự nhiên, dễ thương, không pha trộn tiếng nước ngoài. Không dùng từ tiếng Anh trừ phi bắt buộc.]`;
+    }
 
     let reply;
     try {

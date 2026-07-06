@@ -3,8 +3,9 @@ const { buildWaguriEmbed } = require('../../lib/embed');
 const db = require('../../database.js');
 const config = require('../../config');
 const { handleNewbieQuest } = require('../../lib/newbie');
+const { t } = require('../../lib/i18n');
 
-const fmt = n => Number(n).toLocaleString('vi-VN');
+const fmt = (n, locale) => Number(n).toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -12,16 +13,17 @@ module.exports = {
         .setDescription('Điểm danh nhận thưởng mỗi ngày'),
     async execute(interaction) {
         await interaction.deferReply();
+        const locale = interaction.locale;
         const r = await db.claimDaily(interaction.user.id);
         if (!r) {
-            const embed = buildWaguriEmbed(interaction, 'error', { description: 'Ơ, có lỗi rồi, cậu thử lại sau nhé~ 🌸' });
+            const embed = buildWaguriEmbed(interaction, 'error', { description: t(locale, 'common.retry_later') });
             return interaction.editReply({ embeds: [embed] });
         }
 
         if (r.status === 'claimed') {
             const ts = Math.floor(new Date(r.next).getTime() / 1000);
             const embed = buildWaguriEmbed(interaction, 'warning', {
-                description: `Hôm nay cậu điểm danh rồi mà~ Quay lại sau <t:${ts}:R> nhé! 🌸`
+                description: t(locale, 'commands.daily.already_claimed', { time: `<t:${ts}:R>` })
             });
             return interaction.editReply({ embeds: [embed] });
         }
@@ -35,39 +37,45 @@ module.exports = {
         let greet = '';
         if (prevSeen && Date.now() - prevSeen >= config.RETURN_GREET_DAYS * 86400000) {
             const days = Math.floor((Date.now() - prevSeen) / 86400000);
-            greet = `🌸 Lâu rồi mới gặp cậu (${days} ngày)~ Mừng cậu quay lại nha, mình nhớ cậu lắm đó! 💕\n\n`;
+            greet = t(locale, 'commands.daily.greet_return', { days });
         }
 
-        let desc = `Cậu nhận được **${fmt(r.reward)}** ${config.CURRENCY}!`;
+        let desc = t(locale, 'commands.daily.nudge_newbie', { amount: fmt(r.reward, locale), currency: config.CURRENCY });
+        // Sửa logic dịch: Cậu nhận được...
+        let rewardsDesc = locale.startsWith('en') 
+            ? `You received **${fmt(r.reward, locale)}** ${config.CURRENCY}!` 
+            : `Cậu nhận được **${fmt(r.reward, locale)}** ${config.CURRENCY}!`;
+
         if (r.milestone && Number(r.milestone) > 0) {
-            desc += `\n🏆 **Mốc ${r.streak} ngày liên tiếp!** Thưởng thêm **+${fmt(r.milestone)}** ${config.CURRENCY} 🎉`;
+            rewardsDesc += t(locale, 'commands.daily.milestone', { streak: r.streak, amount: fmt(r.milestone, locale), currency: config.CURRENCY });
         }
         if (r.interest && Number(r.interest) > 0) {
-            desc += `\n📈 Lãi tiết kiệm ngân hàng (0.2%/ngày): **+${fmt(r.interest)}** ${config.CURRENCY} *(đã cộng vào bank)*.`;
+            rewardsDesc += t(locale, 'commands.daily.interest', { amount: fmt(r.interest, locale), currency: config.CURRENCY });
         }
         if (r.tax && Number(r.tax) > 0) {
-            desc += `\n🏛️ Thuế tài sản (1% phần vượt 100k): **-${fmt(r.tax)}** ${config.CURRENCY} *(người giàu góp ngân sách~)*.`;
+            rewardsDesc += t(locale, 'commands.daily.tax', { amount: fmt(r.tax, locale), currency: config.CURRENCY });
         }
         if (r.clan_dividend && Number(r.clan_dividend) > 0) {
-            desc += `\n🏰 Cổ tức bang hội: **+${fmt(r.clan_dividend)}** ${config.CURRENCY}`;
+            rewardsDesc += t(locale, 'commands.daily.dividend', { amount: fmt(r.clan_dividend, locale), currency: config.CURRENCY });
         }
 
         // Cộng XP Battle Pass (+100 XP)
         const bpRes = await require('../../lib/battlepass').addXp(interaction.user.id, 100);
         if (bpRes && bpRes.levelUp) {
-            desc += `\n🎉 **Sổ Sứ Mệnh**: Cậu đã đạt **Cấp ${bpRes.newLevel}**! Gõ \`/pass\` nhận quà nha~ 🎁`;
+            rewardsDesc += t(locale, 'commands.daily.bp_levelup', { level: bpRes.newLevel });
         }
 
         const nudge = (u && !u.onboarded)
-            ? '> 💡 Người mới hả? Gõ `/start` nhận **quà chào mừng** nha~ 🎁\n'
-            : '> 💡 Giờ thì đi `/work` kiếm thêm và xem `/quest` nhận nhiệm vụ hôm nay nha~ 🌸\n';
-        const description = greet + `> ${desc}\n\n` + nudge;
+            ? t(locale, 'commands.daily.nudge_newbie')
+            : t(locale, 'commands.daily.nudge_member');
+        const description = greet + `> ${rewardsDesc}\n\n` + nudge;
+        
         const embed = buildWaguriEmbed(interaction, 'success', {
-            title: '🎁・Điểm danh thành công!',
+            title: t(locale, 'commands.daily.success_title'),
             description,
             fields: [
-                { name: '🔥 Chuỗi ngày', value: `${r.streak} ngày liên tiếp`, inline: true },
-                { name: '💵 Số dư ví', value: `${Number(u?.wallet || 0).toLocaleString('vi-VN')} ${config.CURRENCY}`, inline: true },
+                { name: t(locale, 'commands.daily.field_streak'), value: t(locale, 'commands.daily.field_streak_val', { streak: r.streak }), inline: true },
+                { name: t(locale, 'commands.daily.field_wallet'), value: `${fmt(u?.wallet || 0, locale)} ${config.CURRENCY}`, inline: true },
             ]
         }).setTimestamp();
 

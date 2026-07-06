@@ -1,5 +1,6 @@
 // lib/messages.js — Gom thông báo lỗi/cooldown lặp + định dạng thời gian chờ.
 // Giọng điệu: Waguri (dễ thương, gọi "cậu", dùng "~").
+const { t } = require('./i18n');
 
 /** Định dạng cooldown dùng tag Discord relative timestamp. */
 function formatCooldown(expiresAtMs) {
@@ -9,24 +10,26 @@ function formatCooldown(expiresAtMs) {
 // === Thông báo chung (dùng lại ở nhiều command/event) ===
 const MSG = {
     // Rate limit
-    RATE_LIMITED: 'Cậu thao tác hơi nhanh rồi~ chờ vài giây nhé! 🌸',
+    RATE_LIMITED: (locale) => t(locale, 'common.rate_limited'),
 
     // Ban
-    BANNED: 'Cậu đã bị chặn sử dụng bot~ Liên hệ admin nếu có nhầm lẫn nhé.',
+    BANNED: (locale) => t(locale, 'common.banned'),
 
     // Lỗi chung
-    GENERIC_ERROR: 'Đã có lỗi xảy ra khi thực thi lệnh này! 🥺',
-    RETRY_LATER: 'Ơ, có lỗi rồi, cậu thử lại sau nhé~ 🌸',
+    GENERIC_ERROR: (locale) => t(locale, 'common.generic_error'),
+    RETRY_LATER: (locale) => t(locale, 'common.retry_later'),
 
     // Kho đồ
-    NOT_ENOUGH_MONEY: (cost, currency) => `Ví cậu không đủ **${cost}** ${currency} rồi~ 😟`,
-    ITEM_NOT_FOUND: 'Mình không tìm thấy vật phẩm này~',
+    NOT_ENOUGH_MONEY: (locale, cost, currency) => t(locale, 'common.insufficient_funds', { cost, currency }),
+    ITEM_NOT_FOUND: (locale) => t(locale, 'common.item_not_found'),
 
     // Jail
-    JAILED: (reason, until) => {
-        const base = 'Cậu chưa thể làm việc này khi đang bị giam đâu~';
-        const reasonText = reason ? `\nLý do: **${reason}**` : '';
-        return `${base}${reasonText}\nĐược thả ${formatCooldown(until)}. 🌸`;
+    JAILED: (locale, reason, until) => {
+        const timeStr = formatCooldown(until);
+        if (reason) {
+            return t(locale, 'common.jailed', { reason, time: timeStr });
+        }
+        return t(locale, 'common.jailed_no_reason', { time: timeStr });
     },
 };
 

@@ -10,9 +10,14 @@ const { getEventMult } = require('../../lib/event');
 const { buildWaguriEmbed } = require('../../lib/embed');
 const { handleNewbieQuest } = require('../../lib/newbie');
 
-const fmt = n => Number(n).toLocaleString('vi-VN');
+const { t } = require('../../lib/i18n');
+const scriptsVi = require('../../data/workScripts');
+const scriptsEn = require('../../data/workScripts_en');
 
-function pickLine(jobKey, category) {
+const fmt = (n, locale) => Number(n).toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN');
+
+function pickLine(jobKey, category, locale) {
+    const scripts = locale === 'en' ? scriptsEn : scriptsVi;
     const set = (scripts[jobKey] && scripts[jobKey][category]) || scripts.default[category];
     return set[Math.floor(Math.random() * set.length)];
 }
@@ -24,12 +29,13 @@ module.exports = {
     async execute(interaction) {
         await interaction.deferReply();
         const userId = interaction.user.id;
+        const locale = interaction.locale;
 
         // 0. Cooldown nhẹ chống spam
         const cd = onCooldown('work', userId, config.ACTION_COOLDOWN_MS);
         if (cd) {
             const embed = buildWaguriEmbed(interaction, 'warning', {
-                description: `Từ từ thôi nào~ nghỉ ${cd}s rồi làm tiếp nhé! 🌸`
+                description: t(locale, 'common.cooldown', { time: cd })
             });
             return interaction.editReply({ embeds: [embed] });
         }
@@ -38,7 +44,7 @@ module.exports = {
             const user = await db.getUser(userId);
             if (!user) {
                 const embed = buildWaguriEmbed(interaction, 'error', {
-                    description: 'Hơ, mình chưa lấy được dữ liệu của cậu, thử lại sau nhé~ 🌸'
+                    description: t(locale, 'common.db_error')
                 });
                 return interaction.editReply({ embeds: [embed] });
             }
@@ -47,8 +53,8 @@ module.exports = {
             const userHealth = user.health !== undefined ? user.health : 100;
             if (userHealth < 30) {
                 const embed = buildWaguriEmbed(interaction, 'warning', {
-                    title: '🏥 Sức khỏe quá yếu',
-                    description: `Sức khỏe của cậu quá yếu (**${userHealth}/100** ❤️). Cậu cần ít nhất **30** sức khỏe để làm việc. Hãy dùng thuốc/hộp y tế (\`/eat\`) hoặc chạy lệnh \`/hospital\` để nhập viện nhé!`
+                    title: locale.startsWith('en') ? '🏥 Weak Health' : '🏥 Sức khỏe quá yếu',
+                    description: t(locale, 'common.low_health', { current: userHealth })
                 });
                 return interaction.editReply({ embeds: [embed] });
             }
@@ -75,7 +81,7 @@ module.exports = {
             if (energyLeft < 0) {
                 const cur = await db.getEnergy(userId);
                 const embed = buildWaguriEmbed(interaction, 'warning', {
-                    description: `Cậu hết năng lượng rồi (${cur}/${config.ENERGY.MAX} ⚡, cần ${energyCost}). Nghỉ ngơi chút hoặc ăn gì đó bằng \`/eat\` nhé~ 🌸`
+                    description: t(locale, 'common.no_energy', { current: cur, max: config.ENERGY.MAX, cost: energyCost })
                 });
                 return interaction.editReply({ embeds: [embed] });
             }
@@ -174,22 +180,38 @@ module.exports = {
             await handleNewbieQuest(interaction, 'work', 1);
             if (earnedMoney > 0) db.questIncr(userId, 'earn', earnedMoney);
 
-            const amtStr = `${fmt(Math.abs(earnedMoney))} ${config.CURRENCY}`;
-            let resultMessage = pickLine(jobKey, category)
+            const displayJobName = t(locale, `jobs.${jobKey}.name`) || jobName;
+            const amtStr = `${fmt(Math.abs(earnedMoney), locale)} ${config.CURRENCY}`;
+            let resultMessage = pickLine(jobKey, category, locale)
                 .replace(/\{amount\}/g, amtStr)
-                .replace(/\{job\}/g, jobName);
+                .replace(/\{job\}/g, displayJobName);
             if (buffActive && earnedMoney > 0) resultMessage += ` *(buff +${Math.round((buffMult - 1) * 100)}%)*`;
             if (premium && earnedMoney > 0) resultMessage += ` *(Premium +${Math.round(config.PREMIUM.INCOME_BONUS * 100)}% 💎)*`;
             if (eventMult > 1 && earnedMoney > 0) resultMessage += ` *(Sự kiện x${eventMult} 🎉)*`;
             if (fatigue < 1 && earnedMoney > 0) resultMessage += ` *(mệt -${Math.round((1 - fatigue) * 100)}%)*`;
-            if (usedInsurance) resultMessage += `\n🛡️ **Bảo hiểm Lao động** đã kích hoạt giúp gánh 80% thiệt hại!`;
-            if (category === 'jackpot' && catBuff) resultMessage += `\n🐱 Bé mèo **${userPetName}** dụi dụi mang lại tài lộc đầy túi!`;
-            if (rongBuff) resultMessage += `\n🐲 Bé rồng **${rongName}** truyền long lực giúp cậu nhận thêm 15% EXP!`;
+            if (usedInsurance) {
+                resultMessage += locale.startsWith('en')
+                    ? `\n🛡️ **Labor Insurance** activated, covering 80% of losses!`
+                    : `\n🛡️ **Bảo hiểm Lao động** đã kích hoạt giúp gánh 80% thiệt hại!`;
+            }
+            if (category === 'jackpot' && catBuff) {
+                resultMessage += locale.startsWith('en')
+                    ? `\n🐱 Kitten **${userPetName}** rubbed against you, bringing fortune to your pocket!`
+                    : `\n🐱 Bé mèo **${userPetName}** dụi dụi mang lại tài lộc đầy túi!`;
+            }
+            if (rongBuff) {
+                resultMessage += locale.startsWith('en')
+                    ? `\n🐲 Baby Dragon **${rongName}** lent dragon power, giving +15% EXP!`
+                    : `\n🐲 Bé rồng **${rongName}** truyền long lực giúp cậu nhận thêm 15% EXP!`;
+            }
             if (dz.note) resultMessage += `\n${dz.note}`;
 
             if (usedVehicle) {
                 const vehicleName = config.VEHICLES[usedVehicle.vehicle_id]?.name || usedVehicle.vehicle_id;
-                resultMessage += `\n🚗 Cậu đã lái **${vehicleName}** đi làm (Độ bền xe: ${usedVehicle.durability}/100)${usedVehicle.broken ? ' ⚠️ *Xe đã bị hỏng sau chuyến đi này!*' : ''}`;
+                const vehicleNameTrans = t(locale, `items.${usedVehicle.vehicle_id}.name`) || vehicleName;
+                resultMessage += locale.startsWith('en')
+                    ? `\n🚗 You drove **${vehicleNameTrans}** to work (Durability: ${usedVehicle.durability}/100)${usedVehicle.broken ? ' ⚠️ *Vehicle broke after this trip!*' : ''}`
+                    : `\n🚗 Cậu đã lái **${vehicleNameTrans}** đi làm (Độ bền xe: ${usedVehicle.durability}/100)${usedVehicle.broken ? ' ⚠️ *Xe đã bị hỏng sau chuyến đi này!*' : ''}`;
             }
 
             // 5. EXP theo cấp nghề
@@ -208,30 +230,55 @@ module.exports = {
                 const bpXp = Math.floor(Math.random() * 11) + 20; // 20-30 XP
                 const bpRes = await require('../../lib/battlepass').addXp(userId, bpXp);
                 if (bpRes && bpRes.levelUp) {
-                    resultMessage += `\n🎉 **Sổ Sứ Mệnh**: Cậu đã đạt **Cấp ${bpRes.newLevel}**! Gõ \`/pass\` nhận quà nha~ 🎁`;
+                    resultMessage += t(locale, 'commands.daily.bp_levelup', { level: bpRes.newLevel });
                 }
             }
 
             // 6. Embed — kèm 1 gợi ý "bước tiếp theo" theo ngữ cảnh (dẫn dắt người mới)
             let tip = '';
-            if (!user.onboarded) tip = 'Người mới hả? Gõ `/start` nhận **quà chào mừng** từ mình nha~ 🎁';
-            else if (category === 'fail') tip = 'Đen một chút thôi mà, đừng buồn nha~ Lần sau may mắn hơn, mình tin cậu! 🌸';
-            else if (!user.job_id) tip = 'Cậu đang làm **nghề tự do** — gõ `/jobs` xin nghề để lương cao hơn nha~ 💼';
-            else if (energyLeft < energyCost * 2) tip = 'Năng lượng sắp cạn rồi, `/eat` hoặc `/nghingoi` nghỉ chút cho lại sức nhé~ 🌸';
-            else if (newLevel > oldLevel) tip = 'Lên cấp rồi nè! Ghé `/jobs` xem có mở nghề xịn hơn không nha~ ✨';
+            if (locale.startsWith('en')) {
+                if (!user.onboarded) tip = 'New here? Type `/start` to claim your **welcome gift** from me~ 🎁';
+                else if (category === 'fail') tip = 'A bit unlucky, but don\'t be sad~ Better luck next time, I believe in you! 🌸';
+                else if (!user.job_id) tip = 'You are working as a **freelancer** — type `/jobs` to get a job for a higher salary~ 💼';
+                else if (energyLeft < energyCost * 2) tip = 'Energy is running low, take a break with `/eat` or `/nghingoi`~ 🌸';
+                else if (newLevel > oldLevel) tip = 'Leveled up! Visit `/jobs` to check if a better job is unlocked~ ✨';
+            } else {
+                if (!user.onboarded) tip = 'Người mới hả? Gõ `/start` nhận **quà chào mừng** từ mình nha~ 🎁';
+                else if (category === 'fail') tip = 'Đen một chút thôi mà, đừng buồn nha~ Lần sau may mắn hơn, mình tin cậu! 🌸';
+                else if (!user.job_id) tip = 'Cậu đang làm **nghề tự do** — gõ `/jobs` xin nghề để lương cao hơn nha~ 💼';
+                else if (energyLeft < energyCost * 2) tip = 'Năng lượng sắp cạn rồi, `/eat` hoặc `/nghingoi` nghỉ chút cho lại sức nhé~ 🌸';
+                else if (newLevel > oldLevel) tip = 'Lên cấp rồi nè! Ghé `/jobs` xem có mở nghề xịn hơn không nha~ ✨';
+            }
             const description = `> ${resultMessage}\n\n` + (tip ? `> 💡 ${tip}\n` : '');
+            
+            const fieldWalletName = locale.startsWith('en') ? '💵 Wallet Balance' : '💵 Số dư ví';
+            const fieldXpName = locale.startsWith('en') ? 'Experience' : 'Kinh nghiệm';
+            const fieldLvlName = locale.startsWith('en') ? 'Level' : 'Cấp độ';
+            const fieldEnergyName = locale.startsWith('en') ? 'Energy' : 'Năng lượng';
+            const fieldHealthName = locale.startsWith('en') ? '❤️ Health' : '❤️ Sức khỏe';
+
+            const grossStr = fatigue < 1 && grossMoney > 0
+                ? (locale.startsWith('en')
+                    ? ` *(base ${fmt(grossMoney, locale)}, tired -${Math.round((1 - fatigue) * 100)}%)*`
+                    : ` *(gốc ${fmt(grossMoney, locale)}, mệt -${Math.round((1 - fatigue) * 100)}%)*`)
+                : '';
+
             const fields = [
-                { name: '💵 Số dư ví', value: `${earnedMoney >= 0 ? '+' : '-'}${fmt(Math.abs(earnedMoney))}${fatigue < 1 && grossMoney > 0 ? ` *(gốc ${fmt(grossMoney)}, mệt -${Math.round((1 - fatigue) * 100)}%)*` : ''} → **${fmt(newWallet)}** ${config.CURRENCY}`, inline: false },
-                { name: 'Kinh nghiệm', value: `+${gainedExp} EXP`, inline: true },
-                { name: 'Cấp độ', value: `Lv.${newLevel}`, inline: true },
-                { name: 'Năng lượng', value: `${energyLeft}/${config.ENERGY.MAX} ⚡`, inline: true },
-                { name: '❤️ Sức khỏe', value: `${currentHealth}/100`, inline: true },
+                { name: fieldWalletName, value: `${earnedMoney >= 0 ? '+' : '-'}${fmt(Math.abs(earnedMoney), locale)}${grossStr} → **${fmt(newWallet, locale)}** ${config.CURRENCY}`, inline: false },
+                { name: fieldXpName, value: `+${gainedExp} EXP`, inline: true },
+                { name: fieldLvlName, value: `Lv.${newLevel}`, inline: true },
+                { name: fieldEnergyName, value: `${energyLeft}/${config.ENERGY.MAX} ⚡`, inline: true },
+                { name: fieldHealthName, value: `${currentHealth}/100`, inline: true },
             ];
 
             if (newLevel > oldLevel) {
                 const bonus = levelUpReward(oldLevel, newLevel);
                 if (bonus > 0) await db.addMoney(userId, bonus, 'wallet');
-                fields.push({ name: '🎉 Lên cấp!', value: `Chúc mừng cậu đạt **Level ${newLevel}**! Thưởng **+${fmt(bonus)}** ${config.CURRENCY} 🎁`, inline: false });
+                const lvlUpTitle = locale.startsWith('en') ? '🎉 Level Up!' : '🎉 Lên cấp!';
+                const lvlUpDesc = locale.startsWith('en')
+                    ? `Congratulations on reaching **Level ${newLevel}**! Bonus: **+${fmt(bonus, locale)}** ${config.CURRENCY} 🎁`
+                    : `Chúc mừng cậu đạt **Level ${newLevel}**! Thưởng **+${fmt(bonus, locale)}** ${config.CURRENCY} 🎁`;
+                fields.push({ name: lvlUpTitle, value: lvlUpDesc, inline: false });
             }
 
             const typeMap = { fail: 'error', jackpot: 'jackpot', success: 'success' };

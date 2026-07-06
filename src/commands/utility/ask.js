@@ -2,6 +2,7 @@ const { SlashCommandBuilder } = require('discord.js');
 const { buildWaguriEmbed } = require('../../lib/embed');
 const { chatWithWaguri } = require('../../lib/ai');
 const config = require('../../config');
+const { t } = require('../../lib/i18n');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -11,16 +12,19 @@ module.exports = {
     async execute(interaction) {
         await interaction.deferReply();
         const text = interaction.options.getString('message');
-        const res = await chatWithWaguri(interaction.channelId, interaction.user.id, interaction.user.username, text);
+        const locale = interaction.locale;
+        const res = await chatWithWaguri(interaction.channelId, interaction.user.id, interaction.user.username, text, locale);
         if (!res.ok) {
             if (res.reason === 'quota') {
                 const embed = buildWaguriEmbed(interaction, 'warning', {
-                    description: `Hôm nay cậu đã dùng hết **${res.cap}** lượt trò chuyện với mình rồi 🥺 Quay lại ngày mai nhé~ — hoặc nâng cấp \`/premium\` để có **${config.AI.PREMIUM_DAILY} lượt/ngày** 💎`
+                    description: locale.startsWith('en')
+                        ? `You have used up all **${res.cap}** chat turns with me today 🥺 Please come back tomorrow~ or upgrade with \`/premium\` to get **${config.AI.PREMIUM_DAILY} turns/day** 💎`
+                        : `Hôm nay cậu đã dùng hết **${res.cap}** lượt trò chuyện với mình rồi 🥺 Quay lại ngày mai nhé~ — hoặc nâng cấp \`/premium\` để có **${config.AI.PREMIUM_DAILY} lượt/ngày** 💎`
                 });
                 return interaction.editReply({ embeds: [embed] });
             }
             const embed = buildWaguriEmbed(interaction, 'error', {
-                description: 'Hơ, Waguri chưa trò chuyện được lúc này (chưa cấu hình AI hoặc đang lỗi). Thử lại sau nhé~ 🌸'
+                description: t(locale, 'common.retry_later')
             });
             return interaction.editReply({ embeds: [embed] });
         }
@@ -30,7 +34,7 @@ module.exports = {
             const bpRes = await require('../../lib/battlepass').addAiXp(interaction.user.id);
             if (bpRes && bpRes.success && bpRes.levelUp) {
                 await interaction.followUp({
-                    content: `🎉 **Sổ Sứ Mệnh**: Cậu đã đạt **Cấp ${bpRes.newLevel}**! Gõ \`/pass\` nhận quà nha~ 🎁`,
+                    content: t(locale, 'commands.daily.bp_levelup', { level: bpRes.newLevel }),
                     ephemeral: true
                 }).catch(() => null);
             }
