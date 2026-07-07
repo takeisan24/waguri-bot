@@ -30,20 +30,23 @@ function getCurrentSeasonId(now = new Date()) {
 /**
  * Trả về tên hiển thị dễ thương của mùa giải hiện tại
  */
-function getSeasonLabel(seasonId) {
+function getSeasonLabel(seasonId, locale = 'vi') {
+    const isEn = locale.startsWith('en');
     if (seasonId.startsWith('tet_')) {
         const year = seasonId.split('_')[1];
-        return `Sổ Sứ Mệnh Mùa Tết Nguyên Đán ${year} 🎍`;
+        return isEn ? `Lunar New Year Season ${year} 🎍` : `Sổ Sứ Mệnh Mùa Tết Nguyên Đán ${year} 🎍`;
     }
     if (seasonId.startsWith('trungthu_')) {
         const year = seasonId.split('_')[1];
-        return `Sổ Sứ Mệnh Mùa Trung Thu Đoàn Viên ${year} 🥮`;
+        return isEn ? `Mid-Autumn Reunion Season ${year} 🥮` : `Sổ Sứ Mệnh Mùa Trung Thu Đoàn Viên ${year} 🥮`;
     }
     const parts = seasonId.split('_');
     if (parts.length >= 3) {
-        return `Sổ Sứ Mệnh Mùa Thường Niên Tháng ${parts[2]}/${parts[1]} 🌾`;
+        return isEn 
+            ? `Monthly Season ${parts[2]}/${parts[1]} 🌾` 
+            : `Sổ Sứ Mệnh Mùa Thường Niên Tháng ${parts[2]}/${parts[1]} 🌾`;
     }
-    return 'Sổ Sứ Mệnh Mùa Giải Mới 🌸';
+    return isEn ? 'New Season Pass 🌸' : 'Sổ Sứ Mệnh Mùa Giải Mới 🌸';
 }
 
 /**

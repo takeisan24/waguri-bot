@@ -3,6 +3,7 @@ const { randomUUID } = require('node:crypto');
 const db = require('../database');
 const config = require('../config');
 const { buildWaguriEmbed } = require('./embed');
+const { getInteractionLanguage, t } = require('./i18n');
 
 const activeBingoGames = new Map(); // channelId -> gameData
 
@@ -89,6 +90,7 @@ function renderCard(grid, marked) {
 }
 
 async function handleBingoPrefix(message, cmd, args) {
+    const locale = await getInteractionLanguage(message);
     const channelId = message.channelId;
     const userId = message.author.id;
 
@@ -96,7 +98,8 @@ async function handleBingoPrefix(message, cmd, args) {
         const voiceChannel = getVoiceChannel(message.member);
         if (!voiceChannel) {
             const embed = buildWaguriEmbed(message, 'warning', {
-                description: 'Cậu cần vào một phòng voice để mở game Bingo nha~ 🌸'
+                locale,
+                description: t(locale, 'commands.bingo.err_voice_required')
             });
             return message.reply({ embeds: [embed] });
         }
@@ -104,7 +107,8 @@ async function handleBingoPrefix(message, cmd, args) {
         const { hasActiveGame: hasActiveLotoGame } = require('./loto');
         if (activeBingoGames.has(channelId) || hasActiveLotoGame(channelId)) {
             const embed = buildWaguriEmbed(message, 'warning', {
-                description: 'Kênh này đang có một ván game đang chạy rồi cậu ơi~ 🌸'
+                locale,
+                description: t(locale, 'commands.bingo.err_active_game')
             });
             return message.reply({ embeds: [embed] });
         }
@@ -116,7 +120,8 @@ async function handleBingoPrefix(message, cmd, args) {
                 activeBingoGames.delete(channelId);
                 await db.stakeRefundSession(curGame.sessionId);
                 const embed = buildWaguriEmbed(message, 'warning', {
-                    description: 'Phòng Bingo đã quá 10 phút chưa bắt đầu nên đã tự động hủy và hoàn vé cho mọi người! ⏰🌸'
+                    locale,
+                    description: t(locale, 'commands.bingo.lobby_timeout')
                 });
                 message.channel.send({ embeds: [embed] }).catch(() => {});
             }
@@ -134,17 +139,20 @@ async function handleBingoPrefix(message, cmd, args) {
             msg: null,
             lobbyTimeout: timeout,
             createdAt: Date.now(),
-            lastActiveAt: Date.now()
+            lastActiveAt: Date.now(),
+            locale // store game locale
         });
 
         const embed = buildWaguriEmbed(message, 'info', {
-            title: '🎱・Phòng Chơi Bingo Đã Mở!',
-            description:
-                `Người mở game: <@${userId}> (phòng voice: **${voiceChannel.name}**)\n\n` +
-                `**Cách tham gia:**\n` +
-                `> Gõ lệnh: \`${config.PREFIX}mua\` để mua vé Bingo!\n` +
-                `> Phí mua vé: **${DEFAULT_BET.toLocaleString('vi-VN')}** ${config.CURRENCY}.\n\n` +
-                `*Gõ \`${config.PREFIX}check\` để kiểm tra vé của cậu. Người mở game có thể gõ \`${config.PREFIX}start\` để bắt đầu.* 🌸`
+            locale,
+            title: t(locale, 'commands.bingo.lobby_opened_title'),
+            description: t(locale, 'commands.bingo.lobby_opened_desc', {
+                hostId,
+                voiceName: voiceChannel.name,
+                prefix: config.PREFIX,
+                price: DEFAULT_BET.toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN'),
+                currency: config.CURRENCY
+            })
         });
         return message.reply({ embeds: [embed] });
     }
@@ -153,21 +161,24 @@ async function handleBingoPrefix(message, cmd, args) {
         const game = activeBingoGames.get(channelId);
         if (!game) {
             const embed = buildWaguriEmbed(message, 'warning', {
-                description: `Hiện chưa có phòng Bingo nào mở ở kênh này hết á, gõ \`${config.PREFIX}bingo\` để mở nha~ 🌸`
+                locale,
+                description: t(locale, 'commands.bingo.err_no_lobby', { prefix: config.PREFIX })
             });
             return message.reply({ embeds: [embed] });
         }
 
         if (game.status !== 'lobby') {
             const embed = buildWaguriEmbed(message, 'warning', {
-                description: 'Ván Bingo đã bắt đầu quay rồi, cậu đợi ván sau nha~ 🌸'
+                locale,
+                description: t(locale, 'commands.bingo.err_already_started')
             });
             return message.reply({ embeds: [embed] });
         }
 
         if (game.players.has(userId)) {
             const embed = buildWaguriEmbed(message, 'warning', {
-                description: 'Cậu đã mua vé cho ván này rồi nhé~ 🌸'
+                locale,
+                description: t(locale, 'commands.bingo.err_already_joined')
             });
             return message.reply({ embeds: [embed] });
         }
@@ -176,7 +187,11 @@ async function handleBingoPrefix(message, cmd, args) {
         const paid = await db.stakeCollect(game.sessionId, 'bingo', channelId, userId, DEFAULT_BET);
         if (!paid) {
             const embed = buildWaguriEmbed(message, 'error', {
-                description: `Ví cậu không đủ **${DEFAULT_BET.toLocaleString('vi-VN')}** ${config.CURRENCY} để mua vé rồi~ 😟`
+                locale,
+                description: t(locale, 'commands.bingo.err_insufficient_funds', {
+                    price: DEFAULT_BET.toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN'),
+                    currency: config.CURRENCY
+                })
             });
             return message.reply({ embeds: [embed] });
         }
@@ -190,7 +205,13 @@ async function handleBingoPrefix(message, cmd, args) {
         game.lastActiveAt = Date.now();
 
         const embed = buildWaguriEmbed(message, 'success', {
-            description: `✅ **${message.author.username}** đã mua vé Bingo thành công (**-${DEFAULT_BET.toLocaleString('vi-VN')}** ${config.CURRENCY}).\n*Gõ \`${config.PREFIX}check\` để xem vé của mình.* 🌸`
+            locale,
+            description: t(locale, 'commands.bingo.join_success', {
+                username: message.author.username,
+                price: DEFAULT_BET.toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN'),
+                currency: config.CURRENCY,
+                prefix: config.PREFIX
+            })
         });
         return message.reply({ embeds: [embed] });
     }
@@ -199,7 +220,8 @@ async function handleBingoPrefix(message, cmd, args) {
         const game = activeBingoGames.get(channelId);
         if (!game) {
             const embed = buildWaguriEmbed(message, 'warning', {
-                description: 'Hiện chưa có phòng Bingo nào mở ở kênh này hết á~ 🌸'
+                locale,
+                description: t(locale, 'commands.bingo.err_no_lobby_simple')
             });
             return message.reply({ embeds: [embed] });
         }
@@ -208,15 +230,17 @@ async function handleBingoPrefix(message, cmd, args) {
         const player = game.players.get(userId);
         if (!player) {
             const embed = buildWaguriEmbed(message, 'warning', {
-                description: 'Cậu chưa mua vé tham gia ván này nha~ 🌸'
+                locale,
+                description: t(locale, 'commands.bingo.err_no_players')
             });
             return message.reply({ embeds: [embed] });
         }
 
         const cardStr = renderCard(player.grid, player.marked);
         const embed = buildWaguriEmbed(message, 'info', {
-            title: `🎟️・Vé Bingo của ${player.username}`,
-            description: `Dưới đây là vé Bingo của cậu:\n${cardStr}`
+            locale,
+            title: t(locale, 'commands.bingo.ticket_title', { username: player.username }),
+            description: t(locale, 'commands.bingo.ticket_desc', { cardStr })
         });
         return message.reply({ embeds: [embed] });
     }
@@ -225,28 +249,32 @@ async function handleBingoPrefix(message, cmd, args) {
         const game = activeBingoGames.get(channelId);
         if (!game) {
             const embed = buildWaguriEmbed(message, 'warning', {
-                description: 'Hiện chưa có phòng Bingo nào mở ở kênh này hết á~ 🌸'
+                locale,
+                description: t(locale, 'commands.bingo.err_no_lobby_simple')
             });
             return message.reply({ embeds: [embed] });
         }
 
         if (game.hostId !== userId) {
             const embed = buildWaguriEmbed(message, 'warning', {
-                description: 'Chỉ người mở game mới có quyền bắt đầu nha cậu~ 🌸'
+                locale,
+                description: t(locale, 'commands.bingo.err_not_host')
             });
             return message.reply({ embeds: [embed] });
         }
 
         if (game.status !== 'lobby') {
             const embed = buildWaguriEmbed(message, 'warning', {
-                description: 'Ván Bingo đã bắt đầu rồi cậu ơi~ 🌸'
+                locale,
+                description: t(locale, 'commands.bingo.err_game_already_started')
             });
             return message.reply({ embeds: [embed] });
         }
 
         if (game.players.size < 2) {
             const embed = buildWaguriEmbed(message, 'warning', {
-                description: 'Cần ít nhất **2 người tham gia** để bắt đầu ván Bingo nha cậu! 🌸'
+                locale,
+                description: t(locale, 'commands.bingo.err_min_players', { min: 2 })
             });
             return message.reply({ embeds: [embed] });
         }
@@ -266,13 +294,23 @@ async function handleBingoPrefix(message, cmd, args) {
             });
 
             const embed = buildWaguriEmbed(message, 'info', {
-                title: '🎱・Bingo Đang Gọi Số!',
+                locale,
+                title: t(locale, 'commands.bingo.calling_title'),
                 description:
-                    (lastNum ? `🔊 Số mới gọi: **${label(lastNum)}**\n` : '') +
-                    `Số đã gọi (${game.called.length}): ${game.called.map(label).join(', ') || 'chưa có'}\n\n` +
-                    `**Tiến độ:**\n${lines.join('\n')}`
+                    (lastNum ? t(locale, 'commands.bingo.calling_new_number', { number: label(lastNum) }) : '') +
+                    t(locale, 'commands.bingo.calling_called_numbers', {
+                        count: game.called.length,
+                        called: game.called.map(label).join(', ') || t(locale, 'commands.bingo.calling_no_numbers'),
+                        lines: lines.join('\n')
+                    })
             });
-            embed.setFooter({ text: `Bingo • Tổng Pot: ${pot.toLocaleString('vi-VN')} ${config.CURRENCY}`, iconURL: embed.data.footer.icon_url });
+            embed.setFooter({
+                text: t(locale, 'commands.bingo.calling_footer', {
+                    pot: pot.toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN'),
+                    currency: config.CURRENCY
+                }),
+                iconURL: embed.data.footer.icon_url
+            });
             return embed;
         };
 
@@ -292,7 +330,8 @@ async function handleBingoPrefix(message, cmd, args) {
                 activeBingoGames.delete(channelId);
                 await db.stakeRefundSession(curGame.sessionId); // hoà, không ai trúng -> hoàn vé
                 const embed = buildWaguriEmbed(message, 'warning', {
-                    description: 'Đã gọi hết 75 số mà không ai trúng, ván hoà — đã hoàn vé cho mọi người! 🌸'
+                    locale,
+                    description: t(locale, 'commands.bingo.draw_ended')
                 });
                 return message.channel.send({ embeds: [embed] }).catch(() => {});
             }
@@ -335,18 +374,26 @@ async function handleBingoPrefix(message, cmd, args) {
                 const winnerMentions = winners.map(wid => `<@${wid}>`).join(', ');
                 
                 // Show cards of winners
-                let winDesc = `🏆 Chúc mừng **${winnerMentions}** đã Bingo và giành chiến thắng!\n` +
-                    `💰 Tiền thưởng nhận được: **${splitPrize.toLocaleString('vi-VN')}** ${config.CURRENCY} mỗi người!\n` +
-                    `*(Tổng Pot: ${pot.toLocaleString('vi-VN')} ${config.CURRENCY}, nhà cái giữ ${HOUSE_CUT * 100}% phí)*\n\n` +
-                    `Số đã gọi: **${curGame.called.map(label).join(', ')}**\n\n`;
+                let winDesc = t(locale, 'commands.bingo.win_desc_header', {
+                    winners: winnerMentions,
+                    prize: splitPrize.toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN'),
+                    currency: config.CURRENCY,
+                    pot: pot.toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN'),
+                    cut: HOUSE_CUT * 100,
+                    called: curGame.called.map(label).join(', ')
+                });
 
                 for (const wid of winners) {
                     const p = curGame.players.get(wid);
-                    winDesc += `**Vé của <@${wid}>:**\n${renderCard(p.grid, p.marked)}\n`;
+                    winDesc += t(locale, 'commands.bingo.win_desc_card', {
+                        userId: wid,
+                        cardStr: renderCard(p.grid, p.marked)
+                    });
                 }
 
                 const winEmbed = buildWaguriEmbed(message, 'jackpot', {
-                    title: '🎉・BINGO!',
+                    locale,
+                    title: t(locale, 'commands.bingo.win_title'),
                     description: winDesc
                 });
 
@@ -359,14 +406,16 @@ async function handleBingoPrefix(message, cmd, args) {
         const game = activeBingoGames.get(channelId);
         if (!game) {
             const embed = buildWaguriEmbed(message, 'warning', {
-                description: 'Hiện chưa có phòng Bingo nào mở ở kênh này hết á~ 🌸'
+                locale,
+                description: t(locale, 'commands.bingo.err_no_lobby_simple')
             });
             return message.reply({ embeds: [embed] });
         }
 
         if (game.hostId !== userId) {
             const embed = buildWaguriEmbed(message, 'warning', {
-                description: 'Chỉ người mở game mới có quyền hủy phòng nha cậu~ 🌸'
+                locale,
+                description: t(locale, 'commands.bingo.err_not_host_cancel')
             });
             return message.reply({ embeds: [embed] });
         }
@@ -379,7 +428,8 @@ async function handleBingoPrefix(message, cmd, args) {
         await db.stakeRefundSession(game.sessionId);
         activeBingoGames.delete(channelId);
         const embed = buildWaguriEmbed(message, 'success', {
-            description: `✅ Đã kết thúc và dọn dẹp ván Bingo. Tiền vé đã được hoàn trả cho mọi người!`
+            locale,
+            description: t(locale, 'commands.bingo.cancel_success')
         });
         return message.reply({ embeds: [embed] });
     }

@@ -6,15 +6,16 @@ const { checkBet } = require('../../lib/bet');
 const { applyPolice } = require('../../lib/police');
 const { policeJailEnabled } = require('../../lib/guildflags');
 const { buildWaguriEmbed } = require('../../lib/embed');
+const { getInteractionLanguage, t } = require('../../lib/i18n');
 
-const fmt = n => Number(n).toLocaleString('vi-VN');
+const fmt = (n, locale) => Number(n).toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN');
 const SYMBOLS = [
-    { id: 'bau', name: 'Bầu', emoji: '🍐' },
-    { id: 'cua', name: 'Cua', emoji: '🦀' },
-    { id: 'tom', name: 'Tôm', emoji: '🦐' },
-    { id: 'ca', name: 'Cá', emoji: '🐟' },
-    { id: 'ga', name: 'Gà', emoji: '🐓' },
-    { id: 'nai', name: 'Nai', emoji: '🦌' },
+    { id: 'bau', emoji: '🍐' },
+    { id: 'cua', emoji: '🦀' },
+    { id: 'ca', emoji: '🐟' },
+    { id: 'tom', emoji: '🦐' },
+    { id: 'ga', emoji: '🐓' },
+    { id: 'nai', emoji: '🦌' },
 ];
 
 module.exports = {
@@ -23,14 +24,23 @@ module.exports = {
         .setDescription('Bầu Cua Tôm Cá: đặt 1 con, đổ 3 xúc xắc')
         .addStringOption(o => o.setName('bet').setDescription('Số tiền cược (vd 1000, 1k, all)').setRequired(true))
         .addStringOption(o => o.setName('choice').setDescription('Đặt con nào?').setRequired(true)
-            .addChoices(...SYMBOLS.map(s => ({ name: `${s.emoji} ${s.name}`, value: s.id })))),
+            .addChoices(
+                { name: '🍐 Bầu / Gourd', value: 'bau' },
+                { name: '🦀 Cua / Crab', value: 'cua' },
+                { name: '🐟 Cá / Fish', value: 'ca' },
+                { name: '🦐 Tôm / Shrimp', value: 'tom' },
+                { name: '🐓 Gà / Rooster', value: 'ga' },
+                { name: '🦌 Nai / Deer', value: 'nai' }
+            )),
     async execute(interaction) {
         await interaction.deferReply();
+        const locale = await getInteractionLanguage(interaction);
         const userId = interaction.user.id;
         const user = await db.getUser(userId);
         if (!user) {
             const embed = buildWaguriEmbed(interaction, 'error', {
-                description: 'Hơ, lỗi dữ liệu, thử lại sau nhé~ 🌸'
+                locale,
+                description: t(locale, 'common.db_error')
             });
             return interaction.editReply({ embeds: [embed] });
         }
@@ -40,13 +50,15 @@ module.exports = {
         const err = await checkBet(bet, interaction.guildId);
         if (err) {
             const embed = buildWaguriEmbed(interaction, 'warning', {
+                locale,
                 description: `🌸 ${err}`
             });
             return interaction.editReply({ embeds: [embed] });
         }
         if (!await db.addMoney(userId, -bet, 'wallet')) {
             const embed = buildWaguriEmbed(interaction, 'warning', {
-                description: 'Ví cậu không đủ để cược~ 😟'
+                locale,
+                description: t(locale, 'common.insufficient_funds', { cost: fmt(bet, locale), currency: config.CURRENCY })
             });
             return interaction.editReply({ embeds: [embed] });
         }
@@ -54,17 +66,23 @@ module.exports = {
         const rolled = [0, 0, 0].map(() => SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)]);
         const matches = rolled.filter(s => s.id === choice).length;
         const picked = SYMBOLS.find(s => s.id === choice);
+        const pickedName = t(locale, `commands.baucua.symbols.${choice}`);
 
-        let desc = `🎲 Kết quả: ${rolled.map(s => s.emoji).join(' ')}\n` +
-            `Cậu đặt ${picked.emoji} **${picked.name}** — trúng **${matches}** con\n`;
+        let desc = t(locale, 'commands.baucua.rolled_result', {
+            dices: rolled.map(s => s.emoji).join(' '),
+            emoji: picked.emoji,
+            name: pickedName,
+            matches
+        });
+
         let win = matches > 0;
         if (win) {
             const payout = bet * (1 + matches);
             await db.addMoney(userId, payout, 'wallet');
             db.questIncr(userId, 'gamble_win', 1);
-            desc += `🎉 Thắng **+${fmt(payout - bet)}** ${config.CURRENCY}!`;
+            desc += t(locale, 'commands.baucua.win_msg', { winAmount: fmt(payout - bet, locale), currency: config.CURRENCY });
         } else {
-            desc += `😢 Thua **-${fmt(bet)}** ${config.CURRENCY}. Lần sau nhé~`;
+            desc += t(locale, 'commands.baucua.lose_msg', { loseAmount: fmt(bet, locale), currency: config.CURRENCY });
         }
         const policeRes = await applyPolice(userId);
         if (policeRes !== null) {
@@ -75,16 +93,17 @@ module.exports = {
             if (await policeJailEnabled(interaction.guildId)) {
                 try { await interaction.member?.timeout?.(jailTime, 'Vi phạm luật trò may rủi'); jailed = true; } catch { /* bot thiếu quyền timeout */ }
             }
-            desc += `\n\n🚨 **Công an ập tới!** Cậu bị phạt **${fmt(fine)}** ${config.CURRENCY}`
-                + (usedIns ? ` (đã giảm 50% nhờ 🛡️ **Bảo hiểm Đường phố**)` : '')
-                + (jailed ? ` và **tạm giam ${Math.round(jailTime / 60000)} phút**! 🚓` : '! 😱');
+            desc += t(locale, 'commands.baucua.police_arrival', { fine: fmt(fine, locale), currency: config.CURRENCY })
+                + (usedIns ? t(locale, 'commands.baucua.police_ins') : '')
+                + (jailed ? t(locale, 'commands.baucua.police_jailed', { jailMinutes: Math.round(jailTime / 60000) }) : t(locale, 'commands.baucua.police_fine_only'));
         }
 
         const afterBal = await db.getUser(userId);
-        desc += `\n💵 Số dư ví: **${fmt(afterBal?.wallet || 0)}** ${config.CURRENCY}`;
+        desc += t(locale, 'commands.baucua.balance_footer', { balance: fmt(afterBal?.wallet || 0, locale), currency: config.CURRENCY });
 
         const embed = buildWaguriEmbed(interaction, win ? 'success' : 'error', {
-            title: '🦀・Bầu Cua Tôm Cá',
+            locale,
+            title: t(locale, 'commands.baucua.title'),
             description: desc
         }).setTimestamp();
 

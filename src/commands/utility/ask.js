@@ -2,7 +2,7 @@ const { SlashCommandBuilder } = require('discord.js');
 const { buildWaguriEmbed } = require('../../lib/embed');
 const { chatWithWaguri } = require('../../lib/ai');
 const config = require('../../config');
-const { t } = require('../../lib/i18n');
+const { getInteractionLanguage, t } = require('../../lib/i18n');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -12,18 +12,18 @@ module.exports = {
     async execute(interaction) {
         await interaction.deferReply();
         const text = interaction.options.getString('message');
-        const locale = interaction.locale;
+        const locale = await getInteractionLanguage(interaction);
         const res = await chatWithWaguri(interaction.channelId, interaction.user.id, interaction.user.username, text, locale);
         if (!res.ok) {
             if (res.reason === 'quota') {
                 const embed = buildWaguriEmbed(interaction, 'warning', {
-                    description: locale.startsWith('en')
-                        ? `You have used up all **${res.cap}** chat turns with me today 🥺 Please come back tomorrow~ or upgrade with \`/premium\` to get **${config.AI.PREMIUM_DAILY} turns/day** 💎`
-                        : `Hôm nay cậu đã dùng hết **${res.cap}** lượt trò chuyện với mình rồi 🥺 Quay lại ngày mai nhé~ — hoặc nâng cấp \`/premium\` để có **${config.AI.PREMIUM_DAILY} lượt/ngày** 💎`
+                    locale,
+                    description: t(locale, 'commands.ask.quota_msg', { cap: res.cap, premium_cap: config.AI.PREMIUM_DAILY })
                 });
                 return interaction.editReply({ embeds: [embed] });
             }
             const embed = buildWaguriEmbed(interaction, 'error', {
+                locale,
                 description: t(locale, 'common.retry_later')
             });
             return interaction.editReply({ embeds: [embed] });

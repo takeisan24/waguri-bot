@@ -1,3 +1,5 @@
+import { t } from "./i18n";
+
 // Gói Premium bán qua VietQR (TK Vietcombank) + xác nhận tự động bằng Casso.
 // Đồng bộ với bot: src/config/index.js -> PREMIUM.PLANS.
 export type PlanId = "m1" | "m3" | "m6";
@@ -9,6 +11,14 @@ export const PREMIUM_PLANS: Record<PlanId, { months: number; amount: number; lab
 };
 
 export const PLAN_ORDER: PlanId[] = ["m1", "m3", "m6"];
+
+export function getLocalizedPlans(locale = "vi") {
+  return {
+    m1: { ...PREMIUM_PLANS.m1, label: t("premium.plans.m1.label", locale), note: t("premium.plans.m1.note", locale) },
+    m3: { ...PREMIUM_PLANS.m3, label: t("premium.plans.m3.label", locale), note: t("premium.plans.m3.note", locale) },
+    m6: { ...PREMIUM_PLANS.m6, label: t("premium.plans.m6.label", locale), note: t("premium.plans.m6.note", locale) },
+  };
+}
 
 export function isPlanId(v: string): v is PlanId {
   return v === "m1" || v === "m3" || v === "m6";

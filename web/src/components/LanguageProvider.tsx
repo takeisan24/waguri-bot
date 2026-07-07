@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState } from "react";
 import { t as translateFunc } from "../lib/i18n";
 
 interface LanguageContextType {
@@ -18,12 +18,13 @@ export function LanguageProvider({
   children: React.ReactNode;
   locale: "vi" | "en";
 }) {
+  const [prevInitialLocale, setPrevInitialLocale] = useState(initialLocale);
   const [locale, setLocaleState] = useState<"vi" | "en">(initialLocale);
 
-  // Đồng bộ hóa khi server thay đổi hoặc cookie cập nhật
-  useEffect(() => {
+  if (initialLocale !== prevInitialLocale) {
+    setPrevInitialLocale(initialLocale);
     setLocaleState(initialLocale);
-  }, [initialLocale]);
+  }
 
   const setLocale = (newLocale: "vi" | "en") => {
     setLocaleState(newLocale);

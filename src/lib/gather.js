@@ -128,7 +128,7 @@ async function runGather(interaction, { title, table, energyCost = config.GATHER
     const gross = payout;
     if (payout > 0) payout = Math.round(payout * fatigue);
     // Hệ Bệnh: làm quá sức có thể đổ bệnh; đang bệnh thì giảm thu nhập + mất máu.
-    const dz = await applyDisease(db, userId, user);
+    const dz = await applyDisease(db, userId, user, locale);
     if (dz.incomeMult !== 1 && payout > 0) payout = Math.round(payout * dz.incomeMult);
     const premium = user.premium_until && new Date(user.premium_until).getTime() > Date.now();
     if (premium && payout > 0) payout = Math.round(payout * (1 + config.PREMIUM.INCOME_BONUS));

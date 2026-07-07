@@ -2,8 +2,19 @@ import React from "react";
 import CherryBlossom from "../../components/CherryBlossom";
 import SiteHeader from "../../components/SiteHeader";
 import SiteFooter from "../../components/SiteFooter";
+import { getLocaleServer } from "../../lib/i18n";
 
-export default function PrivacyPolicy() {
+export async function generateMetadata() {
+  const locale = await getLocaleServer();
+  return {
+    title: `${locale === "en" ? "Privacy Policy" : "Chính Sách Bảo Mật"} — Waguri`,
+    robots: { index: true },
+  };
+}
+
+export default async function PrivacyPolicy() {
+  const locale = await getLocaleServer();
+
   return (
     <div className="relative min-h-screen flex flex-col justify-between overflow-x-hidden bg-[#0d0812] text-slate-200">
       {/* Background decoration gradients */}
@@ -20,84 +31,171 @@ export default function PrivacyPolicy() {
       {/* Main Content */}
       <main className="relative flex-1 flex flex-col items-center px-6 z-10 py-10 max-w-4xl mx-auto w-full">
         <div className="glass-panel w-full p-8 md:p-12 rounded-2xl border border-pink-300/15 space-y-8 shadow-xl">
-          <div className="border-b border-pink-300/10 pb-6">
-            <h1 className="text-3xl font-black text-white mb-2">Chính Sách Bảo Mật (Privacy Policy)</h1>
-            <p className="text-slate-400 text-xs">Cập nhật lần cuối: Ngày 21 tháng 6 năm 2026</p>
-          </div>
+          {locale === "en" ? (
+            // English version
+            <>
+              <div className="border-b border-pink-300/10 pb-6">
+                <h1 className="text-3xl font-black text-white mb-2">Privacy Policy</h1>
+                <p className="text-slate-400 text-xs">Last updated: June 21, 2026</p>
+              </div>
 
-          <div className="space-y-6 text-sm md:text-base leading-relaxed text-slate-300">
-            <p>
-              Quyền riêng tư của bạn là ưu tiên hàng đầu của chúng tôi. Chính sách Bảo mật này giải thích cách <strong>Waguri Discord Bot</strong> (sau đây gọi là &quot;Bot&quot;) thu thập, lưu trữ, sử dụng và bảo vệ thông tin cá nhân của bạn khi bạn tương tác với Bot.
-            </p>
+              <div className="space-y-6 text-sm md:text-base leading-relaxed text-slate-300">
+                <p>
+                  Your privacy is our priority. This Privacy Policy explains how <strong>Waguri Discord Bot</strong> (hereinafter referred to as the &quot;Bot&quot;) collects, stores, uses, and protects your personal information when you interact with the Bot.
+                </p>
 
-            <section className="space-y-3">
-              <h2 className="text-lg font-bold text-white flex items-center space-x-2">
-                <span className="text-pink-300">1.</span> <span>Dữ liệu Chúng tôi Thu thập</span>
-              </h2>
-              <p className="text-sm">Chúng tôi chỉ thu thập và lưu trữ thông tin tối thiểu cần thiết để vận hành và duy trì các tính năng trò chơi kinh tế RPG của Bot, bao gồm:</p>
-              <ul className="list-disc pl-5 space-y-2 text-slate-400 text-sm">
-                <li><strong>Discord User ID:</strong> Để định danh tài khoản người chơi duy nhất trong cơ sở dữ liệu.</li>
-                <li><strong>Dữ liệu Game Kinh tế:</strong> Số dư ví ảo, số dư ngân hàng ảo, cấp độ người chơi, kinh nghiệm (EXP), năng lượng thể lực (⚡).</li>
-                <li><strong>Tiến trình Game:</strong> Nghề nghiệp hiện tại, danh sách vật phẩm trong kho, tiến độ nhiệm vụ ngày, thành tựu đã mở khóa và bang hội (clan) của bạn.</li>
-                <li><strong>Discord Guild (Server) ID:</strong> Để lưu trữ các cài đặt cấu hình riêng của từng server (ví dụ: kênh bot được phép hoạt động, chế độ AI, danh sách cấm).</li>
-              </ul>
-            </section>
+                <section className="space-y-3">
+                  <h2 className="text-lg font-bold text-white flex items-center space-x-2">
+                    <span className="text-pink-300">1.</span> <span>Data We Collect</span>
+                  </h2>
+                  <p className="text-sm">We only collect and store minimum information necessary to operate and maintain the Bot&apos;s RPG economy features, including:</p>
+                  <ul className="list-disc pl-5 space-y-2 text-slate-400 text-sm">
+                    <li><strong>Discord User ID:</strong> To uniquely identify player accounts in the database.</li>
+                    <li><strong>Economy Game Data:</strong> Virtual wallet balance, virtual bank balance, player level, experience points (EXP), physical energy (⚡).</li>
+                    <li><strong>Game Progress:</strong> Current job, inventory list, daily quest progress, unlocked achievements, and your clan.</li>
+                    <li><strong>Discord Guild (Server) ID:</strong> To store configurations unique to each server (e.g., permitted bot channels, AI mode, ban lists).</li>
+                  </ul>
+                </section>
 
-            <section className="space-y-3">
-              <h2 className="text-lg font-bold text-white flex items-center space-x-2">
-                <span className="text-pink-300">2.</span> <span>Nội dung Tin nhắn & Dữ liệu Trò chuyện AI</span>
-              </h2>
-              <ul className="list-disc pl-5 space-y-2 text-slate-400 text-sm">
-                <li><strong>Không lưu trữ tin nhắn lâu dài:</strong> Bot KHÔNG bao giờ ghi lại hoặc lưu trữ nội dung tin nhắn của bạn vào cơ sở dữ liệu vĩnh viễn.</li>
-                <li><strong>Ngữ cảnh trò chuyện AI:</strong> Khi bạn sử dụng lệnh `/ask` hoặc @tag Waguri để nói chuyện, nội dung tin nhắn của bạn được chuyển trực tiếp đến API trí tuệ nhân tạo Google Gemini để xử lý tạo câu trả lời.</li>
-                <li>Ngữ cảnh hội thoại gần nhất (tối đa 6 lượt chat gần nhất) được giữ tạm thời trong bộ nhớ đệm (RAM) của ứng dụng để giúp AI trả lời mạch lạc và sẽ bị xóa sạch hoàn toàn ngay khi bot khởi động lại hoặc sau một thời gian không hoạt động.</li>
-              </ul>
-            </section>
+                <section className="space-y-3">
+                  <h2 className="text-lg font-bold text-white flex items-center space-x-2">
+                    <span className="text-pink-300">2.</span> <span>Message Contents & AI Chat Data</span>
+                  </h2>
+                  <ul className="list-disc pl-5 space-y-2 text-slate-400 text-sm">
+                    <li><strong>No long-term message storage:</strong> The Bot NEVER logs or stores the content of your messages in a permanent database.</li>
+                    <li><strong>AI Chat Context:</strong> When you use the <code>/ask</code> command or tag Waguri to chat, your message is sent directly to the Google Gemini AI API to generate a response.</li>
+                    <li>The recent conversation context (up to the last 6 chats) is stored temporarily in RAM to keep the conversation flowing and is deleted upon bot restart or inactivity.</li>
+                  </ul>
+                </section>
 
-            <section className="space-y-3">
-              <h2 className="text-lg font-bold text-white flex items-center space-x-2">
-                <span className="text-pink-300">3.</span> <span>Lưu trữ & Bảo mật Dữ liệu</span>
-              </h2>
-              <ul className="list-disc pl-5 space-y-2 text-slate-400 text-sm">
-                <li>Dữ liệu game của bạn được lưu trữ an toàn trên dịch vụ cơ sở dữ liệu điện toán đám mây **Supabase (PostgreSQL)**.</li>
-                <li>Chúng tôi áp dụng các biện pháp kỹ thuật tiêu chuẩn để bảo vệ cơ sở dữ liệu khỏi các truy cập trái phép. Tuy nhiên, xin lưu ý không có phương thức truyền tải internet hay lưu trữ đám mây nào là an toàn 100%.</li>
-              </ul>
-            </section>
+                <section className="space-y-3">
+                  <h2 className="text-lg font-bold text-white flex items-center space-x-2">
+                    <span className="text-pink-300">3.</span> <span>Storage & Data Security</span>
+                  </h2>
+                  <ul className="list-disc pl-5 space-y-2 text-slate-400 text-sm">
+                    <li>Your game data is securely stored on **Supabase (PostgreSQL)** cloud database.</li>
+                    <li>We implement standard technical measures to protect the database. However, no internet transmission or cloud storage is 100% secure.</li>
+                  </ul>
+                </section>
 
-            <section className="space-y-3">
-              <h2 className="text-lg font-bold text-white flex items-center space-x-2">
-                <span className="text-pink-300">4.</span> <span>Đăng nhập Web & Bảng điều khiển</span>
-              </h2>
-              <p className="text-sm">Trang web Waguri cho phép bạn <strong>đăng nhập bằng Discord (OAuth2)</strong> để xem bảng điều khiển cá nhân. Khi đăng nhập, chúng tôi xử lý:</p>
-              <ul className="list-disc pl-5 space-y-2 text-slate-400 text-sm">
-                <li><strong>Danh tính Discord (scope <code>identify</code>):</strong> Discord User ID, tên hiển thị và ảnh đại diện — để hiển thị đúng hồ sơ của bạn. <strong>Chúng tôi KHÔNG thu thập email.</strong></li>
-                <li><strong>Danh sách server (scope <code>guilds</code>):</strong> chỉ dùng để lọc ra những server bạn tham gia <em>mà Waguri cũng có mặt</em>, phục vụ tính năng bảng xếp hạng theo server. Chúng tôi không lưu các server khác.</li>
-                <li><strong>Phiên đăng nhập:</strong> được quản lý bằng cookie an toàn qua dịch vụ <strong>Supabase Auth</strong>; trang web được lưu trữ trên <strong>Vercel</strong>. Bạn có thể đăng xuất bất cứ lúc nào.</li>
-              </ul>
-            </section>
+                <section className="space-y-3">
+                  <h2 className="text-lg font-bold text-white flex items-center space-x-2">
+                    <span className="text-pink-300">4.</span> <span>Web Login & Dashboard</span>
+                  </h2>
+                  <p className="text-sm">Waguri website allows you to <strong>log in using Discord (OAuth2)</strong> to view your personal dashboard. During login, we process:</p>
+                  <ul className="list-disc pl-5 space-y-2 text-slate-400 text-sm">
+                    <li><strong>Discord Identity (scope <code>identify</code>):</strong> Discord User ID, display name, and avatar to show your profile. <strong>We DO NOT collect your email address.</strong></li>
+                    <li><strong>Guild List (scope <code>guilds</code>):</strong> Only used to filter servers you are in <em>where Waguri is also present</em>, to power server-specific leaderboards. We do not store other servers.</li>
+                    <li><strong>Login Session:</strong> Managed securely using cookies via <strong>Supabase Auth</strong>; the website is hosted on <strong>Vercel</strong>. You can log out anytime.</li>
+                  </ul>
+                </section>
 
-            <section className="space-y-3">
-              <h2 className="text-lg font-bold text-white flex items-center space-x-2">
-                <span className="text-pink-300">5.</span> <span>Quyền của Người dùng (Yêu cầu Xóa Dữ liệu)</span>
-              </h2>
-              <p className="text-slate-400 text-sm">
-                Bạn có toàn quyền kiểm soát dữ liệu của mình. Nếu bạn muốn xóa toàn bộ dữ liệu game và thông tin cá nhân của mình liên quan đến Waguri Bot khỏi cơ sở dữ liệu của chúng tôi, bạn có thể gửi yêu cầu trực tiếp cho nhà phát triển qua máy chủ hỗ trợ. Dữ liệu của bạn sẽ được xóa vĩnh viễn trong vòng 48 giờ sau khi tiếp nhận yêu cầu.
-              </p>
-            </section>
+                <section className="space-y-3">
+                  <h2 className="text-lg font-bold text-white flex items-center space-x-2">
+                    <span className="text-pink-300">5.</span> <span>User Rights (Data Deletion Requests)</span>
+                  </h2>
+                  <p className="text-slate-400 text-sm">
+                    You have full control over your data. If you want to delete all game data and personal information associated with Waguri Bot, you can trigger the <code>/deletedata</code> command in Discord to delete your data instantly. Alternatively, you can contact the developer on the support server.
+                  </p>
+                </section>
 
-            <section className="space-y-3">
-              <h2 className="text-lg font-bold text-white flex items-center space-x-2">
-                <span className="text-pink-300">6.</span> <span>Liên hệ Hỗ trợ</span>
-              </h2>
-              <p className="text-slate-400 text-sm">
-                Nếu bạn có bất kỳ thắc mắc nào liên quan đến Chính sách Bảo mật này hoặc muốn yêu cầu xóa dữ liệu, vui lòng liên hệ với nhà phát triển qua:
-              </p>
-              <ul className="list-disc pl-5 space-y-1 text-slate-400 text-sm">
-                <li><strong>Server Discord Hỗ trợ:</strong> <a href="https://discord.gg/zbJ4SBaMhE" className="text-pink-300 hover:underline">Liên kết Server</a></li>
-                <li><strong>Nhà phát triển:</strong> takei (Discord ID)</li>
-              </ul>
-            </section>
-          </div>
+                <section className="space-y-3">
+                  <h2 className="text-lg font-bold text-white flex items-center space-x-2">
+                    <span className="text-pink-300">6.</span> <span>Support & Contact</span>
+                  </h2>
+                  <p className="text-slate-400 text-sm">
+                    If you have any questions about this Privacy Policy or want to request manual data deletion, please contact us at:
+                  </p>
+                  <ul className="list-disc pl-5 space-y-1 text-slate-400 text-sm">
+                    <li><strong>Support Discord Server:</strong> <a href="https://discord.gg/zbJ4SBaMhE" className="text-pink-300 hover:underline">Server Invite Link</a></li>
+                    <li><strong>Developer:</strong> takei (Discord ID)</li>
+                  </ul>
+                </section>
+              </div>
+            </>
+          ) : (
+            // Vietnamese version (Original)
+            <>
+              <div className="border-b border-pink-300/10 pb-6">
+                <h1 className="text-3xl font-black text-white mb-2">Chính Sách Bảo Mật (Privacy Policy)</h1>
+                <p className="text-slate-400 text-xs">Cập nhật lần cuối: Ngày 21 tháng 6 năm 2026</p>
+              </div>
+
+              <div className="space-y-6 text-sm md:text-base leading-relaxed text-slate-300">
+                <p>
+                  Quyền riêng tư của bạn là ưu tiên hàng đầu của chúng tôi. Chính sách Bảo mật này giải thích cách <strong>Waguri Discord Bot</strong> (sau đây gọi là &quot;Bot&quot;) thu thập, lưu trữ, sử dụng và bảo vệ thông tin cá nhân của bạn khi bạn tương tác với Bot.
+                </p>
+
+                <section className="space-y-3">
+                  <h2 className="text-lg font-bold text-white flex items-center space-x-2">
+                    <span className="text-pink-300">1.</span> <span>Dữ liệu Chúng tôi Thu thập</span>
+                  </h2>
+                  <p className="text-sm">Chúng tôi chỉ thu thập và lưu trữ thông tin tối thiểu cần thiết để vận hành và duy trì các tính năng trò chơi kinh tế RPG của Bot, bao gồm:</p>
+                  <ul className="list-disc pl-5 space-y-2 text-slate-400 text-sm">
+                    <li><strong>Discord User ID:</strong> Để định danh tài khoản người chơi duy nhất trong cơ sở dữ liệu.</li>
+                    <li><strong>Dữ liệu Game Kinh tế:</strong> Số dư ví ảo, số dư ngân hàng ảo, cấp độ người chơi, kinh nghiệm (EXP), năng lượng thể lực (⚡).</li>
+                    <li><strong>Tiến trình Game:</strong> Nghề nghiệp hiện tại, danh sách vật phẩm trong kho, tiến độ nhiệm vụ ngày, thành tựu đã mở khóa và bang hội (clan) của bạn.</li>
+                    <li><strong>Discord Guild (Server) ID:</strong> Để lưu trữ các cài đặt cấu hình riêng của từng server (ví dụ: kênh bot được phép hoạt động, chế độ AI, danh sách cấm).</li>
+                  </ul>
+                </section>
+
+                <section className="space-y-3">
+                  <h2 className="text-lg font-bold text-white flex items-center space-x-2">
+                    <span className="text-pink-300">2.</span> <span>Nội dung Tin nhắn & Dữ liệu Trò chuyện AI</span>
+                  </h2>
+                  <ul className="list-disc pl-5 space-y-2 text-slate-400 text-sm">
+                    <li><strong>Không lưu trữ tin nhắn lâu dài:</strong> Bot KHÔNG bao giờ ghi lại hoặc lưu trữ nội dung tin nhắn của bạn vào cơ sở dữ liệu vĩnh viễn.</li>
+                    <li><strong>Ngữ cảnh trò chuyện AI:</strong> Khi bạn sử dụng lệnh `/ask` hoặc @tag Waguri để nói chuyện, nội dung tin nhắn của bạn được chuyển trực tiếp đến API trí tuệ nhân tạo Google Gemini để xử lý tạo câu trả lời.</li>
+                    <li>Ngữ cảnh hội thoại gần nhất (tối đa 6 lượt chat gần nhất) được giữ tạm thời trong bộ nhớ đệm (RAM) của ứng dụng để giúp AI trả lời mạch lạc và sẽ bị xóa sạch hoàn toàn ngay khi bot khởi động lại hoặc sau một thời gian không hoạt động.</li>
+                  </ul>
+                </section>
+
+                <section className="space-y-3">
+                  <h2 className="text-lg font-bold text-white flex items-center space-x-2">
+                    <span className="text-pink-300">3.</span> <span>Lưu trữ & Bảo mật Dữ liệu</span>
+                  </h2>
+                  <ul className="list-disc pl-5 space-y-2 text-slate-400 text-sm">
+                    <li>Dữ liệu game của bạn được lưu trữ an toàn trên dịch vụ cơ sở dữ liệu điện toán đám mây **Supabase (PostgreSQL)**.</li>
+                    <li>Chúng tôi áp dụng các biện pháp kỹ thuật tiêu chuẩn để bảo vệ cơ sở dữ liệu khỏi các truy cập trái phép. Tuy nhiên, xin lưu ý không có phương thức truyền tải internet hay lưu trữ đám mây nào là an toàn 100%.</li>
+                  </ul>
+                </section>
+
+                <section className="space-y-3">
+                  <h2 className="text-lg font-bold text-white flex items-center space-x-2">
+                    <span className="text-pink-300">4.</span> <span>Đăng nhập Web & Bảng điều khiển</span>
+                  </h2>
+                  <p className="text-sm">Trang web Waguri cho phép bạn <strong>đăng nhập bằng Discord (OAuth2)</strong> để xem bảng điều khiển cá nhân. Khi đăng nhập, chúng tôi xử lý:</p>
+                  <ul className="list-disc pl-5 space-y-2 text-slate-400 text-sm">
+                    <li><strong>Danh tính Discord (scope <code>identify</code>):</strong> Discord User ID, tên hiển thị và ảnh đại diện — để hiển thị đúng hồ sơ của bạn. <strong>Chúng tôi KHÔNG thu thập email.</strong></li>
+                    <li><strong>Danh sách server (scope <code>guilds</code>):</strong> chỉ dùng để lọc ra những server bạn tham gia <em>mà Waguri cũng có mặt</em>, phục vụ tính năng bảng xếp hạng theo server. Chúng tôi không lưu các server khác.</li>
+                    <li><strong>Phiên đăng nhập:</strong> được quản lý bằng cookie an toàn qua dịch vụ <strong>Supabase Auth</strong>; trang web được lưu trữ trên <strong>Vercel</strong>. Bạn có thể đăng xuất bất cứ lúc nào.</li>
+                  </ul>
+                </section>
+
+                <section className="space-y-3">
+                  <h2 className="text-lg font-bold text-white flex items-center space-x-2">
+                    <span className="text-pink-300">5.</span> <span>Quyền của Người dùng (Yêu cầu Xóa Dữ liệu)</span>
+                  </h2>
+                  <p className="text-slate-400 text-sm">
+                    Bạn có toàn quyền kiểm soát dữ liệu của mình. Nếu bạn muốn xóa toàn bộ dữ liệu game và thông tin cá nhân của mình liên quan đến Waguri Bot khỏi cơ sở dữ liệu của chúng tôi, bạn có thể sử dụng lệnh <code>/deletedata</code> trong Discord để tự động xóa dữ liệu ngay lập tức. Hoặc gửi yêu cầu qua máy chủ hỗ trợ.
+                  </p>
+                </section>
+
+                <section className="space-y-3">
+                  <h2 className="text-lg font-bold text-white flex items-center space-x-2">
+                    <span className="text-pink-300">6.</span> <span>Liên hệ Hỗ trợ</span>
+                  </h2>
+                  <p className="text-slate-400 text-sm">
+                    Nếu bạn có bất kỳ thắc mắc nào liên quan đến Chính sách Bảo mật này hoặc muốn yêu cầu xóa dữ liệu, vui lòng liên hệ với nhà phát triển qua:
+                  </p>
+                  <ul className="list-disc pl-5 space-y-1 text-slate-400 text-sm">
+                    <li><strong>Server Discord Hỗ trợ:</strong> <a href="https://discord.gg/zbJ4SBaMhE" className="text-pink-300 hover:underline">Liên kết Server</a></li>
+                    <li><strong>Nhà phát triển:</strong> takei (Discord ID)</li>
+                  </ul>
+                </section>
+              </div>
+            </>
+          )}
         </div>
       </main>
 

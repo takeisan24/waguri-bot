@@ -42,15 +42,12 @@ module.exports = {
                 return;
             }
 
+            const { t } = require('../lib/i18n');
+            const locale = s?.language === 'en' ? 'en' : 'vi';
+
             const embed = buildWaguriEmbed({ client: member.client }, 'info', {
-                title: '🌸・Chào mừng thành viên mới!',
-                description:
-                    `**Xin chào <@${member.id}>** — tớ là **Waguri Kaoruko**, quản lý tiệm bánh Gekka! 🍰\n\n` +
-                    `Tớ rất vui vì cậu đã ghé thăm **${member.guild.name}** đó~ Cậu sẽ thích ở đây mà!\n\n` +
-                    `**Bắt đầu nhé:**\n` +
-                    `> 📜 Hãy làm quen với các kênh của server nha.\n` +
-                    `> 🎁 Gõ \`/start\` để nhận **quà chào mừng** và bắt đầu hành trình! 🌸\n\n` +
-                    `*Chúc cậu có những giây phút thật ngọt ngào bên mọi người~* 💕`,
+                title: t(locale, 'common.welcome.title'),
+                description: t(locale, 'common.welcome.desc', { user: `<@${member.id}>`, guild: member.guild.name }),
             });
 
             await channel.send({ embeds: [embed] });

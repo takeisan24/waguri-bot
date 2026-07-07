@@ -167,7 +167,7 @@ module.exports = {
             const eventMult = getEventMult();
             if (eventMult !== 1 && earnedMoney > 0) earnedMoney = Math.round(earnedMoney * eventMult);
             // Hệ Bệnh: làm quá sức có thể đổ bệnh; đang bệnh thì giảm thu nhập + mất máu.
-            const dz = await applyDisease(db, userId, user);
+            const dz = await applyDisease(db, userId, user, locale);
             if (dz.incomeMult !== 1 && earnedMoney > 0) earnedMoney = Math.round(earnedMoney * dz.incomeMult);
 
             await db.addMoney(userId, earnedMoney, 'wallet');

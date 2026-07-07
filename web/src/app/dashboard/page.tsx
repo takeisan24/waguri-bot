@@ -8,10 +8,17 @@ import { getLevelProgress, affectionTier, fmtVND, getCurrentSeasonId, getSeasonL
 import { toggleProfilePublic, toggleVoteReminder } from "./actions";
 import ShareProfileButton from "../../components/ShareProfileButton";
 import EventBanner from "../../components/EventBanner";
+import { getLocaleServer, t } from "../../lib/i18n";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Bảng điều khiển — Waguri 🌸", robots: { index: false } };
+export async function generateMetadata() {
+  const locale = await getLocaleServer();
+  return {
+    title: t("dashboard.meta_title", locale),
+    robots: { index: false }
+  };
+}
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
@@ -23,6 +30,7 @@ function Stat({ label, value }: { label: string; value: string }) {
 }
 
 export default async function Dashboard() {
+  const locale = await getLocaleServer();
   const supabase = await createClient();
   const {
     data: { user },
@@ -58,16 +66,16 @@ export default async function Dashboard() {
     achievements = count ?? 0;
   }
 
-  // Sức khỏe & năng lượng (năng lượng hồi 1/phút -> tính lại từ mốc lưu, khỏi ghi DB).
+  // Sức khỏe & năng lượng
   const health = Math.max(0, Math.min(100, Number(row?.health ?? 100)));
   const ENERGY_MAX = 100;
   const storedEnergy = Number(row?.energy ?? ENERGY_MAX);
-  // eslint-disable-next-line react-hooks/purity -- server component (force-dynamic): render 1 lần/request nên Date.now() an toàn
+  // eslint-disable-next-line react-hooks/purity
   const nowMs = Date.now();
   const eUpdatedAt = row?.energy_updated_at ? new Date(row.energy_updated_at).getTime() : nowMs;
   const energy = Math.max(0, Math.min(ENERGY_MAX, storedEnergy + Math.floor((nowMs - eUpdatedAt) / 60000)));
 
-  // Trạng thái nông trại / thú cưng (hiển thị thêm cho đúng thông tin user mong).
+  // Trạng thái nông trại / thú cưng
   type PigRow = { stage?: string; tier?: number; sick?: boolean };
   type PlantRow = { stage?: string; type?: string };
   type PetRow = { name?: string; species?: string; exp?: number };
@@ -86,7 +94,7 @@ export default async function Dashboard() {
   }
 
   const seasonId = getCurrentSeasonId();
-  const seasonLabel = getSeasonLabel(seasonId);
+  const seasonLabel = getSeasonLabel(seasonId, locale);
   const { data: bp } = await admin
     .from("battle_pass_users")
     .select("*")
@@ -105,8 +113,7 @@ export default async function Dashboard() {
   const bank = Number(row?.bank || 0);
   const isPublic = row?.profile_public !== false;
   const voteReminder = row?.vote_reminder !== false;
-  // eslint-disable-next-line react-hooks/purity -- server component (force-dynamic): render 1 lần/request nên Date.now() an toàn
-  const isPremium = row?.premium_until && new Date(row.premium_until).getTime() > Date.now();
+  const isPremium = row?.premium_until && new Date(row.premium_until).getTime() > nowMs;
   const voteStreak = Number(row?.vote_streak || 0);
   const expPct = prog.expForNextLevel > 0 ? Math.min((prog.expIntoLevel / prog.expForNextLevel) * 100, 100) : 0;
 
@@ -117,7 +124,7 @@ export default async function Dashboard() {
           WAGURI <span className="text-pink-400">🌸</span>
         </Link>
         <form action="/auth/signout" method="post">
-          <button className="text-xs font-bold text-slate-400 hover:text-pink-300">Đăng xuất →</button>
+          <button className="text-xs font-bold text-slate-400 hover:text-pink-300">{t("dashboard.logout", locale)}</button>
         </form>
       </header>
 
@@ -134,7 +141,7 @@ export default async function Dashboard() {
               {username} {isPremium ? "💎" : ""}
             </h1>
             <p className="text-pink-300 text-sm mt-1">
-              {jobName || "Nghề tự do"} · Lv.{prog.level}
+              {jobName || t("dashboard.default_job", locale)} · Lv.{prog.level}
               {clanName ? ` · 🏰 ${clanName}` : ""}
             </p>
             <div className="mt-3">
@@ -159,41 +166,43 @@ export default async function Dashboard() {
           <div className="flex items-center justify-between gap-4">
             <div>
               <p className="text-sm font-extrabold text-white">
-                {isPremium ? "💎 Waguri Premium đang bật" : "💎 Nâng cấp Waguri Premium"}
+                {isPremium ? t("dashboard.premium_active", locale) : t("dashboard.premium_upgrade", locale)}
               </p>
               <p className="text-xs text-pink-200/80 mt-0.5">
                 {isPremium
-                  ? "Cảm ơn cậu đã ủng hộ~ Bấm để gia hạn thêm."
-                  : "150 chat AI/ngày · +10% thu nhập · badge 💎 — chỉ từ 25k 🌸"}
+                  ? t("dashboard.premium_active_desc", locale)
+                  : t("dashboard.premium_upgrade_desc", locale)}
               </p>
             </div>
-            <span className="text-pink-300 font-bold text-sm flex-shrink-0">{isPremium ? "Gia hạn →" : "Xem gói →"}</span>
+            <span className="text-pink-300 font-bold text-sm flex-shrink-0">
+              {isPremium ? t("dashboard.premium_renew_btn", locale) : t("dashboard.premium_view_btn", locale)}
+            </span>
           </div>
         </Link>
 
         {!row ? (
           <div className="glass-panel rounded-3xl p-8 text-center text-slate-400">
-            Cậu chưa có dữ liệu game~ Vào Discord chơi vài lệnh (<code>/start</code>, <code>/daily</code>) rồi quay lại nhé! 🌸
+            {t("dashboard.no_data", locale)}
           </div>
         ) : (
           <>
             {/* Stats */}
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              <Stat label="💎 Tổng tài sản" value={`${fmtVND(wallet + bank)} VNĐ`} />
-              <Stat label="💵 Ví tiền" value={`${fmtVND(wallet)} VNĐ`} />
-              <Stat label="🏦 Ngân hàng" value={`${fmtVND(bank)} VNĐ`} />
-              <Stat label="💞 Thân thiết Waguri" value={affectionTier(Number(row.affection || 0))} />
-              <Stat label="🎖️ Thành tựu" value={`${achievements}`} />
-              <Stat label="🗳️ Chuỗi vote" value={`${voteStreak} ngày`} />
+              <Stat label={t("dashboard.stat_total_wealth", locale)} value={`${fmtVND(wallet + bank)} VNĐ`} />
+              <Stat label={t("dashboard.stat_wallet", locale)} value={`${fmtVND(wallet)} VNĐ`} />
+              <Stat label={t("dashboard.stat_bank", locale)} value={`${fmtVND(bank)} VNĐ`} />
+              <Stat label={t("dashboard.stat_affection", locale)} value={affectionTier(Number(row.affection || 0), locale)} />
+              <Stat label={t("dashboard.stat_achievements", locale)} value={`${achievements}`} />
+              <Stat label={t("dashboard.stat_vote_streak", locale)} value={t("dashboard.days", locale, { count: voteStreak })} />
             </div>
 
             {/* Sức khỏe & năng lượng */}
             <div className="glass-panel rounded-3xl p-6 space-y-4 border border-pink-300/10">
-              <h2 className="text-lg font-extrabold text-white">❤️ Sức khỏe &amp; ⚡ Năng lượng</h2>
+              <h2 className="text-lg font-extrabold text-white">{t("dashboard.health_energy_title", locale)}</h2>
               <div className="space-y-3">
                 <div>
                   <div className="flex justify-between text-[11px] text-slate-400 mb-1">
-                    <span>❤️ Sức khỏe</span>
+                    <span>{t("dashboard.health_label", locale)}</span>
                     <span>{health}/100</span>
                   </div>
                   <div className="h-2.5 rounded-full bg-[#1c1424] overflow-hidden">
@@ -202,7 +211,7 @@ export default async function Dashboard() {
                 </div>
                 <div>
                   <div className="flex justify-between text-[11px] text-slate-400 mb-1">
-                    <span>⚡ Năng lượng</span>
+                    <span>{t("dashboard.energy_label", locale)}</span>
                     <span>{energy}/{ENERGY_MAX}</span>
                   </div>
                   <div className="h-2.5 rounded-full bg-[#1c1424] overflow-hidden">
@@ -211,22 +220,22 @@ export default async function Dashboard() {
                 </div>
               </div>
               {health < 30 ? (
-                <p className="text-xs text-rose-300">⚠️ Sức khỏe yếu (&lt;30) — dùng <code>/eat</code> thuốc/hộp y tế, <code>/nghingoi</code> hoặc <code>/hospital</code> để hồi nhé!</p>
+                <p className="text-xs text-rose-300">{t("dashboard.health_low_warning", locale)}</p>
               ) : null}
             </div>
 
             {/* Thiện cảm với Waguri */}
             <div className="glass-panel rounded-3xl p-6 space-y-4 border border-pink-300/10 bg-gradient-to-br from-pink-500/5 to-purple-500/5">
-              <h2 className="text-lg font-extrabold text-white flex items-center gap-1.5">💖 Thiện cảm với Waguri</h2>
+              <h2 className="text-lg font-extrabold text-white flex items-center gap-1.5">{t("dashboard.affection_title", locale)}</h2>
               <div className="space-y-3">
                 <div className="flex justify-between items-baseline">
-                  <span className="text-xs text-slate-400 font-medium">Bậc quan hệ:</span>
-                  <span className="text-sm font-extrabold text-pink-300">{affectionTier(row?.affection ?? 0)}</span>
+                  <span className="text-xs text-slate-400 font-medium">{t("dashboard.relationship_tier", locale)}</span>
+                  <span className="text-sm font-extrabold text-pink-300">{affectionTier(row?.affection ?? 0, locale)}</span>
                 </div>
                 <div>
                   <div className="flex justify-between text-[11px] text-slate-400 mb-1">
-                    <span>Điểm thiện cảm</span>
-                    <span>{row?.affection ?? 0} điểm</span>
+                    <span>{t("dashboard.affection_points", locale)}</span>
+                    <span>{t("dashboard.points_suffix", locale, { count: row?.affection ?? 0 })}</span>
                   </div>
                   {(() => {
                     const aff = Number(row?.affection ?? 0);
@@ -246,19 +255,19 @@ export default async function Dashboard() {
             {/* Sổ Sứ Mệnh */}
             <div className="glass-panel rounded-3xl p-6 space-y-4 border border-pink-300/10">
               <div className="flex justify-between items-center">
-                <h2 className="text-lg font-extrabold text-white flex items-center gap-1.5">📖 Sổ Sứ Mệnh</h2>
+                <h2 className="text-lg font-extrabold text-white flex items-center gap-1.5">{t("dashboard.bp_title", locale)}</h2>
                 <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${isPassPremium ? "bg-amber-400/20 text-amber-300 border border-amber-400/30" : "bg-slate-400/15 text-slate-300"}`}>
-                  {isPassPremium ? "👑 Premium" : "🔓 Thường"}
+                  {isPassPremium ? t("dashboard.bp_premium", locale) : t("dashboard.bp_free", locale)}
                 </span>
               </div>
               <div className="space-y-3">
                 <div className="flex justify-between items-baseline">
                   <span className="text-xs text-slate-400 font-medium">{seasonLabel}</span>
-                  <span className="text-sm font-extrabold text-pink-300">Cấp {bpLevel}</span>
+                  <span className="text-sm font-extrabold text-pink-300">{t("dashboard.bp_level_label", locale, { level: bpLevel })}</span>
                 </div>
                 <div>
                   <div className="flex justify-between text-[11px] text-slate-400 mb-1">
-                    <span>Tiến trình cấp</span>
+                    <span>{t("dashboard.bp_progress_label", locale)}</span>
                     <span>{bpXpIntoLevel.toLocaleString("vi-VN")}/1,000 XP ({bpXpPct}%)</span>
                   </div>
                   <div className="h-2.5 rounded-full bg-[#1c1424] overflow-hidden">
@@ -270,27 +279,27 @@ export default async function Dashboard() {
                 href="/dashboard/pass"
                 className="mt-2 block w-full text-center text-xs py-2.5 rounded-xl bg-pink-500/10 border border-pink-500/20 text-pink-300 font-bold hover:bg-pink-500/15 transition-all"
               >
-                Xem Chi Tiết &amp; Nhận Quà →
+                {t("dashboard.bp_details_btn", locale)}
               </Link>
             </div>
 
             {/* Nông trại & thú cưng */}
             <div className="glass-panel rounded-3xl p-6 space-y-3 border border-pink-300/10">
-              <h2 className="text-lg font-extrabold text-white">🌾 Nông trại &amp; Thú cưng</h2>
+              <h2 className="text-lg font-extrabold text-white">{t("dashboard.farm_pets_title", locale)}</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                 <div className="rounded-2xl bg-pink-500/5 px-4 py-3">
-                  <p className="text-xs text-pink-300/80">🐷 Heo</p>
-                  <p className="text-white font-semibold">{pig ? (pig.sick ? "Đang bệnh 🤒" : `Giai đoạn: ${pig.stage}`) : "Chưa nuôi"}</p>
+                  <p className="text-xs text-pink-300/80">{t("dashboard.pig_label", locale)}</p>
+                  <p className="text-white font-semibold">{pig ? (pig.sick ? t("dashboard.pig_sick", locale) : t("dashboard.pig_stage", locale, { stage: pig.stage ?? "" })) : t("dashboard.pig_none", locale)}</p>
                 </div>
                 <div className="rounded-2xl bg-pink-500/5 px-4 py-3">
-                  <p className="text-xs text-pink-300/80">🌱 Cây</p>
-                  <p className="text-white font-semibold">{plant ? `Giai đoạn: ${plant.stage}` : "Chưa trồng"}</p>
+                  <p className="text-xs text-pink-300/80">{t("dashboard.plant_label", locale)}</p>
+                  <p className="text-white font-semibold">{plant ? t("dashboard.plant_stage", locale, { stage: plant.stage ?? "" }) : t("dashboard.plant_none", locale)}</p>
                 </div>
                 
                 <div className="rounded-2xl bg-pink-500/5 px-4 py-4 sm:col-span-2 flex flex-col gap-2">
-                  <p className="text-xs text-pink-300/80">🐾 Thú cưng</p>
+                  <p className="text-xs text-pink-300/80">{t("dashboard.pet_label", locale)}</p>
                   {pet ? (() => {
-                    const sp = findPetSpecies(pet.species || "");
+                    const sp = findPetSpecies(pet.species || "", locale);
                     const { level, expIntoLevel, expForNextLevel } = getPetLevelProgress(pet.exp || 0);
                     const pct = expForNextLevel > 0 ? Math.min((expIntoLevel / expForNextLevel) * 100, 100) : 0;
                     const activeSkills = sp?.skills.filter(s => level >= s.lvl) || [];
@@ -300,7 +309,7 @@ export default async function Dashboard() {
                         <div className="flex items-center gap-3">
                           <span className="text-3xl">{sp?.emoji || "🐾"}</span>
                           <div>
-                            <p className="text-white font-bold text-base">{pet.name || sp?.name} <span className="text-xs text-pink-300 font-normal bg-pink-500/10 px-2 py-0.5 rounded-full ml-1">Lv.{level}</span></p>
+                            <p className="text-white font-bold text-base">{pet.name || sp?.name} <span className="text-xs text-pink-300 font-normal bg-pink-500/10 px-2 py-0.5 rounded-full ml-1">{t("dashboard.pet_level", locale, { level })}</span></p>
                             <p className="text-[10px] text-slate-400 mt-0.5">{expIntoLevel}/{expForNextLevel} EXP ({Math.round(pct)}%)</p>
                           </div>
                         </div>
@@ -309,7 +318,7 @@ export default async function Dashboard() {
                         </div>
                         {activeSkills.length > 0 && (
                           <div className="mt-2 pt-2 border-t border-slate-800/60 space-y-1">
-                            <p className="text-xs text-pink-300 font-bold">✨ Kỹ năng đang kích hoạt:</p>
+                            <p className="text-xs text-pink-300 font-bold">{t("dashboard.pet_skills_active", locale)}</p>
                             {activeSkills.map((sk, idx) => (
                               <p key={idx} className="text-xs text-slate-300 leading-relaxed">• {sk.desc}</p>
                             ))}
@@ -318,7 +327,7 @@ export default async function Dashboard() {
                       </div>
                     );
                   })() : (
-                    <p className="text-white font-semibold">Chưa nuôi thú cưng</p>
+                    <p className="text-white font-semibold">{t("dashboard.pet_none", locale)}</p>
                   )}
                 </div>
               </div>
@@ -326,21 +335,21 @@ export default async function Dashboard() {
 
             {/* Settings */}
             <div className="glass-panel rounded-3xl p-6 space-y-4 border border-pink-300/10">
-              <h2 className="text-lg font-extrabold text-white">⚙️ Cài đặt</h2>
+              <h2 className="text-lg font-extrabold text-white">{t("dashboard.settings_title", locale)}</h2>
 
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className="text-sm font-semibold text-white">Hiển thị hồ sơ web</p>
+                  <p className="text-sm font-semibold text-white">{t("dashboard.settings_profile_public", locale)}</p>
                   <p className="text-xs text-slate-400">
                     {isPublic ? (
                       <>
-                        Đang công khai:{" "}
+                        {t("dashboard.settings_profile_public_desc", locale)}{" "}
                         <Link href={`/u/${id}`} className="text-pink-300 hover:underline">
                           waguri-bot.vercel.app/u/{id}
                         </Link>
                       </>
                     ) : (
-                      "Đang ẩn — người khác không xem được hồ sơ của cậu."
+                      t("dashboard.settings_profile_private_desc", locale)
                     )}
                   </p>
                 </div>
@@ -348,7 +357,7 @@ export default async function Dashboard() {
                   {isPublic ? <ShareProfileButton id={id} /> : null}
                   <form action={toggleProfilePublic}>
                     <button className="px-4 py-2 rounded-full text-xs font-bold border border-pink-300/30 text-pink-200 hover:border-pink-300/60 transition-all whitespace-nowrap">
-                      {isPublic ? "🙈 Ẩn đi" : "👁️ Hiện"}
+                      {isPublic ? t("dashboard.settings_profile_hide_btn", locale) : t("dashboard.settings_profile_show_btn", locale)}
                     </button>
                   </form>
                 </div>
@@ -356,14 +365,14 @@ export default async function Dashboard() {
 
               <div className="flex items-center justify-between gap-4 border-t border-slate-800 pt-4">
                 <div>
-                  <p className="text-sm font-semibold text-white">Nhắc vote qua DM</p>
+                  <p className="text-sm font-semibold text-white">{t("dashboard.settings_vote_reminder", locale)}</p>
                   <p className="text-xs text-slate-400">
-                    {voteReminder ? "Đang bật — Waguri nhắc khi đủ 12h để vote lại." : "Đang tắt."}
+                    {voteReminder ? t("dashboard.settings_vote_reminder_on", locale) : t("dashboard.settings_vote_reminder_off", locale)}
                   </p>
                 </div>
                 <form action={toggleVoteReminder}>
                   <button className="px-4 py-2 rounded-full text-xs font-bold border border-pink-300/30 text-pink-200 hover:border-pink-300/60 transition-all whitespace-nowrap">
-                    {voteReminder ? "🔕 Tắt" : "🔔 Bật"}
+                    {voteReminder ? t("dashboard.settings_vote_reminder_off_btn", locale) : t("dashboard.settings_vote_reminder_on_btn", locale)}
                   </button>
                 </form>
               </div>
@@ -373,8 +382,8 @@ export default async function Dashboard() {
 
         {manageGuilds.length > 0 ? (
           <div className="glass-panel rounded-3xl p-6 space-y-3 border border-pink-300/10">
-            <h2 className="text-lg font-extrabold text-white">🛠️ Quản lý server</h2>
-            <p className="text-xs text-slate-400">Server cậu có quyền Quản lý — bấm để chỉnh cài đặt bot:</p>
+            <h2 className="text-lg font-extrabold text-white">{t("dashboard.manage_servers_title", locale)}</h2>
+            <p className="text-xs text-slate-400">{t("dashboard.manage_servers_desc", locale)}</p>
             <div className="flex flex-wrap gap-2">
               {manageGuilds.map((g) => (
                 <Link
@@ -391,8 +400,8 @@ export default async function Dashboard() {
 
         {guilds.length > 0 ? (
           <div className="glass-panel rounded-3xl p-6 space-y-3 border border-pink-300/10">
-            <h2 className="text-lg font-extrabold text-white">🏆 Bảng xếp hạng server của bạn</h2>
-            <p className="text-xs text-slate-400">Các server cậu tham gia mà Waguri cũng có mặt — bấm để xem BXH riêng:</p>
+            <h2 className="text-lg font-extrabold text-white">{t("dashboard.server_leaderboards_title", locale)}</h2>
+            <p className="text-xs text-slate-400">{t("dashboard.server_leaderboards_desc", locale)}</p>
             <div className="flex flex-wrap gap-2">
               {guilds.map((g) => (
                 <Link
@@ -409,7 +418,7 @@ export default async function Dashboard() {
 
         <div className="text-center">
           <Link href="/leaderboard" className="text-sm text-pink-300 hover:underline">
-            🏆 Xem bảng xếp hạng toàn cầu
+            {t("dashboard.global_leaderboard_link", locale)}
           </Link>
         </div>
       </main>

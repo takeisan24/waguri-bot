@@ -6,8 +6,9 @@ const { checkBet } = require('../../lib/bet');
 const { applyPolice } = require('../../lib/police');
 const { policeJailEnabled } = require('../../lib/guildflags');
 const { buildWaguriEmbed } = require('../../lib/embed');
+const { getInteractionLanguage, t } = require('../../lib/i18n');
 
-const fmt = n => Number(n).toLocaleString('vi-VN');
+const fmt = (n, locale) => Number(n).toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN');
 const SUITS = ['♠', '♥', '♦', '♣'];
 const RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
 
@@ -50,28 +51,32 @@ module.exports = {
         .addStringOption(o => o.setName('bet').setDescription('Số tiền cược (vd 1000, 1k, all)').setRequired(true)),
     async execute(interaction) {
         await interaction.deferReply();
+        const locale = await getInteractionLanguage(interaction);
         const userId = interaction.user.id;
         const user = await db.getUser(userId);
         if (!user) {
-            const embed = buildWaguriEmbed(interaction, 'error', {
-                description: 'Hơ, lỗi dữ liệu, thử lại sau nhé~ 🌸'
+            const embedObj = buildWaguriEmbed(interaction, 'error', {
+                locale,
+                description: t(locale, 'common.db_error')
             });
-            return interaction.editReply({ embeds: [embed] });
+            return interaction.editReply({ embeds: [embedObj] });
         }
 
         const bet = parseAmount(interaction.options.getString('bet'), Number(user.wallet));
         const err = await checkBet(bet, interaction.guildId);
         if (err) {
-            const embed = buildWaguriEmbed(interaction, 'warning', {
+            const embedObj = buildWaguriEmbed(interaction, 'warning', {
+                locale,
                 description: `🌸 ${err}`
             });
-            return interaction.editReply({ embeds: [embed] });
+            return interaction.editReply({ embeds: [embedObj] });
         }
         if (!await db.addMoney(userId, -bet, 'wallet')) {
-            const embed = buildWaguriEmbed(interaction, 'warning', {
-                description: 'Ví cậu không đủ để cược~ 😟'
+            const embedObj = buildWaguriEmbed(interaction, 'warning', {
+                locale,
+                description: t(locale, 'common.insufficient_funds', { cost: fmt(bet, locale), currency: config.CURRENCY })
             });
-            return interaction.editReply({ embeds: [embed] });
+            return interaction.editReply({ embeds: [embedObj] });
         }
 
         const deck = makeDeck();
@@ -80,11 +85,12 @@ module.exports = {
         let settled = false;
 
         const embed = (reveal, note, type = 'info') => buildWaguriEmbed(interaction, type, {
-            title: '🃏・Xì Dách (Blackjack)',
-            description: note ?? `Cược: **${fmt(bet)}** ${config.CURRENCY}`,
+            locale,
+            title: t(locale, 'commands.blackjack.title'),
+            description: note ?? t(locale, 'commands.blackjack.bet_amount', { bet: fmt(bet, locale), currency: config.CURRENCY }),
             fields: [
-                { name: `Bài của cậu (${handValue(player)})`, value: render(player), inline: false },
-                { name: reveal ? `Nhà cái (${handValue(dealer)})` : 'Nhà cái', value: reveal ? render(dealer) : `${dealer[0].r}${dealer[0].s} 🂠`, inline: false },
+                { name: t(locale, 'commands.blackjack.your_hand', { value: handValue(player) }), value: render(player), inline: false },
+                { name: reveal ? t(locale, 'commands.blackjack.dealer_hand_show', { value: handValue(dealer) }) : t(locale, 'commands.blackjack.dealer_hand_hide'), value: reveal ? render(dealer) : `${dealer[0].r}${dealer[0].s} 🂠`, inline: false },
             ]
         });
 
@@ -96,10 +102,10 @@ module.exports = {
             if (outcome === 'win' || outcome === 'blackjack') db.questIncr(userId, 'gamble_win', 1);
             const net = payout - bet;
             let note = {
-                blackjack: `🎉 XÌ DÁCH! Cậu thắng **+${fmt(net)}** ${config.CURRENCY}!`,
-                win: `🎉 Cậu thắng **+${fmt(net)}** ${config.CURRENCY}!`,
-                push: `🤝 Hòa! Hoàn lại tiền cược.`,
-                lose: `😢 Cậu thua **-${fmt(bet)}** ${config.CURRENCY}. Lần sau nhé~`,
+                blackjack: t(locale, 'commands.blackjack.blackjack_msg', { winAmount: fmt(net, locale), currency: config.CURRENCY }),
+                win: t(locale, 'commands.blackjack.win_msg', { winAmount: fmt(net, locale), currency: config.CURRENCY }),
+                push: t(locale, 'commands.blackjack.push_msg'),
+                lose: t(locale, 'commands.blackjack.lose_msg', { loseAmount: fmt(bet, locale), currency: config.CURRENCY }),
             }[outcome];
             
             const policeRes = await applyPolice(userId);
@@ -111,13 +117,13 @@ module.exports = {
                 if (await policeJailEnabled(interaction.guildId)) {
                     try { await interaction.member?.timeout?.(jailTime, 'Vi phạm luật trò may rủi'); jailed = true; } catch { /* bot thiếu quyền timeout */ }
                 }
-                note += `\n\n🚨 **Công an ập tới!** Cậu bị phạt **${fmt(fine)}** ${config.CURRENCY}`
-                    + (usedIns ? ` (đã giảm 50% nhờ 🛡️ **Bảo hiểm Đường phố**)` : '')
-                    + (jailed ? ` và **tạm giam ${Math.round(jailTime / 60000)} phút**! 🚓` : '! 😱');
+                note += t(locale, 'commands.blackjack.police_arrival', { fine: fmt(fine, locale), currency: config.CURRENCY })
+                    + (usedIns ? t(locale, 'commands.blackjack.police_ins') : '')
+                    + (jailed ? t(locale, 'commands.blackjack.police_jailed', { jailMinutes: Math.round(jailTime / 60000) }) : t(locale, 'commands.blackjack.police_fine_only'));
             }
 
             const u = await db.getUser(userId);
-            const noteFull = `${note}\n💵 Số dư ví: **${fmt(u?.wallet || 0)}** ${config.CURRENCY}`;
+            const noteFull = `${note}\n${t(locale, 'commands.blackjack.balance_footer', { balance: fmt(u?.wallet || 0, locale), currency: config.CURRENCY })}`;
             const type = policeRes !== null ? 'error' : (net > 0 ? (outcome === 'blackjack' ? 'jackpot' : 'success') : (net === 0 ? 'warning' : 'error'));
             return embed(true, noteFull, type);
         };
@@ -130,8 +136,8 @@ module.exports = {
         }
 
         const row = new ActionRowBuilder().addComponents(
-            new ButtonBuilder().setCustomId('hit').setLabel('Rút (Hit)').setStyle(ButtonStyle.Primary),
-            new ButtonBuilder().setCustomId('stand').setLabel('Dằn (Stand)').setStyle(ButtonStyle.Secondary),
+            new ButtonBuilder().setCustomId('hit').setLabel(t(locale, 'commands.blackjack.btn_hit')).setStyle(ButtonStyle.Primary),
+            new ButtonBuilder().setCustomId('stand').setLabel(t(locale, 'commands.blackjack.btn_stand')).setStyle(ButtonStyle.Secondary),
         );
         const msg = await interaction.editReply({ embeds: [embed(false)], components: [row] });
 

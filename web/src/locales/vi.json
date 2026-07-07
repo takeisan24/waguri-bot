@@ -55,5 +55,284 @@
       "q4": "Làm sao để kiếm được nhiều xu nhất?",
       "a4": "Hãy đi `/work` đều đặn, hoàn thành nhiệm vụ `/quest`, chăm chỉ đi `/fish` hay `/mine` kiếm nguyên liệu, sau đó nướng bánh ở `/tiembanh` để bán bánh thu tiền nhé!"
     }
+  },
+  "game": {
+    "affection": {
+      "tri_ky": "💞 Tri kỷ",
+      "than_thiet": "💗 Thân thiết",
+      "ban_than": "💓 Bạn thân",
+      "quen_biet": "💛 Quen biết",
+      "nguoi_moi": "🤍 Người mới"
+    },
+    "seasons": {
+      "tet": "Mùa Tết Nguyên Đán {year} 🎍",
+      "trungthu": "Mùa Trung Thu Đoàn Viên {year} 🥮",
+      "normal": "Mùa Thường Niên Tháng {month}/{year} 🌾",
+      "new": "Mùa Giải Mới 🌸"
+    },
+    "pets": {
+      "meo": {
+        "name": "Mèo con",
+        "skills": {
+          "0": "🐱 Tăng 2% cơ hội câu cá ngon.",
+          "1": "💫 Tăng 5% cơ hội câu cá siêu hiếm (Cá Rồng Vàng/Cá Koi Nhật).",
+          "2": "💰 Kỹ năng [Chiêu tài tiến bảo]: Tặng ngẫu nhiên 1,000 - 3,000 xu mỗi ngày khi đăng nhập."
+        }
+      },
+      "cun": {
+        "name": "Cún con",
+        "skills": {
+          "0": "🐶 Tăng 5% tỉ lệ làm việc thành công.",
+          "1": "🚨 Giảm 15% mức tăng độ nghi ngờ cảnh sát khi làm việc mờ ám.",
+          "2": "🐕 Kỹ năng [Trung thành]: Bảo vệ 25% số tiền ví không bị mất khi bị cướp."
+        }
+      },
+      "rong": {
+        "name": "Rồng con",
+        "skills": {
+          "0": "🐲 Tăng 5% EXP nhận được cho mọi hoạt động cày cuốc.",
+          "1": "✨ Nhận thêm +15% EXP toàn bộ các hoạt động cày cuốc.",
+          "2": "⏳ Kỹ năng [Bá chủ thời gian]: Giảm 50% thời gian chờ cooldown của lệnh cày cuốc."
+        }
+      },
+      "cao": {
+        "name": "Cáo nhỏ",
+        "skills": {
+          "0": "🦊 Tăng 5% tỉ lệ cướp tiền thành công.",
+          "1": "🌾 Tăng 10% năng suất thu hoạch nông sản trồng trọt.",
+          "2": "🎭 Kỹ năng [Ảo ảnh]: Nhìn thấy trước 1 ô Bingo chưa mở khi chơi minigame."
+        }
+      },
+      "tho": {
+        "name": "Thỏ con",
+        "skills": {
+          "0": "🐰 Giảm 5% năng lượng tiêu hao khi chặt gỗ / đào mỏ.",
+          "1": "🥗 Giảm 15% năng lượng tiêu hao khi làm việc.",
+          "2": "💤 Kỹ năng [Mơ mộng]: Ngủ (/nghingoi) hồi đầy năng lượng nhanh gấp đôi."
+        }
+      },
+      "gau": {
+        "name": "Gấu con",
+        "skills": {
+          "0": "🐻 Tăng 5% lương cơ bản khi làm việc (/work).",
+          "1": "💎 Tăng 10% tỉ lệ rơi quặng quý (Kim cương/Vàng) khi đào mỏ.",
+          "2": "🌋 Kỹ năng [Địa chấn]: Mỗi lần đào mỏ có 2% cơ hội x5 sản lượng nhận được."
+        }
+      }
+    }
+  },
+  "premium": {
+    "plans": {
+      "m1": {
+        "label": "1 tháng",
+        "note": "Dùng thử thoải mái"
+      },
+      "m3": {
+        "label": "3 tháng",
+        "note": "~20k/tháng · tiết kiệm 20%"
+      },
+      "m6": {
+        "label": "6 tháng",
+        "note": "~16.5k/tháng · tiết kiệm 34%"
+      }
+    },
+    "meta_title": "Waguri Premium 💎",
+    "back_to_dashboard": "← Dashboard",
+    "review_orders": "🛠️ Duyệt đơn",
+    "title_premium": "Premium",
+    "active_until": "✅ Đang kích hoạt — hết hạn {date}",
+    "unlock_desc": "Mở khoá toàn bộ quyền lợi — giá mềm cho hội bạn 🌸",
+    "comparison_title": "Miễn phí vs Premium",
+    "col_benefit": "Quyền lợi",
+    "col_free": "Miễn phí",
+    "col_premium": "Premium 💎",
+    "benefit_ai_chat": "Lượt chat AI / ngày",
+    "benefit_income": "Thu nhập kiếm tiền",
+    "benefit_badge": "Huy hiệu 💎 hồ sơ",
+    "benefit_early_access": "Trải nghiệm tính năng mới sớm",
+    "select_plan": "Chọn gói",
+    "select_plan_extend": "Chọn gói để gia hạn thêm",
+    "best_deal": "ĐÁNG MUA NHẤT",
+    "renew_btn": "Gia hạn",
+    "buy_btn": "Mua ngay",
+    "payment_desc": "Thanh toán quét mã VietQR (chuyển khoản ngân hàng) — kích hoạt tự động trong vài giây. 💝",
+    "currency_suffix": "đ",
+    "benefit_ai_chat_desc": "Gấp 10 lần gói miễn phí — tâm sự với Waguri thả ga.",
+    "benefit_income_desc": "Mọi lệnh /work /fish /mine /chop đều cộng thêm.",
+    "benefit_badge_desc": "Huy hiệu Premium nổi bật trong hồ sơ web & Discord.",
+    "benefit_early_access_desc": "Trải nghiệm sớm trước khi ra mắt rộng rãi."
+  },
+  "dashboard": {
+    "meta_title": "Bảng điều khiển — Waguri 🌸",
+    "logout": "Đăng xuất →",
+    "default_job": "Nghề tự do",
+    "premium_active": "💎 Waguri Premium đang bật",
+    "premium_upgrade": "💎 Nâng cấp Waguri Premium",
+    "premium_active_desc": "Cảm ơn cậu đã ủng hộ~ Bấm để gia hạn thêm.",
+    "premium_upgrade_desc": "150 chat AI/ngày · +10% thu nhập · badge 💎 — chỉ từ 25k 🌸",
+    "premium_renew_btn": "Gia hạn →",
+    "premium_view_btn": "Xem gói →",
+    "no_data": "Cậu chưa có dữ liệu game~ Vào Discord chơi vài lệnh (/start, /daily) rồi quay lại nhé! 🌸",
+    "stat_total_wealth": "💎 Tổng tài sản",
+    "stat_wallet": "💵 Ví tiền",
+    "stat_bank": "🏦 Ngân hàng",
+    "stat_affection": "💞 Thân thiết Waguri",
+    "stat_achievements": "🎖️ Thành tựu",
+    "stat_vote_streak": "🗳️ Chuỗi vote",
+    "days": "{count} ngày",
+    "health_energy_title": "❤️ Sức khỏe & ⚡ Năng lượng",
+    "health_label": "❤️ Sức khỏe",
+    "energy_label": "⚡ Năng lượng",
+    "health_low_warning": "⚠️ Sức khỏe yếu (<30) — dùng /eat thuốc/hộp y tế, /nghingoi hoặc /hospital để hồi nhé!",
+    "affection_title": "💖 Thiện cảm với Waguri",
+    "relationship_tier": "Bậc quan hệ:",
+    "affection_points": "Điểm thiện cảm",
+    "points_suffix": "{count} điểm",
+    "bp_title": "📖 Sổ Sứ Mệnh",
+    "bp_premium": "👑 Premium",
+    "bp_free": "🔓 Thường",
+    "bp_level_label": "Cấp {level}",
+    "bp_progress_label": "Tiến trình cấp",
+    "bp_details_btn": "Xem Chi Tiết & Nhận Quà →",
+    "farm_pets_title": "🌾 Nông trại & Thú cưng",
+    "pig_label": "🐷 Heo",
+    "pig_sick": "Đang bệnh 🤒",
+    "pig_stage": "Giai đoạn: {stage}",
+    "pig_none": "Chưa nuôi",
+    "plant_label": "🌱 Cây",
+    "plant_stage": "Giai đoạn: {stage}",
+    "plant_none": "Chưa trồng",
+    "pet_label": "🐾 Thú cưng",
+    "pet_level": "Lv.{level}",
+    "pet_skills_active": "✨ Kỹ năng đang kích hoạt:",
+    "pet_none": "Chưa nuôi thú cưng",
+    "settings_title": "⚙️ Cài đặt",
+    "settings_profile_public": "Hiển thị hồ sơ web",
+    "settings_profile_public_desc": "Đang công khai: ",
+    "settings_profile_private_desc": "Đang ẩn — người khác không xem được hồ sơ của cậu.",
+    "settings_profile_hide_btn": "🙈 Ẩn đi",
+    "settings_profile_show_btn": "👁️ Hiện",
+    "settings_vote_reminder": "Nhắc vote qua DM",
+    "settings_vote_reminder_on": "Đang bật — Waguri nhắc khi đủ 12h để vote lại.",
+    "settings_vote_reminder_off": "Đang tắt.",
+    "settings_vote_reminder_off_btn": "🔕 Tắt",
+    "settings_vote_reminder_on_btn": "🔔 Bật",
+    "manage_servers_title": "🛠️ Quản lý server",
+    "manage_servers_desc": "Server cậu có quyền Quản lý — bấm để chỉnh cài đặt bot:",
+    "server_leaderboards_title": "🏆 Bảng xếp hạng server của bạn",
+    "server_leaderboards_desc": "Các server cậu tham gia mà Waguri cũng có mặt — bấm để xem BXH riêng:",
+    "global_leaderboard_link": "🏆 Xem bảng xếp hạng toàn cầu"
+  },
+  "pass": {
+    "back_to_dashboard": "← Quay lại Bảng điều khiển",
+    "view_mode": "Chế độ xem:",
+    "current_season": "MÙA GIẢI HIỆN TẠI",
+    "season_desc": "Hãy điểm danh hằng ngày và chăm chỉ cày cuốc để thu thập XP lên cấp Sổ Sứ Mệnh. Rất nhiều quà tặng độc quyền đang chờ đón cậu!",
+    "current_level": "Cấp độ hiện tại",
+    "level_0": "Cấp 0",
+    "level_10": "Cấp 10",
+    "level_20_max": "Cấp 20 (Cực đại)",
+    "premium_label": "👑 Sổ Cao Cấp (Premium)",
+    "free_label": "🔓 Sổ Thường (Free)",
+    "wallet_balance": "Tiền trong ví: {count} xu",
+    "buy_premium_btn": "👑 Mở Premium ({count} xu)",
+    "claim_rewards_btn": "🔄 Nhận quà chưa nhận ({count})",
+    "success": "🎉 Thành công!",
+    "error": "⚠️ Lỗi",
+    "close": "✕ Đóng",
+    "timeline_title": "🎁 Hành Trình & Phần Thưởng 20 Cấp Độ",
+    "free_track": "🔓 Nhánh Free",
+    "premium_track": "👑 Nhánh Premium",
+    "claimed": "✓ Đã nhận",
+    "claimable": "🎁 Có thể nhận",
+    "locked_premium": "🔒 Khóa (Chưa mua Premium)",
+    "locked_level": "🔒 Chưa đạt cấp",
+    "insufficient_funds": "Ví của cậu không đủ {count} xu ảo để mở khóa Premium!",
+    "confirm_buy": "Cậu có đồng ý dùng {count} xu ảo để mở khóa Sổ Sứ Mệnh Premium không?",
+    "buy_success": "👑 Chúc mừng cậu đã mở khóa Sổ Sứ Mệnh Premium thành công! Hãy cày cuốc nhận quà nhé~",
+    "generic_error": "Có lỗi xảy ra!",
+    "claim_success_header": "Cậu đã nhận thành công các mốc quà:",
+    "claimed_coins": "\n🪙 +{count} xu",
+    "claimed_title": "\n🎖️ Danh hiệu độc quyền: \"{title}\"",
+    "claimed_items_header": "\n🎒 Vật phẩm: ",
+    "item_qty": "[{emoji} {name} x{qty}] ",
+    "exclusive_title": "🎖️ \"{title}\"",
+    "coins_reward": "🪙 +{count}"
+  },
+  "leaderboard": {
+    "meta_title": "Bảng xếp hạng 🏆 — Waguri",
+    "meta_desc": "Top đại gia và cao thủ của Waguri — ai giàu nhất, ai chăm chỉ nhất?",
+    "empty": "Chưa có ai trên bảng~ 🌸",
+    "my_rank": "🎯 Hạng của bạn ({username})",
+    "title_server": "🏆 Bảng xếp hạng server",
+    "title_global": "🏆 Bảng xếp hạng Waguri",
+    "subtitle_server": "Server {name} — bấm vào tên để xem hồ sơ.",
+    "subtitle_server_generic": "Bảng xếp hạng server — bấm vào tên để xem hồ sơ.",
+    "subtitle_global": "Top toàn cầu — bấm vào tên để xem hồ sơ chi tiết.",
+    "view_global": "← Xem bảng toàn cầu",
+    "board_wealth": "💎 Đại gia (tài sản)",
+    "board_level": "⭐ Cao thủ (cấp độ)"
+  },
+  "profile": {
+    "default_user": "Người chơi",
+    "meta_title": "Hồ sơ {name} 🌸 — Waguri",
+    "meta_desc": "Xem hồ sơ Waguri của {name}: cấp độ, tài sản, nghề nghiệp và hạng đại gia.",
+    "not_found": "Chưa lấy được hồ sơ 🌸",
+    "hidden": "Hồ sơ này đang ẩn 🙈",
+    "not_found_desc": "Bot có thể đang offline hoặc người chơi chưa có dữ liệu. Thử lại sau nhé!",
+    "hidden_desc": "Người chơi đã chọn ẩn hồ sơ web của mình.",
+    "invite_btn": "Mời Waguri về server 🌸",
+    "default_job": "Nghề tự do",
+    "stat_total_wealth": "💎 Tổng tài sản",
+    "stat_rank": "🏆 Hạng đại gia",
+    "stat_wallet": "💵 Ví tiền",
+    "stat_bank": "🏦 Ngân hàng",
+    "stat_affection": "💞 Thân thiết Waguri",
+    "stat_achievements": "🎖️ Thành tựu",
+    "stat_beloved": "💍 Người thương",
+    "cta_text": "Muốn có hồ sơ như thế này? Mời Waguri về server và bắt đầu làm giàu nha! 🌸",
+    "cta_btn": "Mời Waguri 🌸"
+  },
+  "faq": {
+    "title": "Câu hỏi thường gặp",
+    "subtitle": "Vài thắc mắc phổ biến trước khi bắt đầu cùng Waguri 🌸",
+    "q1": "Waguri có miễn phí không?",
+    "a1": "Hoàn toàn miễn phí! Mời bot và chơi thả ga. Gói Premium chỉ là tùy chọn ủng hộ để nhận thêm quyền lợi.",
+    "q2": "Bắt đầu chơi như thế nào?",
+    "a2": "Mời Waguri vào server, gõ /start để tạo nhân vật và nhận quà chào mừng, rồi /daily mỗi ngày để tích vốn.",
+    "q3": "Tiền và dữ liệu của tôi có an toàn không?",
+    "a3": "Có. Mọi giao dịch tiền chạy bằng RPC nguyên tử trên PostgreSQL (chống lỗi & gian lận), dữ liệu lưu an toàn trên Supabase.",
+    "q4": "Ví tiền có dùng chung giữa các server không?",
+    "a4": "Có! Ví tiền dùng chung trên mọi server. Bảng xếp hạng có cả toàn cầu lẫn theo từng server.",
+    "q5": "Premium gồm những gì?",
+    "a5": "150 lượt chat AI/ngày, +10% thu nhập mọi lệnh kiếm tiền, huy hiệu 💎 và ưu tiên trải nghiệm tính năng mới.",
+    "q6": "Gặp lỗi hoặc mất tiền thì làm sao?",
+    "a6": "Vào server hỗ trợ mở /ticket hoặc báo ở kênh #báo-lỗi. Lỗi hợp lệ còn có thể được thưởng 💝."
+  },
+  "testimonials": {
+    "title": "Cộng đồng nói gì 💬",
+    "subtitle": "Những lời nhắn từ người chơi Waguri.",
+    "first_title": "Hãy là người đầu tiên!",
+    "first_desc": "Waguri vẫn còn non trẻ — đánh giá của cậu sẽ xuất hiện ngay tại đây và giúp nhiều người biết tới Waguri hơn. 💕",
+    "write_btn": "Viết đánh giá trên Top.gg ⭐"
+  },
+  "commands": {
+    "search_placeholder": "🔎 Tìm trong {count} lệnh... (vd: work, may rủi, bang)",
+    "no_results": "Không tìm thấy lệnh nào khớp~ 🌸",
+    "usage": "Cách dùng:",
+    "or_prefix": "cũng được",
+    "help_tip": "Gõ {cmd} trong Discord để xem chi tiết tham số & lệnh con."
+  },
+  "error": {
+    "title": "Có lỗi rồi~",
+    "desc": "Waguri xin lỗi, có gì đó trục trặc. Cậu thử lại giúp mình nhé!",
+    "retry": "Thử lại",
+    "back_home": "Về trang chủ"
+  },
+  "notfound": {
+    "title": "404",
+    "desc": "Ơ, trang cậu tìm không có ở đây rồi~ Hay là quay về trang chủ chơi với Waguri nhé?",
+    "back_home": "Về trang chủ 🌸",
+    "view_commands": "Xem lệnh"
   }
 }

@@ -4,26 +4,29 @@ const db = require('../../database.js');
 const config = require('../../config');
 const { parseAmount } = require('../../lib/amount');
 const { getProgress } = require('../../lib/leveling');
+const { getInteractionLanguage, t } = require('../../lib/i18n');
 
-const fmt = n => Number(n).toLocaleString('vi-VN');
+const fmt = (n, locale) => Number(n).toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN');
 
 async function move(interaction, toBank) {
+    const locale = await getInteractionLanguage(interaction);
     const raw = interaction.options.getString('amount');
-    const title = toBank ? '🏦・Gửi tiền' : '🏦・Rút tiền';
+    const title = toBank ? t(locale, 'commands.bank.deposit_title') : t(locale, 'commands.bank.withdraw_title');
     const user = await db.getUser(interaction.user.id);
-    if (!user) return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'error', { title, description: 'Hơ, mình chưa lấy được dữ liệu của cậu~ 🌸' })] });
+    if (!user) return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'error', { locale, title, description: t(locale, 'common.db_error') })] });
 
     const amount = parseAmount(raw, toBank ? Number(user.wallet) : Number(user.bank)); // hỗ trợ 1k/2m/all
-    if (!amount || amount <= 0) return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'error', { title, description: 'Số tiền không hợp lệ~ (nhập số, `1k`, hoặc `all`)' })] });
+    if (!amount || amount <= 0) return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'error', { locale, title, description: t(locale, 'commands.bank.invalid_amount') })] });
 
     const ok = await db.transferBank(interaction.user.id, amount, toBank);
-    if (!ok) return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'error', { title, description: toBank ? 'Ví của cậu không đủ để gửi rồi 😟' : 'Ngân hàng của cậu không đủ tiền để rút 😟' })] });
+    if (!ok) return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'error', { locale, title, description: toBank ? t(locale, 'commands.bank.deposit_insufficient') : t(locale, 'commands.bank.withdraw_insufficient') })] });
 
     const u = await db.getUser(interaction.user.id);
-    const bal = `💵 Ví: **${fmt(u?.wallet || 0)}** · 🏦 Ngân hàng: **${fmt(u?.bank || 0)}** ${config.CURRENCY}`;
+    const bal = t(locale, 'commands.bank.balance_desc', { wallet: fmt(u?.wallet || 0, locale), bank: fmt(u?.bank || 0, locale), currency: config.CURRENCY });
     return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'success', {
-        title: toBank ? '🏦・Gửi tiền thành công' : '🏦・Rút tiền thành công',
-        description: (toBank ? `Đã gửi **${fmt(amount)}** ${config.CURRENCY} vào ngân hàng. An toàn rồi nhé~ 🌸\n` : `💵 Đã rút **${fmt(amount)}** ${config.CURRENCY} về ví nhé~ 🌸\n`) + bal
+        locale,
+        title: toBank ? t(locale, 'commands.bank.deposit_success_title') : t(locale, 'commands.bank.withdraw_success_title'),
+        description: (toBank ? t(locale, 'commands.bank.deposit_success_desc', { amount: fmt(amount, locale), currency: config.CURRENCY }) : t(locale, 'commands.bank.withdraw_success_desc', { amount: fmt(amount, locale), currency: config.CURRENCY })) + bal
     })] });
 }
 
@@ -39,6 +42,7 @@ module.exports = {
             .addStringOption(o => o.setName('amount').setDescription('Số tiền hoặc "all"').setRequired(true))),
     async execute(interaction) {
         await interaction.deferReply();
+        const locale = await getInteractionLanguage(interaction);
         const sub = interaction.options.getSubcommand();
         if (sub === 'gui') return move(interaction, true);
         if (sub === 'rut') return move(interaction, false);
@@ -48,35 +52,37 @@ module.exports = {
             const user = await db.getUser(target.id);
             if (!user) {
                 const embed = buildWaguriEmbed(interaction, 'error', {
-                    description: 'Hơ, mình chưa lấy được dữ liệu của cậu, thử lại sau chút nhé~ 🌸'
+                    locale,
+                    description: t(locale, 'common.db_error')
                 });
                 return interaction.editReply({ embeds: [embed] });
             }
 
             const p = getProgress(Number(user.exp));
-            const wallet = Number(user.wallet).toLocaleString('vi-VN');
-            const bank = Number(user.bank).toLocaleString('vi-VN');
+            const wallet = fmt(Number(user.wallet), locale);
+            const bank = fmt(Number(user.bank), locale);
             const energy = await db.getEnergy(target.id);
 
             const embed = buildWaguriEmbed(interaction, 'info', {
+                locale,
                 fields: [
-                    { name: '💵 Ví tiền', value: `${wallet} ${config.CURRENCY}`, inline: true },
-                    { name: '🏦 Ngân hàng', value: `${bank} ${config.CURRENCY}`, inline: true },
-                    { name: '⚡ Năng lượng', value: `${energy}/${config.ENERGY.MAX} ⚡`, inline: true },
-                    { name: '⭐ Cấp độ', value: `Lv.${p.level}`, inline: true },
-                    { name: `📊 Tiến trình EXP (${p.expIntoLevel}/${p.expForNextLevel})`, value: createWaguriBar(p.expIntoLevel, p.expForNextLevel, 12), inline: false }
+                    { name: t(locale, 'commands.bank.fields.wallet'), value: `${wallet} ${config.CURRENCY}`, inline: true },
+                    { name: t(locale, 'commands.bank.fields.bank'), value: `${bank} ${config.CURRENCY}`, inline: true },
+                    { name: t(locale, 'commands.bank.fields.energy'), value: `${energy}/${config.ENERGY.MAX} ⚡`, inline: true },
+                    { name: t(locale, 'commands.bank.fields.level'), value: `Lv.${p.level}`, inline: true },
+                    { name: t(locale, 'commands.bank.fields.progress', { current: p.expIntoLevel, total: p.expForNextLevel }), value: createWaguriBar(p.expIntoLevel, p.expForNextLevel, 12), inline: false }
                 ]
             });
 
-            embed.setAuthor({ name: `🌸・Tài khoản của ${target.username}`, iconURL: target.displayAvatarURL() });
+            embed.setAuthor({ name: t(locale, 'commands.bank.author_title', { user: target.username }), iconURL: target.displayAvatarURL() });
 
             // Buff đang chạy (nếu có)
             if (user.buff_expires_at && new Date(user.buff_expires_at).getTime() > Date.now()) {
                 const minsLeft = Math.ceil((new Date(user.buff_expires_at).getTime() - Date.now()) / 60000);
                 const pct = Math.round((Number(user.buff_mult) - 1) * 100);
-                embed.addFields({ name: '🍗 Hiệu ứng Buff', value: `+${pct}% thu nhập (còn ${minsLeft} phút)`, inline: false });
+                embed.addFields({ name: t(locale, 'commands.bank.fields.buff'), value: t(locale, 'commands.bank.buff_desc', { pct, time: minsLeft }), inline: false });
                 embed.setFooter({
-                    text: `🍗 Đang chạy buff +${pct}% · ${embed.data.footer.text}`,
+                    text: t(locale, 'commands.bank.buff_footer', { pct, original: embed.data.footer.text }),
                     iconURL: embed.data.footer.icon_url
                 });
             }

@@ -2,6 +2,7 @@ const { SlashCommandBuilder, MessageFlags } = require('discord.js');
 const { isOwner } = require('../../lib/owner');
 const { setEvent, clearEvent, getEventInfo } = require('../../lib/event');
 const { buildWaguriEmbed } = require('../../lib/embed');
+const { getInteractionLanguage, t } = require('../../lib/i18n');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -14,28 +15,31 @@ module.exports = {
         .addSubcommand(s => s.setName('stop').setDescription('Tắt sự kiện (owner)'))
         .addSubcommand(s => s.setName('status').setDescription('Xem sự kiện hiện tại')),
     async execute(interaction) {
+        const locale = await getInteractionLanguage(interaction);
         const sub = interaction.options.getSubcommand();
         if (sub !== 'status' && !await isOwner(interaction.client, interaction.user.id)) {
-            return interaction.reply({ content: 'Chỉ owner mới bật/tắt sự kiện được nhé~ 🌸', flags: MessageFlags.Ephemeral });
+            return interaction.reply({ content: t(locale, 'commands.event.err_owner'), flags: MessageFlags.Ephemeral });
         }
         await interaction.deferReply();
 
         if (sub === 'start') {
             const mult = interaction.options.getNumber('multiplier');
             const hours = interaction.options.getInteger('hours');
-            const name = interaction.options.getString('name') || 'Sự kiện';
+            const name = interaction.options.getString('name') || t(locale, 'commands.event.name_default') || 'Sự kiện';
             await setEvent(mult, hours, name);
             const embed = buildWaguriEmbed(interaction, 'success', {
-                title: '🎉 Đã bật sự kiện thành công!',
-                description: `Đã bật **${name}**: nhân **x${mult}** thu nhập & EXP (/work /fish /mine /chop) trong **${hours} giờ**!`
+                locale,
+                title: t(locale, 'commands.event.start_title'),
+                description: t(locale, 'commands.event.start_desc', { name, mult, hours })
             });
             return interaction.editReply({ embeds: [embed] });
         }
         if (sub === 'stop') {
             await clearEvent();
             const embed = buildWaguriEmbed(interaction, 'success', {
-                title: '🛑 Tắt sự kiện thành công',
-                description: 'Đã tắt sự kiện. Thu nhập trở về bình thường.'
+                locale,
+                title: t(locale, 'commands.event.stop_title'),
+                description: t(locale, 'commands.event.stop_desc')
             });
             return interaction.editReply({ embeds: [embed] });
         }
@@ -43,14 +47,16 @@ module.exports = {
         const e = getEventInfo();
         if (!e.active) {
             const embed = buildWaguriEmbed(interaction, 'info', {
-                description: 'Hiện không có sự kiện nào đang chạy~ 🌸'
+                locale,
+                description: t(locale, 'commands.event.no_event')
             });
             return interaction.editReply({ embeds: [embed] });
         }
         const ts = Math.floor(e.until / 1000);
         const embed = buildWaguriEmbed(interaction, 'jackpot', {
-            title: '🎉 Sự kiện đang diễn ra!',
-            description: `**${e.name || 'Sự kiện'}** — nhân **x${e.mult}** thu nhập & EXP\n⏰ Kết thúc <t:${ts}:R>`
+            locale,
+            title: t(locale, 'commands.event.active_title'),
+            description: t(locale, 'commands.event.active_desc', { name: e.name || 'Sự kiện', mult: e.mult, time: ts })
         });
         return interaction.editReply({ embeds: [embed] });
     },

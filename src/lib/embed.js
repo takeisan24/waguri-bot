@@ -19,13 +19,35 @@ const WAGURI_QUOTES = [
     "Cố lên nhé! Hôm nay cậu đã vất vả rồi, tớ luôn ở sau cổ vũ cậu! 💪🌸"
 ];
 
-function getWaguriQuote() {
+function getWaguriQuote(locale) {
+    const cleanLang = locale && locale.startsWith('en') ? 'en' : 'vi';
+    if (cleanLang === 'en') {
+        const enQuotes = [
+            "Rintaro's strawberry shortcake at Gekka is always the best! 🍰",
+            "Subaru-chan always protects me, I'm so lucky to have her! 👭",
+            "Rintaro looks a bit cool with his blonde hair, but he is the gentlest person I know~ 🥰",
+            "Have you studied today? Watch out or Subaru-chan might remind you! 📖",
+            "Usami-kun is always making everyone laugh, so fun! 😆",
+            "Saku-kun is quiet but very thoughtful, he gets along so well with Subaru-chan~ 🤫",
+            "Madoka-kun is extremely delicate, always noticing things first. ✨",
+            "Kikyo has a lot of schoolwork, but I always have everyone by my side! 🌸",
+            "Sweets and you are the sweetest things today! 🧁",
+            "Just one bite of strawberry shortcake and all my tiredness blows away! 🍰✨",
+            "Don't overwork yourself, take a break and eat cake with me at Gekka! 🍵",
+            "I wish we could eat sweets and chat like this every day~ 💕",
+            "No matter how high the wall between Kikyo and Chidori is, as long as we are sincere, we'll overcome it! 🧱🌸",
+            "Rintaro said sweets are to bring smiles to everyone, I believe he can do it! 😊🍰",
+            "Keep it up! You worked hard today, I'm always cheering for you! 💪🌸"
+        ];
+        return enQuotes[Math.floor(Math.random() * enQuotes.length)];
+    }
     return WAGURI_QUOTES[Math.floor(Math.random() * WAGURI_QUOTES.length)];
 }
 
-function getWaguriFooter(client) {
+function getWaguriFooter(client, locale) {
+    const { t } = require('./i18n');
     return {
-        text: `🌸 Waguri • Trợ lý Tiệm bánh Gekka`,
+        text: t(locale, 'common.embed_footer'),
         iconURL: client?.user?.displayAvatarURL()
     };
 }
@@ -75,9 +97,10 @@ function buildWaguriEmbed(interaction, type = 'info', opts = {}) {
     const typeImg = pickWaguriImage(imgKey);
     const botAvatar = interaction.client?.user?.displayAvatarURL();
 
+    const locale = opts.locale || (interaction ? (interaction.locale || interaction.guildLocale || 'vi') : 'vi');
     const embed = new EmbedBuilder()
         .setColor(colorMap[type] || config.COLORS.INFO)
-        .setFooter(getWaguriFooter(interaction.client));
+        .setFooter(getWaguriFooter(interaction?.client, locale));
 
     if (title) embed.setTitle(title);
     if (description) embed.setDescription(description);

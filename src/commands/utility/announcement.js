@@ -4,6 +4,7 @@ const db = require('../../database.js');
 const { isOwner } = require('../../lib/owner');
 const { buildWaguriEmbed } = require('../../lib/embed');
 const gemini = require('../../lib/ai/gemini');
+const { getInteractionLanguage, t } = require('../../lib/i18n');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -14,6 +15,7 @@ module.exports = {
         .addSubcommand(s => s.setName('send').setDescription('Gửi thông báo mới tới toàn bộ server thủ công (chỉ owner)')
             .addStringOption(o => o.setName('message').setDescription('Nội dung thông báo (hỗ trợ \\n để xuống dòng)').setRequired(true))),
     async execute(interaction) {
+        const locale = await getInteractionLanguage(interaction);
         const sub = interaction.options.getSubcommand();
 
         if (sub === 'view') {
@@ -23,19 +25,21 @@ module.exports = {
 
             if (!message) {
                 const embed = buildWaguriEmbed(interaction, 'warning', {
-                    title: '📢・Thông Báo Cập Nhật',
-                    description: 'Hiện chưa có thông báo cập nhật mới nào từ nhà phát triển~ 🌸'
+                    locale,
+                    title: t(locale, 'commands.announcement.title_latest'),
+                    description: t(locale, 'commands.announcement.no_announcement')
                 });
                 return interaction.editReply({ embeds: [embed] });
             }
 
             const embed = buildWaguriEmbed(interaction, 'info', {
-                title: '📢・Thông Báo Cập Nhật Mới Nhất',
+                locale,
+                title: t(locale, 'commands.announcement.title_latest'),
                 description: message
             });
             embed.setTimestamp();
             embed.setFooter({
-                text: `Xem thông báo cập nhật mới nhất từ nhà phát triển · ${embed.data.footer.text}`,
+                text: t(locale, 'commands.announcement.footer_view', { original: embed.data.footer.text }),
                 iconURL: embed.data.footer.icon_url
             });
             return interaction.editReply({ embeds: [embed] });
@@ -43,7 +47,7 @@ module.exports = {
 
         if (sub === 'send' || sub === 'auto') {
             if (!await isOwner(interaction.client, interaction.user.id)) {
-                return interaction.reply({ content: 'Chỉ chủ sở hữu bot mới dùng được lệnh này nha~ 🌸', flags: MessageFlags.Ephemeral });
+                return interaction.reply({ content: t(locale, 'commands.announcement.err_owner'), flags: MessageFlags.Ephemeral });
             }
 
             await interaction.deferReply();
@@ -54,14 +58,14 @@ module.exports = {
                 try {
                     currentCommit = execSync('git rev-parse HEAD', { encoding: 'utf8' }).trim();
                 } catch (e) {
-                    return interaction.editReply({ content: 'Không thể lấy commit hiện tại từ Git (kiểm tra xem bạn đã cài đặt Git chưa nhé)!' });
+                    return interaction.editReply({ content: t(locale, 'commands.announcement.git_err') });
                 }
 
                 const s = await db.getGuildSettings('global');
                 const lastCommit = s?.latest_announcement_commit;
 
                 if (lastCommit === currentCommit) {
-                    return interaction.editReply({ content: 'Không có thay đổi mới nào kể từ lần phát thông báo trước (Commit hiện tại trùng với commit đã thông báo)!' });
+                    return interaction.editReply({ content: t(locale, 'commands.announcement.commit_dup') });
                 }
 
                 let commits = '';
@@ -80,22 +84,16 @@ module.exports = {
                 }
 
                 if (!commits || commits.trim() === '') {
-                    return interaction.editReply({ content: 'Không tìm thấy thay đổi/commit mới nào để thông báo!' });
+                    return interaction.editReply({ content: t(locale, 'commands.announcement.no_commits') });
                 }
 
-                const systemPrompt = `Bạn là Waguri Kaoruko, bạn gái AI ngọt ngào và là quản gia đắc lực của bot game nhập vai Discord Waguri.
-Nhiệm vụ của bạn là đọc danh sách các commit kỹ thuật bên dưới và viết thành một bản tin thông báo cập nhật (Changelog) cực kỳ ngọt ngào, dễ thương, truyền cảm hứng và thân thiện bằng tiếng Việt.
-Yêu cầu:
-- Sử dụng nhiều emoji dễ thương (🌸, ✨, 🎀, 💼, 🐷, 🌱...).
-- Tóm tắt và gộp nhóm các thay đổi thành các gạch đầu dòng rõ ràng, dễ hiểu cho người chơi bình thường (không dùng ngôn ngữ quá kỹ thuật của lập trình viên).
-- Giữ độ dài vừa phải để gửi trên Discord (dưới 1500 ký tự).
-- Tuyệt đối không thêm bất kỳ lời chào đầu hay kết bằng chữ "Waguri:" hay "Model:", hãy bắt đầu trực tiếp bằng tiêu đề thông báo.`;
+                const systemPrompt = t(locale, 'commands.announcement.ai_prompt');
 
                 try {
-                    message = await gemini.chat(systemPrompt, [], `Danh sách commit mới:\n${commits}`);
+                    message = await gemini.chat(systemPrompt, [], `List of new commits:\n${commits}`);
                 } catch (err) {
                     console.error('[AUTO ANNOUNCEMENT AI ERROR]', err);
-                    return interaction.editReply({ content: 'Lỗi khi yêu cầu AI tạo thông báo cập nhật!' });
+                    return interaction.editReply({ content: t(locale, 'commands.announcement.ai_err') });
                 }
             } else {
                 const rawMessage = interaction.options.getString('message');
@@ -109,12 +107,13 @@ Yêu cầu:
             }
 
             const embed = buildWaguriEmbed(interaction, 'jackpot', {
-                title: '📢・Thông Báo Cập Nhật Từ Waguri!',
+                locale,
+                title: t(locale, 'commands.announcement.title_main'),
                 description: message
             });
             embed.setTimestamp();
             embed.setFooter({
-                text: `Hệ thống thông báo Waguri · Gửi tự động bởi ${interaction.user.username} 🌸`,
+                text: t(locale, 'commands.announcement.footer_sent', { user: interaction.user.username }),
                 iconURL: interaction.client.user.displayAvatarURL()
             });
 
@@ -163,8 +162,9 @@ Yêu cầu:
             }
 
             const resEmbed = buildWaguriEmbed(interaction, 'success', {
-                title: '📢 Gửi thông báo thành công!',
-                description: `Đã phát thông báo cập nhật tới **${sentCount}** server/kênh và đã lưu trữ thông báo để xem qua \`/announcement view\`.\n❌ Thất bại: **${failCount}** server.`
+                locale,
+                title: t(locale, 'commands.announcement.success_title'),
+                description: t(locale, 'commands.announcement.success_desc', { sent: sentCount, fail: failCount })
             });
             await interaction.editReply({ embeds: [resEmbed] });
         }

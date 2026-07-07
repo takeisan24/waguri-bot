@@ -25,6 +25,12 @@ module.exports = {
             .addRoleOption(o => o.setName('role').setDescription('Role gán tự động')))
         .addSubcommand(s => s.setName('announcement-channel').setDescription('Đặt kênh nhận thông báo cập nhật tự động của Waguri (bỏ trống để tắt)')
             .addChannelOption(o => o.setName('channel').setDescription('Kênh text').addChannelTypes(ChannelType.GuildText)))
+        .addSubcommand(s => s.setName('language').setDescription('Đặt ngôn ngữ hiển thị cho bot (Set server language)')
+            .addStringOption(o => o.setName('lang').setDescription('Ngôn ngữ / Language').setRequired(true)
+                .addChoices(
+                    { name: 'Tiếng Việt 🇻🇳', value: 'vi' },
+                    { name: 'English 🇬🇧', value: 'en' }
+                )))
         .addSubcommand(s => s.setName('view').setDescription('Xem cấu hình hiện tại')),
     async execute(interaction) {
         // Tự enforce quyền (phòng trường hợp gọi qua prefix)
@@ -125,6 +131,17 @@ module.exports = {
             return interaction.editReply({ embeds: [embed] });
         }
 
+        if (sub === 'language') {
+            const lang = interaction.options.getString('lang');
+            await db.setGuildSetting(gid, 'language', lang);
+            const embed = buildWaguriEmbed(interaction, 'success', {
+                description: lang === 'en'
+                    ? '✅ Server language has been set to **English** 🇬🇧.'
+                    : '✅ Ngôn ngữ hiển thị của server đã được đặt thành **Tiếng Việt** 🇻🇳.'
+            });
+            return interaction.editReply({ embeds: [embed] });
+        }
+
         if (sub === 'view') {
             const s = await db.getGuildSettings(gid);
             const embed = buildWaguriEmbed(interaction, 'info', {
@@ -138,6 +155,7 @@ module.exports = {
                     { name: 'Tạm giam (trò may rủi)', value: s.police_jail === '0' ? '🔴 Tắt' : '🟢 Bật', inline: true },
                     { name: 'Kênh chào mừng', value: s.welcome_channel ? `<#${s.welcome_channel}>` : '*(tắt chào mừng)*', inline: true },
                     { name: 'Auto-role gán tự động', value: s.welcome_role ? `<@&${s.welcome_role}>` : '*(tắt auto-role)*', inline: true },
+                    { name: 'Ngôn ngữ / Language', value: s.language === 'en' ? '🇬🇧 English' : '🇻🇳 Tiếng Việt', inline: true },
                     { name: 'Kênh nhận thông báo cập nhật', value: s.announcement_channel ? `<#${s.announcement_channel}>` : '*(tắt thông báo)*', inline: false }
                 ]
             });

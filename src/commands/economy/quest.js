@@ -3,17 +3,9 @@ const db = require('../../database.js');
 const config = require('../../config');
 const { pickDailyQuests } = require('../../data/quests');
 const { createWaguriBar, buildWaguriEmbed, getWaguriFooter } = require('../../lib/embed');
+const { getInteractionLanguage, t } = require('../../lib/i18n');
 
-const fmt = n => Number(n).toLocaleString('vi-VN');
-
-const NEWBIE_STEPS = [
-    null,
-    { name: 'Bước 1: Điểm danh đầu tiên', key: 'daily', required: 1, reward: 1000, hint: 'Gõ `/daily` để nhận lương ngày đầu 📅' },
-    { name: 'Bước 2: Chăm chỉ làm việc', key: 'work', required: 3, reward: 1500, hint: 'Gõ `/work` 3 lần để kiếm tiền ⚡' },
-    { name: 'Bước 3: Mua sắm trải nghiệm', key: 'buy', required: 1, reward: 2000, hint: 'Mua 1 món bất kỳ tại `/shop` hoặc `/buy` 🛒' },
-    { name: 'Bước 4: Xin việc chính thức', key: 'apply_job', required: 1, reward: 2500, hint: 'Nhận một công việc chính thức bằng `/jobs xin` 🧑‍💼' },
-    { name: 'Bước 5: Trải nghiệm may rủi', key: 'gamble', required: 1, reward: 3000, hint: 'Chơi 1 ván game bất kỳ (vd `/taixiu`, `/blackjack`, `/xocdia`...) 🪙' }
-];
+const fmt = (n, locale) => Number(n).toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -21,6 +13,7 @@ module.exports = {
         .setDescription('Nhiệm vụ hằng ngày & tân thủ (tự nhận thưởng khi xong)'),
     async execute(interaction) {
         await interaction.deferReply();
+        const locale = await getInteractionLanguage(interaction);
         const userId = interaction.user.id;
 
         // Lấy thông tin user để xem tiến trình tân thủ
@@ -30,13 +23,21 @@ module.exports = {
 
         let newbieText = '';
         if (step <= 5) {
-            const ns = NEWBIE_STEPS[step];
-            const cur = Math.min(progress, ns.required);
-            newbieText = `🔰 **[NHIỆM VỤ TÂN THỦ] ${ns.name}**\n` +
-                `　*Yêu cầu:* ${ns.hint}\n` +
-                `　*Tiến trình:* **${cur}/${ns.required}**\n` +
-                `　${createWaguriBar(cur, ns.required, 8)} · 🪙 ${fmt(ns.reward)} ${config.CURRENCY}\n\n` +
-                `──────────────────────────────\n\n`;
+            const nsName = t(locale, `commands.quest.newbie_steps.${step}.name`);
+            const nsHint = t(locale, `commands.quest.newbie_steps.${step}.hint`);
+            const req = { 1: 1, 2: 3, 3: 1, 4: 1, 5: 1 }[step];
+            const reward = { 1: 1000, 2: 1500, 3: 2000, 4: 2500, 5: 3000 }[step];
+            const cur = Math.min(progress, req);
+
+            newbieText = t(locale, 'commands.quest.newbie_text', {
+                name: nsName,
+                hint: nsHint,
+                current: cur,
+                required: req,
+                bar: createWaguriBar(cur, req, 8),
+                reward: fmt(reward, locale),
+                currency: config.CURRENCY
+            });
         }
 
         // Bộ nhiệm vụ của riêng người này hôm nay (PINNED điểm danh + vote, cộng vài quest random).
@@ -63,17 +64,19 @@ module.exports = {
             const cur = Math.min(Number(counters[q.key] || 0), q.required);
             const done = claimed[q.id];
             const icon = done ? '✅' : (cur >= q.required ? '🎁' : '⬜');
-            return `${icon} **${q.name}** — ${cur}/${q.required}\n` +
-                `　${createWaguriBar(cur, q.required, 8)} · 🪙 ${fmt(q.reward)} ${config.CURRENCY}`;
+            const qName = t(locale, `data.quests.${q.id}.name`) || q.name;
+            return `${icon} **${qName}** — ${cur}/${q.required}\n` +
+                `　${createWaguriBar(cur, q.required, 8)} · 🪙 ${fmt(q.reward, locale)} ${config.CURRENCY}`;
         });
 
         const embed = buildWaguriEmbed(interaction, 'info', {
-            title: '📜・Nhiệm vụ của cậu',
+            locale,
+            title: t(locale, 'commands.quest.title'),
             description: newbieText + lines.join('\n')
         });
 
-        const footerObj = getWaguriFooter(interaction.client);
-        footerObj.text = 'Nhiệm vụ tân thủ tự cộng/nhận thưởng · ' + footerObj.text;
+        const footerObj = getWaguriFooter(interaction.client, locale);
+        footerObj.text = t(locale, 'commands.quest.footer_prefix') + ' · ' + footerObj.text;
         embed.setFooter(footerObj);
 
         // Cộng XP Sổ Sứ Mệnh (+150 XP mỗi quest)
@@ -81,20 +84,20 @@ module.exports = {
         if (claimedCount > 0) {
             const bpRes = await require('../../lib/battlepass').addXp(userId, claimedCount * 150);
             if (bpRes && bpRes.levelUp) {
-                bpMsg = `🎉 **Sổ Sứ Mệnh**: Cậu đã đạt **Cấp ${bpRes.newLevel}**! Gõ \`/pass\` nhận quà nha~ 🎁`;
+                bpMsg = t(locale, 'commands.quest.bp_levelup_desc', { level: bpRes.newLevel });
             }
         }
 
         if (totalReward > 0) {
-            let val = `+${fmt(totalReward)} ${config.CURRENCY}!`;
+            let val = `+${fmt(totalReward, locale)} ${config.CURRENCY}!`;
             if (claimedCount > 0) {
-                val += `\n+${claimedCount * 150} XP Sổ Sứ Mệnh 📖`;
+                val += `\n+${claimedCount * 150} XP ` + t(locale, 'commands.quest.bp_xp_label');
             }
-            embed.addFields({ name: '🎉 Vừa nhận thưởng ngày', value: val, inline: false });
+            embed.addFields({ name: t(locale, 'commands.quest.reward_claimed_title'), value: val, inline: false });
         }
 
         if (bpMsg) {
-            embed.addFields({ name: '🎉 Lên Cấp Sổ Sứ Mệnh', value: bpMsg, inline: false });
+            embed.addFields({ name: t(locale, 'commands.quest.bp_levelup_title'), value: bpMsg, inline: false });
         }
         await interaction.editReply({ embeds: [embed] });
     },

@@ -42,6 +42,65 @@ function t(locale, key, params = {}) {
     return substitute(value, params);
 }
 
+/**
+ * Phân giải ngôn ngữ phù hợp cho một interaction/message (chạy bất đồng bộ từ DB).
+ * @param {object} interaction - Command interaction hoặc đối tượng giả lập.
+ * @returns {Promise<string>} - 'vi' hoặc 'en'
+ */
+async function getInteractionLanguage(interaction) {
+    if (!interaction) return 'vi';
+    
+    const user = interaction.user || interaction.author;
+    const userId = user?.id;
+    
+    // 1. Kiểm tra cấu hình ngôn ngữ của user trong DB
+    if (userId) {
+        try {
+            const db = require('../database');
+            const u = await db.getUser(userId);
+            if (u?.locale) {
+                return getLanguage(u.locale);
+            }
+        } catch (e) {
+            console.error('[i18n] Lỗi getUser locale:', e);
+        }
+    }
+
+    // 2. Kiểm tra cấu hình ngôn ngữ của server trong DB (nếu có guildId)
+    const guildId = interaction.guildId;
+    if (guildId) {
+        try {
+            const db = require('../database');
+            const gs = await db.getGuildSettings(guildId);
+            if (gs?.language) {
+                return getLanguage(gs.language);
+            }
+        } catch (e) {
+            console.error('[i18n] Lỗi getGuildSettings:', e);
+        }
+    }
+    
+    // 3. Kiểm tra locale của guild từ Discord (ngôn ngữ hiển thị của máy chủ)
+    if (interaction.guildLocale) {
+        return getLanguage(interaction.guildLocale);
+    }
+    
+    // 4. Kiểm tra locale của user client từ Discord
+    if (interaction.locale) {
+        // Lưu lại locale của user client vào DB bất đồng bộ (fire-and-forget)
+        if (userId) {
+            try {
+                const db = require('../database');
+                db.updateUserLocale(userId, interaction.locale).catch(() => {});
+            } catch { /* ignore */ }
+        }
+        return getLanguage(interaction.locale);
+    }
+    
+    // 5. Mặc định là tiếng Việt
+    return 'vi';
+}
+
 function substitute(template, params) {
     if (typeof template !== 'string') return template;
     let result = template;
@@ -51,4 +110,4 @@ function substitute(template, params) {
     return result;
 }
 
-module.exports = { t, getLanguage };
+module.exports = { t, getLanguage, getInteractionLanguage };

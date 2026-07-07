@@ -1,6 +1,7 @@
-// Khung đánh giá cộng đồng. Khi có review THẬT (vd từ Top.gg), thêm vào mảng dưới:
-//   { name: "Tên", handle: "@user", text: "Nội dung đánh giá", avatar: "https://..." }
-// Trống -> hiển thị trạng thái mời đánh giá (không bịa review giả).
+"use client";
+
+import { useLanguage } from "./LanguageProvider";
+
 type Review = { name: string; handle?: string; text: string; avatar?: string };
 
 const TESTIMONIALS: Review[] = [];
@@ -8,19 +9,20 @@ const TESTIMONIALS: Review[] = [];
 const TOPGG_REVIEWS = "https://top.gg/bot/1482620714690543738#reviews";
 
 export default function Testimonials() {
+  const { t } = useLanguage();
   return (
     <section className="w-full py-16 md:py-20">
       <div className="text-center max-w-2xl mx-auto mb-10 space-y-2">
-        <h2 className="text-3xl md:text-4xl font-extrabold text-white">Cộng đồng nói gì 💬</h2>
-        <p className="text-slate-400 text-sm md:text-base">Những lời nhắn từ người chơi Waguri.</p>
+        <h2 className="text-3xl md:text-4xl font-extrabold text-white">{t("testimonials.title")}</h2>
+        <p className="text-slate-400 text-sm md:text-base">{t("testimonials.subtitle")}</p>
       </div>
 
       {TESTIMONIALS.length === 0 ? (
         <div className="max-w-xl mx-auto glass-panel rounded-3xl p-8 text-center border border-dashed border-pink-300/25 space-y-4">
           <span className="text-4xl">🌸</span>
-          <h3 className="text-lg font-bold text-white">Hãy là người đầu tiên!</h3>
+          <h3 className="text-lg font-bold text-white">{t("testimonials.first_title")}</h3>
           <p className="text-slate-400 text-sm leading-relaxed">
-            Waguri vẫn còn non trẻ — đánh giá của cậu sẽ xuất hiện ngay tại đây và giúp nhiều người biết tới Waguri hơn. 💕
+            {t("testimonials.first_desc")}
           </p>
           <a
             href={TOPGG_REVIEWS}
@@ -28,7 +30,7 @@ export default function Testimonials() {
             rel="noopener noreferrer"
             className="inline-block px-6 py-3 rounded-full font-bold bg-pink-300 text-[#0d0812] hover:bg-pink-400 transition-all duration-300"
           >
-            Viết đánh giá trên Top.gg ⭐
+            {t("testimonials.write_btn")}
           </a>
         </div>
       ) : (

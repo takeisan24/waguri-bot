@@ -3,8 +3,9 @@ const { buildWaguriEmbed } = require('../../lib/embed');
 const db = require('../../database.js');
 const config = require('../../config');
 const { checkBet } = require('../../lib/bet');
+const { getInteractionLanguage, t } = require('../../lib/i18n');
 
-const fmt = n => Number(n).toLocaleString('vi-VN');
+const fmt = (n, locale) => Number(n).toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN');
 const MULT = config.GAMBLE.COINFLIP_MULT; // chẵn/lẻ ~50/50 như tung xu
 const WINDOW_MS = 30000;
 
@@ -14,11 +15,12 @@ module.exports = {
         .setDescription('Xóc Đĩa 🥢 — nhiều người đặt Chẵn/Lẻ cùng lúc, 1 lần xóc')
         .addIntegerOption(o => o.setName('bet').setDescription('Mức cược (mọi người cược bằng nhau)').setRequired(true).setMinValue(config.GAMBLE.MIN_BET)),
     async execute(interaction) {
+        const locale = await getInteractionLanguage(interaction);
         const sessionId = require('crypto').randomUUID();
         const bet = interaction.options.getInteger('bet');
         const err = await checkBet(bet, interaction.guildId);
         if (err) {
-            const embed = buildWaguriEmbed(interaction, 'warning', { description: `🌸 ${err}` });
+            const embed = buildWaguriEmbed(interaction, 'warning', { locale, description: `🌸 ${err}` });
             return interaction.reply({ embeds: [embed] });
         }
 
@@ -31,14 +33,21 @@ module.exports = {
         const render = () => {
             const c = counts();
             return buildWaguriEmbed(interaction, 'info', {
-                title: '🥢・Xóc Đĩa — Đặt cửa!',
-                description: `Cược **${fmt(bet)}** ${config.CURRENCY}/người. Thắng nhận **x${MULT}**.\n` +
-                    `🔴 **Chẵn** (0/2/4 đỏ): ${c.chan} người\n⚪ **Lẻ** (1/3 đỏ): ${c.le} người\n\n⏰ Chốt sau ${WINDOW_MS / 1000}s.`
+                locale,
+                title: t(locale, 'commands.xocdia.title'),
+                description: t(locale, 'commands.xocdia.desc_lobby', {
+                    bet: fmt(bet, locale),
+                    currency: config.CURRENCY,
+                    mult: MULT,
+                    chan: c.chan,
+                    le: c.le,
+                    seconds: WINDOW_MS / 1000
+                })
             });
         };
         const row = new ActionRowBuilder().addComponents(
-            new ButtonBuilder().setCustomId('chan').setLabel('Chẵn').setStyle(ButtonStyle.Danger).setEmoji('🔴'),
-            new ButtonBuilder().setCustomId('le').setLabel('Lẻ').setStyle(ButtonStyle.Secondary).setEmoji('⚪'),
+            new ButtonBuilder().setCustomId('chan').setLabel(t(locale, 'commands.xocdia.btn_chan')).setStyle(ButtonStyle.Danger).setEmoji('🔴'),
+            new ButtonBuilder().setCustomId('le').setLabel(t(locale, 'commands.xocdia.btn_le')).setStyle(ButtonStyle.Secondary).setEmoji('⚪'),
         );
 
         await interaction.reply({ embeds: [render()], components: [row] });
@@ -46,17 +55,19 @@ module.exports = {
         const collector = msg.createMessageComponentCollector({ componentType: ComponentType.Button, time: WINDOW_MS });
 
         collector.on('collect', async (i) => {
-            if (bets.has(i.user.id)) return i.reply({ content: `Cậu đã đặt **${bets.get(i.user.id).side === 'chan' ? 'Chẵn' : 'Lẻ'}** rồi nhé~`, flags: MessageFlags.Ephemeral });
-            if (!await db.stakeCollect(sessionId, 'xocdia', interaction.channelId, i.user.id, bet)) return i.reply({ content: `Cậu không đủ **${fmt(bet)}** ${config.CURRENCY} để cược~ 😟`, flags: MessageFlags.Ephemeral });
+            const choiceName = bets.get(i.user.id)?.side === 'chan' ? t(locale, 'commands.xocdia.btn_chan') : t(locale, 'commands.xocdia.btn_le');
+            if (bets.has(i.user.id)) return i.reply({ content: t(locale, 'commands.xocdia.already_bet', { side: choiceName }), flags: MessageFlags.Ephemeral });
+            if (!await db.stakeCollect(sessionId, 'xocdia', interaction.channelId, i.user.id, bet)) return i.reply({ content: t(locale, 'commands.xocdia.err_insufficient_funds', { bet: fmt(bet, locale), currency: config.CURRENCY }), flags: MessageFlags.Ephemeral });
             bets.set(i.user.id, { side: i.customId, username: i.user.username });
-            await i.reply({ content: `✅ Cậu đặt **${i.customId === 'chan' ? 'Chẵn 🔴' : 'Lẻ ⚪'}** (${fmt(bet)} ${config.CURRENCY}).`, flags: MessageFlags.Ephemeral });
+            const btnName = i.customId === 'chan' ? `${t(locale, 'commands.xocdia.btn_chan')} 🔴` : `${t(locale, 'commands.xocdia.btn_le')} ⚪`;
+            await i.reply({ content: t(locale, 'commands.xocdia.bet_success', { side: btnName, bet: fmt(bet, locale), currency: config.CURRENCY }), flags: MessageFlags.Ephemeral });
             await interaction.editReply({ embeds: [render()], components: [row] }).catch(() => {});
         });
 
         collector.on('end', async () => {
             if (bets.size === 0) {
                 await db.stakeSettle(sessionId);
-                return interaction.editReply({ embeds: [render().setColor(config.COLORS.WARNING).setTitle('🥢 Xóc Đĩa — không ai cược~')], components: [] }).catch(() => {});
+                return interaction.editReply({ embeds: [render().setColor(config.COLORS.WARNING).setTitle(t(locale, 'commands.xocdia.err_no_bets_title'))], components: [] }).catch(() => {});
             }
             const coins = [0, 0, 0, 0].map(() => Math.random() < 0.5 ? 1 : 0); // 1 = đỏ
             const reds = coins.reduce((s, c) => s + c, 0);
@@ -65,14 +76,21 @@ module.exports = {
 
             const wins = [], loses = [];
             for (const [id, b] of bets) {
-                if (b.side === result) { const payout = Math.round(bet * MULT); await db.addMoney(id, payout, 'wallet'); db.questIncr(id, 'gamble_win', 1); wins.push(`<@${id}> (+${fmt(payout - bet)})`); }
-                else loses.push(`<@${id}> (-${fmt(bet)})`);
+                if (b.side === result) { const payout = Math.round(bet * MULT); await db.addMoney(id, payout, 'wallet'); db.questIncr(id, 'gamble_win', 1); wins.push(`<@${id}> (+${fmt(payout - bet, locale)})`); }
+                else loses.push(`<@${id}> (-${fmt(bet, locale)})`);
             }
             await db.stakeSettle(sessionId);
+            const sideResultName = result === 'chan' ? t(locale, 'commands.xocdia.side_chan') : t(locale, 'commands.xocdia.side_le');
             const embedResult = buildWaguriEmbed(interaction, 'jackpot', {
-                title: '🥢・Kết quả Xóc Đĩa',
-                description: `Đĩa mở: ${faces} → **${reds} đỏ** → **${result === 'chan' ? 'CHẴN 🔴' : 'LẺ ⚪'}**!\n\n` +
-                    `🏆 Thắng: ${wins.join(', ') || '*(không ai)*'}\n💸 Thua: ${loses.join(', ') || '*(không ai)*'}`
+                locale,
+                title: t(locale, 'commands.xocdia.result_title'),
+                description: t(locale, 'commands.xocdia.result_desc', {
+                    faces,
+                    reds,
+                    side: sideResultName,
+                    wins: wins.join(', ') || t(locale, 'commands.xocdia.no_one'),
+                    loses: loses.join(', ') || t(locale, 'commands.xocdia.no_one')
+                })
             });
             await interaction.editReply({ embeds: [embedResult], components: [] }).catch(() => {});
         });

@@ -6,15 +6,20 @@ import { createAdminClient } from "../../../lib/supabase/admin";
 import { getDiscordIdentity } from "../../../lib/discord";
 import { getCurrentSeasonId, getSeasonLabel } from "../../../lib/game";
 import BattlePassClient from "./BattlePassClient";
+import { getLocaleServer, t } from "../../../lib/i18n";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
-  title: "Sổ Sứ Mệnh (Battle Pass) 📖 — Waguri",
-  robots: { index: false },
-};
+export async function generateMetadata() {
+  const locale = await getLocaleServer();
+  return {
+    title: `${t("pass.timeline_title", locale)} 📖 — Waguri`,
+    robots: { index: false },
+  };
+}
 
 export default async function BattlePassPage() {
+  const locale = await getLocaleServer();
   const supabase = await createClient();
   const {
     data: { user },
@@ -27,7 +32,7 @@ export default async function BattlePassPage() {
 
   const admin = createAdminClient();
   const seasonId = getCurrentSeasonId();
-  const seasonLabel = getSeasonLabel(seasonId);
+  const seasonLabel = getSeasonLabel(seasonId, locale);
 
   // Fetch song song: user info, battle pass info, and all items for name mappings
   const [userRes, bpRes, itemsRes] = await Promise.all([

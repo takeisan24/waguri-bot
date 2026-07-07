@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import vi from "../locales/vi.json";
 import en from "../locales/en.json";
 

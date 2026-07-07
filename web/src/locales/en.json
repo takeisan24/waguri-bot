@@ -55,5 +55,285 @@
       "q4": "How do I earn the most coins?",
       "a4": "Use `/work` regularly, complete `/quest` daily, go `/fish` or `/mine` for ingredients, then bake them in `/tiembanh` to sell cakes for profit!"
     }
+  },
+  "game": {
+    "affection": {
+      "tri_ky": "💞 Soulmate",
+      "than_thiet": "💗 Close Friend",
+      "ban_than": "💓 Best Friend",
+      "quen_biet": "💛 Acquaintance",
+      "nguoi_moi": "🤍 Newcomer"
+    },
+    "seasons": {
+      "tet": "Lunar New Year Season {year} 🎍",
+      "trungthu": "Mid-Autumn Reunion Season {year} 🥮",
+      "normal": "Monthly Season {month}/{year} 🌾",
+      "new": "New Season 🌸"
+    },
+    "pets": {
+      "meo": {
+        "name": "Kitten",
+        "skills": {
+          "0": "🐱 Increases chance of catching tasty fish by 2%.",
+          "1": "💫 Increases chance of catching ultra rare fish by 5% (Golden Arowana/Japanese Koi).",
+          "2": "💰 Skill [Fortune Beckoner]: Receive random 1,000 - 3,000 coins daily upon login."
+        }
+      },
+      "cun": {
+        "name": "Puppy",
+        "skills": {
+          "0": "🐶 Increases work success rate by 5%.",
+          "1": "🚨 Reduces police suspicion build-up by 15% during shady work.",
+          "2": "🐕 Skill [Loyalty]: Protects 25% of wallet balance from being stolen in a robbery."
+        }
+      },
+      "rong": {
+        "name": "Baby Dragon",
+        "skills": {
+          "0": "🐲 Increases EXP gained from all activities by 5%.",
+          "1": "✨ Gain additional +15% EXP from all activities.",
+          "2": "⏳ Skill [Time Lord]: Reduces cooldown time of all harvesting actions by 50%."
+        }
+      },
+      "cao": {
+        "name": "Little Fox",
+        "skills": {
+          "0": "🦊 Increases robbery success rate by 5%.",
+          "1": "🌾 Increases crop harvest yield by 10%.",
+          "2": "🎭 Skill [Illusion]: Unveils 1 unopened Bingo slot in advance."
+        }
+      },
+      "tho": {
+        "name": "Bunny",
+        "skills": {
+          "0": "🐰 Reduces energy cost for chopping wood / mining by 5%.",
+          "1": "🥗 Reduces energy cost for working by 15%.",
+          "2": "💤 Skill [Dreamy]: Recover energy twice as fast while sleeping (/nghingoi)."
+        }
+      },
+      "gau": {
+        "name": "Baby Bear",
+        "skills": {
+          "0": "🐻 Increases base salary by 5% when working (/work).",
+          "1": "💎 Increases drop rate of precious ores (Diamond/Gold) by 10% when mining.",
+          "2": "🌋 Skill [Seismic]: Each mining action has a 2% chance to multiply yield by 5x."
+        }
+      }
+    }
+  },
+  "premium": {
+    "plans": {
+      "m1": {
+        "label": "1 month",
+        "note": "Free trial"
+      },
+      "m3": {
+        "label": "3 months",
+        "note": "~20k/month · save 20%"
+      },
+      "m6": {
+        "label": "6 months",
+        "note": "~16.5k/month · save 34%"
+      }
+    },
+    "meta_title": "Waguri Premium 💎",
+    "back_to_dashboard": "← Dashboard",
+    "review_orders": "🛠️ Review Orders",
+    "title_premium": "Premium",
+    "active_until": "✅ Active — expires on {date}",
+    "unlock_desc": "Unlock all benefits — budget friendly for everyone 🌸",
+    "comparison_title": "Free vs Premium",
+    "col_benefit": "Benefits",
+    "col_free": "Free",
+    "col_premium": "Premium 💎",
+    "benefit_ai_chat": "AI chat limits / day",
+    "benefit_income": "Income boost",
+    "benefit_badge": "Profile 💎 badge",
+    "benefit_early_access": "Early access to new features",
+    "select_plan": "Select package",
+    "select_plan_extend": "Select package to extend",
+    "best_deal": "BEST VALUE",
+    "renew_btn": "Renew",
+    "buy_btn": "Buy Now",
+    "payment_desc": "VietQR bank transfer payment — activated automatically within seconds. 💝",
+    "currency_suffix": " VND",
+    "benefit_ai_chat_desc": "10x the free limit — chat with Waguri to your heart's content.",
+    "benefit_income_desc": "Boosts earnings from /work, /fish, /mine, and /chop commands.",
+    "benefit_badge_desc": "Standout Premium badge displayed on your web profile & Discord.",
+    "benefit_early_access_desc": "Test new features early before public release."
+  },
+  "dashboard": {
+    "meta_title": "Dashboard — Waguri 🌸",
+    "logout": "Logout →",
+    "default_job": "Freelancer",
+    "premium_active": "💎 Waguri Premium active",
+    "premium_upgrade": "💎 Upgrade Waguri Premium",
+    "premium_active_desc": "Thank you for your support~ Click to extend.",
+    "premium_upgrade_desc": "150 AI chats/day · +10% earnings · 💎 badge — from 25k 🌸",
+    "premium_renew_btn": "Renew →",
+    "premium_view_btn": "View plans →",
+    "no_data": "You don't have game data yet~ Play some commands on Discord (/start, /daily) and check back! 🌸",
+    "stat_total_wealth": "💎 Net Worth",
+    "stat_wallet": "💵 Wallet",
+    "stat_bank": "🏦 Bank",
+    "stat_affection": "💞 Waguri Affection",
+    "stat_achievements": "🎖️ Achievements",
+    "stat_vote_streak": "🗳️ Vote Streak",
+    "days": "{count} days",
+    "health_energy_title": "❤️ Health & ⚡ Energy",
+    "health_label": "❤️ Health",
+    "energy_label": "⚡ Energy",
+    "health_low_warning": "⚠️ Low health (<30) — use /eat medicine/medkit, /nghingoi or /hospital to recover!",
+    "affection_title": "💖 Affection with Waguri",
+    "relationship_tier": "Relationship Tier:",
+    "affection_points": "Affection Points",
+    "points_suffix": "{count} pts",
+    "bp_title": "📖 Battle Pass",
+    "bp_premium": "👑 Premium",
+    "bp_free": "🔓 Free",
+    "bp_level_label": "Level {level}",
+    "bp_progress_label": "Level Progress",
+    "bp_details_btn": "View Details & Claim →",
+    "farm_pets_title": "🌾 Farm & Pets",
+    "pig_label": "🐷 Pig",
+    "pig_sick": "Sick 🤒",
+    "pig_stage": "Stage: {stage}",
+    "pig_none": "None",
+    "plant_label": "🌱 Crop",
+    "plant_stage": "Stage: {stage}",
+    "plant_none": "None",
+    "pet_label": "🐾 Pet",
+    "pet_level": "Lv.{level}",
+    "pet_skills_active": "✨ Active Skills:",
+    "pet_none": "No pets adopted",
+    "settings_title": "⚙️ Settings",
+    "settings_profile_public": "Public Web Profile",
+    "settings_profile_public_desc": "Currently public: ",
+    "settings_profile_private_desc": "Currently private — others cannot view your profile.",
+    "settings_profile_hide_btn": "🙈 Hide",
+    "settings_profile_show_btn": "👁️ Show",
+    "settings_vote_reminder": "DM Vote Reminders",
+    "settings_vote_reminder_on": "Enabled — Waguri will remind you when ready to vote.",
+    "settings_vote_reminder_off": "Disabled.",
+    "settings_vote_reminder_off_btn": "🔕 Disable",
+    "settings_vote_reminder_on_btn": "🔔 Enable",
+    "manage_servers_title": "🛠️ Manage Servers",
+    "manage_servers_desc": "Servers you manage — click to adjust bot settings:",
+    "server_leaderboards_title": "🏆 Your Server Leaderboards",
+    "server_leaderboards_desc": "Servers you are in with Waguri — click to view server leaderboard:",
+    "global_leaderboard_link": "🏆 View Global Leaderboard"
+  },
+  "pass": {
+    "back_to_dashboard": "← Back to Dashboard",
+    "view_mode": "Viewing as:",
+    "current_season": "CURRENT SEASON",
+    "season_desc": "Check in daily and play games on Discord to gather XP and level up your Battle Pass. Tons of exclusive rewards are waiting for you!",
+    "current_level": "Current Level",
+    "level_0": "Lvl 0",
+    "level_10": "Lvl 10",
+    "level_20_max": "Lvl 20 (Max)",
+    "premium_label": "👑 Premium Pass",
+    "free_label": "🔓 Free Pass",
+    "wallet_balance": "Wallet balance: {count} coins",
+    "buy_premium_btn": "👑 Unlock Premium ({count} coins)",
+    "claim_rewards_btn": "🔄 Claim pending rewards ({count})",
+    "success": "🎉 Success!",
+    "error": "⚠️ Error",
+    "close": "✕ Close",
+    "timeline_title": "🎁 20 Levels Journey & Rewards",
+    "free_track": "🔓 Free Track",
+    "premium_track": "👑 Premium Track",
+    "claimed": "✓ Claimed",
+    "claimable": "🎁 Claimable",
+    "locked_premium": "🔒 Locked (Requires Premium)",
+    "locked_level": "🔒 Locked (Level not reached)",
+    "insufficient_funds": "Your wallet doesn't have enough {count} coins to unlock Premium!",
+    "confirm_buy": "Do you agree to spend {count} coins to unlock the Premium Battle Pass?",
+    "buy_success": "👑 Congratulations! You have successfully unlocked the Premium Battle Pass! Grind on Discord to earn rewards~",
+    "generic_error": "An error occurred!",
+    "claim_success_header": "You have successfully claimed the rewards:",
+    "claimed_coins": "\n🪙 +{count} coins",
+    "claimed_title": "\n🎖️ Exclusive Title: \"{title}\"",
+    "claimed_items_header": "\n🎒 Items: ",
+    "item_qty": "[{emoji} {name} x{qty}] ",
+    "exclusive_title": "🎖️ \"{title}\"",
+    "coins_reward": "🪙 +{count}"
+  },
+  "leaderboard": {
+    "meta_title": "Leaderboard 🏆 — Waguri",
+    "meta_desc": "Top wealthy and high level players of Waguri — who is the richest, who grinds the most?",
+    "empty": "No players on the board yet~ 🌸",
+    "my_rank": "🎯 Your Rank ({username})",
+    "title_server": "🏆 Server Leaderboard",
+    "title_global": "🏆 Waguri Leaderboard",
+    "subtitle_server": "Server {name} — click a name to view profile.",
+    "subtitle_server_generic": "Server Leaderboard — click a name to view profile.",
+    "subtitle_global": "Global Top — click a name to view detailed profile.",
+    "view_global": "← View Global Leaderboard",
+    "board_wealth": "💎 Wealthy (Net Worth)",
+    "board_level": "⭐ High Level (Level)"
+  },
+  "profile": {
+    "default_user": "Player",
+    "meta_title": "Profile of {name} 🌸 — Waguri",
+    "meta_desc": "View Waguri profile of {name}: level, assets, job, and wealth rank.",
+    "not_found": "Profile not loaded 🌸",
+    "hidden": "This profile is private 🙈",
+    "not_found_desc": "The bot might be offline or the player has no data yet. Try again later!",
+    "hidden_desc": "The player has chosen to hide their web profile.",
+    "invite_btn": "Invite Waguri to server 🌸",
+    "default_job": "Freelancer",
+    "stat_total_wealth": "💎 Net Worth",
+    "stat_rank": "🏆 Wealth Rank",
+    "stat_wallet": "💵 Wallet",
+    "stat_bank": "🏦 Bank",
+    "stat_affection": "💞 Waguri Affection",
+    "stat_achievements": "🎖️ Achievements",
+    "stat_beloved": "💍 Beloved",
+    "cta_text": "Want a profile like this? Invite Waguri to your server and start getting rich! 🌸",
+    "cta_btn": "Invite Waguri 🌸"
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "subtitle": "A few common questions before you get started with Waguri 🌸",
+    "q1": "Is Waguri free?",
+    "a1": "Absolutely free! Invite the bot and play as much as you like. The Premium package is just an optional donation to unlock extra perks.",
+    "q2": "How do I start playing?",
+    "a2": "Invite Waguri to your server, type /start to create a character and receive a welcome gift, and run /daily every day to build your capital.",
+    "q3": "Are my coins and data secure?",
+    "a3": "Yes. All coin transactions are handled using atomic RPC on PostgreSQL (preventing bugs & exploits), with data securely stored on Supabase.",
+    "q4": "Is my wallet shared across servers?",
+    "a4": "Yes! Your wallet is shared across all servers. Leaderboards are available both globally and per server.",
+    "q5": "What does Premium include?",
+    "a5": "150 AI chats/day, +10% earnings on all income commands, a 💎 badge, and early access to new features.",
+    "q6": "What should I do if I encounter a bug or lose coins?",
+    "a6": "Join the support server to open a ticket or report it in the #report-bug channel. Valid bugs can also be rewarded with gifts 💝."
+  },
+  "testimonials": {
+    "title": "What the community says 💬",
+    "subtitle": "Messages from Waguri players.",
+    "first_title": "Be the first!",
+    "first_desc": "Waguri is still young — your review will show up right here and help more people discover Waguri. 💕",
+    "write_btn": "Write a review on Top.gg ⭐"
+  },
+  "commands": {
+    "search_placeholder": "🔎 Search {count} commands... (e.g. work, mini-game, clan)",
+    "no_results": "No matching commands found~ 🌸",
+    "usage": "Usage:",
+    "or_prefix": "or",
+    "help_tip": "Type {cmd} in Discord to view parameters & sub-commands details."
+  },
+  "error": {
+    "title": "An error occurred~",
+    "desc": "Waguri is sorry, something went wrong. Please try again!",
+    "retry": "Retry",
+    "back_home": "Go Home",
+    "back_home_btn": "Go Home"
+  },
+  "notfound": {
+    "title": "404",
+    "desc": "Oops, the page you are looking for does not exist~ How about going back to the home page to play with Waguri?",
+    "back_home": "Back to Home 🌸",
+    "view_commands": "View Commands"
   }
 }

@@ -1,18 +1,6 @@
-// src/commands/utility/thoitiet.js
 const { SlashCommandBuilder } = require('discord.js');
 const { buildWaguriEmbed } = require('../../lib/embed');
-
-const WMO = {
-    0: ['Trời quang', '☀️'],
-    1: ['Ít mây', '🌤️'], 2: ['Có mây', '⛅'], 3: ['Nhiều mây / u ám', '☁️'],
-    45: ['Sương mù', '🌫️'], 48: ['Sương mù đóng băng', '🌫️'],
-    51: ['Mưa phùn nhẹ', '🌦️'], 53: ['Mưa phùn', '🌦️'], 55: ['Mưa phùn dày', '🌧️'],
-    61: ['Mưa nhẹ', '🌧️'], 63: ['Mưa vừa', '🌧️'], 65: ['Mưa to', '🌧️'],
-    66: ['Mưa lạnh', '🌧️'], 67: ['Mưa lạnh nặng', '🌧️'],
-    71: ['Tuyết nhẹ', '🌨️'], 73: ['Tuyết', '🌨️'], 75: ['Tuyết dày', '❄️'],
-    80: ['Mưa rào nhẹ', '🌦️'], 81: ['Mưa rào', '🌧️'], 82: ['Mưa rào dữ dội', '⛈️'],
-    95: ['Dông', '⛈️'], 96: ['Dông kèm mưa đá', '⛈️'], 99: ['Dông kèm mưa đá to', '⛈️'],
-};
+const { getInteractionLanguage, t } = require('../../lib/i18n');
 
 // Cấu hình Caching in-memory tránh lạm dụng gọi API Open-Meteo
 const weatherCache = new Map(); // city_lower_key -> { data, expiresAt }
@@ -29,6 +17,23 @@ const FALLBACK_WEATHER = {
     placeName: "Học viện Kikyo"
 };
 
+const getWmoLabel = (code, locale) => {
+    const WMO_EMOJIS = {
+        0: '☀️',
+        1: '🌤️', 2: '⛅', 3: '☁️',
+        45: '🌫️', 48: '🌫️',
+        51: '🌦️', 53: '🌦️', 55: '🌧️',
+        61: '🌧️', 63: '🌧️', 65: '🌧️',
+        66: '🌧️', 67: '🌧️',
+        71: '🌨️', 73: '🌨️', 75: '❄️',
+        80: '🌦️', 81: '🌧️', 82: '⛈️',
+        95: '⛈️', 96: '⛈️', 99: '⛈️'
+    };
+    const emoji = WMO_EMOJIS[code] || '🌡️';
+    const label = t(locale, `commands.thoitiet.wmo.${code}`);
+    return [label && !label.startsWith('commands.thoitiet') ? label : t(locale, 'commands.thoitiet.unknown'), emoji];
+};
+
 async function fetchJson(url) {
     const r = await fetch(url, { headers: { accept: 'application/json' }, signal: AbortSignal.timeout(5000) });
     if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -42,6 +47,7 @@ module.exports = {
         .addStringOption(o => o.setName('thanh_pho').setDescription('Tên thành phố (vd: Hanoi, Da Nang)').setRequired(true)),
     async execute(interaction) {
         await interaction.deferReply();
+        const locale = await getInteractionLanguage(interaction);
         const city = interaction.options.getString('thanh_pho');
         const cacheKey = city.toLowerCase().trim();
 
@@ -49,14 +55,15 @@ module.exports = {
         const cached = weatherCache.get(cacheKey);
         if (cached && Date.now() < cached.expiresAt) {
             const c = cached.data;
-            const [desc, emoji] = WMO[c.weatherCode] || ['Không rõ', '🌡️'];
+            const [desc, emoji] = getWmoLabel(c.weatherCode, locale);
             const embed = buildWaguriEmbed(interaction, 'info', {
-                title: `${emoji} Thời tiết ${c.placeName}`,
+                locale,
+                title: t(locale, 'commands.thoitiet.title', { emoji, place: c.placeName }),
                 description: `**${desc}**`,
                 fields: [
-                    { name: '🌡️ Nhiệt độ', value: `${c.temp}°C (cảm giác ${c.feelsLike}°C)`, inline: true },
-                    { name: '💧 Độ ẩm', value: `${c.humidity}%`, inline: true },
-                    { name: '💨 Gió', value: `${c.windSpeed} km/h`, inline: true }
+                    { name: t(locale, 'commands.thoitiet.field_temp'), value: t(locale, 'commands.thoitiet.field_temp_val', { temp: c.temp, feelsLike: c.feelsLike }), inline: true },
+                    { name: t(locale, 'commands.thoitiet.field_humidity'), value: `${c.humidity}%`, inline: true },
+                    { name: t(locale, 'commands.thoitiet.field_wind'), value: t(locale, 'commands.thoitiet.wind_val', { speed: c.windSpeed }), inline: true }
                 ]
             });
             return interaction.editReply({ embeds: [embed] });
@@ -68,7 +75,8 @@ module.exports = {
             const place = geo.results?.[0];
             if (!place) {
                 const embed = buildWaguriEmbed(interaction, 'warning', {
-                    description: `Mình không tìm thấy "**${city}**"~ thử tên khác (không dấu) nhé.`
+                    locale,
+                    description: t(locale, 'commands.thoitiet.not_found', { city })
                 });
                 return interaction.editReply({ embeds: [embed] });
             }
@@ -86,7 +94,7 @@ module.exports = {
                 placeName
             };
 
-            // Lưu vào bộ nhớ đệm (dọn mục cũ nhất nếu vượt ngưỡng để tránh rò rỉ RAM)
+            // Lưu vào bộ nhớ đệm
             if (weatherCache.size >= CACHE_MAX) {
                 weatherCache.delete(weatherCache.keys().next().value);
             }
@@ -95,14 +103,15 @@ module.exports = {
                 expiresAt: Date.now() + CACHE_TTL_MS
             });
 
-            const [desc, emoji] = WMO[c.weather_code] || ['Không rõ', '🌡️'];
+            const [desc, emoji] = getWmoLabel(c.weather_code, locale);
             const embed = buildWaguriEmbed(interaction, 'info', {
-                title: `${emoji} Thời tiết ${placeName}`,
+                locale,
+                title: t(locale, 'commands.thoitiet.title', { emoji, place: placeName }),
                 description: `**${desc}**`,
                 fields: [
-                    { name: '🌡️ Nhiệt độ', value: `${weatherData.temp}°C (cảm giác ${weatherData.feelsLike}°C)`, inline: true },
-                    { name: '💧 Độ ẩm', value: `${weatherData.humidity}%`, inline: true },
-                    { name: '💨 Gió', value: `${weatherData.windSpeed} km/h`, inline: true }
+                    { name: t(locale, 'commands.thoitiet.field_temp'), value: t(locale, 'commands.thoitiet.field_temp_val', { temp: weatherData.temp, feelsLike: weatherData.feelsLike }), inline: true },
+                    { name: t(locale, 'commands.thoitiet.field_humidity'), value: `${weatherData.humidity}%`, inline: true },
+                    { name: t(locale, 'commands.thoitiet.field_wind'), value: t(locale, 'commands.thoitiet.wind_val', { speed: weatherData.windSpeed }), inline: true }
                 ]
             });
             await interaction.editReply({ embeds: [embed] });
@@ -111,17 +120,18 @@ module.exports = {
             console.error('[WEATHER API ERROR] Thất bại khi gọi API Open-Meteo:', error);
             
             // Fallback thời tiết mặc định dự phòng khi sập mạng
-            const [desc, emoji] = WMO[FALLBACK_WEATHER.weatherCode];
+            const [desc, emoji] = getWmoLabel(FALLBACK_WEATHER.weatherCode, locale);
             const embed = buildWaguriEmbed(interaction, 'warning', {
-                title: `${emoji} Thời tiết ${FALLBACK_WEATHER.placeName} (Dự phòng)`,
-                description: `⚠️ API Open-Meteo đang gặp sự cố. Trạng thái tạm thời: **${desc}**`,
+                locale,
+                title: t(locale, 'commands.thoitiet.fallback_title', { emoji, place: FALLBACK_WEATHER.placeName }),
+                description: t(locale, 'commands.thoitiet.fallback_desc', { desc }),
                 fields: [
-                    { name: '🌡️ Nhiệt độ', value: `${FALLBACK_WEATHER.temp}°C (cảm giác ${FALLBACK_WEATHER.feelsLike}°C)`, inline: true },
-                    { name: '💧 Độ ẩm', value: `${FALLBACK_WEATHER.humidity}%`, inline: true },
-                    { name: '💨 Gió', value: `${FALLBACK_WEATHER.windSpeed} km/h`, inline: true }
+                    { name: t(locale, 'commands.thoitiet.field_temp'), value: t(locale, 'commands.thoitiet.field_temp_val', { temp: FALLBACK_WEATHER.temp, feelsLike: FALLBACK_WEATHER.feelsLike }), inline: true },
+                    { name: t(locale, 'commands.thoitiet.field_humidity'), value: `${FALLBACK_WEATHER.humidity}%`, inline: true },
+                    { name: t(locale, 'commands.thoitiet.field_wind'), value: t(locale, 'commands.thoitiet.wind_val', { speed: FALLBACK_WEATHER.windSpeed }), inline: true }
                 ]
             });
-            embed.setFooter({ text: 'Chế độ dự phòng tự động hoạt động khi mất kết nối Open-Meteo · Waguri' });
+            embed.setFooter({ text: t(locale, 'commands.thoitiet.fallback_footer') });
             await interaction.editReply({ embeds: [embed] });
         }
     },

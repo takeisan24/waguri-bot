@@ -1,6 +1,7 @@
 const { Events } = require('discord.js');
 const config = require('../config');
 const db = require('../database.js');
+const { getInteractionLanguage, t } = require('../lib/i18n');
 const { buildPrefixInteraction } = require('../lib/prefixShim');
 const { chatWithWaguri, onCooldown } = require('../lib/ai');
 const { handleMessage: handleNoiTu } = require('../lib/noitu');
@@ -226,10 +227,18 @@ module.exports = {
 
             if (onCooldown(message.author.id)) return;
             await message.channel.sendTyping().catch(() => {});
-            const res = await chatWithWaguri(message.channelId, message.author.id, message.author.username, text);
+            
+            const locale = await getInteractionLanguage({
+                guildId: message.guildId,
+                user: message.author,
+                guildLocale: message.guild?.preferredLocale
+            });
+
+            const res = await chatWithWaguri(message.channelId, message.author.id, message.author.username, text, locale);
             if (!res.ok) {
                 if (res.reason === 'quota') {
-                    message.reply(`Cậu đã dùng hết **${res.cap}** lượt chat với mình hôm nay rồi 🥺 — nâng cấp \`/premium\` để có thêm nhé 💎`).catch(() => {});
+                    const quotaMsg = t(locale, 'common.ai_quota_exceeded', { cap: res.cap });
+                    message.reply(quotaMsg).catch(() => {});
                 }
                 return;
             }

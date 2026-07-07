@@ -1,7 +1,10 @@
 import Link from "next/link";
 import CherryBlossom from "../components/CherryBlossom";
+import { getLocaleServer, t } from "../lib/i18n";
 
-export default function NotFound() {
+export default async function NotFound() {
+  const locale = await getLocaleServer();
+
   return (
     <div className="relative min-h-screen flex flex-col items-center justify-center bg-[#0d0812] text-slate-200 px-6 text-center">
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
@@ -11,16 +14,16 @@ export default function NotFound() {
       <CherryBlossom />
       <div className="relative z-10 space-y-5">
         <div className="text-6xl">🌸</div>
-        <h1 className="text-4xl font-black text-white">404</h1>
+        <h1 className="text-4xl font-black text-white">{t("notfound.title", locale)}</h1>
         <p className="text-slate-400 max-w-sm mx-auto">
-          Ơ, trang cậu tìm không có ở đây rồi~ Hay là quay về trang chủ chơi với Waguri nhé?
+          {t("notfound.desc", locale)}
         </p>
         <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
           <Link href="/" className="px-6 py-3 rounded-full font-bold bg-pink-300 text-[#0d0812] hover:bg-pink-400 transition-all">
-            Về trang chủ 🌸
+            {t("notfound.back_home", locale)}
           </Link>
           <Link href="/commands" className="px-6 py-3 rounded-full font-bold border border-pink-300/30 text-pink-200 hover:border-pink-300/60 transition-all">
-            Xem lệnh
+            {t("notfound.view_commands", locale)}
           </Link>
         </div>
       </div>

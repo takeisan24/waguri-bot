@@ -1798,6 +1798,27 @@ async function redeemPremiumOrderByCode(code, amount, ref) {
     }
 }
 
+/**
+ * Cập nhật locale của người dùng.
+ * @param {string} userId - Discord ID
+ * @param {string} locale - Locale mới (vi/en)
+ * @returns {boolean} - true nếu thành công
+ */
+async function updateUserLocale(userId, locale) {
+    try {
+        const lang = locale === 'en' ? 'en' : 'vi';
+        const { error } = await supabase
+            .from('users')
+            .update({ locale: lang })
+            .eq('user_id', userId);
+        if (error) throw error;
+        return true;
+    } catch (error) {
+        console.error(`[DATABASE ERROR] Lỗi updateUserLocale(${userId}, ${locale}):`, error);
+        return false;
+    }
+}
+
 // ============================================================
 //  TIỆM BÁNH GEKKA (bakery) — kinh doanh thụ động
 // ============================================================
@@ -1849,6 +1870,7 @@ async function bakeryDecorate(userId, itemId) {
 module.exports = {
     supabase,
     getUser,
+    updateUserLocale,
     redeemPremiumOrderByCode,
     getPendingPremiumOrders,
     approvePremiumOrder,

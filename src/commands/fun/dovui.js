@@ -1,10 +1,10 @@
-const { SlashCommandBuilder, EmbedBuilder, MessageFlags } = require('discord.js');
+const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, MessageFlags } = require('discord.js');
 const { buildWaguriEmbed } = require('../../lib/embed');
 const db = require('../../database.js');
 const config = require('../../config');
-const QUIZ = require('../../data/quiz');
+const { getInteractionLanguage, t } = require('../../lib/i18n');
 
-const fmt = n => Number(n).toLocaleString('vi-VN');
+const fmt = (n, locale) => Number(n).toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN');
 // Chuẩn hoá: thường hoá, bỏ dấu tiếng Việt, gộp khoảng trắng.
 const norm = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/\s+/g, ' ').trim();
 
@@ -15,23 +15,41 @@ module.exports = {
         .setName('dovui')
         .setDescription('Đố vui 🧠 — trả lời nhanh & đúng nhất trong chat để thắng thưởng'),
     async execute(interaction) {
+        const locale = await getInteractionLanguage(interaction);
         if (active.has(interaction.channelId)) {
-            const embed = buildWaguriEmbed(interaction, 'warning', { title: '🧠・Đố Vui', description: 'Kênh này đang có một câu đố rồi, chờ xong đã nhé~ 🌸' });
+            const embed = buildWaguriEmbed(interaction, 'warning', { 
+                locale,
+                title: t(locale, 'commands.dovui.title'), 
+                description: t(locale, 'commands.dovui.active_game') 
+            });
             return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
         }
         // Cooldown mỗi người chống spam tạo câu đố để farm (đáp án thuộc bộ cố định).
         const cd = await db.claimCooldown(interaction.user.id, 'dovui', 60);
         if (cd) {
-            const embed = buildWaguriEmbed(interaction, 'warning', { title: '🧠・Đố Vui', description: `Cậu vừa ra đố xong~ nghỉ chút rồi tạo câu mới <t:${Math.floor(cd / 1000)}:R> nhé! 🌸` });
+            const embed = buildWaguriEmbed(interaction, 'warning', { 
+                locale,
+                title: t(locale, 'commands.dovui.title'), 
+                description: t(locale, 'commands.dovui.cooldown', { time: `<t:${Math.floor(cd / 1000)}:R>` }) 
+            });
             return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
         }
+
+        const QUIZ = locale === 'en' ? require('../../data/quiz_en') : require('../../data/quiz');
         const item = QUIZ[Math.floor(Math.random() * QUIZ.length)];
         const accepted = item.a.map(norm);
         active.add(interaction.channelId);
 
         const embedQ = buildWaguriEmbed(interaction, 'info', {
-            title: '🧠・Đố Vui!',
-            description: `**${item.q}**\n\nGõ đáp án vào chat — ai đúng & nhanh nhất thắng **${fmt(config.QUIZ.REWARD)}** ${config.CURRENCY} + ${config.QUIZ.EXP} EXP!\n⏰ ${config.QUIZ.TIME_MS / 1000}s`
+            locale,
+            title: t(locale, 'commands.dovui.quiz_title'),
+            description: t(locale, 'commands.dovui.quiz_desc', { 
+                question: item.q, 
+                amount: fmt(config.QUIZ.REWARD, locale), 
+                currency: config.CURRENCY, 
+                exp: config.QUIZ.EXP, 
+                time: config.QUIZ.TIME_MS / 1000 
+            })
         });
 
         try {
@@ -49,7 +67,14 @@ module.exports = {
                 await db.addMoney(m.author.id, config.QUIZ.REWARD, 'wallet');
                 await db.updateExp(m.author.id, config.QUIZ.EXP);
                 const embedWon = buildWaguriEmbed(interaction, 'success', {
-                    description: `🎉 <@${m.author.id}> trả lời đúng (**${item.a[0]}**) và nhận **${fmt(config.QUIZ.REWARD)}** ${config.CURRENCY} + ${config.QUIZ.EXP} EXP!`
+                    locale,
+                    description: t(locale, 'commands.dovui.won_desc', { 
+                        user: m.author.id, 
+                        answer: item.a[0], 
+                        amount: fmt(config.QUIZ.REWARD, locale), 
+                        currency: config.CURRENCY, 
+                        exp: config.QUIZ.EXP 
+                    })
                 });
                 await channel.send({ embeds: [embedWon] }).catch(() => {});
             });
@@ -58,7 +83,8 @@ module.exports = {
                 active.delete(interaction.channelId);
                 if (!won) {
                     const embedTimeout = buildWaguriEmbed(interaction, 'warning', {
-                        description: `⏰ Hết giờ! Đáp án đúng là **${item.a[0]}**. Lần sau nhanh tay hơn nhé~ 🌸`
+                        locale,
+                        description: t(locale, 'commands.dovui.timeout_desc', { answer: item.a[0] })
                     });
                     channel.send({ embeds: [embedTimeout] }).catch(() => {});
                 }

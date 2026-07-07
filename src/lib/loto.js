@@ -3,6 +3,7 @@ const { randomUUID } = require('node:crypto');
 const db = require('../database');
 const config = require('../config');
 const { buildWaguriEmbed } = require('./embed');
+const { getInteractionLanguage, t } = require('./i18n');
 
 const activeLotoGames = new Map(); // channelId -> gameData
 
@@ -32,6 +33,7 @@ function getVoiceChannel(member) {
 }
 
 async function handleLotoPrefix(message, cmd, args) {
+    const locale = await getInteractionLanguage(message);
     const channelId = message.channelId;
     const userId = message.author.id;
 
@@ -39,7 +41,8 @@ async function handleLotoPrefix(message, cmd, args) {
         const voiceChannel = getVoiceChannel(message.member);
         if (!voiceChannel) {
             const embed = buildWaguriEmbed(message, 'warning', {
-                description: 'Cậu cần vào một phòng voice để mở game Loto nha~ 🌸'
+                locale,
+                description: t(locale, 'commands.loto.err_voice_required')
             });
             return message.reply({ embeds: [embed] });
         }
@@ -47,7 +50,8 @@ async function handleLotoPrefix(message, cmd, args) {
         const { hasActiveBingoGame } = require('./bingoPrefix');
         if (activeLotoGames.has(channelId) || hasActiveBingoGame(channelId)) {
             const embed = buildWaguriEmbed(message, 'warning', {
-                description: 'Kênh này đang có một ván game đang chạy rồi cậu ơi~ 🌸'
+                locale,
+                description: t(locale, 'commands.loto.err_active_game')
             });
             return message.reply({ embeds: [embed] });
         }
@@ -59,7 +63,8 @@ async function handleLotoPrefix(message, cmd, args) {
                 activeLotoGames.delete(channelId);
                 await db.stakeRefundSession(curGame.sessionId);
                 const embed = buildWaguriEmbed(message, 'warning', {
-                    description: 'Phòng Loto đã quá 10 phút chưa bắt đầu nên đã tự động hủy và hoàn vé cho mọi người! ⏰🌸'
+                    locale,
+                    description: t(locale, 'commands.loto.lobby_timeout')
                 });
                 message.channel.send({ embeds: [embed] }).catch(() => {});
             }
@@ -77,18 +82,20 @@ async function handleLotoPrefix(message, cmd, args) {
             msg: null,
             lobbyTimeout: timeout,
             createdAt: Date.now(),
-            lastActiveAt: Date.now()
+            lastActiveAt: Date.now(),
+            locale // store game locale
         });
 
         const embed = buildWaguriEmbed(message, 'info', {
-            title: '🎟️・Phòng Chơi Loto Đã Mở!',
-            description: 
-                `Người mở game: <@${userId}> (phòng voice: **${voiceChannel.name}**)\n\n` +
-                `**Cách tham gia:**\n` +
-                `> Gõ lệnh: \`${config.PREFIX}so <5 số từ 01-90>\` để mua vé Loto!\n` +
-                `> Ví dụ: \`${config.PREFIX}so 05 12 45 67 89\`\n` +
-                `> Phí mua vé: **${TICKET_PRICE.toLocaleString('vi-VN')}** ${config.CURRENCY}.\n\n` +
-                `*Gõ \`${config.PREFIX}ds\` để xem danh sách vé đã mua. Người mở game có thể gõ \`${config.PREFIX}start\` để bắt đầu.* 🌸`
+            locale,
+            title: t(locale, 'commands.loto.lobby_opened_title'),
+            description: t(locale, 'commands.loto.lobby_opened_desc', {
+                hostId,
+                voiceName: voiceChannel.name,
+                prefix: config.PREFIX,
+                price: TICKET_PRICE.toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN'),
+                currency: config.CURRENCY
+            })
         });
         return message.reply({ embeds: [embed] });
     }
@@ -97,28 +104,32 @@ async function handleLotoPrefix(message, cmd, args) {
         const game = activeLotoGames.get(channelId);
         if (!game) {
             const embed = buildWaguriEmbed(message, 'warning', {
-                description: `Hiện chưa có phòng Loto nào mở ở kênh này hết á, gõ \`${config.PREFIX}loto\` để mở nha~ 🌸`
+                locale,
+                description: t(locale, 'commands.loto.err_no_lobby', { prefix: config.PREFIX })
             });
             return message.reply({ embeds: [embed] });
         }
 
         if (game.status !== 'lobby') {
             const embed = buildWaguriEmbed(message, 'warning', {
-                description: 'Ván Loto đã bắt đầu quay rồi, cậu đợi ván sau nha~ 🌸'
+                locale,
+                description: t(locale, 'commands.loto.err_already_started')
             });
             return message.reply({ embeds: [embed] });
         }
 
         if (game.players.has(userId)) {
             const embed = buildWaguriEmbed(message, 'warning', {
-                description: 'Cậu đã mua vé cho ván này rồi nhé~ 🌸'
+                locale,
+                description: t(locale, 'commands.loto.err_already_joined')
             });
             return message.reply({ embeds: [embed] });
         }
 
         if (args.length !== 5) {
             const embed = buildWaguriEmbed(message, 'warning', {
-                description: `Cậu cần chọn đúng **5 số** từ 01 đến 90 nha!\nVí dụ: \`${config.PREFIX}so 01 15 27 42 89\` 🌸`
+                locale,
+                description: t(locale, 'commands.loto.err_invalid_count', { prefix: config.PREFIX })
             });
             return message.reply({ embeds: [embed] });
         }
@@ -128,14 +139,16 @@ async function handleLotoPrefix(message, cmd, args) {
             const num = parseInt(arg, 10);
             if (isNaN(num) || num < 1 || num > 90) {
                 const embed = buildWaguriEmbed(message, 'warning', {
-                    description: `Số \`${arg}\` không hợp lệ. Số phải từ **01 đến 90** nha cậu! 🌸`
+                    locale,
+                    description: t(locale, 'commands.loto.err_invalid_number', { val: arg })
                 });
                 return message.reply({ embeds: [embed] });
             }
             const padded = String(num).padStart(2, '0');
             if (numbers.includes(padded)) {
                 const embed = buildWaguriEmbed(message, 'warning', {
-                    description: 'Các số trong vé không được trùng nhau nha cậu! 🌸'
+                    locale,
+                    description: t(locale, 'commands.loto.err_duplicate_numbers')
                 });
                 return message.reply({ embeds: [embed] });
             }
@@ -146,7 +159,11 @@ async function handleLotoPrefix(message, cmd, args) {
         const paid = await db.stakeCollect(game.sessionId, 'loto', channelId, userId, TICKET_PRICE);
         if (!paid) {
             const embed = buildWaguriEmbed(message, 'error', {
-                description: `Ví cậu không đủ **${TICKET_PRICE.toLocaleString('vi-VN')}** ${config.CURRENCY} để mua vé rồi~ 😟`
+                locale,
+                description: t(locale, 'commands.loto.err_insufficient_funds', {
+                    price: TICKET_PRICE.toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN'),
+                    currency: config.CURRENCY
+                })
             });
             return message.reply({ embeds: [embed] });
         }
@@ -157,7 +174,13 @@ async function handleLotoPrefix(message, cmd, args) {
         game.lastActiveAt = Date.now();
 
         const embed = buildWaguriEmbed(message, 'success', {
-            description: `✅ **${message.author.username}** đã mua vé thành công: \`${numbers.join('  ')}\` (**-${TICKET_PRICE.toLocaleString('vi-VN')}** ${config.CURRENCY}). Chúc cậu may mắn!`
+            locale,
+            description: t(locale, 'commands.loto.join_success', {
+                username: message.author.username,
+                numbers: numbers.join('  '),
+                price: TICKET_PRICE.toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN'),
+                currency: config.CURRENCY
+            })
         });
         return message.reply({ embeds: [embed] });
     }
@@ -166,7 +189,8 @@ async function handleLotoPrefix(message, cmd, args) {
         const game = activeLotoGames.get(channelId);
         if (!game) {
             const embed = buildWaguriEmbed(message, 'warning', {
-                description: 'Hiện chưa có phòng Loto nào mở ở kênh này hết á~ 🌸'
+                locale,
+                description: t(locale, 'commands.loto.err_no_lobby_simple')
             });
             return message.reply({ embeds: [embed] });
         }
@@ -174,7 +198,8 @@ async function handleLotoPrefix(message, cmd, args) {
 
         if (game.players.size === 0) {
             const embed = buildWaguriEmbed(message, 'info', {
-                description: 'Chưa có ai mua vé tham gia ván này hết trơn á~ 🌸'
+                locale,
+                description: t(locale, 'commands.loto.err_no_players')
             });
             return message.reply({ embeds: [embed] });
         }
@@ -184,7 +209,8 @@ async function handleLotoPrefix(message, cmd, args) {
         });
 
         const embed = buildWaguriEmbed(message, 'info', {
-            title: `🎟️・Danh Sách Vé Loto (${game.players.size} người)`,
+            locale,
+            title: t(locale, 'commands.loto.ticket_list_title', { count: game.players.size }),
             description: lines.join('\n')
         });
         return message.reply({ embeds: [embed] });
@@ -194,28 +220,32 @@ async function handleLotoPrefix(message, cmd, args) {
         const game = activeLotoGames.get(channelId);
         if (!game) {
             const embed = buildWaguriEmbed(message, 'warning', {
-                description: 'Hiện chưa có phòng Loto nào mở ở kênh này hết á~ 🌸'
+                locale,
+                description: t(locale, 'commands.loto.err_no_lobby_simple')
             });
             return message.reply({ embeds: [embed] });
         }
 
         if (game.hostId !== userId) {
             const embed = buildWaguriEmbed(message, 'warning', {
-                description: 'Chỉ người mở game mới có quyền bắt đầu nha cậu~ 🌸'
+                locale,
+                description: t(locale, 'commands.loto.err_not_host')
             });
             return message.reply({ embeds: [embed] });
         }
 
         if (game.status !== 'lobby') {
             const embed = buildWaguriEmbed(message, 'warning', {
-                description: 'Ván Loto đã bắt đầu rồi cậu ơi~ 🌸'
+                locale,
+                description: t(locale, 'commands.loto.err_game_already_started')
             });
             return message.reply({ embeds: [embed] });
         }
 
         if (game.players.size < 2) {
             const embed = buildWaguriEmbed(message, 'warning', {
-                description: 'Cần ít nhất **2 người tham gia** để bắt đầu ván Loto nha cậu! 🌸'
+                locale,
+                description: t(locale, 'commands.loto.err_min_players', { min: 2 })
             });
             return message.reply({ embeds: [embed] });
         }
@@ -238,13 +268,23 @@ async function handleLotoPrefix(message, cmd, args) {
             });
 
             const embed = buildWaguriEmbed(message, 'info', {
-                title: '🎱・Loto Đang Gọi Số!',
+                locale,
+                title: t(locale, 'commands.loto.calling_title'),
                 description:
-                    (lastNum ? `🔊 Số mới gọi: **${lastNum}**\n` : '') +
-                    `Số đã gọi (${game.called.length}): ${game.called.join(', ') || 'chưa có'}\n\n` +
-                    `**Danh sách vé:**\n${lines.join('\n')}`
+                    (lastNum ? t(locale, 'commands.loto.calling_new_number', { number: lastNum }) : '') +
+                    t(locale, 'commands.loto.calling_called_numbers', {
+                        count: game.called.length,
+                        called: game.called.join(', ') || t(locale, 'commands.loto.calling_no_numbers'),
+                        lines: lines.join('\n')
+                    })
             });
-            embed.setFooter({ text: `Loto • Tổng Pot: ${pot.toLocaleString('vi-VN')} ${config.CURRENCY}`, iconURL: embed.data.footer.icon_url });
+            embed.setFooter({
+                text: t(locale, 'commands.loto.calling_footer', {
+                    pot: pot.toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN'),
+                    currency: config.CURRENCY
+                }),
+                iconURL: embed.data.footer.icon_url
+            });
             return embed;
         };
 
@@ -264,7 +304,8 @@ async function handleLotoPrefix(message, cmd, args) {
                 activeLotoGames.delete(channelId);
                 await db.stakeRefundSession(curGame.sessionId); // hoà, không ai trúng -> hoàn vé
                 const embed = buildWaguriEmbed(message, 'warning', {
-                    description: 'Đã gọi hết 90 số mà không ai trúng, ván hoà — đã hoàn vé cho mọi người! 🌸'
+                    locale,
+                    description: t(locale, 'commands.loto.draw_ended')
                 });
                 return message.channel.send({ embeds: [embed] }).catch(() => {});
             }
@@ -299,12 +340,16 @@ async function handleLotoPrefix(message, cmd, args) {
 
                 const winnerMentions = winners.map(wid => `<@${wid}>`).join(', ');
                 const winEmbed = buildWaguriEmbed(message, 'jackpot', {
-                    title: '🎉・KINH LOTO!',
-                    description: 
-                        `🏆 Chúc mừng **${winnerMentions}** đã Kinh (trúng đủ 5 số) và giành chiến thắng!\n` +
-                        `💰 Tiền thưởng nhận được: **${splitPrize.toLocaleString('vi-VN')}** ${config.CURRENCY} mỗi người!\n` +
-                        `*(Tổng Pot: ${pot.toLocaleString('vi-VN')} ${config.CURRENCY}, nhà cái giữ ${HOUSE_CUT * 100}% phí)*\n\n` +
-                        `Các số trúng: **${curGame.called.join(', ')}**`
+                    locale,
+                    title: t(locale, 'commands.loto.win_title'),
+                    description: t(locale, 'commands.loto.win_desc', {
+                        winners: winnerMentions,
+                        prize: splitPrize.toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN'),
+                        currency: config.CURRENCY,
+                        pot: pot.toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN'),
+                        cut: HOUSE_CUT * 100,
+                        called: curGame.called.join(', ')
+                    })
                 });
 
                 return message.channel.send({ content: winnerMentions, embeds: [winEmbed] }).catch(() => {});
@@ -316,14 +361,16 @@ async function handleLotoPrefix(message, cmd, args) {
         const game = activeLotoGames.get(channelId);
         if (!game) {
             const embed = buildWaguriEmbed(message, 'warning', {
-                description: 'Hiện chưa có phòng Loto nào mở ở kênh này hết á~ 🌸'
+                locale,
+                description: t(locale, 'commands.loto.err_no_lobby_simple')
             });
             return message.reply({ embeds: [embed] });
         }
 
         if (game.hostId !== userId) {
             const embed = buildWaguriEmbed(message, 'warning', {
-                description: 'Chỉ người mở game mới có quyền hủy phòng nha cậu~ 🌸'
+                locale,
+                description: t(locale, 'commands.loto.err_not_host_cancel')
             });
             return message.reply({ embeds: [embed] });
         }
@@ -336,7 +383,8 @@ async function handleLotoPrefix(message, cmd, args) {
         await db.stakeRefundSession(game.sessionId);
         activeLotoGames.delete(channelId);
         const embed = buildWaguriEmbed(message, 'success', {
-            description: `✅ Đã kết thúc và dọn dẹp ván Loto. Tiền vé đã được hoàn trả cho mọi người!`
+            locale,
+            description: t(locale, 'commands.loto.cancel_success')
         });
         return message.reply({ embeds: [embed] });
     }

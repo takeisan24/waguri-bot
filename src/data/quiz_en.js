@@ -1,0 +1,27 @@
+// English trivia quiz bank. a = accepted answers (will be normalized).
+module.exports = [
+    { q: 'What is the capital of Vietnam?', a: ['ha noi', 'hanoi'] },
+    { q: 'How many provinces and municipalities does Vietnam have?', a: ['63'] },
+    { q: 'What is the name of the sea that lies to the east of Vietnam?', a: ['east sea', 'south china sea', 'bien dong'] },
+    { q: 'What is the highest mountain in Vietnam?', a: ['fansipan'] },
+    { q: 'What is the longest river flowing through Vietnam?', a: ['mekong', 'mekong river'] },
+    { q: '1 + 1 x 2 = ?', a: ['3'] },
+    { q: 'How many days are in a standard non-leap year?', a: ['365'] },
+    { q: 'Which planet is closest to the Sun?', a: ['mercury'] },
+    { q: 'Which country is the most populous in the world (as of 2024)?', a: ['india'] },
+    { q: 'Who is the author of the Vietnamese classic "The Tale of Kieu"?', a: ['nguyen du'] },
+    { q: 'What is the currency of Japan?', a: ['yen', 'japanese yen'] },
+    { q: 'Which animal is the zodiac symbol for the lunar year 2024?', a: ['dragon'] },
+    { q: 'Which Vietnamese city is famous as the "City of Thousands of Flowers"?', a: ['da lat', 'dalat'] },
+    { q: 'How many seconds are in 1 hour?', a: ['3600'] },
+    { q: 'What chemical element has the symbol "O"?', a: ['oxygen'] },
+    { q: 'Which country won the FIFA World Cup 2022?', a: ['argentina'] },
+    { q: 'What is the capital of South Korea?', a: ['seoul'] },
+    { q: 'A shape with 3 sides is called a ...?', a: ['triangle'] },
+    { q: '10 x 10 = ?', a: ['100'] },
+    { q: 'What is the largest land animal today?', a: ['elephant'] },
+    { q: 'The Moon orbits around which planet?', a: ['earth'] },
+    { q: 'How many points does the star on the Vietnamese flag have?', a: ['5', 'five'] },
+    { q: 'What transportation flies in the sky to carry passengers?', a: ['airplane', 'plane'] },
+    { q: 'At what temperature in Celsius does water boil under standard pressure?', a: ['100'] }
+];

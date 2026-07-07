@@ -63,6 +63,10 @@ async function buildPrefixInteraction(message, command, tokens) {
     const parsed = await parseOptions(message, data, tokens);
     const state = { sent: null, deferred: false, replied: false };
 
+    const db = require('../database');
+    const userProfile = await db.getUser(message.author.id);
+    const userLocale = userProfile?.locale || 'vi';
+
     const send = async (payload) => {
         const body = typeof payload === 'string' ? { content: payload } : { ...payload };
         delete body.flags; // prefix không hỗ trợ ephemeral
@@ -79,6 +83,9 @@ async function buildPrefixInteraction(message, command, tokens) {
         channel: message.channel,
         client: message.client,
         commandName: data.name,
+        guildId: message.guildId,
+        locale: userLocale,
+        guildLocale: null,
         get deferred() { return state.deferred; },
         get replied() { return state.replied; },
         isChatInputCommand: () => true,

@@ -4,6 +4,8 @@ import CherryBlossom from "../../../components/CherryBlossom";
 import SiteHeader from "../../../components/SiteHeader";
 import SiteFooter from "../../../components/SiteFooter";
 import { BOT_API } from "../../../lib/botApi";
+import { affectionTier } from "../../../lib/game";
+import { getLocaleServer, t } from "../../../lib/i18n";
 
 const API = BOT_API;
 const INVITE_URL =
@@ -46,11 +48,12 @@ async function getProfile(id: string): Promise<Profile | { hidden: true } | "not
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const locale = await getLocaleServer();
   const p = await getProfile(id);
-  const name = p && p !== "notfound" && !("hidden" in p) ? (p as Profile).username : "Người chơi";
+  const name = p && p !== "notfound" && !("hidden" in p) ? (p as Profile).username : t("profile.default_user", locale);
   return {
-    title: `Hồ sơ ${name} 🌸 — Waguri`,
-    description: `Xem hồ sơ Waguri của ${name}: cấp độ, tài sản, nghề nghiệp và hạng đại gia.`,
+    title: t("profile.meta_title", locale, { name }),
+    description: t("profile.meta_desc", locale, { name }),
   };
 }
 
@@ -65,6 +68,7 @@ function Stat({ label, value }: { label: string; value: string }) {
 
 export default async function ProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const locale = await getLocaleServer();
   const p = await getProfile(id);
   if (p === "notfound") notFound();
 
@@ -82,12 +86,12 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
         {!p || (p && "hidden" in p && p.hidden) ? (
           <div className="glass-panel rounded-3xl p-10 text-center space-y-4">
             <h1 className="text-2xl font-extrabold text-white">
-              {!p ? "Chưa lấy được hồ sơ 🌸" : "Hồ sơ này đang ẩn 🙈"}
+              {!p ? t("profile.not_found", locale) : t("profile.hidden", locale)}
             </h1>
             <p className="text-slate-400 text-sm">
               {!p
-                ? "Bot có thể đang offline hoặc người chơi chưa có dữ liệu. Thử lại sau nhé!"
-                : "Người chơi đã chọn ẩn hồ sơ web của mình."}
+                ? t("profile.not_found_desc", locale)
+                : t("profile.hidden_desc", locale)}
             </p>
             <a
               href={INVITE_URL}
@@ -95,7 +99,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
               rel="noopener noreferrer"
               className="inline-block px-7 py-3 rounded-full font-bold bg-pink-300 text-[#0d0812] hover:bg-pink-400 transition-all"
             >
-              Mời Waguri về server 🌸
+              {t("profile.invite_btn", locale)}
             </a>
           </div>
         ) : (
@@ -126,7 +130,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                       {prof.username}
                     </h1>
                     <p className="text-pink-300 text-sm mt-1">
-                      {prof.job || "Nghề tự do"} · Lv.{prof.level}
+                      {prof.job || t("profile.default_job", locale)} · Lv.{prof.level}
                       {prof.clan ? ` · 🏰 ${prof.clan}` : ""}
                     </p>
                     <div className="mt-3">
@@ -148,19 +152,19 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
 
                 {/* Stats grid */}
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  <Stat label="💎 Tổng tài sản" value={`${fmt(prof.netWorth)} VNĐ`} />
-                  <Stat label="🏆 Hạng đại gia" value={`#${prof.rank}`} />
-                  <Stat label="💵 Ví tiền" value={`${fmt(prof.wallet)} VNĐ`} />
-                  <Stat label="🏦 Ngân hàng" value={`${fmt(prof.bank)} VNĐ`} />
-                  <Stat label="💞 Thân thiết Waguri" value={prof.affectionTier || `${prof.affection}`} />
-                  <Stat label="🎖️ Thành tựu" value={`${prof.achievements}`} />
-                  {prof.partner ? <Stat label="💍 Người thương" value={prof.partner} /> : null}
+                  <Stat label={t("profile.stat_total_wealth", locale)} value={`${fmt(prof.netWorth)} VNĐ`} />
+                  <Stat label={t("profile.stat_rank", locale)} value={`#${prof.rank}`} />
+                  <Stat label={t("profile.stat_wallet", locale)} value={`${fmt(prof.wallet)} VNĐ`} />
+                  <Stat label={t("profile.stat_bank", locale)} value={`${fmt(prof.bank)} VNĐ`} />
+                  <Stat label={t("profile.stat_affection", locale)} value={affectionTier(prof.affection, locale)} />
+                  <Stat label={t("profile.stat_achievements", locale)} value={`${prof.achievements}`} />
+                  {prof.partner ? <Stat label={t("profile.stat_beloved", locale)} value={prof.partner} /> : null}
                 </div>
 
                 {/* CTA */}
                 <div className="glass-panel rounded-3xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4 border border-pink-300/20">
                   <p className="text-slate-300 text-sm text-center sm:text-left">
-                    Muốn có hồ sơ như thế này? Mời Waguri về server và bắt đầu làm giàu nha! 🌸
+                    {t("profile.cta_text", locale)}
                   </p>
                   <a
                     href={INVITE_URL}
@@ -168,7 +172,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                     rel="noopener noreferrer"
                     className="flex-shrink-0 px-7 py-3 rounded-full font-bold bg-pink-300 text-[#0d0812] hover:bg-pink-400 transition-all"
                   >
-                    Mời Waguri 🌸
+                    {t("profile.cta_btn", locale)}
                   </a>
                 </div>
               </div>

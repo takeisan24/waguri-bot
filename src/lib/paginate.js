@@ -8,9 +8,12 @@ const { getWaguriQuote } = require('./embed');
  * @param {{title, color, lines:string[], perPage?, footerNote?, thumbnail?}} opts
  */
 async function sendPaginated(interaction, { title, color, lines, perPage = 10, footerNote, thumbnail }) {
+    const { getInteractionLanguage, t } = require('./i18n');
+    const locale = await getInteractionLanguage(interaction);
+
     const pages = [];
     for (let i = 0; i < lines.length; i += perPage) pages.push(lines.slice(i, i + perPage));
-    if (pages.length === 0) pages.push(['(trống)']);
+    if (pages.length === 0) pages.push([t(locale, 'common.paginate.empty')]);
 
     let page = 0;
     const render = () => {
@@ -19,7 +22,7 @@ async function sendPaginated(interaction, { title, color, lines, perPage = 10, f
             .setTitle(title)
             .setDescription(pages[page].join('\n'))
             .setFooter({
-                text: `🌸 Trang ${page + 1}/${pages.length}` + (footerNote ? ` · ${footerNote}` : '') + ` • Waguri`,
+                text: `🌸 ` + t(locale, 'common.paginate.footer', { current: page + 1, total: pages.length }) + (footerNote ? ` · ${footerNote}` : '') + ` • Waguri`,
                 iconURL: interaction.client.user.displayAvatarURL()
             });
         if (thumbnail) e.setThumbnail(thumbnail);

@@ -95,19 +95,19 @@ function buildStatuses(client) {
     const guilds = client.guilds.cache.size;
     const members = client.guilds.cache.reduce((s, g) => s + (g.memberCount || 0), 0);
     return [
-        { type: ActivityType.Watching, name: `${members.toLocaleString('vi-VN')} thành viên 👥` },
-        { type: ActivityType.Listening, name: 'tâm sự của mọi người 💬' },
-        { type: ActivityType.Playing, name: 'cùng mọi người làm giàu 🍡' },
-        { type: ActivityType.Watching, name: `${guilds} server 🌸` },
-        { type: ActivityType.Competing, name: 'ai chăm chỉ nhất 🏆' },
-        { type: ActivityType.Listening, name: '/ask · @Waguri để trò chuyện' },
-        { type: ActivityType.Watching, name: 'Kaoruko ăn bánh nhà Rintaro 🍰' },
-        { type: ActivityType.Playing, name: '/work · /fish · /daily mỗi ngày' },
-        { type: ActivityType.Playing, name: '/loto · /bingo · /masoi cùng bạn bè 🎲' },
-        { type: ActivityType.Competing, name: 'ván Ma Sói gay cấn 🐺' },
-        { type: ActivityType.Watching, name: 'tiệm bánh Gekka 月下 🧁' },
-        { type: ActivityType.Listening, name: '/help để xem tất cả lệnh 🌸' },
-        { type: ActivityType.Listening, name: '/vote ủng hộ Waguri 💝' },
+        { type: ActivityType.Watching, name: `${members.toLocaleString('en-US')} members 👥 | ${members.toLocaleString('vi-VN')} thành viên 👥` },
+        { type: ActivityType.Listening, name: "everyone's stories 💬 | tâm sự của mọi người 💬" },
+        { type: ActivityType.Playing, name: 'getting rich together 🍡 | cùng mọi người làm giàu 🍡' },
+        { type: ActivityType.Watching, name: `${guilds} servers 🌸 | ${guilds} server 🌸` },
+        { type: ActivityType.Competing, name: 'who is the most hardworking 🏆 | ai chăm chỉ nhất 🏆' },
+        { type: ActivityType.Listening, name: '/ask · @Waguri to chat 💬 | để trò chuyện' },
+        { type: ActivityType.Watching, name: "Kaoruko eating Rintaro's cake 🍰 | Kaoruko ăn bánh nhà Rintaro" },
+        { type: ActivityType.Playing, name: '/work · /fish · /daily every day 🌾 | mỗi ngày' },
+        { type: ActivityType.Playing, name: '/loto · /bingo · /masoi with friends 🎲 | cùng bạn bè' },
+        { type: ActivityType.Competing, name: 'intense Werewolf match 🐺 | ván Ma Sói gay cấn' },
+        { type: ActivityType.Watching, name: 'Gekka Bakery 月下 🧁 | tiệm bánh Gekka' },
+        { type: ActivityType.Listening, name: '/help for all commands 🌸 | để xem tất cả lệnh' },
+        { type: ActivityType.Listening, name: '/vote to support Waguri 💝 | ủng hộ Waguri' },
         { type: ActivityType.Watching, name: 'waguri-bot.vercel.app 🌸' },
     ];
 }
@@ -153,6 +153,7 @@ module.exports = {
             const { activeBingoGames } = require('../lib/bingoPrefix');
             const db = require('../database.js');
             const { buildWaguriEmbed } = require('../lib/embed');
+            const { t, getLanguage } = require('../lib/i18n');
             const now = Date.now();
             const TIMEOUT_MS = 10 * 60 * 1000; // 10 phút
 
@@ -166,8 +167,10 @@ module.exports = {
                     await db.stakeRefundSession(game.sessionId);
                     const channel = client.channels.cache.get(channelId) || await client.channels.fetch(channelId).catch(() => null);
                     if (channel) {
+                        const s = await db.getGuildSettings(channel.guildId);
+                        const locale = s?.language || getLanguage(channel.guild?.preferredLocale);
                         const embed = buildWaguriEmbed({ client }, 'warning', {
-                            description: 'Ván Loto đã bị tự động hủy và hoàn vé do không có hoạt động nào trong 10 phút qua! ⏰🌸'
+                            description: t(locale, 'common.game_timeout_cancelled', { game: 'Loto' })
                         });
                         channel.send({ embeds: [embed] }).catch(() => {});
                     }
@@ -184,8 +187,10 @@ module.exports = {
                     await db.stakeRefundSession(game.sessionId);
                     const channel = client.channels.cache.get(channelId) || await client.channels.fetch(channelId).catch(() => null);
                     if (channel) {
+                        const s = await db.getGuildSettings(channel.guildId);
+                        const locale = s?.language || getLanguage(channel.guild?.preferredLocale);
                         const embed = buildWaguriEmbed({ client }, 'warning', {
-                            description: 'Ván Bingo đã bị tự động hủy và hoàn vé do không có hoạt động nào trong 10 phút qua! ⏰🌸'
+                            description: t(locale, 'common.game_timeout_cancelled', { game: 'Bingo' })
                         });
                         channel.send({ embeds: [embed] }).catch(() => {});
                     }

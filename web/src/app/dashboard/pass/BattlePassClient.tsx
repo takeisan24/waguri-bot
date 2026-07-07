@@ -5,6 +5,7 @@ import React, { useState, useTransition } from "react";
 import Link from "next/link";
 import { buyPremiumPassAction, claimPassRewardsAction } from "./actions";
 import * as rewardsConfig from "../../../data/battlepass_rewards";
+import { useLanguage } from "../../../components/LanguageProvider";
 
 type BattlePassClientProps = {
   userId: string;
@@ -21,13 +22,14 @@ type BattlePassClientProps = {
 };
 
 export default function BattlePassClient({
-  userId,
+  userId: _userId,
   username,
   wallet,
   bp,
   itemMap,
   seasonLabel,
 }: BattlePassClientProps) {
+  const { t, locale } = useLanguage();
   const [isPending, startTransition] = useTransition();
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
@@ -39,6 +41,8 @@ export default function BattlePassClient({
   const freeClaimed = new Set(bp?.claimed_free || []);
   const premiumClaimed = new Set(bp?.claimed_premium || []);
 
+  const numFmt = (n: number) => n.toLocaleString(locale === "en" ? "en-US" : "vi-VN");
+
   // Đếm quà chưa nhận
   let claimableCount = 0;
   for (let l = 1; l <= currentLvl; l++) {
@@ -49,17 +53,23 @@ export default function BattlePassClient({
 
   const handleBuyPremium = () => {
     if (wallet < rewardsConfig.PREMIUM_COST) {
-      setMessage({ type: "error", text: `Ví của cậu không đủ ${rewardsConfig.PREMIUM_COST.toLocaleString("vi-VN")} xu ảo để mở khóa Premium!` });
+      setMessage({
+        type: "error",
+        text: t("pass.insufficient_funds", { count: numFmt(rewardsConfig.PREMIUM_COST) }),
+      });
       return;
     }
 
-    if (confirm(`Cậu có đồng ý dùng ${rewardsConfig.PREMIUM_COST.toLocaleString("vi-VN")} xu ảo để mở khóa Sổ Sứ Mệnh Premium không?`)) {
+    if (confirm(t("pass.confirm_buy", { count: numFmt(rewardsConfig.PREMIUM_COST) }))) {
       startTransition(async () => {
         const res = await buyPremiumPassAction();
         if (res.success) {
-          setMessage({ type: "success", text: "👑 Chúc mừng cậu đã mở khóa Sổ Sứ Mệnh Premium thành công! Hãy cày cuốc nhận quà nhé~" });
+          setMessage({
+            type: "success",
+            text: t("pass.buy_success"),
+          });
         } else {
-          setMessage({ type: "error", text: res.error || "Có lỗi xảy ra!" });
+          setMessage({ type: "error", text: res.error || t("pass.generic_error") });
         }
       });
     }
@@ -69,36 +79,44 @@ export default function BattlePassClient({
     startTransition(async () => {
       const res = await claimPassRewardsAction();
       if (res.success) {
-        let giftMsg = "Cậu đã nhận thành công các mốc quà:";
-        if (res.coins && res.coins > 0) giftMsg += `\n🪙 +${res.coins.toLocaleString("vi-VN")} xu`;
-        if (res.title) giftMsg += `\n🎖️ Danh hiệu độc quyền: "${res.title}"`;
+        let giftMsg = t("pass.claim_success_header");
+        if (res.coins && res.coins > 0) {
+          giftMsg += t("pass.claimed_coins", { count: numFmt(res.coins) });
+        }
+        if (res.title) {
+          giftMsg += t("pass.claimed_title", { title: res.title });
+        }
         if (res.items && Object.keys(res.items).length > 0) {
-          giftMsg += "\n🎒 Vật phẩm: ";
+          giftMsg += t("pass.claimed_items_header");
           for (const [id, qty] of Object.entries(res.items)) {
-            const name = itemMap[id]?.name || id;
+            const name = t(`data.items.${id}.name`) || itemMap[id]?.name || id;
             const emoji = itemMap[id]?.emoji || "📦";
-            giftMsg += `[${emoji} ${name} x${qty}] `;
+            giftMsg += t("pass.item_qty", { emoji, name, qty });
           }
         }
         setMessage({ type: "success", text: giftMsg });
       } else {
-        setMessage({ type: "error", text: res.error || "Có lỗi xảy ra!" });
+        setMessage({ type: "error", text: res.error || t("pass.generic_error") });
       }
     });
   };
 
-  const formatReward = (reward: any) => {
+  const formatReward = (reward: { coins?: number; items?: Record<string, number>; title?: string } | null | undefined) => {
     if (!reward) return null;
     const parts = [];
-    if (reward.coins) parts.push(`🪙 +${reward.coins.toLocaleString("vi-VN")}`);
+    if (reward.coins) {
+      parts.push(t("pass.coins_reward", { count: numFmt(reward.coins) }));
+    }
     if (reward.items) {
       for (const [id, qty] of Object.entries(reward.items)) {
-        const name = itemMap[id]?.name || id;
+        const name = t(`data.items.${id}.name`) || itemMap[id]?.name || id;
         const emoji = itemMap[id]?.emoji || "📦";
         parts.push(`${emoji} ${name} x${qty}`);
       }
     }
-    if (reward.title) parts.push(`🎖️ "${reward.title}"`);
+    if (reward.title) {
+      parts.push(t("pass.exclusive_title", { title: reward.title }));
+    }
     return parts.join(" & ");
   };
 
@@ -110,10 +128,10 @@ export default function BattlePassClient({
           href="/dashboard"
           className="text-xs text-pink-300 font-bold hover:text-pink-200 flex items-center gap-1 transition-all"
         >
-          ← Quay lại Bảng điều khiển
+          {t("pass.back_to_dashboard")}
         </Link>
         <span className="text-xs text-slate-400">
-          Chế độ xem: <strong className="text-white">{username}</strong>
+          {t("pass.view_mode")} <strong className="text-white">{username}</strong>
         </span>
       </div>
 
@@ -125,21 +143,21 @@ export default function BattlePassClient({
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
           <div className="space-y-3 flex-1">
             <span className="text-[10px] uppercase tracking-wider font-extrabold text-pink-400 bg-pink-500/10 px-3 py-1 rounded-full border border-pink-500/20">
-              MÙA GIẢI HIỆN TẠI
+              {t("pass.current_season")}
             </span>
             <h1 className="text-2xl md:text-3xl font-black text-white">{seasonLabel}</h1>
             <p className="text-sm text-slate-300">
-              Hãy điểm danh hằng ngày và chăm chỉ cày cuốc để thu thập XP lên cấp Sổ Sứ Mệnh. Rất nhiều quà tặng độc quyền đang chờ đón cậu!
+              {t("pass.season_desc")}
             </p>
           </div>
 
           <div className="flex flex-col gap-2 flex-shrink-0 min-w-[200px] text-center md:text-right">
-            <div className="text-xs text-slate-400">Cấp độ hiện tại</div>
+            <div className="text-xs text-slate-400">{t("pass.current_level")}</div>
             <div className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400">
               LV.{currentLvl}
             </div>
             <div className="text-[10px] text-slate-400">
-              {xpIntoLevel.toLocaleString("vi-VN")} / 1,000 XP ({xpPct}%)
+              {numFmt(xpIntoLevel)} / 1,000 XP ({xpPct}%)
             </div>
           </div>
         </div>
@@ -153,9 +171,9 @@ export default function BattlePassClient({
             />
           </div>
           <div className="flex justify-between text-[11px] text-slate-400">
-            <span>Cấp 0</span>
-            <span>Cấp 10</span>
-            <span>Cấp 20 (Cực đại)</span>
+            <span>{t("pass.level_0")}</span>
+            <span>{t("pass.level_10")}</span>
+            <span>{t("pass.level_20_max")}</span>
           </div>
         </div>
 
@@ -163,10 +181,10 @@ export default function BattlePassClient({
         <div className="mt-8 pt-6 border-t border-slate-800/60 flex flex-wrap gap-4 items-center justify-between">
           <div className="flex items-center gap-3">
             <span className={`text-xs px-3 py-1 rounded-full font-bold ${isPremium ? "bg-amber-400/20 text-amber-300 border border-amber-400/30" : "bg-slate-400/10 text-slate-400 border border-slate-800"}`}>
-              {isPremium ? "👑 Sổ Cao Cấp (Premium)" : "🔓 Sổ Thường (Free)"}
+              {isPremium ? t("pass.premium_label") : t("pass.free_label")}
             </span>
             <span className="text-xs text-slate-400">
-              Tiền trong ví: <strong className="text-pink-300">{wallet.toLocaleString("vi-VN")} xu</strong>
+              {t("pass.wallet_balance", { count: numFmt(wallet) })}
             </span>
           </div>
 
@@ -177,7 +195,7 @@ export default function BattlePassClient({
                 onClick={handleBuyPremium}
                 className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-slate-950 text-xs font-black shadow-lg shadow-amber-500/10 hover:shadow-amber-500/20 active:scale-95 transition-all disabled:opacity-50"
               >
-                👑 Mở Premium ({rewardsConfig.PREMIUM_COST.toLocaleString("vi-VN")} xu)
+                {t("pass.buy_premium_btn", { count: numFmt(rewardsConfig.PREMIUM_COST) })}
               </button>
             )}
 
@@ -186,7 +204,7 @@ export default function BattlePassClient({
               onClick={handleClaimAll}
               className={`px-5 py-2.5 rounded-2xl text-xs font-extrabold shadow-lg active:scale-95 transition-all disabled:opacity-50 ${claimableCount > 0 ? "bg-pink-500 hover:bg-pink-400 text-white shadow-pink-500/10" : "bg-slate-800 text-slate-500 border border-slate-700/50 shadow-none pointer-events-none"}`}
             >
-              🔄 Nhận quà chưa nhận ({claimableCount})
+              {t("pass.claim_rewards_btn", { count: claimableCount })}
             </button>
           </div>
         </div>
@@ -196,8 +214,8 @@ export default function BattlePassClient({
       {message && (
         <div className={`p-5 rounded-2xl border text-sm flex flex-col gap-1.5 ${message.type === "success" ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-300" : "bg-rose-500/10 border-rose-500/20 text-rose-300"}`}>
           <div className="flex justify-between items-center font-bold">
-            <span>{message.type === "success" ? "🎉 Thành công!" : "⚠️ Lỗi"}</span>
-            <button onClick={() => setMessage(null)} className="text-xs hover:text-white">✕ Đóng</button>
+            <span>{message.type === "success" ? t("pass.success") : t("pass.error")}</span>
+            <button onClick={() => setMessage(null)} className="text-xs hover:text-white">{t("pass.close")}</button>
           </div>
           <p className="whitespace-pre-line text-xs">{message.text}</p>
         </div>
@@ -205,7 +223,7 @@ export default function BattlePassClient({
 
       {/* Danh sách 20 Mốc quà (Timeline) */}
       <div className="space-y-4">
-        <h2 className="text-lg font-black text-white">🎁 Hành Trình &amp; Phần Thưởng 20 Cấp Độ</h2>
+        <h2 className="text-lg font-black text-white">{t("pass.timeline_title")}</h2>
 
         <div className="space-y-3 relative before:absolute before:top-4 before:bottom-4 before:left-[19px] before:w-[2px] before:bg-slate-800/80">
           {Array.from({ length: rewardsConfig.MAX_LEVEL }, (_, i) => i + 1).map((lvl) => {
@@ -217,7 +235,7 @@ export default function BattlePassClient({
             return (
               <div key={lvl} className={`flex items-start gap-4 relative z-10 transition-all ${isLvlReached ? "opacity-100" : "opacity-60"}`}>
                 {/* Vòng tròn số Cấp */}
-                <div className={`w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center font-black text-sm border-2 ${isLvlReached ? "bg-pink-500 border-pink-400 text-white shadow-lg shadow-pink-500/20 animate-pulse" : "bg-slate-900 border-slate-800 text-slate-500"}`}>
+                <div className={`w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center font-black text-sm border-2 ${isLvlReached ? "bg-pink-500 border-pink-400 text-white shadow-lg shadow-pink-500/20" : "bg-slate-900 border-slate-800 text-slate-500"}`}>
                   {lvl}
                 </div>
 
@@ -227,9 +245,9 @@ export default function BattlePassClient({
                   <div className={`glass-panel rounded-2xl p-4 border flex justify-between items-center gap-3 ${isFreeClaimed ? "border-emerald-500/10 bg-emerald-500/[0.02]" : "border-slate-800/60"}`}>
                     <div className="space-y-1">
                       <div className="text-[10px] text-slate-400 uppercase tracking-wider font-extrabold flex items-center gap-1">
-                        🔓 Nhánh Free
-                        {isFreeClaimed && <span className="text-emerald-400">✓ Đã nhận</span>}
-                        {isLvlReached && !isFreeClaimed && <span className="text-pink-400">🎁 Có thể nhận</span>}
+                        🔓 {t("pass.free_track")}
+                        {isFreeClaimed && <span className="text-emerald-400">{t("pass.claimed")}</span>}
+                        {isLvlReached && !isFreeClaimed && <span className="text-pink-400">{t("pass.claimable")}</span>}
                       </div>
                       <div className="text-xs font-bold text-white whitespace-pre-wrap">
                         {formatReward(r.free)}
@@ -242,11 +260,11 @@ export default function BattlePassClient({
                     <div className={`glass-panel rounded-2xl p-4 border flex justify-between items-center gap-3 ${isPremiumClaimed ? "border-emerald-500/10 bg-emerald-500/[0.02]" : (isPremium && isLvlReached && !isPremiumClaimed ? "border-amber-400/20 bg-amber-400/[0.02]" : "border-slate-800/60")}`}>
                       <div className="space-y-1">
                         <div className="text-[10px] text-amber-300 uppercase tracking-wider font-extrabold flex items-center gap-1">
-                          👑 Nhánh Premium
-                          {isPremiumClaimed && <span className="text-emerald-400">✓ Đã nhận</span>}
-                          {!isPremium && <span className="text-slate-500">🔒 Khóa (Chưa mua Premium)</span>}
-                          {isPremium && isLvlReached && !isPremiumClaimed && <span className="text-amber-400">🎁 Có thể nhận</span>}
-                          {isPremium && !isLvlReached && <span className="text-slate-500">🔒 Chưa đạt cấp</span>}
+                          👑 {t("pass.premium_track")}
+                          {isPremiumClaimed && <span className="text-emerald-400">{t("pass.claimed")}</span>}
+                          {!isPremium && <span className="text-slate-500">{t("pass.locked_premium")}</span>}
+                          {isPremium && isLvlReached && !isPremiumClaimed && <span className="text-amber-400">{t("pass.claimable")}</span>}
+                          {isPremium && !isLvlReached && <span className="text-slate-500">{t("pass.locked_level")}</span>}
                         </div>
                         <div className="text-xs font-bold text-white whitespace-pre-wrap">
                           {formatReward(r.premium)}

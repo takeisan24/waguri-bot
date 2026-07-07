@@ -5,7 +5,7 @@ const {
 } = require('discord.js');
 const { buildWaguriEmbed } = require('../../lib/embed');
 const { logError } = require('../../lib/logger');
-const config = require('../../config');
+const { getInteractionLanguage, t } = require('../../lib/i18n');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -13,6 +13,7 @@ module.exports = {
         .setDescription('Mở phòng hỗ trợ riêng tư với staff 🌸'),
 
     async execute(interaction) {
+        const locale = await getInteractionLanguage(interaction);
         const { user, channel, guild } = interaction;
 
         // Kiểm tra bot có đủ quyền tạo thread không
@@ -21,9 +22,8 @@ module.exports = {
         const hasPerms = needed.some(p => channel.permissionsFor(me)?.has(p));
         if (!hasPerms) {
             const errEmbed = buildWaguriEmbed(interaction, 'error', {
-                description:
-                    'Tớ không có quyền tạo luồng hỗ trợ ở kênh này~ 😥\n' +
-                    'Cậu vui lòng nhờ Admin cấp quyền **Create Private Threads** và **Manage Threads** cho tớ nhé!',
+                locale,
+                description: t(locale, 'commands.ticket.no_perm')
             });
             return interaction.reply({ embeds: [errEmbed], flags: MessageFlags.Ephemeral });
         }
@@ -37,13 +37,13 @@ module.exports = {
                 thread = await channel.threads.create({
                     name: `ticket-${user.username}`,
                     type: ChannelType.PrivateThread,
-                    reason: `Ticket hỗ trợ cho ${user.tag}`,
+                    reason: t(locale, 'commands.ticket.reason', { user: user.tag }),
                 });
             } catch {
                 thread = await channel.threads.create({
                     name: `ticket-${user.username}`,
                     type: ChannelType.PublicThread,
-                    reason: `Ticket hỗ trợ cho ${user.tag}`,
+                    reason: t(locale, 'commands.ticket.reason', { user: user.tag }),
                 });
             }
 
@@ -53,21 +53,16 @@ module.exports = {
             // Nút đóng ticket
             const closeBtn = new ButtonBuilder()
                 .setCustomId('ticket_close')
-                .setLabel('Đóng ticket')
+                .setLabel(t(locale, 'commands.ticket.close_btn'))
                 .setStyle(ButtonStyle.Danger)
                 .setEmoji('🔒');
             const row = new ActionRowBuilder().addComponents(closeBtn);
 
             // Embed hướng dẫn trong thread
             const guideEmbed = buildWaguriEmbed(interaction, 'info', {
-                title: '🎫・Phòng hỗ trợ của cậu đây!',
-                description:
-                    `Xin chào <@${user.id}>~ Tớ đã mở phòng hỗ trợ riêng cho cậu rồi! 🌸\n\n` +
-                    `**Cách dùng:**\n` +
-                    `> 📝 Mô tả vấn đề cậu gặp phải **chi tiết nhất có thể** (kèm ảnh chụp màn hình nếu có).\n` +
-                    `> ⏳ Staff sẽ phản hồi sớm nhất có thể — hãy kiên nhẫn nhé!\n` +
-                    `> 🔒 Khi vấn đề được giải quyết, nhấn nút **Đóng ticket** bên dưới.\n\n` +
-                    `*Cảm ơn cậu đã liên hệ với tớ~ Tớ sẽ cố gắng giúp cậu hết mình!* 💕`,
+                locale,
+                title: t(locale, 'commands.ticket.guide_title'),
+                description: t(locale, 'commands.ticket.guide_desc', { user: user.id }),
             });
 
             const threadMsg = await thread.send({ embeds: [guideEmbed], components: [row] });
@@ -79,12 +74,13 @@ module.exports = {
             });
 
             collector.on('collect', async (btnInteraction) => {
+                const btnLocale = await getInteractionLanguage(btnInteraction);
                 try {
                     await btnInteraction.reply({
-                        content: `🔒 Ticket đã được đóng bởi <@${btnInteraction.user.id}>. Cảm ơn cậu đã liên hệ~ 🌸`,
+                        content: t(btnLocale, 'commands.ticket.closed_msg', { user: btnInteraction.user.id }),
                     });
-                    await thread.setLocked(true, 'Ticket đã đóng');
-                    await thread.setArchived(true, 'Ticket đã đóng');
+                    await thread.setLocked(true, t(btnLocale, 'commands.ticket.closed_reason'));
+                    await thread.setArchived(true, t(btnLocale, 'commands.ticket.closed_reason'));
                     collector.stop('closed');
                 } catch (err) {
                     logError('ticket_close', err, { user: `<@${btnInteraction.user.id}>`, guild: guild.id });
@@ -101,12 +97,13 @@ module.exports = {
 
             // Reply ephemeral cho người dùng link thread
             await interaction.editReply({
-                content: `✅ Tớ đã mở phòng hỗ trợ cho cậu tại ${thread}~ Vào đó mô tả vấn đề nhé! 🌸`,
+                content: t(locale, 'commands.ticket.success_reply', { thread: `${thread}` }),
             });
         } catch (error) {
             logError('ticket', error, { user: `<@${user.id}>`, guild: guild.id });
             const errEmbed = buildWaguriEmbed(interaction, 'error', {
-                description: 'Đã có lỗi xảy ra khi tạo phòng hỗ trợ~ 😥 Cậu thử lại sau hoặc liên hệ trực tiếp với staff nhé!',
+                locale,
+                description: t(locale, 'commands.ticket.error_desc'),
             });
             try {
                 await interaction.editReply({ embeds: [errEmbed] });

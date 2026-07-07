@@ -1,6 +1,7 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { buildWaguriEmbed } = require('../../lib/embed');
 const plant = require('../../lib/plant');
+const { getInteractionLanguage, t } = require('../../lib/i18n');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -21,24 +22,25 @@ module.exports = {
 
     async execute(interaction) {
         await interaction.deferReply();
+        const locale = await getInteractionLanguage(interaction);
         const sub = interaction.options.getSubcommand();
         const userId = interaction.user.id;
         const target = interaction.options.getUser('user');
 
         let r;
         switch (sub) {
-            case 'info': r = await plant.plantStatus(userId); break;
-            case 'muagiong': r = await plant.buyPlant(userId); break;
-            case 'tuoi': r = target ? await plant.waterHelp(userId, target) : await plant.waterPlant(userId); break;
-            case 'bonphan': r = await plant.fertilize(userId); break;
-            case 'thuhoach': r = await plant.harvest(userId); break;
-            case 'hoisinh': r = await plant.revivePlant(userId); break;
-            case 'phacay': r = await plant.destroyPlant(userId); break;
-            case 'trom': r = await plant.stealPlant(userId, target, interaction.guildId); break;
-            case 'box': r = await plant.plantBox(userId, target); break;
-            default: r = { type: 'error', title: '🌱・Trồng cây', description: 'Lệnh con không hợp lệ~' };
+            case 'info': r = await plant.plantStatus(userId, locale); break;
+            case 'muagiong': r = await plant.buyPlant(userId, locale); break;
+            case 'tuoi': r = target ? await plant.waterHelp(userId, target, locale) : await plant.waterPlant(userId, locale); break;
+            case 'bonphan': r = await plant.fertilize(userId, locale); break;
+            case 'thuhoach': r = await plant.harvest(userId, locale); break;
+            case 'hoisinh': r = await plant.revivePlant(userId, locale); break;
+            case 'phacay': r = await plant.destroyPlant(userId, locale); break;
+            case 'trom': r = await plant.stealPlant(userId, target, interaction.guildId, locale); break;
+            case 'box': r = await plant.plantBox(userId, target, locale); break;
+            default: r = { type: 'error', title: t(locale, 'plant.title'), description: t(locale, 'common.invalid_subcommand') };
         }
-        const embed = buildWaguriEmbed(interaction, r.type, { title: r.title, description: r.description });
+        const embed = buildWaguriEmbed(interaction, r.type, { locale, title: r.title, description: r.description });
         await interaction.editReply({ embeds: [embed] });
     },
 };

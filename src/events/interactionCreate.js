@@ -7,6 +7,7 @@ const { recordMembership } = require('../lib/membership');
 const { logError, skipLog } = require('../lib/logger');
 const db = require('../database.js');
 const config = require('../config');
+const { getInteractionLanguage, t } = require('../lib/i18n');
 
 module.exports = {
     name: Events.InteractionCreate,
@@ -35,10 +36,13 @@ module.exports = {
             // Ghi nhận user thuộc guild (cho BXH theo server) — fire-and-forget
             recordMembership(interaction.guildId, interaction.user.id);
 
+            const locale = await getInteractionLanguage(interaction);
+
             // Chặn user bị ban
             if (isBanned(interaction.user.id)) {
                 const embed = buildWaguriEmbed(interaction, 'error', {
-                    description: 'Cậu đã bị chặn sử dụng bot~ Liên hệ admin nếu có nhầm lẫn nhé.'
+                    locale,
+                    description: t(locale, 'common.banned')
                 });
                 return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
             }
@@ -47,9 +51,13 @@ module.exports = {
             if (isBlocked(interaction.commandName)) {
                 const jail = await getJail(interaction.user.id);
                 if (jail) {
+                    const time = `<t:${Math.floor(jail.until / 1000)}:R>`;
                     const embed = buildWaguriEmbed(interaction, 'error', {
-                        title: '🚓・Cậu đang bị giam',
-                        description: `Cậu chưa thể làm việc này khi đang bị giam đâu~\n${jail.reason ? `Lý do: **${jail.reason}**\n` : ''}Được thả <t:${Math.floor(jail.until / 1000)}:R>. 🌸`
+                        locale,
+                        title: t(locale, 'common.jail_title'),
+                        description: jail.reason
+                            ? t(locale, 'common.jailed', { reason: jail.reason, time })
+                            : t(locale, 'common.jailed_no_reason', { time })
                     });
                     return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
                 }
@@ -58,7 +66,8 @@ module.exports = {
             // Rate limit tổng (chống spam)
             if (rateLimited(interaction.user.id)) {
                 const embed = buildWaguriEmbed(interaction, 'warning', {
-                    description: 'Cậu thao tác hơi nhanh rồi~ chờ vài giây nhé! 🌸'
+                    locale,
+                    description: t(locale, 'common.rate_limited')
                 });
                 return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
             }
@@ -71,7 +80,8 @@ module.exports = {
                 // Interaction đã hết hạn (10062) / đã ack (40060) do mạng chậm -> không thể phản hồi nữa, bỏ qua tránh lỗi dây chuyền.
                 if (error?.code === 10062 || error?.code === 40060) return;
                 const embed = buildWaguriEmbed(interaction, 'error', {
-                    description: 'Đã có lỗi xảy ra khi thực thi lệnh này! 🥺'
+                    locale,
+                    description: t(locale, 'common.generic_error')
                 });
                 const errorPayload = {
                     embeds: [embed],
@@ -94,10 +104,11 @@ module.exports = {
         if (interaction.isButton()) {
             // Nút "Tắt nhắc" trong DM nhắc vote -> tắt nhận nhắc cho user này.
             if (interaction.customId === 'vote_remind_off') {
+                const locale = await getInteractionLanguage(interaction);
                 try {
                     await db.setVoteReminder(interaction.user.id, false);
                     await interaction.update({
-                        content: '🔕 Mình đã tắt nhắc vote cho cậu rồi nha~ Cảm ơn cậu vẫn luôn ủng hộ Waguri 🌸',
+                        content: t(locale, 'commands.vote.remind_off_success'),
                         components: [],
                     });
                 } catch (error) {
@@ -108,23 +119,25 @@ module.exports = {
 
             // Nút "Nhận quà chào mừng" của /start & lời chào server.
             if (interaction.customId === 'start:claim') {
-                const fmt = n => Number(n).toLocaleString('vi-VN');
+                const locale = await getInteractionLanguage(interaction);
+                const fmtLocal = n => Number(n).toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN');
                 try {
                     const minAgeMs = 7 * 24 * 60 * 60 * 1000; // 7 ngày
                     if (Date.now() - interaction.user.createdTimestamp < minAgeMs) {
-                        return interaction.reply({ content: '⚠️ Tài khoản Discord của cậu phải được tạo từ ít nhất **7 ngày** trước mới nhận được quà chào mừng chống clone nha~ 🌸', flags: MessageFlags.Ephemeral });
+                        return interaction.reply({ content: t(locale, 'common.welcome_age_error'), flags: MessageFlags.Ephemeral });
                     }
                     const bonus = await db.claimWelcomeBonus(interaction.user.id, config.WELCOME.BONUS);
                     if (bonus > 0) {
                         await interaction.update({
                             embeds: [buildWaguriEmbed(interaction, 'success', {
-                                title: '🎁・Quà chào mừng của cậu đây!',
-                                description: `Waguri tặng cậu **${fmt(bonus)}** ${config.CURRENCY}! 💝\nGiờ thử \`/daily\` điểm danh và \`/work\` đi làm nha — mình tin cậu sẽ sớm thành đại gia! 🌸`
+                                locale,
+                                title: t(locale, 'commands.start.claim_success_title'),
+                                description: t(locale, 'commands.start.claim_success_desc', { bonus: fmtLocal(bonus), currency: config.CURRENCY })
                             })],
                             components: [],
                         });
                     } else {
-                        await interaction.reply({ content: 'Cậu nhận quà chào mừng rồi nha~ Cảm ơn cậu đã luôn ủng hộ Waguri 🌸', flags: MessageFlags.Ephemeral });
+                        await interaction.reply({ content: t(locale, 'commands.start.claim_already'), flags: MessageFlags.Ephemeral });
                     }
                 } catch (error) {
                     logError('start:claim', error);
@@ -136,18 +149,18 @@ module.exports = {
             if (interaction.customId.startsWith('work:again:')) {
                 const ownerId = interaction.customId.slice('work:again:'.length);
                 if (interaction.user.id !== ownerId) {
-                    return interaction.reply({ content: 'Nút này của người khác nha~ Gõ `/work` để tự đi làm nhé! 🌸', flags: MessageFlags.Ephemeral });
+                    return interaction.reply({ content: t(locale, 'commands.work.err_not_owner'), flags: MessageFlags.Ephemeral });
                 }
                 if (isBanned(interaction.user.id)) {
-                    return interaction.reply({ embeds: [buildWaguriEmbed(interaction, 'error', { description: 'Cậu đã bị chặn sử dụng bot~' })], flags: MessageFlags.Ephemeral });
+                    return interaction.reply({ embeds: [buildWaguriEmbed(interaction, 'error', { locale, description: t(locale, 'common.banned') })], flags: MessageFlags.Ephemeral });
                 }
                 if (rateLimited(interaction.user.id)) {
-                    return interaction.reply({ embeds: [buildWaguriEmbed(interaction, 'warning', { description: 'Cậu thao tác hơi nhanh rồi~ chờ vài giây nhé! 🌸' })], flags: MessageFlags.Ephemeral });
+                    return interaction.reply({ embeds: [buildWaguriEmbed(interaction, 'warning', { locale, description: t(locale, 'common.rate_limited') })], flags: MessageFlags.Ephemeral });
                 }
                 if (isBlocked('work')) {
                     const jail = await getJail(interaction.user.id);
                     if (jail) {
-                        return interaction.reply({ embeds: [buildWaguriEmbed(interaction, 'error', { title: '🚓・Cậu đang bị giam', description: `Cậu chưa thể làm việc khi đang bị giam đâu~ Được thả <t:${Math.floor(jail.until / 1000)}:R>. 🌸` })], flags: MessageFlags.Ephemeral });
+                        return interaction.reply({ embeds: [buildWaguriEmbed(interaction, 'error', { locale, title: t(locale, 'common.jail_title'), description: t(locale, 'common.jail_locked', { time: `<t:${Math.floor(jail.until / 1000)}:R>` }) })], flags: MessageFlags.Ephemeral });
                     }
                 }
                 const work = interaction.client.commands.get('work');
@@ -163,8 +176,8 @@ module.exports = {
                     await db.setProfilePublic(interaction.user.id, newPublic);
                     await interaction.reply({
                         content: newPublic
-                            ? `👁️ Đã **HIỆN** hồ sơ web của cậu nha~ Mọi người xem được tại waguri-bot.vercel.app/u/${interaction.user.id} 🌸`
-                            : '🙈 Đã **ẨN** hồ sơ web của cậu rồi~ Người khác sẽ không xem được nữa nhé.',
+                            ? t(locale, 'commands.profile.public_show', { id: interaction.user.id })
+                            : t(locale, 'commands.profile.public_hide'),
                         flags: MessageFlags.Ephemeral,
                     });
                 } catch (error) {
@@ -179,12 +192,12 @@ module.exports = {
                     const thread = interaction.channel;
                     if (thread && thread.isThread()) {
                         await interaction.reply({
-                            content: `🔒 Ticket đã được đóng bởi <@${interaction.user.id}>. Cảm ơn cậu đã liên hệ~ 🌸`,
+                            content: t(locale, 'commands.ticket.closed_by', { user: interaction.user.id }),
                         });
-                        await thread.setLocked(true, 'Ticket đã đóng');
-                        await thread.setArchived(true, 'Ticket đã đóng');
+                        await thread.setLocked(true, t(locale, 'commands.ticket.closed_reason'));
+                        await thread.setArchived(true, t(locale, 'commands.ticket.closed_reason'));
                     } else {
-                        await interaction.reply({ content: 'Lệnh này chỉ dùng được trong luồng hỗ trợ (ticket)~', flags: MessageFlags.Ephemeral });
+                        await interaction.reply({ content: t(locale, 'commands.ticket.err_not_thread'), flags: MessageFlags.Ephemeral });
                     }
                 } catch (error) {
                     logError('ticket_close_global', error);

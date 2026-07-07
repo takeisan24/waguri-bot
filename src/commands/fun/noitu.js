@@ -1,6 +1,7 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { startGame, stopGame, getGame } = require('../../lib/noitu');
 const { buildWaguriEmbed } = require('../../lib/embed');
+const { getInteractionLanguage, t } = require('../../lib/i18n');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -11,21 +12,23 @@ module.exports = {
         .addSubcommand(s => s.setName('status').setDescription('Xem từ hiện cần nối')),
     async execute(interaction) {
         await interaction.deferReply();
+        const locale = await getInteractionLanguage(interaction);
         const sub = interaction.options.getSubcommand();
         const ch = interaction.channelId;
 
         if (sub === 'start') {
             if (getGame(ch)) {
                 const embed = buildWaguriEmbed(interaction, 'warning', {
-                    description: 'Đang có ván nối từ ở đây rồi~ Gõ `/noitu status` để xem từ hiện tại nhé.'
+                    locale,
+                    description: t(locale, 'commands.noitu.already_started')
                 });
                 return interaction.editReply({ embeds: [embed] });
             }
             const { phrase, lastWord } = startGame(ch);
             const embed = buildWaguriEmbed(interaction, 'success', {
-                title: '🔤 Nối Từ bắt đầu!',
-                description: `Từ mở màn: **${phrase}**\nNgười tiếp theo nối bằng **cụm 2 tiếng** bắt đầu bằng **"${lastWord}"**!\n\n` +
-                    '*Quy tắc: cụm 2 tiếng · không lặp lại · không đi 2 lượt liên tiếp. Waguri sẽ thả ✅/❌ cho mỗi lượt.*'
+                locale,
+                title: t(locale, 'commands.noitu.start_title'),
+                description: t(locale, 'commands.noitu.start_desc', { phrase, lastWord })
             });
             return interaction.editReply({ embeds: [embed] });
         }
@@ -33,13 +36,15 @@ module.exports = {
             const g = stopGame(ch);
             if (g) {
                 const embed = buildWaguriEmbed(interaction, 'info', {
-                    title: '🛑 Kết thúc nối từ!',
-                    description: `Cả kênh đã nối được **${g.count}** lượt. Cậu và các bạn giỏi lắm nha~ 🌸`
+                    locale,
+                    title: t(locale, 'commands.noitu.stop_title'),
+                    description: t(locale, 'commands.noitu.stop_desc', { count: g.count })
                 });
                 return interaction.editReply({ embeds: [embed] });
             } else {
                 const embed = buildWaguriEmbed(interaction, 'warning', {
-                    description: 'Đang không có ván nào ở đây cả~'
+                    locale,
+                    description: t(locale, 'commands.noitu.stop_no_game')
                 });
                 return interaction.editReply({ embeds: [embed] });
             }
@@ -48,13 +53,15 @@ module.exports = {
         const g = getGame(ch);
         if (g) {
             const embed = buildWaguriEmbed(interaction, 'info', {
-                title: '🔤 Trạng thái Nối Từ',
-                description: `Cụm tiếp theo cần bắt đầu bằng **"${g.lastWord}"** (đã qua **${g.count}** lượt). Chờ từ của cậu nhé!`
+                locale,
+                title: t(locale, 'commands.noitu.status_title'),
+                description: t(locale, 'commands.noitu.status_desc', { lastWord: g.lastWord, count: g.count })
             });
             return interaction.editReply({ embeds: [embed] });
         } else {
             const embed = buildWaguriEmbed(interaction, 'warning', {
-                description: 'Chưa có ván nối từ. Gõ `/noitu start` để bắt đầu nhé!'
+                locale,
+                description: t(locale, 'commands.noitu.no_game')
             });
             return interaction.editReply({ embeds: [embed] });
         }

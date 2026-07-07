@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { buildWaguriEmbed } = require('../../lib/embed');
+const { getInteractionLanguage, t } = require('../../lib/i18n');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -11,27 +12,29 @@ module.exports = {
                   .setRequired(false)
         ),
     async execute(interaction) {
+        const locale = await getInteractionLanguage(interaction);
         const targetUser = interaction.options.getUser('target') || interaction.user;
         const targetMember = interaction.options.getMember('target') || interaction.member; // member dành riêng trên server này
         
         const embed = buildWaguriEmbed(interaction, 'info', {
-            title: `🌸 Hồ sơ của ${targetUser.username}`,
+            locale,
+            title: t(locale, 'commands.user.title', { user: targetUser.username }),
             image: targetUser.displayAvatarURL({ dynamic: true, size: 1024 }),
             fields: [
-                { name: '🆔 ID người dùng', value: targetUser.id, inline: true },
-                { name: '🤖 Là Bot?', value: targetUser.bot ? 'Có' : 'Không', inline: true },
-                { name: '🗓️ Tham gia Discord', value: `<t:${Math.floor(targetUser.createdTimestamp / 1000)}:D>`, inline: false }
+                { name: t(locale, 'commands.user.field_id'), value: targetUser.id, inline: true },
+                { name: t(locale, 'commands.user.field_bot'), value: targetUser.bot ? t(locale, 'commands.user.bot_yes') : t(locale, 'commands.user.bot_no'), inline: true },
+                { name: t(locale, 'commands.user.field_joined_discord'), value: `<t:${Math.floor(targetUser.createdTimestamp / 1000)}:D>`, inline: false }
             ]
         }).setTimestamp();
 
         if (targetMember) {
             embed.addFields(
-                { name: '🏠 Tham gia Server', value: `<t:${Math.floor(targetMember.joinedTimestamp / 1000)}:D>`, inline: false }
+                { name: t(locale, 'commands.user.field_joined_server'), value: `<t:${Math.floor(targetMember.joinedTimestamp / 1000)}:D>`, inline: false }
             );
         }
 
         embed.setFooter({
-            text: `Yêu cầu bởi ${interaction.user.tag} • ${embed.data.footer.text}`,
+            text: t(locale, 'commands.user.requested_by', { user: interaction.user.tag, original: embed.data.footer.text }),
             iconURL: embed.data.footer.icon_url
         });
 

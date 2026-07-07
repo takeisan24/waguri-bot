@@ -56,7 +56,14 @@ for (const folder of fs.readdirSync(foldersPath)) {
         const command = require(path.join(commandsPath, file));
         if ('data' in command && 'execute' in command) {
             client.commands.set(command.data.name, command);
-            commandsAPI.push(command.data.toJSON());
+            const cmdJSON = command.data.toJSON();
+            try {
+                const { localizeCommandJSON } = require('./src/lib/commandLocalizer');
+                localizeCommandJSON(cmdJSON);
+            } catch (e) {
+                console.error(`[SYSTEM] Không thể địa phương hóa lệnh ${command.data.name}:`, e);
+            }
+            commandsAPI.push(cmdJSON);
             commandTable.push({ 'Lệnh': `/${command.data.name}`, 'Trạng thái': '✅ Hoạt động' });
         } else {
             console.log(`[WARNING] Lệnh tại ${file} thiếu "data" hoặc "execute".`);

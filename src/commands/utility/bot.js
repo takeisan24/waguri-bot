@@ -2,6 +2,7 @@ const { SlashCommandBuilder, PermissionFlagsBits, OAuth2Scopes } = require('disc
 const { buildWaguriEmbed, pickWaguriImage } = require('../../lib/embed');
 const config = require('../../config');
 const { version } = require('../../../package.json');
+const { getInteractionLanguage, t } = require('../../lib/i18n');
 
 function fmtUptime(ms) {
     let s = Math.floor(ms / 1000);
@@ -21,26 +22,27 @@ module.exports = {
         .addSubcommand(s => s.setName('invite').setDescription('Mời Waguri về server của cậu 🌸')),
     async execute(interaction) {
         await interaction.deferReply();
+        const locale = await getInteractionLanguage(interaction);
         const sub = interaction.options.getSubcommand();
         const c = interaction.client;
 
         if (sub === 'ping') {
             const start = Date.now();
-            // Lấy thời gian phản hồi bằng hiệu số mốc gửi tin (fake bằng editReply vì đã defer)
-            const replyMsg = await interaction.editReply({ content: 'Đang đo độ trễ...' });
+            await interaction.editReply({ content: t(locale, 'commands.bot.ping.measuring') });
             const rtt = Date.now() - start;
             const ws = Math.round(c.ws.ping);
 
             const embed = buildWaguriEmbed(interaction, 'info', {
-                title: '🏓・Pong!',
+                locale,
+                title: t(locale, 'commands.bot.ping.title'),
                 fields: [
-                    { name: '📡 API (WebSocket)', value: ws < 0 ? 'đang đo...' : `${ws}ms`, inline: true },
-                    { name: '⏱️ Phản hồi', value: `${rtt}ms`, inline: true },
-                    { name: '⏰ Online', value: fmtUptime(c.uptime), inline: true }
+                    { name: t(locale, 'commands.bot.ping.field_api'), value: ws < 0 ? t(locale, 'commands.bot.ping.measuring_api') : `${ws}ms`, inline: true },
+                    { name: t(locale, 'commands.bot.ping.field_response'), value: `${rtt}ms`, inline: true },
+                    { name: t(locale, 'commands.bot.ping.field_uptime'), value: fmtUptime(c.uptime), inline: true }
                 ]
             });
             embed.setFooter({
-                text: `Waguri vẫn đang chạy ngon lành~ • ${embed.data.footer.text}`,
+                text: t(locale, 'commands.bot.ping.footer', { original: embed.data.footer.text }),
                 iconURL: embed.data.footer.icon_url
             });
             await interaction.editReply({ content: '', embeds: [embed] });
@@ -50,24 +52,26 @@ module.exports = {
             const voteUrl = `https://top.gg/bot/${c.user.id}/vote`;
             const support = process.env.SUPPORT_INVITE;
 
-            const links = [`🗳️ [Vote trên Top.gg](${voteUrl})`, '➕ Mời bot: `/bot invite`'];
-            if (support) links.push(`🛟 [Server hỗ trợ](${support})`);
+            const links = [
+                t(locale, 'commands.bot.about.link_vote', { url: voteUrl }),
+                t(locale, 'commands.bot.about.link_invite')
+            ];
+            if (support) links.push(t(locale, 'commands.bot.about.link_support', { url: support }));
 
             const embed = buildWaguriEmbed(interaction, 'info', {
-                title: '🌸・Về Waguri',
+                locale,
+                title: t(locale, 'commands.bot.about.title'),
                 thumbnail: pickWaguriImage('MAIN'),
-                description:
-                    'Mình là **Waguri Kaoruko** — cô bạn gái AI kiêm "quản lý tiệm bánh Gekka" 🍰\n' +
-                    'Một bot **kinh tế · nhập vai · cộng đồng** bản địa hoá thuần Việt~',
+                description: t(locale, 'commands.bot.about.desc'),
                 fields: [
-                    { name: '👤 Nhà phát triển', value: `**${config.CREATOR}**`, inline: true },
-                    { name: '🔖 Phiên bản', value: `v${version}`, inline: true },
-                    { name: '🌐 Đang phục vụ', value: `${c.guilds.cache.size} server`, inline: true },
-                    { name: '🔗 Liên kết', value: links.join('\n') },
+                    { name: t(locale, 'commands.bot.about.field_creator'), value: `**${config.CREATOR}**`, inline: true },
+                    { name: t(locale, 'commands.bot.about.field_version'), value: `v${version}`, inline: true },
+                    { name: t(locale, 'commands.bot.about.field_guilds'), value: t(locale, 'commands.bot.about.guilds_val', { count: c.guilds.cache.size }), inline: true },
+                    { name: t(locale, 'commands.bot.about.field_links'), value: links.join('\n') },
                 ],
             });
             embed.setFooter({
-                text: `Cảm ơn cậu đã đồng hành cùng Waguri! • Tạo bởi ${config.CREATOR} 🌸`,
+                text: t(locale, 'commands.bot.about.footer', { creator: config.CREATOR }),
                 iconURL: c.user.displayAvatarURL(),
             });
             await interaction.editReply({ embeds: [embed] });
@@ -76,10 +80,11 @@ module.exports = {
         if (sub === 'support') {
             const inv = process.env.SUPPORT_INVITE;
             const embed = buildWaguriEmbed(interaction, 'info', {
-                title: '🛟・Hỗ trợ Waguri',
+                locale,
+                title: t(locale, 'commands.bot.support.title'),
                 description: inv
-                    ? `Cần giúp đỡ, muốn báo lỗi hay góp ý? Ghé server hỗ trợ của mình nha~ 🌸\n\n[**🛟 Vào server hỗ trợ**](${inv})`
-                    : 'Server hỗ trợ đang được cập nhật~ Tạm thời cậu gõ `/help` hoặc liên hệ admin nhé! 🌸',
+                    ? t(locale, 'commands.bot.support.desc', { url: inv })
+                    : t(locale, 'commands.bot.support.desc_no_url'),
             });
             await interaction.editReply({ embeds: [embed] });
         }
@@ -100,11 +105,12 @@ module.exports = {
                 ],
             });
             const embed = buildWaguriEmbed(interaction, 'info', {
-                title: '🌸・Mời Waguri về server',
-                description: `[**Bấm vào đây để mời mình nha~**](${url})\n\nMình sẽ mang cả nền kinh tế, minigame và những cuộc trò chuyện dễ thương tới server của cậu! 💕`
+                locale,
+                title: t(locale, 'commands.bot.invite.title'),
+                description: t(locale, 'commands.bot.invite.desc', { url })
             });
             embed.setFooter({
-                text: `Cảm ơn cậu đã yêu mến Waguri! • ${embed.data.footer.text}`,
+                text: t(locale, 'commands.bot.invite.footer', { original: embed.data.footer.text }),
                 iconURL: embed.data.footer.icon_url
             });
             await interaction.editReply({ embeds: [embed] });

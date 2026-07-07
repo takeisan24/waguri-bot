@@ -74,9 +74,12 @@ Waguri là **Discord economy/RPG bot bản địa hóa văn hóa Việt**. Bot N
 
 ---
 
-## 4. TRẠNG THÁI HIỆN TẠI (cập nhật 2026-07-05 — sửa khi đổi lớn)
+## 4. TRẠNG THÁI HIỆN TẠI (cập nhật 2026-07-07 — sửa khi đổi lớn)
 
 - **Release:** GitHub tag mới nhất `v2.1.0` ("Đợt 2: Tối ưu DX, Chống Clone & Khử Treo Game"). `package.json` = `2.1.0`.
+- **Hardening Đa ngôn ngữ (i18n) — ĐÃ HOÀN THÀNH end-to-end:**
+  - **Discord Bot:** Tích hợp bản dịch tiếng Anh & tiếng Việt cho 5 nhóm lệnh (31 lệnh economy, games, fun, utility, admin), localization cho định nghĩa slash commands (options/choices), tự động detect locale qua client/interaction hoặc cấu hình thủ công qua `/config language`. Các tin nhắn cooldown, lỗi chung, chào mừng thành viên mới (`guildMemberAdd`) và status xoay tua đã bản địa hóa đầy đủ.
+  - **Web Next.js:** Dịch toàn bộ trang Landing, Dashboard cá nhân, Sổ sứ mệnh, Premium (đồng bộ hóa `PLAN_ORDER` & plans), Leaderboard, trang cá nhân `/u/[id]`, error, not-found. Tách trang tài liệu dài (Wiki, ToS, Privacy) sang dạng song ngữ tĩnh điều phối bởi server locale. Các component Faq, Testimonials, CommandsExplorer đã được refactor hoàn tất.
 - **Tiệm Bánh Gekka:** Phase 1 + migration Phase 2 (`0070`) đã có; **cần QA runtime** vòng lặp nạp→nướng→thu hoạch + lương nhân viên.
 - **Ký ức AI Waguri (Sprint "trí nhớ") — ĐÃ HOÀN THIỆN end-to-end:** migration `0074` (cột `users.ai_memory` JSONB + RPC `update_ai_memory`) và `0074b` (`refund_ai_quota`) đã áp DB + verified. Helper `updateAiMemory`/`refundAiQuota` trong database.js.
   - **ĐỌC:** `ai_memory` được chèn vào system prompt Gemini (`src/lib/ai/index.js`).
@@ -86,7 +89,6 @@ Waguri là **Discord economy/RPG bot bản địa hóa văn hóa Việt**. Bot N
 - **Fail-safe đã có:** hoàn quota AI khi Gemini lỗi; cache 1h + fallback thời tiết (Học viện Kikyo, 25°C, trời quang) cho `/thoitiet`; `game_stakes` hoàn cược mồ côi khi restart.
 - **Telemetry kinh tế:** migration `0076` (`economy_snapshots` + RPC `snapshot_economy`); scheduler trong `index.js` chụp mỗi 12h; owner xem qua `/eco-admin report` (cung tiền/phân bố/xu hướng) → theo dõi lạm phát/exploit.
 - **Sổ Sứ Mệnh (Battle Pass) theo mùa giải — ĐÃ HOÀN THÀNH end-to-end:** migration `0079` (`battle_pass_users` + 3 RPCs), `0079b` (`add_ai_chat_pass_xp`), và `0079c` (`buy_premium_pass` fix) đã áp DB + verified. Lệnh `/pass` tương tác đẹp, tự động tính Season ID theo âm lịch. Tích hợp hooks cộng XP tự động vào `/daily`, `/quest`, cày cuốc và `/ask` (kèm quota chống spam AI 50 XP/ngày). Web Dashboard widget và trang chi tiết `/dashboard/pass` kèm Server Actions nhận quà, mua Premium đã hoàn thành.
-- **Gap nền tảng còn lại:** xem `docs/roadmap-mo-rong.md §5` (paginate embed dài, gom `lib/messages.js`).
 
 ---
 

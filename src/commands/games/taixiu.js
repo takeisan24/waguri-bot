@@ -7,9 +7,10 @@ const { applyPolice } = require('../../lib/police');
 const { policeJailEnabled } = require('../../lib/guildflags');
 const { buildWaguriEmbed } = require('../../lib/embed');
 const { handleNewbieQuest } = require('../../lib/newbie');
+const { getInteractionLanguage, t } = require('../../lib/i18n');
 
 const DICE = ['', '⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
-const fmt = n => Number(n).toLocaleString('vi-VN');
+const fmt = (n, locale) => Number(n).toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN');
 const roll = () => Math.floor(Math.random() * 6) + 1;
 
 module.exports = {
@@ -18,14 +19,16 @@ module.exports = {
         .setDescription('Tài Xỉu: cược 3 xúc xắc (Tài 11-17, Xỉu 4-10)')
         .addStringOption(o => o.setName('bet').setDescription('Số tiền cược (vd 1000, 1k, all)').setRequired(true))
         .addStringOption(o => o.setName('choice').setDescription('Tài hay Xỉu?').setRequired(true)
-            .addChoices({ name: 'Tài (11-17)', value: 'tai' }, { name: 'Xỉu (4-10)', value: 'xiu' })),
+            .addChoices({ name: 'Tài (11-17) / Big (11-17)', value: 'tai' }, { name: 'Xỉu (4-10) / Small (4-10)', value: 'xiu' })),
     async execute(interaction) {
         await interaction.deferReply();
+        const locale = await getInteractionLanguage(interaction);
         const userId = interaction.user.id;
         const user = await db.getUser(userId);
         if (!user) {
             const embed = buildWaguriEmbed(interaction, 'error', {
-                description: 'Hơ, lỗi dữ liệu, thử lại sau nhé~ 🌸'
+                locale,
+                description: t(locale, 'common.db_error')
             });
             return interaction.editReply({ embeds: [embed] });
         }
@@ -35,13 +38,15 @@ module.exports = {
         const err = await checkBet(bet, interaction.guildId);
         if (err) {
             const embed = buildWaguriEmbed(interaction, 'warning', {
+                locale,
                 description: `🌸 ${err}`
             });
             return interaction.editReply({ embeds: [embed] });
         }
         if (!await db.addMoney(userId, -bet, 'wallet')) {
             const embed = buildWaguriEmbed(interaction, 'warning', {
-                description: 'Ví cậu không đủ để cược~ 😟'
+                locale,
+                description: t(locale, 'common.insufficient_funds', { cost: fmt(bet, locale), currency: config.CURRENCY })
             });
             return interaction.editReply({ embeds: [embed] });
         }
@@ -52,16 +57,25 @@ module.exports = {
         const result = sum >= 11 ? 'tai' : 'xiu';
         const win = !triple && result === choice;
 
-        let desc = `🎲 ${DICE[d[0]]} ${DICE[d[1]]} ${DICE[d[2]]} = **${sum}** ${triple ? '(Bão! 💥)' : `(**${result === 'tai' ? 'Tài' : 'Xỉu'}**)`}\n`;
+        const typeStr = triple
+            ? t(locale, 'commands.taixiu.result_bao')
+            : `(**${result === 'tai' ? t(locale, 'commands.taixiu.result_tai') : t(locale, 'commands.taixiu.result_xiu')}**)`;
+
+        let desc = t(locale, 'commands.taixiu.dice_rolled', {
+            dices: `${DICE[d[0]]} ${DICE[d[1]]} ${DICE[d[2]]}`,
+            sum,
+            type: typeStr
+        });
+
         if (win) {
             const payout = Math.round(bet * config.GAMBLE.TAIXIU_MULT);
             await db.addMoney(userId, payout, 'wallet');
             db.questIncr(userId, 'gamble_win', 1);
-            desc += `🎉 Cậu thắng **+${fmt(payout - bet)}** ${config.CURRENCY}!`;
+            desc += t(locale, 'commands.taixiu.win_msg', { winAmount: fmt(payout - bet, locale), currency: config.CURRENCY });
         } else {
             desc += triple
-                ? `💥 Ra bão, nhà cái thắng. Cậu mất **-${fmt(bet)}** ${config.CURRENCY}~`
-                : `😢 Cậu thua **-${fmt(bet)}** ${config.CURRENCY}. Lần sau nhé~`;
+                ? t(locale, 'commands.taixiu.lose_bao_msg', { loseAmount: fmt(bet, locale), currency: config.CURRENCY })
+                : t(locale, 'commands.taixiu.lose_msg', { loseAmount: fmt(bet, locale), currency: config.CURRENCY });
         }
         const policeRes = await applyPolice(userId);
         if (policeRes !== null) {
@@ -72,16 +86,17 @@ module.exports = {
             if (await policeJailEnabled(interaction.guildId)) {
                 try { await interaction.member?.timeout?.(jailTime, 'Vi phạm luật trò may rủi'); jailed = true; } catch { /* bot thiếu quyền timeout */ }
             }
-            desc += `\n\n🚨 **Công an ập tới!** Cậu bị phạt **${fmt(fine)}** ${config.CURRENCY}`
-                + (usedIns ? ` (đã giảm 50% nhờ 🛡️ **Bảo hiểm Đường phố**)` : '')
-                + (jailed ? ` và **tạm giam ${Math.round(jailTime / 60000)} phút**! 🚓` : '! 😱');
+            desc += t(locale, 'commands.taixiu.police_arrival', { fine: fmt(fine, locale), currency: config.CURRENCY })
+                + (usedIns ? t(locale, 'commands.taixiu.police_ins') : '')
+                + (jailed ? t(locale, 'commands.taixiu.police_jailed', { jailMinutes: Math.round(jailTime / 60000) }) : t(locale, 'commands.taixiu.police_fine_only'));
         }
 
         const afterBal = await db.getUser(userId);
-        desc += `\n💵 Số dư ví: **${fmt(afterBal?.wallet || 0)}** ${config.CURRENCY}`;
+        desc += t(locale, 'commands.taixiu.balance_footer', { balance: fmt(afterBal?.wallet || 0, locale), currency: config.CURRENCY });
 
         const embed = buildWaguriEmbed(interaction, win ? 'success' : 'error', {
-            title: '🎲・Tài Xỉu',
+            locale,
+            title: t(locale, 'commands.taixiu.title'),
             description: desc
         }).setTimestamp();
 

@@ -1,6 +1,7 @@
 const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, MessageFlags } = require('discord.js');
 const db = require('../../database.js');
 const { buildWaguriEmbed } = require('../../lib/embed');
+const { getInteractionLanguage, t } = require('../../lib/i18n');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -10,20 +11,17 @@ module.exports = {
     async execute(interaction) {
         // Ephemeral: chuyện dữ liệu cá nhân — chỉ mình cậu thấy.
         await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+        const locale = await getInteractionLanguage(interaction);
         const userId = interaction.user.id;
 
         const warn = buildWaguriEmbed(interaction, 'warning', {
-            title: '🗑️・Xoá dữ liệu của bạn',
-            description:
-                'Cậu sắp **xoá vĩnh viễn** toàn bộ dữ liệu chơi của mình khỏi Waguri. Hành động này **KHÔNG THỂ hoàn tác** 🥺\n\n' +
-                '**Sẽ xoá:** ví/ngân hàng, kho đồ, nghề, cấp, thú cưng, heo/cây, tiệm bánh, nhiệm vụ, thành tựu, thiện cảm & ký ức Waguri về cậu, cùng mọi tiến trình khác.\n' +
-                '**Giữ lại (theo quy định):** hồ sơ thanh toán Premium (đối soát) và nhật ký confession (điều tra quấy rối).\n\n' +
-                '⚠️ Nếu cậu đang **có khoản vay chưa tất toán** hoặc **đang là chủ một bang hội**, hãy xử lý xong trước đã nhé.\n\n' +
-                'Cậu chắc chắn muốn xoá chứ?'
+            locale,
+            title: t(locale, 'commands.deletedata.warning_title'),
+            description: t(locale, 'commands.deletedata.warning_desc')
         });
         const row = (disabled = false) => new ActionRowBuilder().addComponents(
-            new ButtonBuilder().setCustomId('confirm').setLabel('Xoá vĩnh viễn 🗑️').setStyle(ButtonStyle.Danger).setDisabled(disabled),
-            new ButtonBuilder().setCustomId('cancel').setLabel('Huỷ, giữ lại 🌸').setStyle(ButtonStyle.Secondary).setDisabled(disabled),
+            new ButtonBuilder().setCustomId('confirm').setLabel(t(locale, 'commands.deletedata.btn_confirm')).setStyle(ButtonStyle.Danger).setDisabled(disabled),
+            new ButtonBuilder().setCustomId('cancel').setLabel(t(locale, 'commands.deletedata.btn_cancel')).setStyle(ButtonStyle.Secondary).setDisabled(disabled),
         );
 
         const msg = await interaction.editReply({ embeds: [warn], components: [row()] });
@@ -32,12 +30,12 @@ module.exports = {
         let acted = false;
         collector.on('collect', async (i) => {
             if (i.user.id !== userId) {
-                return i.reply({ content: 'Nút này không dành cho cậu đâu~ 🌸', flags: MessageFlags.Ephemeral });
+                return i.reply({ content: t(locale, 'common.not_for_you'), flags: MessageFlags.Ephemeral });
             }
             acted = true;
 
             if (i.customId === 'cancel') {
-                const e = buildWaguriEmbed(interaction, 'success', { description: 'Tuyệt, mình vẫn giữ dữ liệu của cậu an toàn nhé~ 🌸' });
+                const e = buildWaguriEmbed(interaction, 'success', { locale, description: t(locale, 'commands.deletedata.cancelled_desc') });
                 await i.update({ embeds: [e], components: [] });
                 return collector.stop('done');
             }
@@ -46,19 +44,22 @@ module.exports = {
             let e;
             if (res === 'ok') {
                 e = buildWaguriEmbed(interaction, 'success', {
-                    title: '🗑️・Đã xoá xong',
-                    description: 'Mình đã xoá toàn bộ dữ liệu chơi của cậu rồi. Nếu sau này quay lại, cậu sẽ bắt đầu hoàn toàn mới nhé~ Tạm biệt, mong sớm gặp lại! 🌸'
+                    locale,
+                    title: t(locale, 'commands.deletedata.success_title'),
+                    description: t(locale, 'commands.deletedata.success_desc')
                 });
             } else if (res === 'blocked_loans') {
                 e = buildWaguriEmbed(interaction, 'warning', {
-                    description: 'Cậu vẫn còn **khoản vay chưa tất toán** (đang nợ hoặc đang cho vay). Hãy dùng `/vay` xử lý xong hết trước rồi mới xoá được nhé~ 🌸'
+                    locale,
+                    description: t(locale, 'commands.deletedata.blocked_loans_desc')
                 });
             } else if (res === 'blocked_clan_leader') {
                 e = buildWaguriEmbed(interaction, 'warning', {
-                    description: 'Cậu **đang là chủ một bang hội**. Hãy chuyển quyền hoặc giải tán bang (`/clan disband`) trước khi xoá dữ liệu nhé~ 🌸'
+                    locale,
+                    description: t(locale, 'commands.deletedata.blocked_clan_leader_desc')
                 });
             } else {
-                e = buildWaguriEmbed(interaction, 'error', { description: 'Hơ, có lỗi khi xoá dữ liệu, thử lại sau nhé~ 🌸' });
+                e = buildWaguriEmbed(interaction, 'error', { locale, description: t(locale, 'commands.deletedata.error_desc') });
             }
             await i.update({ embeds: [e], components: [] });
             collector.stop('done');

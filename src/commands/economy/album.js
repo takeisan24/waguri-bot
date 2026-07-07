@@ -3,16 +3,9 @@ const { buildWaguriEmbed } = require('../../lib/embed');
 const db = require('../../database.js');
 const config = require('../../config');
 const collections = require('../../data/collections');
+const { getInteractionLanguage, t } = require('../../lib/i18n');
 
-const fmt = n => Number(n).toLocaleString('vi-VN');
-
-const RARITY_INFO = {
-    common: { name: 'Thường', emoji: '⚪', color: '#B0C4DE' },
-    uncommon: { name: 'Bất Thường', emoji: '🟢', color: '#32CD32' },
-    rare: { name: 'Hiếm', emoji: '🔵', color: '#1E90FF' },
-    epic: { name: 'Sử Thi', emoji: '🟣', color: '#9370DB' },
-    legendary: { name: 'Huyền Thoại', emoji: '🟠', color: '#FF8C00' }
-};
+const fmt = (n, locale) => Number(n).toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -22,6 +15,7 @@ module.exports = {
         
     async execute(interaction) {
         await interaction.deferReply();
+        const locale = await getInteractionLanguage(interaction);
         const target = interaction.options.getUser('target') || interaction.user;
         const isSelf = target.id === interaction.user.id;
         
@@ -34,7 +28,7 @@ module.exports = {
 
         if (!user) {
             return interaction.editReply({
-                embeds: [buildWaguriEmbed(interaction, 'error', { description: 'Không tìm thấy thông tin người dùng này~' })]
+                embeds: [buildWaguriEmbed(interaction, 'error', { locale, description: t(locale, 'common.db_error') })]
             });
         }
 
@@ -45,6 +39,14 @@ module.exports = {
             .eq('user_id', target.id);
         
         const claimedSets = new Set((claimedRewardsData || []).map(r => r.set_id));
+
+        const RARITY_INFO = {
+            common: { name: t(locale, 'rarity.common'), emoji: '⚪', color: '#B0C4DE' },
+            uncommon: { name: t(locale, 'rarity.uncommon'), emoji: '🟢', color: '#32CD32' },
+            rare: { name: t(locale, 'rarity.rare'), emoji: '🔵', color: '#1E90FF' },
+            epic: { name: t(locale, 'rarity.epic'), emoji: '🟣', color: '#9370DB' },
+            legendary: { name: t(locale, 'rarity.legendary'), emoji: '🟠', color: '#FF8C00' }
+        };
 
         // 2. Tính toán thống kê theo Rarity
         const rarityCounts = { common: 0, uncommon: 0, rare: 0, epic: 0, legendary: 0 };
@@ -66,22 +68,27 @@ module.exports = {
 
         // 3. Xây dựng trang Embed Sổ tay Sưu tầm
         const buildMainEmbed = () => {
-            const desc = `📖 **Sổ Tay Sưu Tầm của ${target.username}**\n` +
-                         `Tiến trình tổng: **${totalDiscovered}/${totalItems}** vật phẩm đã phát hiện (**${pctDiscovered}%**)\n\n` +
-                         `__**Thống kê theo Độ Hiếm:**__\n` +
-                         Object.entries(RARITY_INFO).map(([key, info]) => {
-                             const userCount = userRarityCounts[key];
-                             const sysCount = rarityCounts[key];
-                             const pct = sysCount > 0 ? Math.round((userCount / sysCount) * 100) : 0;
-                             return `${info.emoji} **${info.name}**: **${userCount}/${sysCount}** món (${pct}%)`;
-                         }).join('\n');
+            const desc = t(locale, 'commands.album.main_desc', {
+                user: target.username,
+                current: totalDiscovered,
+                total: totalItems,
+                pct: pctDiscovered
+            }) + '\n\n' +
+            `__**${t(locale, 'commands.album.rarity_stats_title')}**__\n` +
+            Object.entries(RARITY_INFO).map(([key, info]) => {
+                const userCount = userRarityCounts[key];
+                const sysCount = rarityCounts[key];
+                const pct = sysCount > 0 ? Math.round((userCount / sysCount) * 100) : 0;
+                return `${info.emoji} **${info.name}**: **${userCount}/${sysCount}** (${pct}%)`;
+            }).join('\n');
 
             return buildWaguriEmbed(interaction, 'info', {
-                title: `📖 Album Sưu Tầm của ${target.username}`,
+                locale,
+                title: t(locale, 'commands.album.title', { user: target.username }),
                 description: desc,
                 thumbnail: target.displayAvatarURL()
             }).setFooter({
-                text: isSelf ? 'Bấm các nút bên dưới để nhận thưởng khi hoàn thành bộ sưu tập!' : 'Đang xem album của người khác',
+                text: isSelf ? t(locale, 'commands.album.footer_self') : t(locale, 'commands.album.footer_other'),
                 iconURL: target.displayAvatarURL()
             });
         };
@@ -89,7 +96,7 @@ module.exports = {
         // 4. Xây dựng trang Embed Bộ Sưu Tập (Sets)
         const buildSetsEmbed = () => {
             const embed = new EmbedBuilder()
-                .setTitle(`🎨 Các Bộ Sưu Tập Đặc Biệt — ${target.username}`)
+                .setTitle(t(locale, 'commands.album.sets_title', { user: target.username }))
                 .setColor(config.COLORS.INFO)
                 .setThumbnail(target.displayAvatarURL());
 
@@ -98,24 +105,30 @@ module.exports = {
                 const isClaimed = claimedSets.has(set.id);
                 const hasAll = set.items.every(id => userDiscoveries.has(id));
                 
-                let statusIcon = '🔒 Chưa hoàn thành';
-                if (isClaimed) statusIcon = '✅ Đã nhận thưởng';
-                else if (hasAll) statusIcon = '🎁 Sẵn sàng nhận!';
+                let statusIcon = t(locale, 'commands.album.status_lock');
+                if (isClaimed) statusIcon = t(locale, 'commands.album.status_claimed');
+                else if (hasAll) statusIcon = t(locale, 'commands.album.status_ready');
 
                 // Danh sách item kèm trạng thái mở khóa
                 const itemLines = set.items.map(itemId => {
                     const it = allItems.find(i => i.id === itemId);
-                    const itName = it ? it.name : itemId;
+                    const itName = it ? (t(locale, `data.items.${itemId}.name`) || it.name) : itemId;
                     const rInfo = RARITY_INFO[it?.rarity || 'common'];
                     const hasIt = userDiscoveries.has(itemId);
-                    return hasIt ? ` 🏅 **${itName}** (${rInfo.emoji} ${rInfo.name})` : ` 🔒 *${itName}* (chưa phát hiện)`;
+                    return hasIt 
+                        ? t(locale, 'commands.album.item_unlocked', { name: itName, emoji: rInfo.emoji, rarity: rInfo.name })
+                        : t(locale, 'commands.album.item_locked', { name: itName });
                 }).join('\n');
 
-                desc += `### ${set.emoji} **${set.name}**\n` +
-                        `*${set.desc}*\n` +
-                        `**Trạng thái**: ${statusIcon}\n` +
-                        `**Phần thưởng**: **+${fmt(set.reward_coins)}** xu + Danh hiệu \`${set.title}\`\n` +
-                        `**Vật phẩm yêu cầu:**\n${itemLines}\n\n` +
+                const setName = t(locale, `data.collections.${set.id}.name`) || set.name;
+                const setDesc = t(locale, `data.collections.${set.id}.desc`) || set.desc;
+                const setTitle = t(locale, `data.collections.${set.id}.title`) || set.title;
+
+                desc += `### ${set.emoji} **${setName}**\n` +
+                        `*${setDesc}*\n` +
+                        `**${t(locale, 'commands.album.set_status')}**: ${statusIcon}\n` +
+                        `**${t(locale, 'commands.album.set_reward')}**: **+${fmt(set.reward_coins, locale)}** xu + ${t(locale, 'commands.album.set_title_label')} \`${setTitle}\`\n` +
+                        `**${t(locale, 'commands.album.required_items')}**:\n${itemLines}\n\n` +
                         `***\n\n`;
             }
             embed.setDescription(desc);
@@ -133,18 +146,18 @@ module.exports = {
                 
                 let btnStyle = ButtonStyle.Secondary;
                 let disabled = true;
-                let label = set.name;
+                let label = t(locale, `data.collections.${set.id}.name`) || set.name;
 
                 if (isClaimed) {
                     btnStyle = ButtonStyle.Success;
-                    label = `Đã nhận ${set.emoji}`;
+                    label = t(locale, 'commands.album.btn_claimed_set', { emoji: set.emoji });
                     disabled = true;
                 } else if (hasAll && isSelf) {
                     btnStyle = ButtonStyle.Primary;
-                    label = `Nhận ${set.emoji}`;
+                    label = t(locale, 'commands.album.btn_ready_set', { emoji: set.emoji });
                     disabled = false;
                 } else {
-                    label = `Chưa đủ ${set.emoji}`;
+                    label = t(locale, 'commands.album.btn_incomplete_set', { emoji: set.emoji });
                     disabled = true;
                 }
 
@@ -160,11 +173,11 @@ module.exports = {
             const row2 = new ActionRowBuilder().addComponents(
                 new ButtonBuilder()
                     .setCustomId('view_main')
-                    .setLabel('Thống kê')
+                    .setLabel(t(locale, 'commands.album.btn_stats'))
                     .setStyle(ButtonStyle.Secondary),
                 new ButtonBuilder()
                     .setCustomId('view_sets')
-                    .setLabel('Bộ Sưu Tập')
+                    .setLabel(t(locale, 'commands.album.btn_sets'))
                     .setStyle(ButtonStyle.Secondary)
             );
 
@@ -190,7 +203,7 @@ module.exports = {
             // Chỉ chủ nhân lệnh mới có quyền nhấn
             if (i.user.id !== interaction.user.id) {
                 return i.reply({
-                    content: '🌸 Cậu không phải là người gọi lệnh này nên không nhấn được nhé~',
+                    content: t(locale, 'common.not_for_you'),
                     ephemeral: true
                 });
             }
@@ -222,6 +235,9 @@ module.exports = {
                     set.title
                 );
 
+                const setName = t(locale, `data.collections.${set.id}.name`) || set.name;
+                const setTitle = t(locale, `data.collections.${set.id}.title`) || set.title;
+
                 if (result === 'ok') {
                     claimedSets.add(set.id);
                     // Cập nhật lại giao diện ngay lập tức
@@ -232,16 +248,20 @@ module.exports = {
                     
                     // Gửi tin chúc mừng riêng
                     await interaction.followUp({
-                        content: `🎉 Chúc mừng **${interaction.user.username}** đã hoàn thành bộ sưu tập **${set.name}**!\n` +
-                                 `🎁 Nhận thành công **+${fmt(set.reward_coins)}** xu và danh hiệu mới: \`${set.title}\`! 🌟`,
+                        content: t(locale, 'commands.album.congrats', { 
+                            user: interaction.user.username, 
+                            name: setName, 
+                            reward: fmt(set.reward_coins, locale), 
+                            title: setTitle 
+                        }),
                         ephemeral: false
                     });
                 } else if (result === 'already_claimed') {
-                    await interaction.followUp({ content: 'Cậu đã nhận phần thưởng cho bộ sưu tập này từ trước rồi nhé~ 🌸', ephemeral: true });
+                    await interaction.followUp({ content: t(locale, 'commands.album.already_claimed'), ephemeral: true });
                 } else if (result === 'not_completed') {
-                    await interaction.followUp({ content: 'Cậu chưa thu thập đủ tất cả các vật phẩm yêu cầu đâu~ Hãy đi cày cuốc tiếp nhé! 💪', ephemeral: true });
+                    await interaction.followUp({ content: t(locale, 'commands.album.not_completed'), ephemeral: true });
                 } else {
-                    await interaction.followUp({ content: 'Có lỗi xảy ra khi nhận thưởng, cậu vui lòng thử lại sau nhé! 😟', ephemeral: true });
+                    await interaction.followUp({ content: t(locale, 'commands.album.error'), ephemeral: true });
                 }
             }
         });

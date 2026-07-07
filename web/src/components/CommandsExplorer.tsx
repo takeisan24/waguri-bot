@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useLanguage } from "./LanguageProvider";
 
 type Cmd = [string, string];
 type Cat = { name: string; cmds: Cmd[] };
 
-const CATEGORIES: Cat[] = [
+const CATEGORIES_VI: Cat[] = [
   {
     name: "💼 Kinh tế & Nghề",
     cmds: [
@@ -77,7 +78,7 @@ const CATEGORIES: Cat[] = [
       ["amlich", "âm lịch · can-chi · giờ hoàng đạo 🌙"],
       ["lixi", "phát lì xì cho cả kênh 🧧"],
       ["couple", "kết hôn: xem trạng thái, ly hôn, đám cưới (status · marry · divorce) 💞"],
-      ["action", "tương tác: ôm, hôn, xoa đầu, chọc, tát (hug · kiss · pat · poke · slap) 🌸"],
+      ["action", "tương tác: ôm, ôm, xoa đầu, chọc, tát (hug · kiss · pat · poke · slap) 🌸"],
       ["date", "rủ đi hẹn hò 💑"],
       ["confession", "gửi confession ẩn danh 🤫"],
       ["noitu", "chơi nối từ tiếng Việt 🔤"],
@@ -133,32 +134,163 @@ const CATEGORIES: Cat[] = [
   },
 ];
 
+const CATEGORIES_EN: Cat[] = [
+  {
+    name: "💼 Economy & Jobs",
+    cmds: [
+      ["work", "work to earn coins (consumes energy)"],
+      ["fish", "go fishing for coins"],
+      ["mine", "mine ore for coins ⛏️"],
+      ["chop", "chop wood for coins 🪓"],
+      ["daily", "daily check-in rewards & streak"],
+      ["quest", "daily quests"],
+      ["achievements", "achievements (unlock for rewards)"],
+      ["status", "status: energy, fatigue, buffs & Premium 📊"],
+      ["profile", "general profile overview"],
+      ["jobs", "view & apply for jobs"],
+      ["pet", "pet: adopt or feed 🐾"],
+      ["cuutro", "claim welfare aid when out of coins 💸"],
+    ],
+  },
+  {
+    name: "🏪 Store & Inventory",
+    cmds: [
+      ["store", "store: list, buy, or sell items 🏪"],
+      ["market", "player market for trading 🛒"],
+      ["inventory", "view inventory"],
+      ["album", "view collector handbook & claim collection rewards 📖"],
+      ["pass", "view and claim Battle Pass rewards 📖"],
+      ["eat", "consume food (restores energy / buffs)"],
+      ["nghingoi", "sleep to restore full energy 😴"],
+      ["cosmetic", "decorate profile: titles & colors 🎨"],
+      ["craft", "craft items from wood/ore/stone 🔨"],
+      ["repair", "repair mining tools (15% of buy price) 🔧"],
+      ["hospital", "hospitalize to restore health 🏥"],
+    ],
+  },
+  {
+    name: "💸 Transaction & Banking",
+    cmds: [
+      ["give", "transfer coins to another user"],
+      ["bank", "bank: deposit or withdraw coins 🏦"],
+      ["rob", "rob coins (high risk!)"],
+      ["vay", "borrow / repay loan 🤝"],
+      ["tangdo", "gift inventory items to another user 🎁"],
+    ],
+  },
+  {
+    name: "🎲 Minigame & Farming",
+    cmds: [
+      ["heo", "piggy bank 🐷 (buy/care/sell/steal)"],
+      ["trongcay", "plant trees 🌱 (seed/water/harvest/steal)"],
+      ["tiembanh", "Gekka Bakery 🍰 (passive business management)"],
+      ["coinflip", "coin flip"],
+      ["taixiu", "tai xiu (over/under)"],
+      ["baucua", "bau cua (gourd-crab-fish)"],
+      ["bacay", "three cards poker 🃏 (multiplayer)"],
+      ["blackjack", "blackjack"],
+      ["crate", "open mystery crates 🎁"],
+      ["bingo", "bingo 🎱 (auto number calling)"],
+      ["loto", "loto 🔢 (5-number ticket, voice required)"],
+      ["masoi", "werewolf 🐺 (4-15 players, deduction)"],
+      ["xocdia", "xoc dia 🥢"],
+      ["duangua", "horse racing 🐎"],
+      ["dovui", "trivia quiz 🧠"],
+    ],
+  },
+  {
+    name: "🎀 Fun & Community",
+    cmds: [
+      ["ship", "measure compatibility between two users"],
+      ["boi", "fortune telling 🔮"],
+      ["amlich", "lunar calendar · horoscope 🌙"],
+      ["lixi", "send lucky money to the channel 🧧"],
+      ["couple", "marriage: status, marry, or divorce 💞"],
+      ["action", "interaction: hug, kiss, pat, poke, slap 🌸"],
+      ["date", "invite on a date 💑"],
+      ["confession", "send anonymous confession 🤫"],
+      ["noitu", "Vietnamese word chaining game 🔤"],
+    ],
+  },
+  {
+    name: "🖼️ Image & Utilities",
+    cmds: [
+      ["image", "view cute animals or waifu photos (cat · dog · waifu) 🖼️"],
+      ["thoitiet", "check weather in a city"],
+      ["announcement", "view or send announcements 📢"],
+    ],
+  },
+  {
+    name: "💬 AI & Premium",
+    cmds: [
+      ["ask", "chat with Waguri (or @tag)"],
+      ["premium", "Premium package 💎 (extra AI chats)"],
+      ["henho", "date and gift Waguri to build affection 💖"],
+    ],
+  },
+  {
+    name: "🏰 Clans & Markets",
+    cmds: [
+      ["clan", "create clan / guild funds / ⚔️ clan war"],
+    ],
+  },
+  {
+    name: "🏆 Others",
+    cmds: [
+      ["leaderboard", "leaderboards (wealth / level / affection)"],
+      ["start", "start & receive welcome gift 🎁"],
+      ["event", "view ongoing x2 boost events 🎉"],
+      ["vote", "vote on Top.gg for rewards 💝"],
+      ["bot", "bot info, status, support link, invite link (ping · about · support · invite) 🤖"],
+      ["ticket", "open private support ticket with staff 🎫"],
+      ["server", "server stats & info"],
+      ["user", "user info"],
+      ["deletedata", "permanently delete all your personal data (irreversible) 🗑️"],
+      ["help", "help command in Discord"],
+    ],
+  },
+  {
+    name: "⚙️ Admin (permissions required)",
+    cmds: [
+      ["setup", "create a dedicated channel for Waguri"],
+      ["config", "configure bot settings for your server"],
+      ["serverinfo", "report server structure for audit 🔍"],
+      ["eco-admin", "owner tools: coins/ban/premium"],
+      ["premium-admin", "manually approve Premium orders (owner) 💎"],
+      ["getinvite", "create server invite link sent to owner via DM (owner)"],
+    ],
+  },
+];
+
 export default function CommandsExplorer() {
+  const { t, locale } = useLanguage();
   const [q, setQ] = useState("");
   const [open, setOpen] = useState<string | null>(null);
   const query = q.trim().toLowerCase();
 
-  const filtered = CATEGORIES.map((cat) => ({
+  const categories = locale === "en" ? CATEGORIES_EN : CATEGORIES_VI;
+
+  const filtered = categories.map((cat) => ({
     ...cat,
     cmds: query
       ? cat.cmds.filter(([c, d]) => c.includes(query) || d.toLowerCase().includes(query))
       : cat.cmds,
   })).filter((cat) => cat.cmds.length > 0);
 
-  const total = CATEGORIES.reduce((s, c) => s + c.cmds.length, 0);
+  const total = categories.reduce((s, c) => s + c.cmds.length, 0);
 
   return (
     <div className="w-full space-y-6">
       <input
         value={q}
         onChange={(e) => setQ(e.target.value)}
-        placeholder={`🔎 Tìm trong ${total} lệnh... (vd: work, may rủi, bang)`}
+        placeholder={t("commands.search_placeholder", { count: total })}
         className="w-full px-5 py-3 rounded-2xl bg-[#160f1f] border border-pink-300/20 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-pink-300/50"
         aria-label="Tìm lệnh"
       />
 
       {filtered.length === 0 ? (
-        <p className="text-center text-slate-500 py-10">Không tìm thấy lệnh nào khớp~ 🌸</p>
+        <p className="text-center text-slate-500 py-10">{t("commands.no_results")}</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {filtered.map((cat) => (
@@ -183,11 +315,11 @@ export default function CommandsExplorer() {
                         <div className="ml-2 mb-1.5 pl-3 border-l-2 border-pink-300/25 text-xs text-slate-400 space-y-1 py-1">
                           <p>{d}.</p>
                           <p>
-                            Cách dùng: <code className="text-pink-200">/{c}</code> · cũng được{" "}
+                            {t("commands.usage")} <code className="text-pink-200">/{c}</code> · {t("commands.or_prefix")}{" "}
                             <code className="text-pink-200">w!{c}</code>
                           </p>
                           <p>
-                            Gõ <code className="text-pink-200">/help {c}</code> trong Discord để xem chi tiết tham số & lệnh con.
+                            {t("commands.help_tip", { cmd: `/help ${c}` })}
                           </p>
                         </div>
                       ) : null}
