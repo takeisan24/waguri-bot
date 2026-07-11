@@ -1,5 +1,6 @@
 const db = require('../database');
 const { buildWaguriEmbed } = require('./embed');
+const { getInteractionLanguage, t } = require('./i18n');
 
 const NEWBIE_STEPS = [
     null,
@@ -10,33 +11,48 @@ const NEWBIE_STEPS = [
     { name: 'Bước 5: Trải nghiệm may rủi 🪙', reward: 3000 }
 ];
 
-const fmt = n => Number(n).toLocaleString('vi-VN');
+const fmt = (n, locale) => Number(n).toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN');
+
+const getNewbieStepName = (stepIndex, locale) => {
+    return t(locale, `lib.newbie.step_${stepIndex}`) || NEWBIE_STEPS[stepIndex]?.name;
+};
 
 async function handleNewbieQuest(interaction, key, amount = 1) {
     if (!interaction || !interaction.user) return;
     const userId = interaction.user.id;
     try {
+        const locale = await getInteractionLanguage(interaction);
         const res = await db.newbieQuestIncr(userId, key, amount);
         if (res && res.claimed) {
             const completedStep = res.step - 1;
             const ns = NEWBIE_STEPS[completedStep];
             if (!ns) return;
 
-            let desc = `🎉 Chúc mừng cậu đã hoàn thành **${ns.name}**!\n` +
-                       `🎁 Nhận ngay **+${fmt(ns.reward)} VNĐ** vào ví!`;
+            const stepName = getNewbieStepName(completedStep, locale);
+            let desc = t(locale, 'lib.newbie.desc_step_complete', {
+                name: stepName,
+                reward: fmt(ns.reward, locale)
+            });
 
             if (res.completed) {
-                desc += `\n\n🏆 **[HOÀN THÀNH CHUỖI TÂN THỦ]**\n` +
-                        `Cậu thật xuất sắc! Nhận thêm **+${fmt(res.bonus)} VNĐ** và Danh hiệu: 🏷️ **Tân Thủ Ngọt Ngào**! 🌸💖`;
+                const titleStr = t(locale, 'titles.Tân Thủ Ngọt Ngào') || 'Tân Thủ Ngọt Ngào';
+                desc += t(locale, 'lib.newbie.desc_all_complete', {
+                    bonus: fmt(res.bonus, locale),
+                    title: titleStr
+                });
             } else {
                 const nextNs = NEWBIE_STEPS[res.step];
                 if (nextNs) {
-                    desc += `\n\n👉 **Nhiệm vụ tiếp theo:** *${nextNs.name}* (Gõ \`/quest\` để xem chi tiết)`;
+                    const nextStepName = getNewbieStepName(res.step, locale);
+                    desc += t(locale, 'lib.newbie.desc_next_step', {
+                        name: nextStepName
+                    });
                 }
             }
 
             const embed = buildWaguriEmbed(interaction, 'success', {
-                title: '🔰・Nhiệm vụ tân thủ',
+                locale,
+                title: t(locale, 'lib.newbie.embed_title'),
                 description: desc
             });
 

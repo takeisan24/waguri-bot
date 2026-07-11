@@ -3,8 +3,9 @@ const db = require('../../database.js');
 const config = require('../../config');
 const { SPECIES, petLevel, expForLevel, findSpecies } = require('../../data/pets');
 const { buildWaguriEmbed, createWaguriBar } = require('../../lib/embed');
+const { getInteractionLanguage, t } = require('../../lib/i18n');
 
-const fmt = n => Number(n).toLocaleString('vi-VN');
+const fmt = (n, locale) => Number(n).toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -29,6 +30,7 @@ module.exports = {
         .addSubcommand(s => s.setName('rename').setDescription('Đổi tên thú cưng')
             .addStringOption(o => o.setName('name').setDescription('Tên mới').setRequired(true))),
     async execute(interaction) {
+        const locale = await getInteractionLanguage(interaction);
         await interaction.deferReply();
         const userId = interaction.user.id;
         const sub = interaction.options.getSubcommand();
@@ -39,20 +41,24 @@ module.exports = {
             const r = await db.adoptPet(userId, species, name);
             if (r === 'already') {
                 const embed = buildWaguriEmbed(interaction, 'warning', {
-                    description: 'Cậu đã có thú cưng rồi mà~ Gõ `/pet view` để xem nhé.'
+                    locale,
+                    description: t(locale, 'commands.pet.err_already_owned')
                 });
                 return interaction.editReply({ embeds: [embed] });
             }
             if (r !== 'ok') {
                 const embed = buildWaguriEmbed(interaction, 'error', {
-                    description: 'Ơ, có lỗi khi nhận nuôi, thử lại sau nhé~ 🌸'
+                    locale,
+                    description: t(locale, 'commands.pet.err_system')
                 });
                 return interaction.editReply({ embeds: [embed] });
             }
             const sp = findSpecies(species);
+            const speciesName = t(locale, `species.${sp.id}`) || sp.name;
             const embed = buildWaguriEmbed(interaction, 'success', {
-                title: '🐾・Nhận nuôi thành công!',
-                description: `Chào mừng ${sp.emoji} **${name}** đến với cậu! Nhớ \`/pet feed\` cho bé lớn nhé~`
+                locale,
+                title: t(locale, 'commands.pet.adopt_success_title'),
+                description: t(locale, 'commands.pet.adopt_success_desc', { emoji: sp.emoji, name, species: speciesName })
             });
             return interaction.editReply({ embeds: [embed] });
         }
@@ -61,19 +67,24 @@ module.exports = {
         if (sub === 'view') {
             if (!pet) {
                 const embed = buildWaguriEmbed(interaction, 'warning', {
-                    description: 'Cậu chưa có thú cưng~ Gõ `/pet adopt` để nhận nuôi một bé nhé! 🐾'
+                    locale,
+                    description: t(locale, 'commands.pet.err_not_owned')
                 });
                 return interaction.editReply({ embeds: [embed] });
             }
             const sp = findSpecies(pet.species);
             const lvl = petLevel(pet.exp);
             const next = expForLevel(lvl + 1);
+            const petName = pet.name || t(locale, `species.${pet.species}`) || sp?.name;
+            const speciesName = t(locale, `species.${pet.species}`) || sp?.name || pet.species;
+
             const embed = buildWaguriEmbed(interaction, 'info', {
-                title: `${sp?.emoji || '🐾'}・${pet.name || sp?.name}`,
+                locale,
+                title: `${sp?.emoji || '🐾'}・${petName}`,
                 fields: [
-                    { name: 'Loài', value: sp?.name || pet.species, inline: true },
-                    { name: 'Cấp độ', value: `Lv.${lvl}`, inline: true },
-                    { name: `Tiến trình EXP (${pet.exp}/${next})`, value: createWaguriBar(pet.exp, next, 10), inline: false },
+                    { name: t(locale, 'commands.pet.field_species'), value: speciesName, inline: true },
+                    { name: t(locale, 'commands.pet.field_level'), value: `Lv.${lvl}`, inline: true },
+                    { name: t(locale, 'commands.pet.field_exp', { current: pet.exp, next }), value: createWaguriBar(pet.exp, next, 10), inline: false },
                 ]
             });
             return interaction.editReply({ embeds: [embed] });
@@ -82,7 +93,8 @@ module.exports = {
         if (sub === 'feed') {
             if (!pet) {
                 const embed = buildWaguriEmbed(interaction, 'warning', {
-                    description: 'Cậu chưa có thú cưng để cho ăn~ Gõ `/pet adopt` nhé!'
+                    locale,
+                    description: t(locale, 'commands.pet.err_not_owned_feed')
                 });
                 return interaction.editReply({ embeds: [embed] });
             }
@@ -96,22 +108,34 @@ module.exports = {
                 const newExp = await db.feedPetWithFee(userId, baseGain, cost);
                 if (newExp === -1) {
                     const embed = buildWaguriEmbed(interaction, 'warning', {
-                        description: `Cậu không đủ **${fmt(cost)}** ${config.CURRENCY} để cho bé ăn (cấp càng cao ăn càng tốn)~ 😟`
+                        locale,
+                        description: t(locale, 'commands.pet.err_poor', { cost: fmt(cost, locale), currency: config.CURRENCY })
                     });
                     return interaction.editReply({ embeds: [embed] });
                 }
                 if (newExp === -2 || newExp === null) {
                     const embed = buildWaguriEmbed(interaction, 'warning', {
-                        description: `Ơ, có lỗi khi cho bé ăn hoặc cậu chưa nhận nuôi thú cưng, thử lại sau nhé~ 🌸`
+                        locale,
+                        description: t(locale, 'commands.pet.err_system')
                     });
                     return interaction.editReply({ embeds: [embed] });
                 }
                 const newLvl = petLevel(newExp);
                 const sp = findSpecies(pet.species);
-                let desc = `${sp?.emoji || '🐾'} **${pet.name || sp?.name}** ăn ngon lành! +${baseGain} EXP 😋 *(tốn ${fmt(cost)} ${config.CURRENCY})*`;
-                if (newLvl > oldLvl) desc += `\n🎉 Bé đã lên **Lv.${newLvl}**!`;
+                const petName = pet.name || t(locale, `species.${pet.species}`) || sp?.name;
+                
+                let desc = t(locale, 'commands.pet.feed_success_desc_money', {
+                    emoji: sp?.emoji || '🐾',
+                    name: petName,
+                    gain: baseGain,
+                    cost: fmt(cost, locale),
+                    currency: config.CURRENCY
+                });
+                if (newLvl > oldLvl) desc += `\n` + t(locale, 'commands.pet.level_up', { lvl: newLvl });
+
                 const embed = buildWaguriEmbed(interaction, 'success', {
-                    title: '🍖・Cho thú cưng ăn',
+                    locale,
+                    title: t(locale, 'commands.pet.feed_success_title'),
                     description: desc
                 });
                 return interaction.editReply({ embeds: [embed] });
@@ -125,10 +149,12 @@ module.exports = {
                     banh_kem_dau: { name: 'Bánh Kem Dâu Gekka 🍰', mult: 3.0 }
                 };
                 const cfg = FOOD_CONFIGS[food];
+                const foodName = t(locale, `items.${food}.name`) || cfg.name;
                 const taken = await db.takeItem(userId, food, 1);
                 if (!taken) {
                     const embed = buildWaguriEmbed(interaction, 'warning', {
-                        description: `Cậu không có sẵn **1× ${cfg.name}** trong kho để cho bé ăn rồi~ 🥺`
+                        locale,
+                        description: t(locale, 'commands.pet.err_no_food', { food: foodName })
                     });
                     return interaction.editReply({ embeds: [embed] });
                 }
@@ -137,17 +163,28 @@ module.exports = {
                 const newExp = await db.feedPet(userId, gain);
                 if (newExp === null) {
                     const embed = buildWaguriEmbed(interaction, 'warning', {
-                        description: `Ơ, có lỗi khi cho bé ăn hoặc cậu chưa nhận nuôi thú cưng, thử lại sau nhé~ 🌸`
+                        locale,
+                        description: t(locale, 'commands.pet.err_system')
                     });
                     return interaction.editReply({ embeds: [embed] });
                 }
 
                 const newLvl = petLevel(newExp);
                 const sp = findSpecies(pet.species);
-                let desc = `${sp?.emoji || '🐾'} **${pet.name || sp?.name}** măm măm ngon lành món **${cfg.name}**! +${gain} EXP 😋 *(nhận x${cfg.mult} EXP)*`;
-                if (newLvl > oldLvl) desc += `\n🎉 Bé đã lên **Lv.${newLvl}**!`;
+                const petName = pet.name || t(locale, `species.${pet.species}`) || sp?.name;
+
+                let desc = t(locale, 'commands.pet.feed_success_desc_item', {
+                    emoji: sp?.emoji || '🐾',
+                    name: petName,
+                    food: foodName,
+                    gain,
+                    mult: cfg.mult
+                });
+                if (newLvl > oldLvl) desc += `\n` + t(locale, 'commands.pet.level_up', { lvl: newLvl });
+
                 const embed = buildWaguriEmbed(interaction, 'success', {
-                    title: '🍖・Cho thú cưng ăn',
+                    locale,
+                    title: t(locale, 'commands.pet.feed_success_title'),
                     description: desc
                 });
                 return interaction.editReply({ embeds: [embed] });
@@ -157,14 +194,16 @@ module.exports = {
         if (sub === 'rename') {
             if (!pet) {
                 const embed = buildWaguriEmbed(interaction, 'warning', {
-                    description: 'Cậu chưa có thú cưng~ Gõ `/pet adopt` nhé!'
+                    locale,
+                    description: t(locale, 'commands.pet.err_not_owned')
                 });
                 return interaction.editReply({ embeds: [embed] });
             }
             const name = interaction.options.getString('name');
             await db.renamePet(userId, name);
             const embed = buildWaguriEmbed(interaction, 'success', {
-                description: `✅ Đã đổi tên thú cưng thành **${name}**~ 🐾`
+                locale,
+                description: t(locale, 'commands.pet.rename_success', { name })
             });
             return interaction.editReply({ embeds: [embed] });
         }

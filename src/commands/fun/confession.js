@@ -1,18 +1,20 @@
 const { SlashCommandBuilder, MessageFlags } = require('discord.js');
 const db = require('../../database.js');
 const { buildWaguriEmbed } = require('../../lib/embed');
+const { getInteractionLanguage, t } = require('../../lib/i18n');
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('confession')
         .setDescription('Gửi confession ẩn danh (nên dùng /slash để ẩn danh)')
-        .addStringOption(o => o.setName('noi_dung').setDescription('Điều cậu muốn gửi').setRequired(true)),
+        .addStringOption(o => o.setName('message').setDescription('Điều cậu muốn gửi').setRequired(true)),
     async execute(interaction) {
-        const content = interaction.options.getString('noi_dung');
+        const locale = await getInteractionLanguage(interaction);
+        const content = interaction.options.getString('message');
         const gid = interaction.guild?.id;
         if (!gid) {
             const embed = buildWaguriEmbed(interaction, 'error', {
-                description: 'Lệnh này chỉ dùng trong server~'
+                description: t(locale, 'commands.confession.err_server_only')
             });
             return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
         }
@@ -22,7 +24,7 @@ module.exports = {
         const hasUserOrRoleMention = /<@&?\d+>|<@!\d+>/.test(content);
         if (hasEveryone || hasUserOrRoleMention) {
             const embed = buildWaguriEmbed(interaction, 'warning', {
-                description: 'Nội dung confession không được chứa lượt nhắc tên (mention) user, role hoặc everyone/here để tránh phiền toái nha cậu~ 🌸'
+                description: t(locale, 'commands.confession.err_mentions')
             });
             return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
         }
@@ -35,7 +37,7 @@ module.exports = {
             const min = Math.floor(remainSec / 60);
             const sec = remainSec % 60;
             const embed = buildWaguriEmbed(interaction, 'warning', {
-                description: `Từ từ thôi nào~ Cậu vừa gửi confession gần đây. Thử lại sau **${min} phút ${sec} giây** nhé~ 🌸`
+                description: t(locale, 'commands.confession.err_cooldown', { min, sec })
             });
             return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
         }
@@ -43,7 +45,7 @@ module.exports = {
         const s = await db.getGuildSettings(gid);
         if (!s.confession_channel) {
             const embed = buildWaguriEmbed(interaction, 'warning', {
-                description: 'Server chưa cấu hình kênh confession. Nhờ admin gõ `/config confession-channel` nhé~ 🌸'
+                description: t(locale, 'commands.confession.err_not_configured')
             });
             return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
         }
@@ -52,7 +54,7 @@ module.exports = {
             || await interaction.guild.channels.fetch(s.confession_channel).catch(() => null);
         if (!channel) {
             const embed = buildWaguriEmbed(interaction, 'error', {
-                description: 'Kênh confession không còn tồn tại, nhờ admin đặt lại giúp nhé~'
+                description: t(locale, 'commands.confession.err_channel_deleted')
             });
             return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
         }
@@ -63,18 +65,19 @@ module.exports = {
         await db.logConfession(gid, userId, num, content);
 
         const embed = buildWaguriEmbed(interaction, 'info', {
-            title: `🤫 Confession #${num}`,
+            locale,
+            title: t(locale, 'commands.confession.embed_title', { num }),
             description: content.slice(0, 4000)
         }).setTimestamp();
 
         embed.setFooter({
-            text: `🤫 Gửi ẩn danh qua Waguri • ${embed.data.footer.text}`,
+            text: t(locale, 'commands.confession.embed_footer') + ` • ${embed.data.footer.text}`,
             iconURL: embed.data.footer.icon_url
         });
 
         await channel.send({ embeds: [embed] }).catch(() => null);
         const successEmbed = buildWaguriEmbed(interaction, 'success', {
-            description: '✅ Đã gửi confession ẩn danh của cậu rồi nhé~ (không ai biết là cậu đâu)'
+            description: t(locale, 'commands.confession.success_reply')
         });
         return interaction.reply({ embeds: [successEmbed], flags: MessageFlags.Ephemeral });
     },

@@ -74,12 +74,13 @@ Waguri là **Discord economy/RPG bot bản địa hóa văn hóa Việt**. Bot N
 
 ---
 
-## 4. TRẠNG THÁI HIỆN TẠI (cập nhật 2026-07-07 — sửa khi đổi lớn)
+## 4. TRẠNG THÁI HIỆN TẠI (cập nhật 2026-07-11 — sửa khi đổi lớn)
 
 - **Release:** GitHub tag mới nhất `v2.1.0` ("Đợt 2: Tối ưu DX, Chống Clone & Khử Treo Game"). `package.json` = `2.1.0`.
-- **Hardening Đa ngôn ngữ (i18n) — ĐÃ HOÀN THÀNH end-to-end:**
-  - **Discord Bot:** Tích hợp bản dịch tiếng Anh & tiếng Việt cho 5 nhóm lệnh (31 lệnh economy, games, fun, utility, admin), localization cho định nghĩa slash commands (options/choices), tự động detect locale qua client/interaction hoặc cấu hình thủ công qua `/config language`. Các tin nhắn cooldown, lỗi chung, chào mừng thành viên mới (`guildMemberAdd`) và status xoay tua đã bản địa hóa đầy đủ.
-  - **Web Next.js:** Dịch toàn bộ trang Landing, Dashboard cá nhân, Sổ sứ mệnh, Premium (đồng bộ hóa `PLAN_ORDER` & plans), Leaderboard, trang cá nhân `/u/[id]`, error, not-found. Tách trang tài liệu dài (Wiki, ToS, Privacy) sang dạng song ngữ tĩnh điều phối bởi server locale. Các component Faq, Testimonials, CommandsExplorer đã được refactor hoàn tất.
+- **Hardening Đa ngôn ngữ (i18n) — ĐÃ HOÀN THÀNH 100% end-to-end:**
+  - **Discord Bot:** Bản dịch song ngữ Anh & Việt đã phủ 100% tất cả các nhóm lệnh (bao gồm Economy, Games, Fun, Utility, Admin), hỗ trợ đầy đủ localization cho slash command definitions, choices và autocomplete.
+  - **Web Next.js:** Dịch toàn bộ trang Landing, cá nhân, Sổ sứ mệnh, Premium, Leaderboard, `/u/[id]`, lỗi. Trang Wiki được tách song ngữ tĩnh, đổi tên hiển thị tiếng Việt thành "Cẩm nang". Các components được hoàn thiện i18n 100%.
+- **Giới hạn bản tin AI:** Sửa lỗi cắt cụt bản tin bằng cách tăng giới hạn `maxOutputTokens` lên 2000 cho Gemini API.
 - **Tiệm Bánh Gekka:** Phase 1 + migration Phase 2 (`0070`) đã có; **cần QA runtime** vòng lặp nạp→nướng→thu hoạch + lương nhân viên.
 - **Ký ức AI Waguri (Sprint "trí nhớ") — ĐÃ HOÀN THIỆN end-to-end:** migration `0074` (cột `users.ai_memory` JSONB + RPC `update_ai_memory`) và `0074b` (`refund_ai_quota`) đã áp DB + verified. Helper `updateAiMemory`/`refundAiQuota` trong database.js.
   - **ĐỌC:** `ai_memory` được chèn vào system prompt Gemini (`src/lib/ai/index.js`).

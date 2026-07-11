@@ -50,6 +50,8 @@ const LINES = {
     }
 };
 
+const { getInteractionLanguage, t } = require('../../lib/i18n');
+
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('action')
@@ -64,8 +66,14 @@ module.exports = {
             ))
         .addUserOption(o => o.setName('user').setDescription('Người cậu muốn tương tác').setRequired(true)),
     async execute(interaction) {
+        const locale = await getInteractionLanguage(interaction);
         const type = interaction.options.getString('type');
         const act = LINES[type];
-        return runCouple(interaction, { emoji: act.emoji, lines: act.set, love: act.love });
+
+        // Đọc danh sách câu từ locales (trả về mảng). Fallback về act.set nếu thiếu.
+        const localizedSet = t(locale, `commands.action.${type}`);
+        const set = (Array.isArray(localizedSet) && localizedSet.length > 0) ? localizedSet : act.set;
+
+        return runCouple(interaction, { emoji: act.emoji, lines: set, love: act.love }, locale);
     },
 };

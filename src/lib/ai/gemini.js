@@ -19,7 +19,7 @@ function getClient() {
  */
 const REQUEST_TIMEOUT_MS = 20000; // chặn treo -> tránh interaction Discord hết hạn
 
-async function chat(systemPrompt, history, userText) {
+async function chat(systemPrompt, history, userText, options = {}) {
     const ai = getClient();
     if (!ai) throw new Error('Thiếu GEMINI_API_KEY');
 
@@ -37,8 +37,8 @@ async function chat(systemPrompt, history, userText) {
         systemInstruction: systemPrompt,
         safetySettings,
         generationConfig: {
-            maxOutputTokens: config.AI.MAX_OUTPUT_TOKENS,
-            temperature: 0.9,
+            maxOutputTokens: options.maxOutputTokens || config.AI.MAX_OUTPUT_TOKENS,
+            temperature: options.temperature || 0.9,
             // Tắt "thinking" của Gemini 2.5 (nếu không, thinking ăn hết token -> câu trả lời bị cụt)
             thinkingConfig: { thinkingBudget: 0 },
         },

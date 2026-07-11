@@ -1,8 +1,9 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { solar2lunar, canChiYear, canChiDay, gioHoangDao } = require('../../lib/amlich');
 const { buildWaguriEmbed } = require('../../lib/embed');
+const { getInteractionLanguage, t } = require('../../lib/i18n');
 
-// Lời Waguri theo ngày (ổn định trong ngày, đổi theo jd).
+// Lời Waguri theo ngày (ổn định trong ngày, đổi theo jd) làm fallback.
 const FORTUNES = [
     'Hôm nay là ngày đẹp để bắt đầu điều mới đó~ Cố lên nhé! 🌸',
     'Một ngày bình yên đang chờ cậu. Nhớ nghỉ ngơi và ăn miếng bánh ngọt nha~ 🍰',
@@ -29,6 +30,7 @@ module.exports = {
         .setDescription('Xem âm lịch, can-chi & giờ hoàng đạo (kèm lời Waguri) 🌙')
         .addStringOption(o => o.setName('ngay').setDescription('Ngày dương lịch (dd/mm/yyyy) — bỏ trống = hôm nay').setRequired(false)),
     async execute(interaction) {
+        const locale = await getInteractionLanguage(interaction);
         await interaction.deferReply();
 
         let d, mo, y;
@@ -36,7 +38,9 @@ module.exports = {
         if (opt) {
             const p = parseDate(opt);
             if (!p) {
-                const e = buildWaguriEmbed(interaction, 'warning', { description: 'Ngày không hợp lệ~ nhập kiểu **dd/mm/yyyy** (vd 21/06/2026) nhé 🌸' });
+                const e = buildWaguriEmbed(interaction, 'warning', {
+                    description: t(locale, 'commands.amlich.err_invalid_date')
+                });
                 return interaction.editReply({ embeds: [e] });
             }
             ({ d, mo, y } = p);
@@ -46,19 +50,31 @@ module.exports = {
         }
 
         const L = solar2lunar(d, mo, y);
-        const thu = THU[new Date(y, mo - 1, d).getDay()];
+        
+        // Dịch ngày thứ
+        const dayIdx = new Date(y, mo - 1, d).getDay();
+        const thu = t(locale, `common.days.${dayIdx}`) || THU[dayIdx];
+
         const gio = gioHoangDao(L.jd);
-        const fortune = FORTUNES[L.jd % FORTUNES.length];
+
+        // Dịch lời khuyên vận thế
+        const localizedFortunes = t(locale, 'commands.amlich.fortunes');
+        const fortune = (Array.isArray(localizedFortunes) && localizedFortunes.length > 0)
+            ? localizedFortunes[L.jd % localizedFortunes.length]
+            : FORTUNES[L.jd % FORTUNES.length];
+
+        const leapStr = L.leap ? t(locale, 'commands.amlich.leap_label') : '';
 
         const embed = buildWaguriEmbed(interaction, 'info', {
-            title: '🌙・Lịch Âm & Tử Vi',
+            locale,
+            title: t(locale, 'commands.amlich.embed_title'),
             description: `> ${fortune}\n`,
             fields: [
-                { name: '📅 Dương lịch', value: `${thu}, ${String(d).padStart(2, '0')}/${String(mo).padStart(2, '0')}/${y}`, inline: true },
-                { name: '🏮 Âm lịch', value: `${L.day}/${L.month}${L.leap ? ' (nhuận)' : ''}/${L.year}`, inline: true },
-                { name: '🐉 Năm', value: `${canChiYear(L.year)}`, inline: true },
-                { name: '📿 Ngày', value: `${canChiDay(L.jd)}`, inline: true },
-                { name: '🕐 Giờ hoàng đạo (giờ tốt)', value: gio.length ? gio.join(' · ') : '*(không có)*', inline: false },
+                { name: t(locale, 'commands.amlich.field_solar'), value: `${thu}, ${String(d).padStart(2, '0')}/${String(mo).padStart(2, '0')}/${y}`, inline: true },
+                { name: t(locale, 'commands.amlich.field_lunar'), value: `${L.day}/${L.month}${leapStr}/${L.year}`, inline: true },
+                { name: t(locale, 'commands.amlich.field_year'), value: `${canChiYear(L.year)}`, inline: true },
+                { name: t(locale, 'commands.amlich.field_day'), value: `${canChiDay(L.jd)}`, inline: true },
+                { name: t(locale, 'commands.amlich.field_zodiac'), value: gio.length ? gio.join(' · ') : (t(locale, 'commands.amlich.no_zodiac_hours') || '*(không có)*'), inline: false },
             ],
         }).setTimestamp();
 

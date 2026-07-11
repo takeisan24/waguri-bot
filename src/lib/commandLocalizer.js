@@ -319,12 +319,22 @@ const COMMAND_DESCRIPTIONS = {
 
 const SUBCOMMAND_DESCRIPTIONS = {
     // config
+    "config.confession-channel": { vi: "Đặt kênh đăng confession", en: "Set confession channel" },
+    "config.ai": { vi: "Bật/tắt trò chuyện AI khi tag Waguri", en: "Toggle AI chat when tagging Waguri" },
+    "config.ai-channel": { vi: "Giới hạn AI chỉ trả lời ở 1 kênh (bỏ trống = mọi kênh)", en: "Limit AI replies to 1 channel (empty = all channels)" },
+    "config.pvp": { vi: "Bật/tắt PvP: cướp /rob + trộm heo/cây", en: "Toggle PvP: rob / thievery" },
+    "config.police-jail": { vi: "Bật/tắt tạm giam khi gặp công an", en: "Toggle Discord timeout for police check" },
+    "config.gambling": { vi: "Bật/tắt trò may rủi (bài cào, tài xỉu, xóc đĩa…)", en: "Toggle gambling minigames" },
+    "config.welcome-channel": { vi: "Đặt kênh chào mừng thành viên mới (bỏ trống để tắt)", en: "Set welcome channel (empty to disable)" },
+    "config.welcome-role": { vi: "Đặt role tự động gán khi gia nhập (bỏ trống để tắt)", en: "Set auto-join role (empty to disable)" },
+    "config.announcement-channel": { vi: "Đặt kênh nhận thông báo cập nhật", en: "Set update announcements channel" },
+    "config.language": { vi: "Đặt ngôn ngữ hiển thị cho bot", en: "Set bot display language" },
     "config.view": { vi: "Xem cấu hình hiện tại của máy chủ", en: "View current server configuration" },
-    "config.language": { vi: "Thay đổi ngôn ngữ hiển thị của máy chủ", en: "Change display language for the server" },
-    "config.welcome": { vi: "Bật/Tắt tin nhắn chào mừng thành viên mới", en: "Enable/Disable welcome messages" },
-    "config.welchannel": { vi: "Cài đặt kênh gửi tin nhắn chào mừng", en: "Set channel for welcome messages" },
-    "config.ai_chat": { vi: "Bật/Tắt chat AI khi tag bot", en: "Enable/Disable AI chat when tagging bot" },
-    "config.police_jail": { vi: "Bật/Tắt phạt tù khi chơi trò may rủi", en: "Enable/Disable jail timeouts for gambling" },
+
+    // boi
+    "boi.hangngay": { vi: "Vận mệnh hôm nay của cậu", en: "Your fortune for today" },
+    "boi.cunghoangdao": { vi: "Tử vi theo cung hoàng đạo", en: "Horoscope by zodiac sign" },
+    "boi.thaydo": { vi: "Thầy đồ phán một quẻ (mỗi lần một khác)", en: "Get a random prophecy from the teacher" },
 
     // couple
     "couple.status": { vi: "Xem trạng thái tình cảm hiện tại", en: "View current marriage status" },
@@ -413,12 +423,53 @@ const OPTION_DESCRIPTIONS = {
     "side": { vi: "Chọn mặt hoặc cửa đặt", en: "Choose side or bet option" },
     "choice": { vi: "Lựa chọn của cậu", en: "Your choice" },
     "user": { vi: "Mục tiêu tương tác", en: "Target user for interaction" },
-    "target": { vi: "Người chơi muốn xem", en: "Target player to view" },
-    "amount": { vi: "Số tiền giao dịch", en: "Amount of money" },
-    "quantity": { vi: "Số lượng vật phẩm", en: "Quantity of items" },
+    "target": { vi: "Người chơi muốn xem/tương tác", en: "Target player to view/interact" },
+    "amount": { vi: "Số tiền giao dịch/lì xì", en: "Amount of money" },
+    "quantity": { vi: "Số lượng vật phẩm/lì xì", en: "Quantity of items" },
     "item": { vi: "Vật phẩm tương tác", en: "Target item" },
     "name": { vi: "Tên cần nhập", en: "Name to input" },
-    "thanh_pho": { vi: "Tên thành phố (vd: Hanoi, Tokyo)", en: "City name (e.g. Hanoi, Tokyo)" }
+    "thanh_pho": { vi: "Tên thành phố (vd: Hanoi, Tokyo)", en: "City name (e.g. Hanoi, Tokyo)" },
+    "cung": { vi: "Cung hoàng đạo của cậu", en: "Your zodiac sign" },
+    "enabled": { vi: "Trạng thái kích hoạt (Bật/Tắt)", en: "Enabled state (True/False)" },
+    "role": { vi: "Role gán tự động", en: "Auto-assigned role" },
+    "lang": { vi: "Ngôn ngữ hiển thị (vi/en)", en: "Display language (vi/en)" },
+    "user1": { vi: "Người thứ nhất", en: "First user" },
+    "user2": { vi: "Người thứ hai (bỏ trống = chính cậu)", en: "Second user (empty = yourself)" },
+    "type": { vi: "Loại hành động", en: "Type of action" },
+    "category": { vi: "Danh mục ảnh", en: "Image category" },
+    "message": { vi: "Nội dung tin nhắn/confession", en: "Message/confession content" },
+    "channel": { vi: "Kênh văn bản chỉ định", en: "Designated text channel" },
+    "hex": { vi: "Mã màu Hex (vd: F1C40F)", en: "Hex color code (e.g. F1C40F)" },
+    "text": { vi: "Nội dung văn bản/danh hiệu", en: "Text content/title" }
+};
+
+const CHOICE_LOCALIZATIONS = {
+    // boi
+    "bach_duong": { vi: "♈ Bạch Dương", en: "♈ Aries" },
+    "kim_nguu": { vi: "♉ Kim Ngưu", en: "♉ Taurus" },
+    "song_tu": { vi: "♊ Song Tử", en: "♊ Gemini" },
+    "cu_giai": { vi: "♋ Cự Giải", en: "♋ Cancer" },
+    "su_tu": { vi: "♌ Sư Tử", en: "♌ Leo" },
+    "xu_nu": { vi: "♍ Xử Nữ", en: "♍ Virgo" },
+    "thien_binh": { vi: "♎ Thiên Bình", en: "♎ Libra" },
+    "bo_cap": { vi: "♏ Bọ Cạp", en: "♏ Scorpio" },
+    "nhan_ma": { vi: "♐ Nhân Mã", en: "♐ Sagittarius" },
+    "ma_ket": { vi: "♑ Ma Kết", en: "♑ Capricorn" },
+    "bao_binh": { vi: "♒ Bảo Bình", en: "♒ Aquarius" },
+    "song_ngu": { vi: "♓ Song Ngư", en: "♓ Pisces" },
+    // action
+    "hug": { vi: "Ôm", en: "Hug" },
+    "kiss": { vi: "Ôm hôn", en: "Kiss" },
+    "pat": { vi: "Xoa đầu", en: "Pat head" },
+    "poke": { vi: "Chọc", en: "Poke" },
+    "slap": { vi: "Tát yêu", en: "Playful Slap" },
+    // image
+    "cat": { vi: "Mèo 🐱", en: "Cat 🐱" },
+    "dog": { vi: "Cún 🐶", en: "Dog 🐶" },
+    "waifu": { vi: "Waifu anime 🌸", en: "Waifu anime 🌸" },
+    // config lang
+    "vi": { vi: "Tiếng Việt 🇻🇳", en: "Vietnamese 🇻🇳" },
+    "en": { vi: "Tiếng Anh 🇬🇧", en: "English 🇬🇧" }
 };
 
 /**
@@ -511,6 +562,21 @@ function localizeOption(parentName, opt) {
             "en-US": opt.name,
             "en-GB": opt.name
         };
+
+        // Địa phương hóa choices nếu có
+        if (Array.isArray(opt.choices)) {
+            for (const choice of opt.choices) {
+                const choiceLoc = CHOICE_LOCALIZATIONS[choice.value];
+                if (choiceLoc) {
+                    choice.name = choiceLoc.vi;
+                    choice.name_localizations = {
+                        "vi": choiceLoc.vi,
+                        "en-US": choiceLoc.en,
+                        "en-GB": choiceLoc.en
+                    };
+                }
+            }
+        }
     }
 }
 

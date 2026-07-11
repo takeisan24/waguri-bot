@@ -1,6 +1,7 @@
 const { SlashCommandBuilder } = require('discord.js');
 const images = require('../../lib/images');
 const { buildWaguriEmbed } = require('../../lib/embed');
+const { getInteractionLanguage, t } = require('../../lib/i18n');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -13,26 +14,31 @@ module.exports = {
                 { name: 'Waifu 🌸', value: 'waifu' }
             )),
     async execute(interaction) {
+        const locale = await getInteractionLanguage(interaction);
         await interaction.deferReply();
         const category = interaction.options.getString('category');
-        const titles = {
+
+        const fallbackTitles = {
             cat: '🐱 Mèo cho cậu nè~',
             dog: '🐶 Cún cho cậu nè~',
             waifu: '🌸 Waifu cho cậu nè~'
         };
 
+        const title = t(locale, `commands.image.title_${category}`) || fallbackTitles[category];
+
         try {
             const url = await images[category]();
             if (!url) throw new Error('no url');
             const embed = buildWaguriEmbed(interaction, 'info', {
-                title: titles[category],
+                locale,
+                title,
                 image: url
             });
             await interaction.editReply({ embeds: [embed] });
         } catch (error) {
             console.error(`[IMAGE COMMAND ERROR] category: ${category}`, error);
             const embedErr = buildWaguriEmbed(interaction, 'error', {
-                description: 'Hơ, không lấy được ảnh lúc này, thử lại sau nhé~ 🌸'
+                description: t(locale, 'commands.image.err_fetch')
             });
             await interaction.editReply({ embeds: [embedErr] });
         }

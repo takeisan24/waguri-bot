@@ -1,6 +1,7 @@
 const { SlashCommandBuilder, PermissionFlagsBits, ChannelType, MessageFlags } = require('discord.js');
 const db = require('../../database.js');
 const { buildWaguriEmbed } = require('../../lib/embed');
+const { getInteractionLanguage, t } = require('../../lib/i18n');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -33,10 +34,11 @@ module.exports = {
                 )))
         .addSubcommand(s => s.setName('view').setDescription('Xem cấu hình hiện tại')),
     async execute(interaction) {
+        const locale = await getInteractionLanguage(interaction);
         // Tự enforce quyền (phòng trường hợp gọi qua prefix)
         if (!interaction.member?.permissions?.has?.(PermissionFlagsBits.ManageGuild)) {
             const embed = buildWaguriEmbed(interaction, 'error', {
-                description: 'Cần quyền **Quản lý Server** để dùng lệnh này nhé~ 🌸'
+                description: t(locale, 'commands.config.err_no_permission')
             });
             return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
         }
@@ -48,13 +50,13 @@ module.exports = {
             const ch = interaction.options.getChannel('channel');
             if (!ch) {
                 const embed = buildWaguriEmbed(interaction, 'warning', {
-                    description: 'Cậu chưa chọn kênh~ (nhập #kênh)'
+                    description: t(locale, 'commands.config.confession_err_channel_missing')
                 });
                 return interaction.editReply({ embeds: [embed] });
             }
             await db.setGuildSetting(gid, 'confession_channel', ch.id);
             const embed = buildWaguriEmbed(interaction, 'success', {
-                description: `✅ Đã đặt kênh confession là <#${ch.id}>.`
+                description: t(locale, 'commands.config.confession_success', { channelId: ch.id })
             });
             return interaction.editReply({ embeds: [embed] });
         }
@@ -63,7 +65,9 @@ module.exports = {
             const enabled = interaction.options.getBoolean('enabled');
             await db.setGuildSetting(gid, 'ai_enabled', enabled ? '1' : '0');
             const embed = buildWaguriEmbed(interaction, 'success', {
-                description: `✅ Đã **${enabled ? 'BẬT' : 'TẮT'}** trò chuyện AI (@tag Waguri) ở server này.`
+                description: t(locale, 'commands.config.ai_success', {
+                    status: enabled ? t(locale, 'commands.config.status_on') : t(locale, 'commands.config.status_off')
+                })
             });
             return interaction.editReply({ embeds: [embed] });
         }
@@ -72,7 +76,7 @@ module.exports = {
             const ch = interaction.options.getChannel('channel');
             await db.setGuildSetting(gid, 'ai_channel', ch ? ch.id : '');
             const embed = buildWaguriEmbed(interaction, 'success', {
-                description: ch ? `✅ AI giờ chỉ trả lời trong <#${ch.id}>.` : '✅ Đã gỡ giới hạn kênh — AI trả lời ở mọi kênh.'
+                description: ch ? t(locale, 'commands.config.ai_channel_set', { channelId: ch.id }) : t(locale, 'commands.config.ai_channel_removed')
             });
             return interaction.editReply({ embeds: [embed] });
         }
@@ -81,7 +85,9 @@ module.exports = {
             const enabled = interaction.options.getBoolean('enabled');
             await db.setGuildSetting(gid, 'pvp', enabled ? '1' : '0');
             const embed = buildWaguriEmbed(interaction, 'success', {
-                description: `✅ Đã **${enabled ? 'BẬT' : 'TẮT'}** PvP (cướp /rob + trộm heo/cây) ở server này.`
+                description: t(locale, 'commands.config.pvp_success', {
+                    status: enabled ? t(locale, 'commands.config.status_on') : t(locale, 'commands.config.status_off')
+                })
             });
             return interaction.editReply({ embeds: [embed] });
         }
@@ -90,7 +96,7 @@ module.exports = {
             const enabled = interaction.options.getBoolean('enabled');
             await db.setGuildSetting(gid, 'police_jail', enabled ? '1' : '0');
             const embed = buildWaguriEmbed(interaction, 'success', {
-                description: `✅ Đã **${enabled ? 'BẬT' : 'TẮT'}** tạm giam (Discord timeout) khi công an kiểm tra trò may rủi.${enabled ? '' : ' Giờ chỉ phạt tiền, không timeout nữa.'}`
+                description: enabled ? t(locale, 'commands.config.police_jail_on') : t(locale, 'commands.config.police_jail_off')
             });
             return interaction.editReply({ embeds: [embed] });
         }
@@ -99,7 +105,7 @@ module.exports = {
             const enabled = interaction.options.getBoolean('enabled');
             await db.setGuildSetting(gid, 'gambling', enabled ? '1' : '0');
             const embed = buildWaguriEmbed(interaction, 'success', {
-                description: `✅ Đã **${enabled ? 'BẬT' : 'TẮT'}** trò may rủi (bài cào, tài xỉu, xóc đĩa…) ở server này.${enabled ? '' : ' Các lệnh chơi sẽ bị từ chối nhẹ nhàng.'}`
+                description: enabled ? t(locale, 'commands.config.gambling_on') : t(locale, 'commands.config.gambling_off')
             });
             return interaction.editReply({ embeds: [embed] });
         }
@@ -108,7 +114,7 @@ module.exports = {
             const ch = interaction.options.getChannel('channel');
             await db.setGuildSetting(gid, 'welcome_channel', ch ? ch.id : '');
             const embed = buildWaguriEmbed(interaction, 'success', {
-                description: ch ? `✅ Đã đặt kênh chào mừng là <#${ch.id}>.` : '✅ Đã tắt tính năng chào mừng thành viên mới.'
+                description: ch ? t(locale, 'commands.config.welcome_channel_set', { channelId: ch.id }) : t(locale, 'commands.config.welcome_channel_removed')
             });
             return interaction.editReply({ embeds: [embed] });
         }
@@ -117,7 +123,7 @@ module.exports = {
             const role = interaction.options.getRole('role');
             await db.setGuildSetting(gid, 'welcome_role', role ? role.id : '');
             const embed = buildWaguriEmbed(interaction, 'success', {
-                description: role ? `✅ Đã đặt auto-role khi tham gia là <@&${role.id}>.` : '✅ Đã tắt tự động gán role khi tham gia.'
+                description: role ? t(locale, 'commands.config.welcome_role_set', { roleId: role.id }) : t(locale, 'commands.config.welcome_role_removed')
             });
             return interaction.editReply({ embeds: [embed] });
         }
@@ -126,7 +132,7 @@ module.exports = {
             const ch = interaction.options.getChannel('channel');
             await db.setGuildSetting(gid, 'announcement_channel', ch ? ch.id : '');
             const embed = buildWaguriEmbed(interaction, 'success', {
-                description: ch ? `✅ Đã đặt kênh nhận thông báo cập nhật tự động là <#${ch.id}>.` : '✅ Đã tắt nhận thông báo cập nhật tự động.'
+                description: ch ? t(locale, 'commands.config.announcement_channel_set', { channelId: ch.id }) : t(locale, 'commands.config.announcement_channel_removed')
             });
             return interaction.editReply({ embeds: [embed] });
         }
@@ -136,8 +142,8 @@ module.exports = {
             await db.setGuildSetting(gid, 'language', lang);
             const embed = buildWaguriEmbed(interaction, 'success', {
                 description: lang === 'en'
-                    ? '✅ Server language has been set to **English** 🇬🇧.'
-                    : '✅ Ngôn ngữ hiển thị của server đã được đặt thành **Tiếng Việt** 🇻🇳.'
+                    ? t(locale, 'commands.config.language_success_en')
+                    : t(locale, 'commands.config.language_success_vi')
             });
             return interaction.editReply({ embeds: [embed] });
         }
@@ -145,18 +151,19 @@ module.exports = {
         if (sub === 'view') {
             const s = await db.getGuildSettings(gid);
             const embed = buildWaguriEmbed(interaction, 'info', {
-                title: '⚙️ Cấu hình server',
+                locale,
+                title: t(locale, 'commands.config.view_title'),
                 fields: [
-                    { name: 'Kênh confession', value: s.confession_channel ? `<#${s.confession_channel}>` : '*(chưa đặt)*' },
-                    { name: 'AI trò chuyện', value: s.ai_enabled === '0' ? '🔴 Tắt' : '🟢 Bật', inline: true },
-                    { name: 'Kênh AI', value: s.ai_channel ? `<#${s.ai_channel}>` : '*(mọi kênh)*', inline: true },
-                    { name: 'PvP (cướp/trộm)', value: s.pvp === '0' ? '🔴 Tắt' : '🟢 Bật', inline: true },
-                    { name: 'Trò may rủi', value: s.gambling === '0' ? '🔴 Tắt' : '🟢 Bật', inline: true },
-                    { name: 'Tạm giam (trò may rủi)', value: s.police_jail === '0' ? '🔴 Tắt' : '🟢 Bật', inline: true },
-                    { name: 'Kênh chào mừng', value: s.welcome_channel ? `<#${s.welcome_channel}>` : '*(tắt chào mừng)*', inline: true },
-                    { name: 'Auto-role gán tự động', value: s.welcome_role ? `<@&${s.welcome_role}>` : '*(tắt auto-role)*', inline: true },
-                    { name: 'Ngôn ngữ / Language', value: s.language === 'en' ? '🇬🇧 English' : '🇻🇳 Tiếng Việt', inline: true },
-                    { name: 'Kênh nhận thông báo cập nhật', value: s.announcement_channel ? `<#${s.announcement_channel}>` : '*(tắt thông báo)*', inline: false }
+                    { name: t(locale, 'commands.config.field_confession_channel'), value: s.confession_channel ? `<#${s.confession_channel}>` : t(locale, 'commands.config.val_not_set') },
+                    { name: t(locale, 'commands.config.field_ai_enabled'), value: s.ai_enabled === '0' ? t(locale, 'commands.config.status_disabled_emoji') : t(locale, 'commands.config.status_enabled_emoji'), inline: true },
+                    { name: t(locale, 'commands.config.field_ai_channel'), value: s.ai_channel ? `<#${s.ai_channel}>` : t(locale, 'commands.config.val_all_channels'), inline: true },
+                    { name: t(locale, 'commands.config.field_pvp'), value: s.pvp === '0' ? t(locale, 'commands.config.status_disabled_emoji') : t(locale, 'commands.config.status_enabled_emoji'), inline: true },
+                    { name: t(locale, 'commands.config.field_gambling'), value: s.gambling === '0' ? t(locale, 'commands.config.status_disabled_emoji') : t(locale, 'commands.config.status_enabled_emoji'), inline: true },
+                    { name: t(locale, 'commands.config.field_police_jail'), value: s.police_jail === '0' ? t(locale, 'commands.config.status_disabled_emoji') : t(locale, 'commands.config.status_enabled_emoji'), inline: true },
+                    { name: t(locale, 'commands.config.field_welcome_channel'), value: s.welcome_channel ? `<#${s.welcome_channel}>` : t(locale, 'commands.config.val_disabled_welcome'), inline: true },
+                    { name: t(locale, 'commands.config.field_welcome_role'), value: s.welcome_role ? `<@&${s.welcome_role}>` : t(locale, 'commands.config.val_disabled_role'), inline: true },
+                    { name: t(locale, 'commands.config.field_language'), value: s.language === 'en' ? '🇬🇧 English' : '🇻🇳 Tiếng Việt', inline: true },
+                    { name: t(locale, 'commands.config.field_announcement_channel'), value: s.announcement_channel ? `<#${s.announcement_channel}>` : t(locale, 'commands.config.val_disabled_announcement'), inline: false }
                 ]
             });
             return interaction.editReply({ embeds: [embed] });

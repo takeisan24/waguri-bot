@@ -2,8 +2,9 @@ const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const { buildWaguriEmbed } = require('../../lib/embed');
 const db = require('../../database.js');
 const config = require('../../config');
+const { getInteractionLanguage, t } = require('../../lib/i18n');
 
-const fmt = n => Number(n).toLocaleString('vi-VN');
+const fmt = (n, locale) => Number(n).toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN');
 
 // Chi phí sửa = 15% giá mua (làm tròn). Gồm cả công cụ khai thác lẫn xe cộ.
 const REPAIR_COSTS = {
@@ -52,38 +53,44 @@ module.exports = {
             )),
 
     async execute(interaction) {
+        const locale = await getInteractionLanguage(interaction);
         await interaction.deferReply();
         const userId = interaction.user.id;
         const toolId = interaction.options.getString('tool');
         const cost = REPAIR_COSTS[toolId];
 
         const r = await db.repairTool(userId, toolId, cost);
+        const toolName = t(locale, `items.${toolId}.name`) || TOOL_NAMES[toolId] || toolId;
 
         if (r === 'no_tool') {
             const embed = buildWaguriEmbed(interaction, 'error', {
-                title: '🛠️・Sửa công cụ',
-                description: `Cậu chưa sở hữu **${TOOL_NAMES[toolId]}** trong kho đồ để sửa. Hãy ghé \`/shop\` mua nhé!`
+                locale,
+                title: t(locale, 'commands.repair.embed_title_warning'),
+                description: t(locale, 'commands.repair.err_no_tool', { tool: toolName })
             });
             return interaction.editReply({ embeds: [embed] });
         }
         if (r === 'already_repaired') {
             const embed = buildWaguriEmbed(interaction, 'warning', {
-                title: '🛠️・Sửa công cụ',
-                description: `**${TOOL_NAMES[toolId]}** vẫn còn rất mới, độ bền 100% rồi không cần sửa đâu~`
+                locale,
+                title: t(locale, 'commands.repair.embed_title_warning'),
+                description: t(locale, 'commands.repair.err_already_healthy', { tool: toolName })
             });
             return interaction.editReply({ embeds: [embed] });
         }
         if (r === 'insufficient_funds') {
             const embed = buildWaguriEmbed(interaction, 'error', {
-                title: '🛠️・Sửa công cụ',
-                description: `Cậu không đủ **${fmt(cost)}** ${config.CURRENCY} trong ví để thanh toán chi phí sửa chữa.`
+                locale,
+                title: t(locale, 'commands.repair.embed_title_warning'),
+                description: t(locale, 'commands.repair.err_poor', { cost: fmt(cost, locale), currency: config.CURRENCY })
             });
             return interaction.editReply({ embeds: [embed] });
         }
         if (r !== 'ok') {
             const embed = buildWaguriEmbed(interaction, 'error', {
-                title: '🛠️・Sửa công cụ',
-                description: 'Ơ, có lỗi khi sửa công cụ rồi, thử lại sau nhé~'
+                locale,
+                title: t(locale, 'commands.repair.embed_title_warning'),
+                description: t(locale, 'commands.repair.err_system')
             });
             return interaction.editReply({ embeds: [embed] });
         }
@@ -91,10 +98,11 @@ module.exports = {
         const u = await db.getUser(userId);
 
         const embed = buildWaguriEmbed(interaction, 'success', {
-            title: '🛠️・Sửa chữa công cụ thành công',
-            description: `Cậu đã thanh toán **${fmt(cost)}** ${config.CURRENCY} để phục hồi độ bền của **${TOOL_NAMES[toolId]}** về **100/100**! ✨`,
+            locale,
+            title: t(locale, 'commands.repair.success_title'),
+            description: t(locale, 'commands.repair.success_desc', { cost: fmt(cost, locale), currency: config.CURRENCY, tool: toolName }),
             fields: [
-                { name: '💵 Số dư ví', value: `**${fmt(u?.wallet || 0)}** ${config.CURRENCY}`, inline: true }
+                { name: t(locale, 'commands.repair.field_wallet'), value: `**${fmt(u?.wallet || 0, locale)}** ${config.CURRENCY}`, inline: true }
             ]
         });
 

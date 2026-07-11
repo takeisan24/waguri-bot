@@ -3,8 +3,9 @@ const db = require('../../database.js');
 const config = require('../../config');
 const { sendPaginated } = require('../../lib/paginate');
 const { buildWaguriEmbed } = require('../../lib/embed');
+const { getInteractionLanguage, t } = require('../../lib/i18n');
 
-const fmt = n => Number(n).toLocaleString('vi-VN');
+const fmt = (n, locale) => Number(n).toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -22,31 +23,56 @@ module.exports = {
             .addIntegerOption(o => o.setName('id').setDescription('Mã món (#)').setRequired(true).setMinValue(1))),
 
     async autocomplete(interaction) {
+        const locale = await getInteractionLanguage(interaction);
         const focused = interaction.options.getFocused().toLowerCase();
         const inv = await db.getInventory(interaction.user.id);
         await interaction.respond(inv
-            .filter(r => (r.items?.name || '').toLowerCase().includes(focused) || r.item_id.includes(focused))
-            .slice(0, 25).map(r => ({ name: `${r.items?.name || r.item_id} (x${r.quantity})`, value: r.item_id })));
+            .filter(r => {
+                const name = t(locale, `items.${r.item_id}.name`) || r.items?.name || r.item_id;
+                return name.toLowerCase().includes(focused) || r.item_id.includes(focused);
+            })
+            .slice(0, 25).map(r => {
+                const name = t(locale, `items.${r.item_id}.name`) || r.items?.name || r.item_id;
+                return { name: `${name} (x${r.quantity})`, value: r.item_id };
+            }));
     },
 
     async execute(interaction) {
+        const locale = await getInteractionLanguage(interaction);
         const sub = interaction.options.getSubcommand();
         const items = await db.getItems();
-        const nameOf = id => items.find(i => i.id === id)?.name || id;
+        const nameOf = id => {
+            const originalName = items.find(i => i.id === id)?.name || id;
+            return t(locale, `items.${id}.name`) || originalName;
+        };
 
         if (sub === 'view' || sub === 'mine') {
             await interaction.deferReply();
             const rows = sub === 'mine' ? await db.marketMine(interaction.user.id) : await db.marketActive(50);
             if (!rows.length) {
                 const embed = buildWaguriEmbed(interaction, 'warning', {
-                    description: sub === 'mine' ? 'Cậu chưa đăng bán món nào~' : 'Chợ đang vắng, chưa ai bán gì cả~ 🌸'
+                    locale,
+                    description: sub === 'mine' ? t(locale, 'commands.market.err_mine_empty') : t(locale, 'commands.market.err_view_empty')
                 });
                 return interaction.editReply({ embeds: [embed] });
             }
-            const lines = rows.map(r => `\`#${r.id}\` **${r.qty}× ${nameOf(r.item_id)}** — **${fmt(r.price)}** ${config.CURRENCY}${sub === 'view' ? ` · <@${r.seller_id}>` : ''}`);
+            const lines = rows.map(r => {
+                const baseStr = t(locale, 'commands.market.view_line', {
+                    id: r.id,
+                    qty: r.qty,
+                    name: nameOf(r.item_id),
+                    price: fmt(r.price, locale),
+                    currency: config.CURRENCY
+                });
+                const sellerStr = sub === 'view' ? t(locale, 'commands.market.view_seller', { user: r.seller_id }) : '';
+                return baseStr + sellerStr;
+            });
             return sendPaginated(interaction, {
-                title: sub === 'mine' ? '🛒 Món cậu đang bán' : '🛒 Chợ — đang bán',
-                color: config.COLORS.INFO, lines, perPage: 10, footerNote: 'Mua: /market buy <mã>',
+                title: sub === 'mine' ? t(locale, 'commands.market.title_mine') : t(locale, 'commands.market.title_view'),
+                color: config.COLORS.INFO,
+                lines,
+                perPage: 10,
+                footerNote: t(locale, 'commands.market.paginated_footer'),
             });
         }
 
@@ -58,20 +84,30 @@ module.exports = {
             const r = await db.marketList(interaction.user.id, itemId, qty, price);
             if (!r) {
                 const embed = buildWaguriEmbed(interaction, 'error', {
-                    description: 'Ơ, có lỗi khi đăng bán, thử lại sau nhé~ 🌸'
+                    locale,
+                    description: t(locale, 'commands.market.err_system')
                 });
                 return interaction.editReply({ embeds: [embed] });
             }
             if (r.status === 'poor_item') {
                 const embed = buildWaguriEmbed(interaction, 'error', {
-                    title: '🛒 Đăng bán vật phẩm',
-                    description: `Cậu không có đủ **${qty}× ${nameOf(itemId)}** trong kho~`
+                    locale,
+                    title: t(locale, 'commands.market.title_list'),
+                    description: t(locale, 'commands.market.err_poor_item', { qty, name: nameOf(itemId) })
                 });
                 return interaction.editReply({ embeds: [embed] });
             }
             const embed = buildWaguriEmbed(interaction, 'success', {
-                title: '🛒 Đăng bán thành công!',
-                description: `Đã đăng bán **${qty}× ${nameOf(itemId)}** giá **${fmt(price)}** ${config.CURRENCY} (mã \`#${r.id}\`).\n\n*Người khác mua bằng \`/market buy ${r.id}\` · chợ thu phí ${Math.round(config.MARKET.FEE_PCT * 100)}% khi bán được.*`
+                locale,
+                title: t(locale, 'commands.market.list_success_title'),
+                description: t(locale, 'commands.market.list_success_desc', {
+                    qty,
+                    name: nameOf(itemId),
+                    price: fmt(price, locale),
+                    currency: config.CURRENCY,
+                    id: r.id,
+                    feePct: Math.round(config.MARKET.FEE_PCT * 100)
+                })
             });
             return interaction.editReply({ embeds: [embed] });
         }
@@ -80,26 +116,40 @@ module.exports = {
             const r = await db.marketBuy(interaction.user.id, id);
             if (!r) {
                 const embed = buildWaguriEmbed(interaction, 'error', {
-                    description: 'Ơ, có lỗi khi mua, thử lại sau nhé~ 🌸'
+                    locale,
+                    description: t(locale, 'commands.market.err_system')
                 });
                 return interaction.editReply({ embeds: [embed] });
             }
-            const msg = {
-                notfound: 'Không tìm thấy món này~',
-                gone: 'Món này đã bán/gỡ mất rồi 😢',
-                own: 'Đây là món của chính cậu mà~ 😄',
-                poor: `Cậu cần **${fmt(r.price)}** ${config.CURRENCY} để mua~ 😟`
-            }[r.status];
+            let msg;
+            if (r.status === 'notfound') {
+                msg = t(locale, 'commands.market.err_not_found');
+            } else if (r.status === 'gone') {
+                msg = t(locale, 'commands.market.err_gone');
+            } else if (r.status === 'own') {
+                msg = t(locale, 'commands.market.err_own');
+            } else if (r.status === 'poor') {
+                msg = t(locale, 'commands.market.err_poor', { price: fmt(r.price, locale), currency: config.CURRENCY });
+            }
+
             if (msg) {
                 const embed = buildWaguriEmbed(interaction, 'error', {
-                    title: '🛒 Mua vật phẩm từ chợ',
+                    locale,
+                    title: t(locale, 'commands.market.title_buy'),
                     description: msg
                 });
                 return interaction.editReply({ embeds: [embed] });
             }
             const embed = buildWaguriEmbed(interaction, 'success', {
-                title: '🛒 Mua vật phẩm thành công!',
-                description: `Cậu đã mua **${r.qty}× ${nameOf(r.item)}** với **${fmt(r.price)}** ${config.CURRENCY} từ <@${r.seller}>! Đồ đã vào kho 🎒`
+                locale,
+                title: t(locale, 'commands.market.buy_success_title'),
+                description: t(locale, 'commands.market.buy_success_desc', {
+                    qty: r.qty,
+                    name: nameOf(r.item),
+                    price: fmt(r.price, locale),
+                    currency: config.CURRENCY,
+                    seller: r.seller
+                })
             });
             return interaction.editReply({ embeds: [embed] });
         }
@@ -108,25 +158,35 @@ module.exports = {
             const r = await db.marketCancel(interaction.user.id, id);
             if (!r) {
                 const embed = buildWaguriEmbed(interaction, 'error', {
-                    description: 'Ơ, có lỗi, thử lại sau nhé~ 🌸'
+                    locale,
+                    description: t(locale, 'commands.market.err_system')
                 });
                 return interaction.editReply({ embeds: [embed] });
             }
-            const msg = {
-                notfound: 'Không tìm thấy món này~',
-                notyours: 'Đây không phải món cậu đăng bán~',
-                gone: 'Món này đã bán/gỡ rồi~'
-            }[r.status];
+            let msg;
+            if (r.status === 'notfound') {
+                msg = t(locale, 'commands.market.err_not_found');
+            } else if (r.status === 'notyours') {
+                msg = t(locale, 'commands.market.err_not_yours');
+            } else if (r.status === 'gone') {
+                msg = t(locale, 'commands.market.err_gone');
+            }
+
             if (msg) {
                 const embed = buildWaguriEmbed(interaction, 'error', {
-                    title: '🛒 Hủy đăng bán',
+                    locale,
+                    title: t(locale, 'commands.market.title_cancel'),
                     description: msg
                 });
                 return interaction.editReply({ embeds: [embed] });
             }
             const embed = buildWaguriEmbed(interaction, 'success', {
-                title: '🛒 Hủy đăng bán thành công',
-                description: `Đã gỡ **${r.qty}× ${nameOf(r.item)}** khỏi chợ, đồ trả về kho rồi nhé~ 🎒`
+                locale,
+                title: t(locale, 'commands.market.cancel_success_title'),
+                description: t(locale, 'commands.market.cancel_success_desc', {
+                    qty: r.qty,
+                    name: nameOf(r.item)
+                })
             });
             return interaction.editReply({ embeds: [embed] });
         }

@@ -1,6 +1,7 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const { buildWaguriEmbed } = require('../../lib/embed');
 const config = require('../../config');
+const { getInteractionLanguage, t } = require('../../lib/i18n');
 
 const TINH_DUYEN = [
     'Hôm nay có người thầm để ý cậu đó~ 👀',
@@ -76,48 +77,65 @@ module.exports = {
                 .addChoices(...ZODIAC.map(z => ({ name: z.name, value: z.id })))))
         .addSubcommand(s => s.setName('thaydo').setDescription('Thầy đồ phán một quẻ (mỗi lần một khác)')),
     async execute(interaction) {
-        await interaction.deferReply();        const sub = interaction.options.getSubcommand();
+        const locale = await getInteractionLanguage(interaction);
+        await interaction.deferReply();
+        const sub = interaction.options.getSubcommand();
 
         if (sub === 'cunghoangdao') {
             const cung = interaction.options.getString('cung');
             const z = ZODIAC.find(x => x.id === cung);
+            const zName = t(locale, `data.zodiac.${cung}`) || z.name;
             const h = seed(cung + today());
+
+            const horoscopeArr = t(locale, 'commands.boi.horoscopes') || HOROSCOPE;
+            const luckArr = t(locale, 'commands.boi.luck_levels') || MAY_MAN;
+
             const embed = buildWaguriEmbed(interaction, 'jackpot', {
-                title: `🔮・Tử vi hôm nay — ${z.name}`,
-                description: pick(HOROSCOPE, h),
+                locale,
+                title: t(locale, 'commands.boi.zodiac_title', { name: zName }),
+                description: pick(horoscopeArr, h),
                 fields: [
-                    { name: '🍀 May mắn', value: pick(MAY_MAN, h >>> 4), inline: true },
-                    { name: '🔢 Số may mắn', value: `${(h % 99) + 1}`, inline: true }
+                    { name: t(locale, 'commands.boi.zodiac_luck_label'), value: pick(luckArr, h >>> 4), inline: true },
+                    { name: t(locale, 'commands.boi.zodiac_number_label'), value: `${(h % 99) + 1}`, inline: true }
                 ]
             });
             embed.setFooter({
-                text: `Bói cho vui thôi nha~ • ${embed.data.footer.text}`,
+                text: t(locale, 'commands.boi.zodiac_footer') + ` • ${embed.data.footer.text}`,
                 iconURL: embed.data.footer.icon_url
             });
             return interaction.editReply({ embeds: [embed] });
         }
 
         if (sub === 'thaydo') {
+            const thaydoArr = t(locale, 'commands.boi.thaydo_prophecies') || THAYDO;
             const embed = buildWaguriEmbed(interaction, 'info', {
-                title: '🧙・Thầy đồ phán',
-                description: THAYDO[Math.floor(Math.random() * THAYDO.length)]
+                locale,
+                title: t(locale, 'commands.boi.thaydo_title'),
+                description: thaydoArr[Math.floor(Math.random() * thaydoArr.length)]
             });
             return interaction.editReply({ embeds: [embed] });
         }
 
         // hangngay (mặc định)
         const h = seed(interaction.user.id + today());
+
+        const loveArr = t(locale, 'commands.boi.daily_love_fortunes') || TINH_DUYEN;
+        const moneyArr = t(locale, 'commands.boi.daily_money_fortunes') || TAI_LOC;
+        const luckArr = t(locale, 'commands.boi.luck_levels') || MAY_MAN;
+        const adviceArr = t(locale, 'commands.boi.daily_advice') || LOI_KHUYEN;
+
         const embed = buildWaguriEmbed(interaction, 'jackpot', {
-            title: `🔮・Vận mệnh hôm nay của ${interaction.user.username}`,
+            locale,
+            title: t(locale, 'commands.boi.daily_title', { user: interaction.user.username }),
             fields: [
-                { name: '💕 Tình duyên', value: pick(TINH_DUYEN, h), inline: false },
-                { name: '💰 Tài lộc', value: pick(TAI_LOC, h >>> 3), inline: false },
-                { name: '🍀 May mắn', value: pick(MAY_MAN, h >>> 6), inline: false },
-                { name: '🌸 Lời khuyên của Waguri', value: pick(LOI_KHUYEN, h >>> 9), inline: false }
+                { name: t(locale, 'commands.boi.daily_love_label'), value: pick(loveArr, h), inline: false },
+                { name: t(locale, 'commands.boi.daily_money_label'), value: pick(moneyArr, h >>> 3), inline: false },
+                { name: t(locale, 'commands.boi.daily_luck_label'), value: pick(luckArr, h >>> 6), inline: false },
+                { name: t(locale, 'commands.boi.daily_advice_label'), value: pick(adviceArr, h >>> 9), inline: false }
             ]
         });
         embed.setFooter({
-            text: `Bói cho vui thôi nha~ Quay lại mai để xem tiếp! • ${embed.data.footer.text}`,
+            text: t(locale, 'commands.boi.daily_footer') + ` • ${embed.data.footer.text}`,
             iconURL: embed.data.footer.icon_url
         });
         await interaction.editReply({ embeds: [embed] });

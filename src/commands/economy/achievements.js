@@ -5,19 +5,21 @@ const db = require('../../database.js');
 const config = require('../../config');
 const ACH = require('../../data/achievements');
 const { getLevelFromExp } = require('../../lib/leveling');
+const { getInteractionLanguage, t } = require('../../lib/i18n');
 
-const fmt = n => Number(n).toLocaleString('vi-VN');
+const fmt = (n, locale) => Number(n).toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN');
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('achievements')
         .setDescription('Xem thành tựu (tự mở khóa khi đủ điều kiện)'),
     async execute(interaction) {
+        const locale = await getInteractionLanguage(interaction);
         await interaction.deferReply();
         const userId = interaction.user.id;
 
         const user = await db.getUser(userId);
-        if (!user) return interaction.editReply('Hơ, mình chưa lấy được dữ liệu của cậu~ 🌸');
+        if (!user) return interaction.editReply(t(locale, 'commands.achievements.err_user'));
 
         const inv = await db.getInventory(userId);
         const bakery = await db.getBakery(userId);
@@ -60,23 +62,32 @@ module.exports = {
 
         const lines = [];
         if (newly.length) {
-            lines.push(`🎉 **Vừa mở khóa ${newly.length} thành tựu mới! Nhận +${fmt(reward)} ${config.CURRENCY}**`);
+            lines.push(t(locale, 'commands.achievements.newly_unlocked', {
+                count: newly.length,
+                reward: fmt(reward, locale),
+                currency: config.CURRENCY
+            }));
             lines.push('──────────────────────────────');
         }
 
         ACH.forEach(a => {
+            const localizedName = t(locale, `data.achievements.${a.id}.name`) || a.name;
+            const localizedDesc = t(locale, `data.achievements.${a.id}.desc`) || a.desc;
             lines.push(unlocked.has(a.id)
-                ? `🏅 **${a.name}** — ${a.desc}`
-                : `🔒 ${a.name} — ${a.desc} · 🪙 ${fmt(a.reward)}`
+                ? `🏅 **${localizedName}** — ${localizedDesc}`
+                : `🔒 ${localizedName} — ${localizedDesc} · 🪙 ${fmt(a.reward, locale)}`
             );
         });
 
         await sendPaginated(interaction, {
-            title: '🏅・Thành tựu',
+            title: t(locale, 'commands.achievements.embed_title'),
             color: config.COLORS.JACKPOT,
             lines,
             perPage: 12,
-            footerNote: `Đã mở khóa ${unlocked.size}/${ACH.length}`,
+            footerNote: t(locale, 'commands.achievements.footer_note', {
+                unlocked: unlocked.size,
+                total: ACH.length
+            }),
         });
     },
 };

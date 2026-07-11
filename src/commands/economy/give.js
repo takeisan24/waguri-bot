@@ -2,8 +2,9 @@ const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const { buildWaguriEmbed } = require('../../lib/embed');
 const db = require('../../database.js');
 const config = require('../../config');
+const { getInteractionLanguage, t } = require('../../lib/i18n');
 
-const fmt = n => Number(n).toLocaleString('vi-VN');
+const fmt = (n, locale) => Number(n).toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -12,24 +13,41 @@ module.exports = {
         .addUserOption(o => o.setName('target').setDescription('Người nhận').setRequired(true))
         .addIntegerOption(o => o.setName('amount').setDescription('Số tiền').setRequired(true).setMinValue(1)),
     async execute(interaction) {
+        const locale = await getInteractionLanguage(interaction);
         await interaction.deferReply();
         const target = interaction.options.getUser('target');
         const amount = interaction.options.getInteger('amount');
 
         if (!target) {
-            const embed = buildWaguriEmbed(interaction, 'error', { title: '💸・Chuyển tiền', description: 'Cậu muốn chuyển cho ai? Nhập @người nhận nhé~ 🌸' });
+            const embed = buildWaguriEmbed(interaction, 'error', {
+                locale,
+                title: t(locale, 'commands.give.embed_title_warning'),
+                description: t(locale, 'commands.give.err_target_missing')
+            });
             return interaction.editReply({ embeds: [embed] });
         }
         if (target.bot) {
-            const embed = buildWaguriEmbed(interaction, 'error', { title: '💸・Chuyển tiền', description: 'Bot không nhận tiền đâu cậu ơi~ 😄' });
+            const embed = buildWaguriEmbed(interaction, 'error', {
+                locale,
+                title: t(locale, 'commands.give.embed_title_warning'),
+                description: t(locale, 'commands.give.err_bot')
+            });
             return interaction.editReply({ embeds: [embed] });
         }
         if (target.id === interaction.user.id) {
-            const embed = buildWaguriEmbed(interaction, 'error', { title: '💸・Chuyển tiền', description: 'Cậu không thể tự chuyển cho chính mình đâu~ 😄' });
+            const embed = buildWaguriEmbed(interaction, 'error', {
+                locale,
+                title: t(locale, 'commands.give.embed_title_warning'),
+                description: t(locale, 'commands.give.err_self')
+            });
             return interaction.editReply({ embeds: [embed] });
         }
         if (!amount || amount <= 0) {
-            const embed = buildWaguriEmbed(interaction, 'error', { title: '💸・Chuyển tiền', description: 'Số tiền phải lớn hơn 0 nhé~' });
+            const embed = buildWaguriEmbed(interaction, 'error', {
+                locale,
+                title: t(locale, 'commands.give.embed_title_warning'),
+                description: t(locale, 'commands.give.err_invalid_amount')
+            });
             return interaction.editReply({ embeds: [embed] });
         }
 
@@ -38,17 +56,39 @@ module.exports = {
 
         const ok = await db.transferMoneyWithTax(interaction.user.id, target.id, amount, config.GIVE_TAX_PCT);
         if (!ok) {
-            const embed = buildWaguriEmbed(interaction, 'error', { title: '💸・Chuyển tiền', description: 'Ví của cậu không đủ tiền rồi 😟. Làm thêm với `/work` nhé!' });
+            const embed = buildWaguriEmbed(interaction, 'error', {
+                locale,
+                title: t(locale, 'commands.give.embed_title_warning'),
+                description: t(locale, 'commands.give.err_poor')
+            });
             return interaction.editReply({ embeds: [embed] });
         }
 
         const me = await db.getUser(interaction.user.id);
 
+        let desc;
+        if (tax > 0) {
+            desc = t(locale, 'commands.give.success_desc', {
+                target: target.id,
+                taxPct: Math.round(config.GIVE_TAX_PCT * 100),
+                tax: fmt(tax, locale),
+                received: fmt(received, locale),
+                wallet: fmt(me?.wallet || 0, locale),
+                currency: config.CURRENCY
+            });
+        } else {
+            desc = t(locale, 'commands.give.success_desc_no_tax', {
+                target: target.id,
+                received: fmt(received, locale),
+                wallet: fmt(me?.wallet || 0, locale),
+                currency: config.CURRENCY
+            });
+        }
+
         const embed = buildWaguriEmbed(interaction, 'success', {
-            title: '💸・Chuyển tiền thành công',
-            description: `Cậu đã chuyển cho <@${target.id}>. Tử tế ghê~ 🌸\n` +
-                (tax > 0 ? `Thuế ${Math.round(config.GIVE_TAX_PCT * 100)}%: **-${fmt(tax)}** → người nhận thực nhận **${fmt(received)}** ${config.CURRENCY}\n` : `Người nhận được **${fmt(received)}** ${config.CURRENCY}\n`) +
-                `💵 Số dư của cậu: **${fmt(me?.wallet || 0)}** ${config.CURRENCY}`
+            locale,
+            title: t(locale, 'commands.give.success_title'),
+            description: desc
         });
         await interaction.editReply({ embeds: [embed] });
     },

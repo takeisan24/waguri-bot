@@ -90,7 +90,7 @@ module.exports = {
                 const systemPrompt = t(locale, 'commands.announcement.ai_prompt');
 
                 try {
-                    message = await gemini.chat(systemPrompt, [], `List of new commits:\n${commits}`);
+                    message = await gemini.chat(systemPrompt, [], `List of new commits:\n${commits}`, { maxOutputTokens: 2000 });
                 } catch (err) {
                     console.error('[AUTO ANNOUNCEMENT AI ERROR]', err);
                     return interaction.editReply({ content: t(locale, 'commands.announcement.ai_err') });

@@ -44,13 +44,21 @@
       "claim_all": "Claim All 🎁",
       "back": "Back",
       "next": "Next"
+    },
+    "days": {
+      "0": "Sunday",
+      "1": "Monday",
+      "2": "Tuesday",
+      "3": "Wednesday",
+      "4": "Thursday",
+      "5": "Friday",
+      "6": "Saturday"
     }
   },
   "disease": {
     "sick_active_note": "🤒 You are sick — income reduced by {pct}% & lost {loss} health. Use `/hospital` to cure it!",
     "newly_sick_note": "🤒 Oh, you just **got sick** from overworking! Income is reduced until you cure it at `/hospital`."
   },
-
   "commands": {
     "bank": {
       "deposit_title": "🏦・Deposit",
@@ -282,17 +290,22 @@
       "gift_title": "🎁 Give Gift to Waguri"
     },
     "pet": {
-      "adopt_warning": "You already have a pet~ Type `/pet view` to check them out.",
+      "err_already_owned": "You already have a pet~ Type `/pet view` to see them.",
+      "err_system": "Oops, a system error occurred, please try again later~ 🌸",
       "adopt_success_title": "🐾・Adopt Successful!",
       "adopt_success_desc": "Welcome {emoji} **{name}** to your family! Remember to `/pet feed` them~",
-      "view_title": "{emoji}・{name}",
-      "view_field_species": "Species",
-      "view_field_level": "Level",
-      "view_field_progress": "EXP Progress ({exp}/{next})",
-      "feed_warning_no_pet": "You don't have a pet to feed~ Type `/pet adopt` first!",
+      "err_not_owned": "You don't have a pet yet~ Type `/pet adopt` to adopt one! 🐾",
+      "field_species": "Species",
+      "field_level": "Level",
+      "field_exp": "EXP Progress ({current}/{next})",
+      "err_not_owned_feed": "You don't have a pet to feed yet~ Type `/pet adopt` first!",
+      "err_poor": "You don't have enough **{cost}** {currency} to feed your pet (older pets require more food)~ 😟",
       "feed_success_title": "🍖・Feed Pet",
       "feed_success_desc_money": "{emoji} **{name}** ate happily! +{gain} EXP 😋 *(spent {cost} {currency})*",
-      "feed_success_desc_item": "{emoji} **{name}** ate **{item_name}** happily! +{gain} EXP 😋 *(received x{mult} EXP)*"
+      "level_up": "🎉 Your pet leveled up to **Lv.{lvl}**!",
+      "err_no_food": "You don't have **1× {food}** in your inventory to feed your pet~ 🥺",
+      "feed_success_desc_item": "{emoji} **{name}** ate **{food}** happily! +{gain} EXP 😋 *(received x{mult} EXP)*",
+      "rename_success": "✅ Pet renamed to **{name}**~ 🐾"
     },
     "pig": {
       "title": "🐷・Pig Husbandry",
@@ -704,12 +717,30 @@
       "end_win_desc": "{roles}\n\n🏆 {winners} share **{share}** {currency} each!",
       "end_footer": "Pot {pot} · house cut {cut}%",
       "roles": {
-        "werewolf": { "name": "Werewolf", "desc": "Each night, choose a victim with your pack." },
-        "villager": { "name": "Villager", "desc": "No special ability, use deduction to find Werewolves." },
-        "seer": { "name": "Seer", "desc": "Each night, inspect one person to see if they are a Werewolf." },
-        "guard": { "name": "Guard", "desc": "Each night, protect one person from being bitten (cannot protect the same person twice in a row)." },
-        "witch": { "name": "Witch", "desc": "Possess 1 healing potion + 1 poison potion (each once per game)." },
-        "hunter": { "name": "Hunter", "desc": "When killed, shoot down one person with you." }
+        "werewolf": {
+          "name": "Werewolf",
+          "desc": "Each night, choose a victim with your pack."
+        },
+        "villager": {
+          "name": "Villager",
+          "desc": "No special ability, use deduction to find Werewolves."
+        },
+        "seer": {
+          "name": "Seer",
+          "desc": "Each night, inspect one person to see if they are a Werewolf."
+        },
+        "guard": {
+          "name": "Guard",
+          "desc": "Each night, protect one person from being bitten (cannot protect the same person twice in a row)."
+        },
+        "witch": {
+          "name": "Witch",
+          "desc": "Possess 1 healing potion + 1 poison potion (each once per game)."
+        },
+        "hunter": {
+          "name": "Hunter",
+          "desc": "When killed, shoot down one person with you."
+        }
       }
     },
     "noitu": {
@@ -742,9 +773,15 @@
       "try_again": "Try again later~"
     },
     "vote": {
-      "btn_remind_off": "🔕 Mute reminder",
-      "remind_content": "🌸 You can vote for Waguri again! Vote to **keep your streak** 🔥 and claim rewards~\n[**🗳️ Vote here**]({url})",
-      "remind_off_success": "🔕 I have disabled vote reminders for you~ Thank you for supporting Waguri 🌸"
+      "desc_no_api": "Please vote to support me on Top.gg, each vote helps me reach more friends~ 🌸\n\n[**🗳️ Click to vote (every 12h)**]({url})\n\n*After voting, come back and type `/vote` to claim **{reward}** {currency} + **{exp} EXP**!*",
+      "title_not_voted": "💝・You haven't voted",
+      "desc_not_voted": "I haven't seen your vote yet today~\n\n[**🗳️ Vote here**]({url}) then come back to claim **{reward}** {currency} + **{exp} EXP**! 🌸",
+      "title_claimed": "💝・Already claimed",
+      "desc_claimed": "You have already claimed your reward for this vote~ You can vote again in <t:{time}:R>. Thank you so much! 🌸",
+      "title_main": "💝・Vote for Waguri",
+      "title_success": "💝・Thank you for voting!",
+      "desc_success": "Waguri presents you **{coins}** {currency} + **{exp} EXP**! 🎁\n🔥 Vote streak: **{streak} days**{bonus}\nRemember to vote again in 12 hours to maintain your streak~ Thank you for your support 🌸",
+      "bonus_streak": " (+{amount} {currency} streak bonus)"
     },
     "loto": {
       "err_voice_required": "You need to join a voice channel to open a Loto game~ 🌸",
@@ -973,17 +1010,6 @@
         "footer": "Thank you for loving Waguri! • {original}"
       }
     },
-    "vote": {
-      "desc_no_api": "Please vote to support me on Top.gg, each vote helps me reach more friends~ 🌸\n\n[**🗳️ Click to vote (every 12h)**]({url})\n\n*After voting, come back and type `/vote` to claim **{reward}** {currency} + **{exp} EXP**!*",
-      "title_not_voted": "💝・You haven't voted",
-      "desc_not_voted": "I haven't seen your vote yet today~\n\n[**🗳️ Vote here**]({url}) then come back to claim **{reward}** {currency} + **{exp} EXP**! 🌸",
-      "title_claimed": "💝・Already claimed",
-      "desc_claimed": "You have already claimed your reward for this vote~ You can vote again in <t:{time}:R>. Thank you so much! 🌸",
-      "title_main": "💝・Vote for Waguri",
-      "title_success": "💝・Thank you for voting!",
-      "desc_success": "Waguri presents you **{coins}** {currency} + **{exp} EXP**! 🎁\n🔥 Vote streak: **{streak} days**{bonus}\nRemember to vote again in 12 hours to maintain your streak~ Thank you for your support 🌸",
-      "bonus_streak": " (+{amount} {currency} streak bonus)"
-    },
     "thoitiet": {
       "title": "{emoji} Weather in {place}",
       "fallback_title": "{emoji} Weather in {place} (Fallback)",
@@ -1021,295 +1047,943 @@
         "96": "Thunderstorm with slight hail",
         "99": "Thunderstorm with heavy hail"
       }
-    }
-  },
-  "ticket": {
-    "no_perm": "I don't have permission to create support threads in this channel~ 😥\nPlease ask an Admin to grant me **Create Private Threads** and **Manage Threads** permissions!",
-    "reason": "Support ticket for {user}",
-    "close_btn": "Close ticket",
-    "guide_title": "🎫・Your support room is ready!",
-    "guide_desc": "Hello <@{user}>~ I have opened a private support room for you! 🌸\n\n**How to use:**\n> 📝 Describe your problem in **as much detail as possible** (with screenshots if any).\n> ⏳ Staff will reply as soon as possible — please be patient!\n> 🔒 When the issue is resolved, click the **Close ticket** button below.\n\n*Thank you for contacting me~ I will do my best to help you!* 💕",
-    "closed_msg": "🔒 Ticket has been closed by <@{user}>. Thank you for contacting us~ 🌸",
-    "closed_reason": "Ticket closed",
-    "success_reply": "✅ I have opened a support room for you at {thread}~ Go there to describe your issue! 🌸",
-    "error_desc": "An error occurred while creating the support room~ 😥 Please try again later or contact staff directly!"
-  },
-  "start": {
-    "title": "🌸・Welcome to Waguri!",
-    "desc": "Nice to meet you~ Let me guide you through the first few steps:\n\n**1.** 🎁 `/daily` — check-in for daily rewards (with a streak bonus!)\n**2.** 💼 `/work` — go to work to earn money, then check `/jobs` to get a better job\n**3.** 📖 `/help` — view all the commands I support\n\n{bonus}",
-    "onboarded_msg": "*(You have already claimed your welcome gift~ Feel free to explore! 💕)*",
-    "claim_prompt": "Click the button below to claim a **{bonus} {currency} welcome gift** from me! 💝",
-    "btn_label": "🎁 Claim welcome gift",
-    "claim_success_title": "💝・Welcome Gift Claimed!",
-    "claim_success_desc": "Waguri presents you **{bonus}** {currency} as starting capital~ Have a wonderful time with me! 💕",
-    "claim_already": "You have already claimed your welcome gift~ 🌸"
-  },
-  "server": {
-    "title": "🌸 Server: {name}",
-    "owner": "🌟 Owner",
-    "members": "👤 Members",
-    "created_at": "📅 Created at",
-    "requested_by": "Requested by {user} • {original}"
-  },
-  "premium": {
-    "title": "💎 Waguri Premium",
-    "active_desc": "You are currently a **Premium** member 💎 — expires <t:{time}:R>. Thank you so much~ 🌸\nWant to renew? Visit the **[Premium Page]({url})** 💕",
-    "free_desc": "You are currently on the **Free** plan. Upgrade to Premium to chat with me more freely~ 💕\n👉 Purchase at the **[Premium Page]({url})** — scan VietQR, activated **automatically** within seconds!",
-    "field_ai_quota": "💬 Daily AI Chat Quota",
-    "field_benefits": "🎁 Premium Benefits",
-    "benefits_desc": "• **{ai_quota} messages**/day (10x more)\n• **+{income_bonus}% income** when /work /fish /mine /chop\n• Profile badge 💎\n• Priority access to new features",
-    "field_pricing": "💰 Pricing Plans",
-    "footer": "Scan VietQR · automatic activation 💎 • {original}",
-    "plans": {
-      "m1": "1 month",
-      "m3": "3 months",
-      "m6": "6 months"
-    }
-  },
-  "profile_ctx": {
-    "err_bot": "Bots do not have player profiles~ 🌸",
-    "err_no_data": "Oops, couldn't retrieve player data. Please try again later~ 🌸",
-    "wallet": "💵 Wallet",
-    "bank": "🏦 Bank",
-    "energy": "⚡ Energy",
-    "level": "⭐ Level",
-    "exp_progress": "📊 EXP Progress ({current}/{max})",
-    "author_title": "🌸・Profile of {user}"
-  },
-  "event": {
-    "err_owner": "Only bot owners can toggle events~ 🌸",
-    "name_default": "Event",
-    "start_title": "🎉 Event enabled successfully!",
-    "start_desc": "Enabled **{name}**: **x{mult}** income & EXP multipliers (/work /fish /mine /chop) for **{hours} hours**!",
-    "stop_title": "🛑 Event disabled successfully",
-    "stop_desc": "Event has been stopped. Income rates have returned to normal.",
-    "no_event": "There is currently no active event~ 🌸",
-    "active_title": "🎉 Active Event!",
-    "active_desc": "**{name}** — **x{mult}** income & EXP boost\n⏰ Ends <t:{time}:R>"
-  },
-  "ask": {
-    "quota_msg": "You have used up all **{cap}** chat turns with me today 🥺 Please come back tomorrow~ or upgrade with `/premium` to get **{premium_cap} turns/day** 💎"
-  },
-  "announcement": {
-    "no_announcement": "There are currently no new update announcements from the developer~ 🌸",
-    "title_latest": "📢・Latest Update Announcement",
-    "footer_view": "View the latest update announcement from the developer · {original}",
-    "err_owner": "Only the bot owner can use this command~ 🌸",
-    "git_err": "Could not retrieve the current commit from Git (please check if Git is installed)!",
-    "commit_dup": "No new changes since the last announcement (current commit matches the announced commit)!",
-    "no_commits": "No new changes or commits found to announce!",
-    "ai_prompt": "You are Waguri Kaoruko, the sweet AI girlfriend and helpful maid of the Waguri Discord RPG bot.\nYour task is to read the technical git commits below and write a sweet, cute, inspiring, and friendly update announcement (Changelog) in English.\nRequirements:\n- Use cute emojis (🌸, ✨, 🎀, 💼, 🐷, 🌱...).\n- Summarize and group the changes into clear bullet points that are easy for normal players to understand (avoid overly technical developer jargon).\n- Keep the length moderate for Discord (under 1500 characters).\n- Do not prefix or suffix with 'Waguri:' or 'Model:', start directly with the title of the announcement.",
-    "ai_err": "Error requesting AI to generate update announcement!",
-    "title_main": "📢・Update Announcement From Waguri!",
-    "footer_sent": "Waguri Announcement System · Sent automatically by {user} 🌸",
-    "success_title": "📢 Announcement sent successfully!",
-    "success_desc": "Broadcasted update announcement to **{sent}** servers/channels and saved the announcement to be viewed via `/announcement view`.\n❌ Failed: **{fail}** servers."
-  },
-  "help": {
-    "err_title": "🔎・Command Not Found",
-    "err_desc": "Could not find command `{name}`~ Type `/help` to view the command list.",
-    "detail_title": "🔎・Command: /{name}",
-    "no_desc": "No description available.",
-    "usage_title": "📝 Usage",
-    "prefix_title": "⌨️ Prefix",
-    "prefix_desc": "Can also use: `{prefix}{name}`",
-    "footer_usage": "<required> · [optional] • {original}",
-    "sub_cmds_title": "🔸 Subcommands",
-    "params_title": "🔸 Parameters",
-    "param_req": " *(required)*",
-    "guide_title": "🌸・Waguri Help Guide Book",
-    "guide_desc": "Hello there! I am Waguri Kaoruko~ Would you like to explore Kikyo Academy with me, or drop by Gekka Bakery for some strawberry shortcake? 🍰\n\nBelow is a list of command categories I can help you with. Choose a category from the select menu below, and I will introduce each command to you in detail!\n\n*(Both **Slash** `/work` and **Prefix** `{prefix}work` are supported)*",
-    "footer_guide": "Select a category below • {original}",
-    "select_placeholder": "🌸 Choose a command category...",
-    "select_desc_cat": "View commands in category {name}",
-    "err_ctrl": "Only the command author can control this menu~ 🌸",
-    "menu_expired": "Menu expired 🌸",
-    "cat_detail_title": "🌸・Category: {name}",
-    "cat_detail_desc": "Here are the commands in category **{name}**:\n\n{cmds}\n\n*Type `/help <command>` to view detailed usage of each command!*",
-    "categories": {
-      "0": { "name": "💼 Economy & Jobs" },
-      "1": { "name": "🏪 Store & Inventory" },
-      "2": { "name": "💸 Transactions & Banking" },
-      "3": { "name": "🎲 Minigames" },
-      "4": { "name": "💬 Conversation" },
-      "5": { "name": "🎀 Fun & Community" },
-      "6": { "name": "🖼️ Media & Utilities" },
-      "7": { "name": "⚙️ Administration (Requires Perms)" },
-      "8": { "name": "🏰 Clan System" },
-      "9": { "name": "🏆 Miscellaneous" }
     },
-    "commands": {
-      "work": "go to work to earn money (consumes energy)",
-      "fish": "go fishing to earn money (consumes energy)",
-      "mine": "go mining to earn money ⛏️",
-      "chop": "go chop wood to earn money 🪓",
-      "daily": "claim daily rewards + maintain streak",
-      "quest": "daily & newbie quests (rewards money)",
-      "achievements": "achievements (unlock to claim rewards)",
-      "status": "status: energy/fatigue/buffs/Premium/active events 📊",
-      "profile": "general player profile summary",
-      "jobs": "view & apply for jobs (list / info / apply)",
-      "pet": "pet system: adopt / feed / view stats 🐾",
-      "tiembanh": "Gekka Bakery 🍰 (passive income: view·mo·nhapnl·thu·nangcap)",
-      "store": "shop: view/buy/sell items (list / buy / sell)",
-      "market": "player-to-player marketplace 🛒",
-      "inventory": "view your items inventory",
-      "album": "view item collectors handbook and claim collection rewards 📖",
-      "pass": "view and claim Battle Pass rewards 📖",
-      "eat": "consume food/drinks (restores energy / grants buffs)",
-      "nghingoi": "go to sleep to fully restore energy (every 6h) 😴 (w!ngu)",
-      "cosmetic": "profile decoration: custom titles & colors 🎨",
-      "craft": "craft tools from wood/ores/stones 🔨",
-      "give": "transfer money to another user",
-      "bank": "bank account: balance / deposit / withdraw (balance · gui · rut)",
-      "rob": "attempt to rob another user (high risk!)",
-      "vay": "loan system 🤝 (muon · tra · doi · so)",
-      "coinflip": "flip a coin",
-      "taixiu": "tai xiu (dice game)",
-      "baucua": "bau cua tom ca (gourd-crab-fish dice game)",
-      "bacay": "three-card game 🃏 (multiplayer betting)",
-      "blackjack": "blackjack card game",
-      "crate": "open a mysterious prize crate 🎁",
-      "bingo": "bingo 🎱 (multiplayer, automatic calling)",
-      "loto": "loto voice game 🎱 (buy 5-number ticket 01-90, join voice)",
-      "masoi": "werewolf party game 🐺 (4-15 players, deduction, hidden roles)",
-      "xocdia": "xoc dia 🥢 (multiplayer Even/Odd betting)",
-      "duangua": "horse racing 🐎 (bet on a horse, live race)",
-      "ask": "chat with Waguri (or @tag Waguri)",
-      "premium": "view Premium plans 💎 (increases AI chat quota)",
-      "henho": "go on dates & gift items to Waguri to increase affection 💖",
-      "ship": "measure relationship compatibility",
-      "boi": "fortune telling: daily / zodiac / Thay Do 🔮",
-      "amlich": "lunar calendar, can-chi, auspicious hours + Waguri remarks 🌙",
-      "lixi": "distribute red envelopes to the channel 🧧",
-      "couple": "relationships & marriage: propose / divorce / status (marry · divorce · status)",
-      "action": "interactions: hug / kiss / pat / poke / slap (hug · kiss · pat · poke · slap)",
-      "date": "invite someone on a date 💑",
-      "confession": "send anonymous confessions 🤫",
-      "noitu": "word chaining game 🔤",
-      "dovui": "trivia quiz 🧠 (answer fast in chat to win prizes)",
-      "image": "images of cats 🐱, dogs 🐶, or waifus 🌸",
-      "thoitiet": "check weather in a city",
-      "announcement": "view latest update announcements from developers (view · send) 📢",
-      "setup": "create custom Waguri channel + quick guide",
-      "config": "configure bot settings for this server (Manage Server)",
-      "clan": "create clan / mutual fund / ⚔️ clan war (create·join·info·list·deposit·withdraw·kick·disband·war)",
-      "leaderboard": "economy and leveling leaderboard (server / global)",
-      "event": "view active multiplier events 🎉",
-      "vote": "vote on Top.gg to receive rewards 💝",
-      "bot": "bot status, support, invite (ping · about · support · invite)",
-      "server": "server overview information",
-      "user": "discord user overview information",
-      "deletedata": "permanently delete all your game data (irreversible) 🗑️",
-      "help": "this help guidebook command"
+    "ticket": {
+      "no_perm": "I don't have permission to create support threads in this channel~ 😥\nPlease ask an Admin to grant me **Create Private Threads** and **Manage Threads** permissions!",
+      "reason": "Support ticket for {user}",
+      "close_btn": "Close ticket",
+      "guide_title": "🎫・Your support room is ready!",
+      "guide_desc": "Hello <@{user}>~ I have opened a private support room for you! 🌸\n\n**How to use:**\n> 📝 Describe your problem in **as much detail as possible** (with screenshots if any).\n> ⏳ Staff will reply as soon as possible — please be patient!\n> 🔒 When the issue is resolved, click the **Close ticket** button below.\n\n*Thank you for contacting me~ I will do my best to help you!* 💕",
+      "closed_msg": "🔒 Ticket has been closed by <@{user}>. Thank you for contacting us~ 🌸",
+      "closed_reason": "Ticket closed",
+      "success_reply": "✅ I have opened a support room for you at {thread}~ Go there to describe your issue! 🌸",
+      "error_desc": "An error occurred while creating the support room~ 😥 Please try again later or contact staff directly!"
+    },
+    "start": {
+      "title": "🌸・Welcome to Waguri!",
+      "desc": "Nice to meet you~ Let me guide you through the first few steps:\n\n**1.** 🎁 `/daily` — check-in for daily rewards (with a streak bonus!)\n**2.** 💼 `/work` — go to work to earn money, then check `/jobs` to get a better job\n**3.** 📖 `/help` — view all the commands I support\n\n{bonus}",
+      "onboarded_msg": "*(You have already claimed your welcome gift~ Feel free to explore! 💕)*",
+      "claim_prompt": "Click the button below to claim a **{bonus} {currency} welcome gift** from me! 💝",
+      "btn_label": "🎁 Claim welcome gift",
+      "claim_success_title": "💝・Welcome Gift Claimed!",
+      "claim_success_desc": "Waguri presents you **{bonus}** {currency} as starting capital~ Have a wonderful time with me! 💕",
+      "claim_already": "You have already claimed your welcome gift~ 🌸"
+    },
+    "server": {
+      "title": "🌸 Server: {name}",
+      "owner": "🌟 Owner",
+      "members": "👤 Members",
+      "created_at": "📅 Created at",
+      "requested_by": "Requested by {user} • {original}"
+    },
+    "premium": {
+      "title": "💎 Waguri Premium",
+      "active_desc": "You are currently a **Premium** member 💎 — expires <t:{time}:R>. Thank you so much~ 🌸\nWant to renew? Visit the **[Premium Page]({url})** 💕",
+      "free_desc": "You are currently on the **Free** plan. Upgrade to Premium to chat with me more freely~ 💕\n👉 Purchase at the **[Premium Page]({url})** — scan VietQR, activated **automatically** within seconds!",
+      "field_ai_quota": "💬 Daily AI Chat Quota",
+      "field_benefits": "🎁 Premium Benefits",
+      "benefits_desc": "• **{ai_quota} messages**/day (10x more)\n• **+{income_bonus}% income** when /work /fish /mine /chop\n• Profile badge 💎\n• Priority access to new features",
+      "field_pricing": "💰 Pricing Plans",
+      "footer": "Scan VietQR · automatic activation 💎 • {original}",
+      "plans": {
+        "m1": "1 month",
+        "m3": "3 months",
+        "m6": "6 months"
+      }
+    },
+    "profile_ctx": {
+      "err_bot": "Bots do not have player profiles~ 🌸",
+      "err_no_data": "Oops, couldn't retrieve player data. Please try again later~ 🌸",
+      "wallet": "💵 Wallet",
+      "bank": "🏦 Bank",
+      "energy": "⚡ Energy",
+      "level": "⭐ Level",
+      "exp_progress": "📊 EXP Progress ({current}/{max})",
+      "author_title": "🌸・Profile of {user}"
+    },
+    "event": {
+      "err_owner": "Only bot owners can toggle events~ 🌸",
+      "name_default": "Event",
+      "start_title": "🎉 Event enabled successfully!",
+      "start_desc": "Enabled **{name}**: **x{mult}** income & EXP multipliers (/work /fish /mine /chop) for **{hours} hours**!",
+      "stop_title": "🛑 Event disabled successfully",
+      "stop_desc": "Event has been stopped. Income rates have returned to normal.",
+      "no_event": "There is currently no active event~ 🌸",
+      "active_title": "🎉 Active Event!",
+      "active_desc": "**{name}** — **x{mult}** income & EXP boost\n⏰ Ends <t:{time}:R>"
+    },
+    "ask": {
+      "quota_msg": "You have used up all **{cap}** chat turns with me today 🥺 Please come back tomorrow~ or upgrade with `/premium` to get **{premium_cap} turns/day** 💎"
+    },
+    "announcement": {
+      "no_announcement": "There are currently no new update announcements from the developer~ 🌸",
+      "title_latest": "📢・Latest Update Announcement",
+      "footer_view": "View the latest update announcement from the developer · {original}",
+      "err_owner": "Only the bot owner can use this command~ 🌸",
+      "git_err": "Could not retrieve the current commit from Git (please check if Git is installed)!",
+      "commit_dup": "No new changes since the last announcement (current commit matches the announced commit)!",
+      "no_commits": "No new changes or commits found to announce!",
+      "ai_prompt": "You are Waguri Kaoruko, the sweet AI girlfriend and helpful maid of the Waguri Discord RPG bot.\nYour task is to read the technical git commits below and write a sweet, cute, inspiring, and friendly update announcement (Changelog) in English.\nRequirements:\n- Use cute emojis (🌸, ✨, 🎀, 💼, 🐷, 🌱...).\n- Summarize and group the changes into clear bullet points that are easy for normal players to understand (avoid overly technical developer jargon).\n- Keep the length moderate for Discord (under 1500 characters).\n- Do not prefix or suffix with 'Waguri:' or 'Model:', start directly with the title of the announcement.",
+      "ai_err": "Error requesting AI to generate update announcement!",
+      "title_main": "📢・Update Announcement From Waguri!",
+      "footer_sent": "Waguri Announcement System · Sent automatically by {user} 🌸",
+      "success_title": "📢 Announcement sent successfully!",
+      "success_desc": "Broadcasted update announcement to **{sent}** servers/channels and saved the announcement to be viewed via `/announcement view`.\n❌ Failed: **{fail}** servers."
+    },
+    "help": {
+      "err_title": "🔎・Command Not Found",
+      "err_desc": "Could not find command `{name}`~ Type `/help` to view the command list.",
+      "detail_title": "🔎・Command: /{name}",
+      "no_desc": "No description available.",
+      "usage_title": "📝 Usage",
+      "prefix_title": "⌨️ Prefix",
+      "prefix_desc": "Can also use: `{prefix}{name}`",
+      "footer_usage": "<required> · [optional] • {original}",
+      "sub_cmds_title": "🔸 Subcommands",
+      "params_title": "🔸 Parameters",
+      "param_req": " *(required)*",
+      "guide_title": "🌸・Waguri Help Guide Book",
+      "guide_desc": "Hello there! I am Waguri Kaoruko~ Would you like to explore Kikyo Academy with me, or drop by Gekka Bakery for some strawberry shortcake? 🍰\n\nBelow is a list of command categories I can help you with. Choose a category from the select menu below, and I will introduce each command to you in detail!\n\n*(Both **Slash** `/work` and **Prefix** `{prefix}work` are supported)*",
+      "footer_guide": "Select a category below • {original}",
+      "select_placeholder": "🌸 Choose a command category...",
+      "select_desc_cat": "View commands in category {name}",
+      "err_ctrl": "Only the command author can control this menu~ 🌸",
+      "menu_expired": "Menu expired 🌸",
+      "cat_detail_title": "🌸・Category: {name}",
+      "cat_detail_desc": "Here are the commands in category **{name}**:\n\n{cmds}\n\n*Type `/help <command>` to view detailed usage of each command!*",
+      "categories": {
+        "0": {
+          "name": "💼 Economy & Jobs"
+        },
+        "1": {
+          "name": "🏪 Store & Inventory"
+        },
+        "2": {
+          "name": "💸 Transactions & Banking"
+        },
+        "3": {
+          "name": "🎲 Minigames"
+        },
+        "4": {
+          "name": "💬 Conversation"
+        },
+        "5": {
+          "name": "🎀 Fun & Community"
+        },
+        "6": {
+          "name": "🖼️ Media & Utilities"
+        },
+        "7": {
+          "name": "⚙️ Administration (Requires Perms)"
+        },
+        "8": {
+          "name": "🏰 Clan System"
+        },
+        "9": {
+          "name": "🏆 Miscellaneous"
+        }
+      },
+      "commands": {
+        "work": "go to work to earn money (consumes energy)",
+        "fish": "go fishing to earn money (consumes energy)",
+        "mine": "go mining to earn money ⛏️",
+        "chop": "go chop wood to earn money 🪓",
+        "daily": "claim daily rewards + maintain streak",
+        "quest": "daily & newbie quests (rewards money)",
+        "achievements": "achievements (unlock to claim rewards)",
+        "status": "status: energy/fatigue/buffs/Premium/active events 📊",
+        "profile": "general player profile summary",
+        "jobs": "view & apply for jobs (list / info / apply)",
+        "pet": "pet system: adopt / feed / view stats 🐾",
+        "tiembanh": "Gekka Bakery 🍰 (passive income: view·mo·nhapnl·thu·nangcap)",
+        "store": "shop: view/buy/sell items (list / buy / sell)",
+        "market": "player-to-player marketplace 🛒",
+        "inventory": "view your items inventory",
+        "album": "view item collectors handbook and claim collection rewards 📖",
+        "pass": "view and claim Battle Pass rewards 📖",
+        "eat": "consume food/drinks (restores energy / grants buffs)",
+        "nghingoi": "go to sleep to fully restore energy (every 6h) 😴 (w!ngu)",
+        "cosmetic": "profile decoration: custom titles & colors 🎨",
+        "craft": "craft tools from wood/ores/stones 🔨",
+        "give": "transfer money to another user",
+        "bank": "bank account: balance / deposit / withdraw (balance · gui · rut)",
+        "rob": "attempt to rob another user (high risk!)",
+        "vay": "loan system 🤝 (muon · tra · doi · so)",
+        "coinflip": "flip a coin",
+        "taixiu": "tai xiu (dice game)",
+        "baucua": "bau cua tom ca (gourd-crab-fish dice game)",
+        "bacay": "three-card game 🃏 (multiplayer betting)",
+        "blackjack": "blackjack card game",
+        "crate": "open a mysterious prize crate 🎁",
+        "bingo": "bingo 🎱 (multiplayer, automatic calling)",
+        "loto": "loto voice game 🎱 (buy 5-number ticket 01-90, join voice)",
+        "masoi": "werewolf party game 🐺 (4-15 players, deduction, hidden roles)",
+        "xocdia": "xoc dia 🥢 (multiplayer Even/Odd betting)",
+        "duangua": "horse racing 🐎 (bet on a horse, live race)",
+        "ask": "chat with Waguri (or @tag Waguri)",
+        "premium": "view Premium plans 💎 (increases AI chat quota)",
+        "henho": "go on dates & gift items to Waguri to increase affection 💖",
+        "ship": "measure relationship compatibility",
+        "boi": "fortune telling: daily / zodiac / Thay Do 🔮",
+        "amlich": "lunar calendar, can-chi, auspicious hours + Waguri remarks 🌙",
+        "lixi": "distribute red envelopes to the channel 🧧",
+        "couple": "relationships & marriage: propose / divorce / status (marry · divorce · status)",
+        "action": "interactions: hug / kiss / pat / poke / slap (hug · kiss · pat · poke · slap)",
+        "date": "invite someone on a date 💑",
+        "confession": "send anonymous confessions 🤫",
+        "noitu": "word chaining game 🔤",
+        "dovui": "trivia quiz 🧠 (answer fast in chat to win prizes)",
+        "image": "images of cats 🐱, dogs 🐶, or waifus 🌸",
+        "thoitiet": "check weather in a city",
+        "announcement": "view latest update announcements from developers (view · send) 📢",
+        "setup": "create custom Waguri channel + quick guide",
+        "config": "configure bot settings for this server (Manage Server)",
+        "clan": "create clan / mutual fund / ⚔️ clan war (create·join·info·list·deposit·withdraw·kick·disband·war)",
+        "leaderboard": "economy and leveling leaderboard (server / global)",
+        "event": "view active multiplier events 🎉",
+        "vote": "vote on Top.gg to receive rewards 💝",
+        "bot": "bot status, support, invite (ping · about · support · invite)",
+        "server": "server overview information",
+        "user": "discord user overview information",
+        "deletedata": "permanently delete all your game data (irreversible) 🗑️",
+        "help": "this help guidebook command"
+      }
+    },
+    "action": {
+      "hug": [
+        "{a} hugs {b} tightly, so warm~ 🤗",
+        "{a} gives {b} a gentle hug 🥰",
+        "{a} wraps their arms around {b}, not wanting to let go 💕",
+        "{a} hugs {b} to wash away all tiredness~"
+      ],
+      "kiss": [
+        "{a} kisses {b} softly on the cheek~ 💋",
+        "{a} kisses {b} gently on the forehead 🥰",
+        "{a} suddenly kisses {b} on the lips shyly 💕"
+      ],
+      "pat": [
+        "{a} pats {b} on the head affectionately~ 🥰",
+        "{a} pats {b}'s head gently: \"There, there, I am here~\" 🌸",
+        "{a} reaches out to pat {b}'s soft hair gently ✨"
+      ],
+      "poke": [
+        "{a} pokes {b}'s cheek playfully~ 😜",
+        "{a} taps {b}'s shoulder teasingly: \"Hey hey~\" 🤭",
+        "{a} sneaks a poke on {b}'s waist ⚡"
+      ],
+      "slap": [
+        "{a} slaps/taps {b}'s hand playfully: \"Don't play around~\" 😤",
+        "{a} slaps {b} playfully: \"Take that for teasing me!\" 💢",
+        "{a} turns away from {b} pouting: \"Hmph, I hate you!\" 😾"
+      ]
+    },
+    "date": [
+      "{a} invites {b} on a date to walk around and eat ice cream 🍦💕",
+      "{a} and {b} go to the movies together, holding hands the entire time~ 🎬",
+      "{a} takes {b} to see a romantic sunset 🌅",
+      "{a} and {b} share a sweet, memorable date together 💑"
+    ],
+    "amlich": {
+      "err_invalid_date": "Invalid date~ Please use the format **dd/mm/yyyy** (e.g. 21/06/2026) 🌸",
+      "embed_title": "🌙 Lunar Calendar & Horoscope",
+      "field_solar": "📅 Solar Date",
+      "field_lunar": "🏮 Lunar Date",
+      "field_year": "🐉 Year",
+      "field_day": "📿 Day",
+      "field_zodiac": "🕐 Auspicious Hours",
+      "leap_label": " (leap)",
+      "no_zodiac_hours": "*(none)*",
+      "fortunes": [
+        "Today is a great day to start something new~ Go for it! 🌸",
+        "A peaceful day lies ahead. Remember to rest and treat yourself to a sweet cake~ 🍰",
+        "Good luck is smiling upon you, go ahead and do what you want with confidence! ✨",
+        "A day for patience — take it slow and everything will fall into place, I believe in you 💪",
+        "Today is a perfect day to meet friends, why not start `/loto` or `/masoi` together? 🎲",
+        "Keep your mind at peace, good things will come to gentle people like you 💕",
+        "A suitable day to be diligent — work hard in `/work` and fortune will follow! 🍀"
+      ]
+    },
+    "boi": {
+      "zodiac_title": "🔮・Horoscope Today — {name}",
+      "zodiac_luck_label": "🍀 Luck",
+      "zodiac_number_label": "🔢 Lucky Number",
+      "zodiac_footer": "Just for fun~",
+      "thaydo_title": "🧙・Sage's Prophecy",
+      "daily_title": "🔮・{user}'s Fortune Today",
+      "daily_love_label": "💕 Love",
+      "daily_money_label": "💰 Wealth",
+      "daily_luck_label": "🍀 Luck",
+      "daily_advice_label": "🌸 Waguri's Advice",
+      "daily_footer": "Just for fun~ Come back tomorrow to see more!",
+      "horoscopes": [
+        "Abundant energy, ideal time to initiate new projects.",
+        "Be careful with your words to avoid minor misunderstandings.",
+        "Wealth is decent, unexpected gains might be heading your way.",
+        "Warm relationship vibes, spend quality time with loved ones.",
+        "Take a good rest, do not push yourself beyond limits.",
+        "A wonderful opportunity is approaching, seize it boldly!",
+        "Stay calm during challenges, everything will be alright.",
+        "Great day to meet up with friends and expand relationships.",
+        "Intuition is very sharp today, trust yourself.",
+        "Avoid making hasty financial decisions."
+      ],
+      "luck_levels": [
+        "⭐⭐⭐⭐⭐ Excellent!",
+        "⭐⭐⭐⭐ Very Good",
+        "⭐⭐⭐ Decent",
+        "⭐⭐ So-so",
+        "⭐ Be careful"
+      ],
+      "thaydo_prophecies": [
+        "Sage says: your cash today comes in like water, flows out like... a waterfall 💸",
+        "This prophecy is \"diligence yields results\" — go `/work` now!",
+        "I see you have a benefactor helping you, and their name is... Waguri 🌸",
+        "Your future is bright, but your present... better start grinding 😅",
+        "Prophecy \"stable home, prosperous career\" — save money to buy items at `/shop`.",
+        "Sage says: do not seek luck in gambling, police are watching 👮",
+        "You are quite popular today, try `/ship` to see your match~",
+        "Prophecy \"thrift and integrity\" — cut down on `/baucua` my friend.",
+        "Sage sees good luck coming, go `/daily` check-in now before it's gone!",
+        "Prophecy \"no pain, no gain\" — the eternal truth!"
+      ],
+      "daily_love_fortunes": [
+        "Someone is secretly keeping an eye on you today~ 👀",
+        "Love is blooming, be bold and text them first!",
+        "You should spend more quality time with your significant other.",
+        "Happy single life is also great, don't rush into things~",
+        "Be careful with minor misunderstandings, talk openly."
+      ],
+      "daily_money_fortunes": [
+        "Abundant wealth, perfect day to go `/work` today! 💰",
+        "An unexpected income is waiting for you.",
+        "Spend wisely to avoid running out of cash by the end of the month~",
+        "Gambling luck is high today, try a quick game of `/baucua`? 😉",
+        "Keep your money safe in the `/bank`."
+      ],
+      "daily_advice": [
+        "Smile more, everything will go much smoother~ 🌸",
+        "Drink enough water and get some rest, health is wealth!",
+        "Great day to do a good deed — try helping someone out.",
+        "Don't compare yourself to others, you are special in your own way!",
+        "A small thank-you today will bring great luck."
+      ]
+    },
+    "confession": {
+      "err_server_only": "This command can only be used inside a server~ 🌸",
+      "err_mentions": "Confession content cannot contain user, role, or everyone/here pings to avoid bothering others~ 🌸",
+      "err_cooldown": "Take it slow~ You recently sent a confession. Try again in **{min} min {sec} sec**~ 🌸",
+      "err_not_configured": "Server has not configured confession channel. Ask admin to run `/config confession-channel`~ 🌸",
+      "err_channel_deleted": "Confession channel no longer exists, ask admin to re-configure it~ 🌸",
+      "embed_title": "🤫 Confession #{num}",
+      "embed_footer": "🤫 Sent anonymously via Waguri",
+      "success_reply": "✅ Your anonymous confession has been sent! (Nobody knows it's you)"
+    },
+    "couple": {
+      "marry_err_target_missing": "Who do you want to propose to? Please tag them~ 🌸",
+      "marry_err_bot": "Bot cannot get married~ 😆",
+      "marry_err_self": "You cannot marry yourself~ 😅",
+      "marry_err_already_married": "You are already married~ Run `/couple divorce` first if you want to marry someone else.",
+      "marry_err_target_married": "<@{target}> is already married 💔",
+      "marry_embed_title": "💍・A Sweet Marriage Proposal",
+      "marry_embed_desc": "<@{me}> wants to marry <@{target}>!\n\nDear <@{target}>, do you accept? 🌸\n\n*(Wedding Ceremony Fee: **{cost}** {currency} — paid by <@{me}> upon success)*",
+      "btn_yes": "I do 💖",
+      "btn_no": "Decline 💔",
+      "marry_btn_wrong_user": "This marriage proposal is not for you~ 😊",
+      "marry_failed_title": "💔・Proposal Declined",
+      "marry_rejected_desc": "<@{target}> declined the marriage proposal from <@{me}>... 💔",
+      "marry_poor_title": "💔・Insufficient Funds",
+      "marry_poor_desc": "<@{me}> does not have enough **{cost}** {currency} to hold the wedding ceremony... 💔",
+      "marry_success_title": "🎉・Congratulations to the Happy Couple!",
+      "marry_success_desc": "<@{me}> 💞 <@{target}> are now officially married! (Wedding Fee: **{cost}** {currency}) Wish you everlasting happiness~ 🌸",
+      "marry_err_system": "Oops, an error occurred while saving the marriage registration 💔",
+      "marry_timeout_title": "⏱️・Proposal Expired",
+      "marry_timeout_desc": "Time is up and <@{target}> hasn't responded... try again later~ 😢",
+      "divorce_err_single": "You are currently single~ Nobody to divorce 😅",
+      "divorce_err_poor": "Divorce requires **{cost}** {currency} legal fee 😅 — your wallet balance is insufficient. Earn more and return~",
+      "divorce_single": "You are currently single~ Nobody to divorce 😅",
+      "divorce_err_system": "Oops, an error occurred, please try again later~ 🌸",
+      "divorce_success_title": "💔・Divorce Decree",
+      "divorce_success_desc": "You and {partner} have officially parted ways... Legal fee paid: **-{cost}** {currency}.\nWish both of you find peace and new happiness soon~ 🌸",
+      "divorce_partner_fallback": "your partner",
+      "status_err_user": "Oops, I couldn't retrieve your data~ 🌸",
+      "status_affection_next": "Need **{points}** more affection points to reach **{tier}** with Waguri!",
+      "status_affection_max": "You have reached the highest affection level with Waguri! 🥰",
+      "status_affection_block": "**❤️ Affection with Waguri:**\n　• Current Tier: **{tier}**\n　• Affection Points: **{points}** 💞\n　• *{next}*\n\n",
+      "status_married_block": "**💍 Marriage Status:**\n　• Spouse: <@{partner}>\n　• Love Points: **{love}** 💞\n　• Relationship Level: *{tier}*",
+      "status_single_block": "**💍 Marriage Status:**\n　• You are currently **Single** 🌸 (Run `/couple marry @user` to propose!)",
+      "status_author": "{user}'s Relationship Status",
+      "status_footer": "Interact with Waguri to increase affection and love points~"
+    },
+    "lixi": {
+      "embed_title_warning": "🧧・Lucky Red Envelope",
+      "err_data": "Oops, data error, please try again later~ 🌸",
+      "err_invalid_amount": "Invalid coin amount~ (minimum **{parts}** {currency} for {parts} envelopes)",
+      "err_poor": "You don't have enough cash in your wallet to distribute red envelopes 😟",
+      "btn_grab": "Grab Red Envelope 🧧 ({remaining} left)",
+      "claim_line_with_tax": "🧧 <@{user}> +{net} {currency} *(tax -{tax})*",
+      "claim_line": "🧧 <@{user}> +{net} {currency}",
+      "embed_closed": "\n\n*All red envelopes have been claimed! Thank you for your generosity! 🌸*",
+      "embed_open": "\n\nQuickly press the button to grab one! 👇",
+      "embed_title": "🧧・LUCKY RED ENVELOPE・🧧",
+      "embed_desc": "<@{user}> is giving away **{amount}** {currency} to **{parts}** people!\n",
+      "footer_text": "{claimed}/{total} envelopes claimed",
+      "grab_self": "You cannot grab your own red envelopes~ 😆",
+      "grab_already": "You already grabbed one, leave some for others~ 🌸",
+      "grab_empty": "All envelopes are gone 😢",
+      "grab_failed_giver_poor": "Oops, the giver ran out of money, this envelope couldn't be claimed~ 😢"
+    },
+    "ship": {
+      "err_self": "Matching someone with themselves... 100% self-love! 💖",
+      "embed_title": "💘 Compatibility Match",
+      "comment_90": "Made in heaven! 😍",
+      "comment_70": "Very compatible~ 🥰",
+      "comment_50": "Has sweet potential! 😊",
+      "comment_30": "Needs some effort~ 😅",
+      "comment_0": "Difficult... but love is infinite! 💪"
+    },
+    "setup": {
+      "err_no_permission": "Requires **Manage Server** permission to use this command~ 🌸",
+      "embed_title_setup": "⚙️ Game Channel Setup",
+      "err_missing_manage_channels": "I lack the **Manage Channels** permission to create a room 😟.\nGo to *Server Settings → Roles → Waguri* and enable it, or re-invite me using `/invite` (which includes this permission), then run `/setup` again~ 🌸",
+      "channel_topic": "Waguri's Playroom 🌸 — type /help to see commands",
+      "channel_reason": "Waguri /setup",
+      "err_create_channel_failed": "Oops, I couldn't create the channel (lacking permissions or invalid position). Grant **Manage Channels** and try again~ 🌸",
+      "intro_title": "🌸 Hello everyone, I'm Waguri!",
+      "intro_desc": "This is my playroom~ 💕\n\n**Quick Start:**\n• `/daily` — daily check-in rewards\n• `/work` `/fish` `/mine` `/chop` — earn money (costs energy)\n• `/shop` `/buy` — shopping · `/help` — see all commands\n• `/ask` or **@tag me** — let's chat 💬",
+      "intro_footer": "Have fun everyone~",
+      "success_title": "⚙️ Setup Successful!",
+      "success_desc": "All set! My playroom is <#{channelId}>.\n\nI have set this as the **default AI chat channel** (if you want me to respond in all channels, run `/config ai-channel` and leave the channel empty)."
+    },
+    "config": {
+      "err_no_permission": "Requires **Manage Server** permission to use this command~ 🌸",
+      "status_on": "ENABLED",
+      "status_off": "DISABLED",
+      "ai_success": "✅ AI chat (@tag Waguri) is now **{status}** on this server.",
+      "confession_err_channel_missing": "You haven't selected a channel~ (enter #channel)",
+      "confession_success": "✅ Successfully set confession channel to <#{channelId}>.",
+      "ai_channel_set": "✅ AI will now only reply in <#{channelId}>.",
+      "ai_channel_removed": "✅ Removed channel limit — AI will now reply in all channels.",
+      "pvp_success": "✅ PvP (rob + theft) is now **{status}** on this server.",
+      "police_jail_on": "✅ Enabled jail (Discord timeout) when police checks gambling activities.",
+      "police_jail_off": "✅ Disabled jail (Discord timeout) when police checks gambling activities. Now only fines apply, no timeouts.",
+      "gambling_on": "✅ Enabled gambling games ( bài cào, tài xỉu, xóc đĩa...) on this server.",
+      "gambling_off": "✅ Disabled gambling games on this server. Play commands will be politely declined.",
+      "welcome_channel_set": "✅ Set welcome channel to <#{channelId}>.",
+      "welcome_channel_removed": "✅ Disabled welcome message for new members.",
+      "welcome_role_set": "✅ Set auto-role for new members to <@&{roleId}>.",
+      "welcome_role_removed": "✅ Disabled auto-role for new members.",
+      "announcement_channel_set": "✅ Set auto-announcement channel to <#{channelId}>.",
+      "announcement_channel_removed": "✅ Disabled auto-announcements.",
+      "language_success_en": "✅ Server language has been set to **English** 🇬🇧.",
+      "language_success_vi": "✅ Ngôn ngữ hiển thị của server đã được đặt thành **Tiếng Việt** 🇻🇳.",
+      "view_title": "⚙️ Server Configuration",
+      "field_confession_channel": "Confession Channel",
+      "field_ai_enabled": "AI Chat",
+      "field_ai_channel": "AI Channel Limit",
+      "field_pvp": "PvP (rob/theft)",
+      "field_gambling": "Gambling Games",
+      "field_police_jail": "Jail (Gambling Timeout)",
+      "field_welcome_channel": "Welcome Channel",
+      "field_welcome_role": "Auto-assign Role",
+      "field_language": "Language / Ngôn ngữ",
+      "field_announcement_channel": "Update Announcement Channel",
+      "val_not_set": "*(not configured)*",
+      "val_all_channels": "*(all channels)*",
+      "val_disabled_welcome": "*(disabled welcome)*",
+      "val_disabled_role": "*(disabled auto-role)*",
+      "val_disabled_announcement": "*(disabled update announcements)*",
+      "status_enabled_emoji": "🟢 Enabled",
+      "status_disabled_emoji": "🔴 Disabled"
+    },
+    "craft": {
+      "cost_fee": " + {fee} {currency} crafting fee",
+      "list_line": "🔨 **{name}** — requires {mats}{costStr}\n   → resell value **{resale}** {currency}",
+      "embed_title": "🔨 Crafting Recipes",
+      "embed_desc": "Get **Wood** via `/chop`, **Iron Ore / Stone** via `/mine` then craft them here~\n\n{list}",
+      "footer": "Craft: /craft make <item>",
+      "err_recipe_not_found": "This recipe does not exist~ Type `/craft list` to view them.",
+      "err_system": "Oops, an error occurred during crafting, please try again later~ 🌸",
+      "err_poor_money": "You need **{cost}** {currency} for the crafting fee but you don't have enough~ 😟",
+      "err_poor_mat": "You lack the material: **{mat}**~ Go `/mine` or `/chop` to get more! ⛏️🪓",
+      "success_desc": "🔨 Successfully crafted **{qty}× {name}**! Sell it via `/sell` for profit or use it for work~ 💰"
+    },
+    "cuutro": {
+      "embed_title": "🌸・Bankruptcy Relief",
+      "success_desc": "Did you spend all your money? Don't lose heart, I have this small relief fund to help you get back on your feet.\n\n🎁 **Claimed relief:** **+{amount}** {currency}!\n*Wish you better luck next time, keep it up!* 💕",
+      "err_not_bankrupt": "Wait, you still have **{bal}** {currency}~ This command is only for those who are truly broke! 🌸",
+      "err_cooldown": "You have already claimed bankruptcy relief today~ Please come back 24 hours after your last claim! 🌸",
+      "err_system": "Oops, an error occurred while claiming relief, please try again later~"
+    },
+    "eat": {
+      "embed_title": "😋・Use Item",
+      "err_item_not_found": "I couldn't find this item~ 🌸",
+      "err_no_have": "You don't have **{item}** in your inventory. Visit `/shop` to buy it first~",
+      "err_not_consumable": "**{item}** is not a consumable food or drink, you can't use it this way~",
+      "err_buff_better": "You already have a better or equal active buff than **{item}**, using it now would be wasteful~ 🌸",
+      "err_system": "Oops, an error occurred, please try again later~",
+      "effect_energy": "energy is now **{current}/{max}** ⚡",
+      "effect_health": "restored **+{value} health** ❤️ (currently {current}/100)",
+      "effect_buff": "received **+{value}% income buff** for {hours} hours 🍗",
+      "effect_done": "done!",
+      "effect_shortage_note": " *(only had {count} left in inventory)*",
+      "success_title": "😋・Item Consumed Successfully!",
+      "success_desc": "You used **{count}× {item}** — {effectText}{note}"
+    },
+    "give": {
+      "embed_title_warning": "💸・Transfer Money",
+      "err_target_missing": "Who do you want to transfer to? Please tag @user~ 🌸",
+      "err_bot": "Bots don't need money, silly~ 😄",
+      "err_self": "You cannot transfer money to yourself~ 😄",
+      "err_invalid_amount": "The amount must be greater than 0~",
+      "err_poor": "Your wallet doesn't have enough money 😟. Go earn more with `/work`!",
+      "success_title": "💸・Transfer Successful",
+      "success_desc": "You transferred to <@{target}>. So generous of you~ 🌸\nTax {taxPct}%: **-{tax}** → recipient received **{received}** {currency}\n💵 Your wallet balance: **{wallet}** {currency}",
+      "success_desc_no_tax": "You transferred to <@{target}>. So generous of you~ 🌸\nRecipient received **{received}** {currency}\n💵 Your wallet balance: **{wallet}** {currency}"
+    },
+    "hospital": {
+      "embed_title": "🏥 Waguri Hospital",
+      "err_system": "Oops, an error occurred at the hospital, please try again later~ 🌸",
+      "err_already_healthy": "You are already fully healthy (100% ❤️), no need to visit the hospital~ 🌸",
+      "err_poor": "You don't have enough money to pay the medical fee 😟 — Requires at least **{cost}** {currency} to check in!",
+      "success_desc": "🩺 You have received special care from the doctor and fully recovered your health to **100/100 ❤️** and cured all diseases!\n\n💵 Medical fee paid: **-{fee}** {currency}.\n💰 Wallet: **{wallet}** · 🏦 Bank: **{bank}** {currency}"
+    },
+    "leaderboard": {
+      "scope_server": " (Server)",
+      "scope_global": " (Global)",
+      "err_no_couples": "No couples registered yet~ Type `/marry` to start! 💕",
+      "title_love": "💞 Love Compatibility Leaderboard (Global)",
+      "love_line": "{rank} <@{user}> 💞 <@{partner}> — **{love}** points",
+      "err_empty_server": "Nobody in this server is on the leaderboard yet~ Play some games to register! 🌸",
+      "err_empty_global": "Nobody is on the leaderboard yet~ 🌸",
+      "leader_line": "{rank} <@{user}> — {value}",
+      "title_level": "🏆 Level Leaderboard",
+      "title_networth": "🏆 Wealth Leaderboard"
+    },
+    "market": {
+      "err_mine_empty": "You are not selling any items currently~",
+      "err_view_empty": "The marketplace is currently empty, nobody is selling anything~ 🌸",
+      "view_line": "`#{id}` **{qty}× {name}** — **{price}** {currency}",
+      "view_seller": " · by <@{user}>",
+      "title_mine": "🛒 Items You Are Selling",
+      "title_view": "🛒 Marketplace — Active Listings",
+      "paginated_footer": "Buy: /market buy <id>",
+      "err_system": "Oops, a market error occurred, please try again later~ 🌸",
+      "title_list": "🛒 List Item on Market",
+      "err_poor_item": "You don't have enough **{qty}× {name}** in your inventory to list~",
+      "list_success_title": "🛒 Listed Successfully!",
+      "list_success_desc": "Listed **{qty}× {name}** for **{price}** {currency} (ID `#{id}`).\n\n*Others can buy this using `/market buy {id}` · a {feePct}% market fee applies upon sale.*",
+      "title_buy": "🛒 Buy from Market",
+      "err_not_found": "Listing not found~",
+      "err_gone": "This item has already been sold or delisted~ 😢",
+      "err_own": "This is your own listing, silly~ 😄",
+      "err_poor": "You need **{price}** {currency} to buy this~ 😟",
+      "buy_success_title": "🛒 Purchase Successful!",
+      "buy_success_desc": "You bought **{qty}× {name}** for **{price}** {currency} from <@{seller}>! Items added to inventory 🎒",
+      "title_cancel": "🛒 Delist Item",
+      "err_not_yours": "This listing does not belong to you~",
+      "cancel_success_title": "🛒 Delisted Successfully",
+      "cancel_success_desc": "Removed **{qty}× {name}** from the marketplace and returned to your inventory~ 🎒"
+    },
+    "repair": {
+      "embed_title_warning": "🛠️・Repair Tool",
+      "success_title": "🛠️・Repair Successful",
+      "err_no_tool": "You don't own a **{tool}** in your inventory to repair. Buy one at `/shop` first!",
+      "err_already_healthy": "Your **{tool}** is already in brand new condition (100% durability), no need to repair~",
+      "err_poor": "You don't have enough **{cost}** {currency} in your wallet to pay for the repairs.",
+      "err_system": "Oops, an error occurred during tool repair, please try again later~",
+      "success_desc": "You paid **{cost}** {currency} to restore the durability of **{tool}** back to **100/100**! ✨",
+      "field_wallet": "💵 Wallet Balance"
+    },
+    "tangdo": {
+      "embed_title_warning": "🎁・Gift Item",
+      "err_target_missing": "Who do you want to gift to? Please tag @user (not a bot)~ 🌸",
+      "err_self": "Gifting to yourself is a bit weird~ 😅",
+      "err_invalid_quantity": "Quantity must be at least 1~",
+      "err_item_not_found": "I couldn't find this item~",
+      "gifts": {
+        "bo_hoa": "Ah, what a fragrant bouquet! Thank you so much, I really love it~ 🌸💕",
+        "hop_qua": "Such a beautifully wrapped gift box, I wonder what's inside? You are so thoughtful~ 🎁✨",
+        "gau_bong": "Kyaaa! The Waguri bunny plushie is absolutely adorable! I will hug it to sleep every night. You are the best! 🧸💖"
+      },
+      "err_weird_gift": "The gift **{gift}** is a bit strange for me... Please gift me a **Flower Bouquet**, **Gekka Gift Box**, or **Waguri Plushie** instead! 🌸",
+      "err_poor_self": "You don't have enough **{qty}× {gift}** in your inventory to gift me~",
+      "success_aff_add": "*Affection with Waguri increased by **+{added}** → **{newAff}** points!*",
+      "success_aff_capped": "*(You have hit the daily affection limit (+100 points) so you received fewer points today~)*",
+      "success_aff_limit": "*You have hit the daily affection limit (+100 points) today so your score won't increase further~ (Current affection: **{newAff}** points)*",
+      "waguri_gift_success_title": "💖・Gift for Waguri",
+      "err_poor_player": "You don't have enough **{qty}× {gift}** in your inventory to gift~",
+      "success_title": "🎁・Gift Sent Successfully",
+      "success_desc": "You gifted **{qty}× {gift}** to <@{target}>. So kind and sweet of you~ 🌸"
+    },
+    "rob": {
+      "embed_title_warning": "🦹・Robbery",
+      "embed_title_fail": "🦹・Failed Attempt",
+      "success_title": "🦹・Robbery Successful!",
+      "fail_title": "🚨・Busted!",
+      "err_target_missing": "Who are you trying to \"visit\"? Tag @user~",
+      "err_bot": "Bots don't have wallets to rob~ 😄",
+      "err_self": "Are you robbing yourself? 🤨",
+      "err_pvp_disabled": "PvP (rob/theft) is currently **DISABLED** on this server~ 🌸",
+      "err_target_poor": "<@{target}>'s wallet is empty, nothing to steal~ 🌸",
+      "err_cooldown": "You just did this, rest a bit~ Come back <t:{ts}:R>.",
+      "err_transfer_fail": "Missed! The target was too quick and hid their money~",
+      "success_desc": "You stealthily took **{amount}** {currency} from <@{target}>'s wallet.\n💵 Your wallet balance: **{wallet}** {currency}\n*(Waguri is pretending she saw nothing~ 🙈)*",
+      "success_cao_buff": "🦊 Your sly Fox cub **{name}** helped you steal an extra 10%!",
+      "fail_desc_base": "You were caught red-handed and fined **{fine}** {currency}.",
+      "fail_insurance": "🛡️ **Street Insurance** activated and reduced your fine by 50%!",
+      "fail_cao_buff": "🦊 Your Fox cub **{name}** helped smuggle some evidence and reduced your fine by 15%!",
+      "fail_dog_buff": "🐕 <@{target}>'s guard dog **{name}** barked loudly and got you busted!",
+      "fail_desc_footer": "\n💵 Your wallet balance: **{bal}** {currency}\nPlease don't do this again~ 😟"
+    },
+    "vay": {
+      "loan_line": "• <@{counterpart}> — **{amount}** {currency} · due <t:{ts}:R>{overdue}",
+      "overdue_tag": " ⚠️ **OVERDUE**",
+      "embed_title_warning": "🤝・Loan",
+      "err_lender_missing": "Who do you want to borrow from? Please tag @user~ 🌸",
+      "err_bot": "Bots don't offer loans, silly~ 😄",
+      "err_self": "You cannot borrow from yourself~ 😅",
+      "err_min": "Borrow at least **{min}** {currency}~",
+      "err_max": "You can only borrow up to **{max}** {currency} at a time~",
+      "proposal_title": "🤝・Loan Proposal",
+      "proposal_desc": "<@{me}> wants to borrow **{amount}** {currency} from <@{lender}>.\nInterest **{interest}%** → must repay **{due}** {currency} within **{days} days**.\n*(If overdue, the lender has the right to force-collect via `/vay doi` from both wallet and bank account!)*\n\n<@{lender}>, do you agree to this loan?",
+      "btn_yes": "Lend 💸",
+      "btn_no": "Decline",
+      "err_not_lender": "This loan proposal is not for you~ 😊",
+      "rejected_title": "🤝・Loan Declined",
+      "rejected_desc": "<@{lender}> declined to lend money to <@{me}>. 💔",
+      "err_poor_lender": "<@{lender}> doesn't have enough **{amount}** {currency} in their wallet to lend 😟",
+      "err_system": "Oops, a loan system error occurred, please try again later~",
+      "error_title": "🤝・Loan Error",
+      "success_title": "🤝・Loan Successful!",
+      "success_desc": "<@{lender}> lent **{amount}** {currency} to <@{me}>.\n<@{me}> needs to repay **{remaining}** {currency} before <t:{ts}:R> (use `/vay tra`).",
+      "timeout_title": "🤝・Loan Proposal Expired",
+      "timeout_desc": "<@{lender}> didn't reply in time~ Try again later.",
+      "err_not_owing": "You don't owe <@{lender}> anything~ 🌸",
+      "err_poor_borrower": "Your wallet is empty, cannot repay~ You still owe <@{lender}> **{remaining}** {currency}. 😟",
+      "repay_success_title": "💵 Loan Repayment",
+      "repay_success_desc": "You repaid <@{lender}> **{paid}** {currency}.\n{remaining}\n💵 Wallet balance: **{wallet}** {currency}",
+      "remaining_debt": "Remaining debt: **{rem}** {currency}.",
+      "debt_cleared": "🎉 You have fully paid off your debt to this person!",
+      "err_borrower_missing": "Who do you want to collect from? Tag @user~ 🌸",
+      "err_not_overdue": "<@{borrower}> has no overdue loans to collect (or doesn't owe you). Please be patient~ 🌸",
+      "err_broke_borrower": "<@{borrower}> is completely broke, couldn't collect a single coin 😤 Remaining overdue debt: **{overdue}** {currency}.",
+      "collect_success_title": "🧾 Forced Collection Successful!",
+      "collect_success_desc": "You force-collected **{collected}** {currency} from <@{borrower}> *(wallet {wallet} + bank {bank})*.\n{overdueLeftText}",
+      "overdue_left": "Remaining overdue: **{left}** {currency} — collect again when they have money!",
+      "overdue_cleared": "🎉 Successfully collected all overdue amounts!",
+      "total_owing": "💸 **Total Debt Owed:** {amount} {currency}",
+      "total_owed": "🤝 **Total Lent Out:** {amount} {currency}",
+      "header_owing": "__**💸 YOUR OUTSTANDING DEBTS:**__",
+      "no_debts": "*(you don't owe anyone anything~)*",
+      "header_owed": "__**🤝 DEBTS OWED TO YOU:**__",
+      "no_lends": "*(you haven't lent money to anyone)*",
+      "title_book": "🧾 Your Debt Ledger",
+      "book_footer": "Repay: /vay tra · Collect overdue: /vay doi",
+      "err_invalid_sub": "Invalid subcommand~ Try `/vay muon`, `/vay tra`, `/vay doi`, or `/vay so`!"
     }
   },
   "data": {
     "items": {
-      "can_cau": { "name": "Iron Fishing Rod" },
-      "cuoc_sat": { "name": "Iron Hoe" },
-      "riu_sat": { "name": "Iron Axe" },
-      "bo_do_sua_xe": { "name": "Gekka Baking Kit" },
-      "do_trom": { "name": "Lockpick" },
-      "the_sinh_vien": { "name": "Student ID Card" },
-      "mu_noi": { "name": "Beret Hat" },
-      "hop_but": { "name": "Pencil Case" },
-      "laptop": { "name": "Subaru's Laptop" },
-      "may_quay": { "name": "Subaru's Camera" },
-      "ban_phim_co": { "name": "Mechanical Keyboard" },
-      "xe_dap": { "name": "Bicycle" },
-      "xe_wave": { "name": "Wave Scooter" },
-      "xe_sh": { "name": "Vespa Scooter" },
-      "sh": { "name": "Honda SH Scooter" },
-      "o_to_cu": { "name": "Used Car" },
-      "o_to_vinfast": { "name": "VinFast EV" },
-      "mercedes": { "name": "Mercedes-Benz Luxury Sedan" },
-      "bh_lao_dong": { "name": "Labor Insurance" },
-      "bh_duong_pho": { "name": "School Safety Insurance" },
-      "che_ba_mau": { "name": "Three-Color Dessert" },
-      "banh_mi": { "name": "Vietnamese Banh Mi" },
-      "xoi": { "name": "Sticky Rice" },
-      "banh_cuon": { "name": "Steamed Rice Rolls" },
-      "tra_sua": { "name": "Milk Tea" },
-      "goi_cuon": { "name": "Fresh Spring Rolls" },
-      "banh_xeo": { "name": "Crispy Pancake" },
-      "mi_quang": { "name": "Quang Noodles" },
-      "com_tam": { "name": "Broken Rice" },
-      "pho": { "name": "Phở Beef Noodle Soup" },
-      "bun_bo": { "name": "Bún Bò Huế Spicy Beef Noodle Soup" },
-      "ca_phe": { "name": "Vietnamese Iced Coffee" },
-      "nuoc_tang_luc": { "name": "Gekka Fruit Soda" },
-      "chao_ga": { "name": "Chicken Rice Porridge" },
-      "hop_y_te": { "name": "First-Aid Kit" },
-      "ca_phe_trung": { "name": "Egg Coffee" },
-      "com_ga": { "name": "Chicken Rice" },
-      "banh_trung_thu": { "name": "Mooncake" },
-      "banh_chung": { "name": "Bánh Chưng Rice Cake" },
-      "ve_vip": { "name": "Strawberry Shortcake" },
-      "ve_dai_gia": { "name": "Cheesecake" },
-      "nuoc_chanh": { "name": "Lemonade" },
-      "thuoc_cam_cum": { "name": "Cold Medicine" },
-      "ca_tuoi": { "name": "Fresh Fish" },
-      "ca_ngon": { "name": "Tasty Fish" },
-      "ca_hiem": { "name": "Rare Fish" },
-      "ca_rong_vang": { "name": "Golden Arowana" },
-      "ca_koi_nhat": { "name": "Japanese Koi" },
-      "da": { "name": "Stone" },
-      "quang_sat": { "name": "Iron Ore" },
-      "go": { "name": "Wood" },
-      "vang_dong_tren": { "name": "Dong Trieu Gold" },
-      "ky_nam": { "name": "Ky Nam Wood" },
-      "tam_go": { "name": "Wooden Plank" },
-      "thoi_sat": { "name": "Iron Ingot" },
-      "noi_that": { "name": "Furniture" },
-      "trang_suc": { "name": "Jewelry" },
-      "tram_huong_vong": { "name": "Agarwood Bracelet" },
-      "vuong_mieng_gold": { "name": "Golden Crown" }
+      "can_cau": {
+        "name": "Iron Fishing Rod"
+      },
+      "cuoc_sat": {
+        "name": "Iron Hoe"
+      },
+      "riu_sat": {
+        "name": "Iron Axe"
+      },
+      "bo_do_sua_xe": {
+        "name": "Gekka Baking Kit"
+      },
+      "do_trom": {
+        "name": "Lockpick"
+      },
+      "the_sinh_vien": {
+        "name": "Student ID Card"
+      },
+      "mu_noi": {
+        "name": "Beret Hat"
+      },
+      "hop_but": {
+        "name": "Pencil Case"
+      },
+      "laptop": {
+        "name": "Subaru's Laptop"
+      },
+      "may_quay": {
+        "name": "Subaru's Camera"
+      },
+      "ban_phim_co": {
+        "name": "Mechanical Keyboard"
+      },
+      "xe_dap": {
+        "name": "Bicycle"
+      },
+      "xe_wave": {
+        "name": "Wave Scooter"
+      },
+      "xe_sh": {
+        "name": "Vespa Scooter"
+      },
+      "sh": {
+        "name": "Honda SH Scooter"
+      },
+      "o_to_cu": {
+        "name": "Used Car"
+      },
+      "o_to_vinfast": {
+        "name": "VinFast EV"
+      },
+      "mercedes": {
+        "name": "Mercedes-Benz Luxury Sedan"
+      },
+      "bh_lao_dong": {
+        "name": "Labor Insurance"
+      },
+      "bh_duong_pho": {
+        "name": "School Safety Insurance"
+      },
+      "che_ba_mau": {
+        "name": "Three-Color Dessert"
+      },
+      "banh_mi": {
+        "name": "Vietnamese Banh Mi"
+      },
+      "xoi": {
+        "name": "Sticky Rice"
+      },
+      "banh_cuon": {
+        "name": "Steamed Rice Rolls"
+      },
+      "tra_sua": {
+        "name": "Milk Tea"
+      },
+      "goi_cuon": {
+        "name": "Fresh Spring Rolls"
+      },
+      "banh_xeo": {
+        "name": "Crispy Pancake"
+      },
+      "mi_quang": {
+        "name": "Quang Noodles"
+      },
+      "com_tam": {
+        "name": "Broken Rice"
+      },
+      "pho": {
+        "name": "Phở Beef Noodle Soup"
+      },
+      "bun_bo": {
+        "name": "Bún Bò Huế Spicy Beef Noodle Soup"
+      },
+      "ca_phe": {
+        "name": "Vietnamese Iced Coffee"
+      },
+      "nuoc_tang_luc": {
+        "name": "Gekka Fruit Soda"
+      },
+      "chao_ga": {
+        "name": "Chicken Rice Porridge"
+      },
+      "hop_y_te": {
+        "name": "First-Aid Kit"
+      },
+      "ca_phe_trung": {
+        "name": "Egg Coffee"
+      },
+      "com_ga": {
+        "name": "Chicken Rice"
+      },
+      "banh_trung_thu": {
+        "name": "Mooncake"
+      },
+      "banh_chung": {
+        "name": "Bánh Chưng Rice Cake"
+      },
+      "ve_vip": {
+        "name": "Strawberry Shortcake"
+      },
+      "ve_dai_gia": {
+        "name": "Cheesecake"
+      },
+      "nuoc_chanh": {
+        "name": "Lemonade"
+      },
+      "thuoc_cam_cum": {
+        "name": "Cold Medicine"
+      },
+      "ca_tuoi": {
+        "name": "Fresh Fish"
+      },
+      "ca_ngon": {
+        "name": "Tasty Fish"
+      },
+      "ca_hiem": {
+        "name": "Rare Fish"
+      },
+      "ca_rong_vang": {
+        "name": "Golden Arowana"
+      },
+      "ca_koi_nhat": {
+        "name": "Japanese Koi"
+      },
+      "da": {
+        "name": "Stone"
+      },
+      "quang_sat": {
+        "name": "Iron Ore"
+      },
+      "go": {
+        "name": "Wood"
+      },
+      "vang_dong_tren": {
+        "name": "Dong Trieu Gold"
+      },
+      "ky_nam": {
+        "name": "Ky Nam Wood"
+      },
+      "tam_go": {
+        "name": "Wooden Plank"
+      },
+      "thoi_sat": {
+        "name": "Iron Ingot"
+      },
+      "noi_that": {
+        "name": "Furniture"
+      },
+      "trang_suc": {
+        "name": "Jewelry"
+      },
+      "tram_huong_vong": {
+        "name": "Agarwood Bracelet"
+      },
+      "vuong_mieng_gold": {
+        "name": "Golden Crown"
+      }
     },
     "jobs": {
-      "ban_tra_da": { "name": "West Lake Tea Vendor" },
-      "nhat_ve_chai": { "name": "Kikyo Hallway Sweeper" },
-      "phu_ho": { "name": "Gekka Bakery Helper" },
-      "shipper": { "name": "Gekka Cake Delivery" },
-      "sinh_vien": { "name": "Student Part-Timer" },
-      "nong_dan": { "name": "Gekka Farm Worker" },
-      "tho_sua_xe": { "name": "Gekka Master Baker" },
-      "xe_om": { "name": "Wave Rider (Ride-hailer)" },
-      "moi_gioi": { "name": "Gekka Assistant Manager" },
-      "streamer": { "name": "Kikyo Discipline Chair" },
-      "dev": { "name": "Cake Decorating Specialist" },
-      "chu_tich": { "name": "Gekka General Manager" },
-      "dai_gia": { "name": "Gekka Bakery Chain Owner" }
+      "ban_tra_da": {
+        "name": "West Lake Tea Vendor"
+      },
+      "nhat_ve_chai": {
+        "name": "Kikyo Hallway Sweeper"
+      },
+      "phu_ho": {
+        "name": "Gekka Bakery Helper"
+      },
+      "shipper": {
+        "name": "Gekka Cake Delivery"
+      },
+      "sinh_vien": {
+        "name": "Student Part-Timer"
+      },
+      "nong_dan": {
+        "name": "Gekka Farm Worker"
+      },
+      "tho_sua_xe": {
+        "name": "Gekka Master Baker"
+      },
+      "xe_om": {
+        "name": "Wave Rider (Ride-hailer)"
+      },
+      "moi_gioi": {
+        "name": "Gekka Assistant Manager"
+      },
+      "streamer": {
+        "name": "Kikyo Discipline Chair"
+      },
+      "dev": {
+        "name": "Cake Decorating Specialist"
+      },
+      "chu_tich": {
+        "name": "Gekka General Manager"
+      },
+      "dai_gia": {
+        "name": "Gekka Bakery Chain Owner"
+      }
     },
     "quests": {
-      "daily": { "name": "Daily check-in today" },
-      "vote": { "name": "Vote for Waguri on Top.gg" },
-      "work3": { "name": "Diligent: work 3 times" },
-      "work6": { "name": "Hardworking: work 6 times" },
-      "earn3k": { "name": "Earn 3,000 VNĐ" },
-      "earn8k": { "name": "Earn 8,000 VNĐ" },
-      "gamble2": { "name": "Win 2 gamble minigames" },
-      "fish3": { "name": "Go fishing 3 times" },
-      "gather3": { "name": "Mine or chop wood 3 times" },
-      "bake1": { "name": "Collect Gekka Bakery revenue 1 time" }
+      "daily": {
+        "name": "Daily check-in today"
+      },
+      "vote": {
+        "name": "Vote for Waguri on Top.gg"
+      },
+      "work3": {
+        "name": "Diligent: work 3 times"
+      },
+      "work6": {
+        "name": "Hardworking: work 6 times"
+      },
+      "earn3k": {
+        "name": "Earn 3,000 VNĐ"
+      },
+      "earn8k": {
+        "name": "Earn 8,000 VNĐ"
+      },
+      "gamble2": {
+        "name": "Win 2 gamble minigames"
+      },
+      "fish3": {
+        "name": "Go fishing 3 times"
+      },
+      "gather3": {
+        "name": "Mine or chop wood 3 times"
+      },
+      "bake1": {
+        "name": "Collect Gekka Bakery revenue 1 time"
+      }
     },
     "plants": {
-      "Chanh": { "name": "Lemon" },
-      "Hoa Dại": { "name": "Wildflower" },
-      "Chuối": { "name": "Banana" },
-      "Bí Ngô": { "name": "Pumpkin" },
-      "Hoa Xương Rồng": { "name": "Cactus Flower" },
-      "Hoa Cúc": { "name": "Chrysanthemum" },
-      "Dưa Hấu": { "name": "Watermelon" },
-      "Táo": { "name": "Apple" },
-      "Hoa Anh Túc": { "name": "Poppy Flower" },
-      "Hoa Mai": { "name": "Ochna Flower" },
-      "Bơ": { "name": "Avocado" },
-      "Nho": { "name": "Grape" },
-      "Hoa Hồng": { "name": "Rose" },
-      "Hoa Tulip": { "name": "Tulip" },
-      "Dâu": { "name": "Strawberry" },
-      "Hoa Hướng Dương": { "name": "Sunflower" }
+      "Chanh": {
+        "name": "Lemon"
+      },
+      "Hoa Dại": {
+        "name": "Wildflower"
+      },
+      "Chuối": {
+        "name": "Banana"
+      },
+      "Bí Ngô": {
+        "name": "Pumpkin"
+      },
+      "Hoa Xương Rồng": {
+        "name": "Cactus Flower"
+      },
+      "Hoa Cúc": {
+        "name": "Chrysanthemum"
+      },
+      "Dưa Hấu": {
+        "name": "Watermelon"
+      },
+      "Táo": {
+        "name": "Apple"
+      },
+      "Hoa Anh Túc": {
+        "name": "Poppy Flower"
+      },
+      "Hoa Mai": {
+        "name": "Ochna Flower"
+      },
+      "Bơ": {
+        "name": "Avocado"
+      },
+      "Nho": {
+        "name": "Grape"
+      },
+      "Hoa Hồng": {
+        "name": "Rose"
+      },
+      "Hoa Tulip": {
+        "name": "Tulip"
+      },
+      "Dâu": {
+        "name": "Strawberry"
+      },
+      "Hoa Hướng Dương": {
+        "name": "Sunflower"
+      }
     },
     "collections": {
       "ngu_ong": {
@@ -1327,6 +2001,57 @@
         "desc": "Craft all tools & high-quality items from the crafting table 🔨",
         "title": "Golden Hand 🔨"
       }
+    },
+    "couple": {
+      "tiers": {
+        "phu_the_vien_man": "Happily Married 💞",
+        "khang_khit": "Closer Than Ever 💗",
+        "man_nong": "Passionate 💖",
+        "dang_yeu": "In Love 💕",
+        "moi_cuoi": "Newlyweds 💌"
+      }
+    },
+    "zodiac": {
+      "bach_duong": "♈ Aries",
+      "kim_nguu": "♉ Taurus",
+      "song_tu": "♊ Gemini",
+      "cu_giai": "♋ Cancer",
+      "su_tu": "♌ Leo",
+      "xu_nu": "♍ Virgo",
+      "thien_binh": "♎ Libra",
+      "bo_cap": "♏ Scorpio",
+      "nhan_ma": "♐ Sagittarius",
+      "ma_ket": "♑ Capricorn",
+      "bao_binh": "♒ Aquarius",
+      "song_ngu": "♓ Pisces"
     }
+  },
+  "lib": {
+    "couple": {
+      "target_not_found": "Who is it for? Please tag them~ 🌸",
+      "target_bot": "Bot is shy~ 😳",
+      "target_self": "Loving yourself is nice, but invite someone else~ 😄",
+      "love_status": "Relationship Love: **{love}** — *{tier}*",
+      "cooldown_extra": "*(too much affection too fast, let the feeling settle down a bit~)*"
+    },
+    "newbie": {
+      "step_1": "Step 1: First check-in 📅",
+      "step_2": "Step 2: Hard working ⚡",
+      "step_3": "Step 3: Shopping trial 🛒",
+      "step_4": "Step 4: Formal employment 🧑‍💼",
+      "step_5": "Step 5: Testing your luck 🪙",
+      "desc_step_complete": "🎉 Congratulations on completing **{name}**!\n🎁 Claimed **+{reward} VNĐ** to wallet!",
+      "desc_all_complete": "\n\n🏆 **[NEWBIE QUESTLINE COMPLETED]**\nExcellent job! You received **+{bonus} VNĐ** and the Title: 🏷️ **{title}**! 🌸💖",
+      "desc_next_step": "\n\n👉 **Next Quest:** *{name}* (Type `/quest` to see details)",
+      "embed_title": "🔰・Newbie Quests"
+    }
+  },
+  "species": {
+    "meo": "Kitten",
+    "cun": "Puppy",
+    "rong": "Baby Dragon",
+    "cao": "Fox Cub",
+    "tho": "Bunny",
+    "gau": "Bear Cub"
   }
 }

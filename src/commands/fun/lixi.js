@@ -3,8 +3,9 @@ const { buildWaguriEmbed } = require('../../lib/embed');
 const db = require('../../database.js');
 const config = require('../../config');
 const { parseAmount } = require('../../lib/amount');
+const { getInteractionLanguage, t } = require('../../lib/i18n');
 
-const fmt = n => Number(n).toLocaleString('vi-VN');
+const fmt = (n, locale) => Number(n).toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN');
 
 // Chia total thành parts phần ngẫu nhiên, mỗi phần >= 1
 function splitMoney(total, parts) {
@@ -21,18 +22,25 @@ module.exports = {
         .addStringOption(o => o.setName('amount').setDescription('Tổng tiền lì xì (vd 10000, 10k, all)').setRequired(true))
         .addIntegerOption(o => o.setName('parts').setDescription('Số bao lì xì (mặc định 5)').setMinValue(1).setMaxValue(20)),
     async execute(interaction) {
+        const locale = await getInteractionLanguage(interaction);
         await interaction.deferReply();
         const userId = interaction.user.id;
         const user = await db.getUser(userId);
         if (!user) {
-            const embed = buildWaguriEmbed(interaction, 'error', { title: '🧧・Lì Xì May Mắn', description: 'Hơ, lỗi dữ liệu, thử lại sau nhé~ 🌸' });
+            const embed = buildWaguriEmbed(interaction, 'error', {
+                title: t(locale, 'commands.lixi.embed_title_warning'),
+                description: t(locale, 'commands.lixi.err_data')
+            });
             return interaction.editReply({ embeds: [embed] });
         }
 
         let amount = parseAmount(interaction.options.getString('amount'), Number(user.wallet));
         let parts = interaction.options.getInteger('parts') || 5;
         if (!amount || amount < parts) {
-            const embed = buildWaguriEmbed(interaction, 'error', { title: '🧧・Lì Xì May Mắn', description: `Số tiền không hợp lệ~ (tối thiểu **${parts}** ${config.CURRENCY} cho ${parts} bao)` });
+            const embed = buildWaguriEmbed(interaction, 'error', {
+                title: t(locale, 'commands.lixi.embed_title_warning'),
+                description: t(locale, 'commands.lixi.err_invalid_amount', { parts, currency: config.CURRENCY })
+            });
             return interaction.editReply({ embeds: [embed] });
         }
         if (parts > amount) parts = amount;
@@ -41,7 +49,10 @@ module.exports = {
         // -> bot restart giữa chừng không làm "bốc hơi" phần chưa ai cướp (không còn ký quỹ trong RAM).
         // Chỉ kiểm ví đủ tại thời điểm phát (peek); nếu giữa chừng giver tiêu hết, lượt cướp sau báo hết tiền.
         if (Number(user.wallet) < amount) {
-            const embed = buildWaguriEmbed(interaction, 'error', { title: '🧧・Lì Xì May Mắn', description: 'Ví cậu không đủ để phát lì xì rồi 😟' });
+            const embed = buildWaguriEmbed(interaction, 'error', {
+                title: t(locale, 'commands.lixi.embed_title_warning'),
+                description: t(locale, 'commands.lixi.err_poor')
+            });
             return interaction.editReply({ embeds: [embed] });
         }
 
@@ -50,19 +61,48 @@ module.exports = {
 
         const row = (disabled = false) => new ActionRowBuilder().addComponents(
             new ButtonBuilder().setCustomId('grab')
-                .setLabel(`Cướp lì xì 🧧 (còn ${portions.length})`)
+                .setLabel(t(locale, 'commands.lixi.btn_grab', { remaining: portions.length }))
                 .setStyle(ButtonStyle.Danger)
                 .setDisabled(disabled || portions.length === 0));
 
         const render = (closed = false) => {
+            const listStr = claimed.size
+                ? '\n' + [...claimed].map(([u, { net, tax }]) => {
+                    if (tax > 0) {
+                        return t(locale, 'commands.lixi.claim_line_with_tax', {
+                            user: u,
+                            net: fmt(net, locale),
+                            tax: fmt(tax, locale),
+                            currency: config.CURRENCY
+                        });
+                    }
+                    return t(locale, 'commands.lixi.claim_line', {
+                        user: u,
+                        net: fmt(net, locale),
+                        currency: config.CURRENCY
+                    });
+                }).join('\n')
+                : '';
+
+            const statusStr = closed
+                ? t(locale, 'commands.lixi.embed_closed')
+                : t(locale, 'commands.lixi.embed_open');
+
             const embed = buildWaguriEmbed(interaction, 'jackpot', {
-                title: '🧧・LÌ XÌ MAY MẮN・🧧',
-                description: `<@${userId}> phát **${fmt(amount)}** ${config.CURRENCY} cho **${parts}** người!\n` +
-                    (claimed.size ? '\n' + [...claimed].map(([u, { net, tax }]) => `🧧 <@${u}> +${fmt(net)} ${config.CURRENCY}` + (tax > 0 ? ` *(thuế -${fmt(tax)})*` : '')).join('\n') : '') +
-                    (closed ? '\n\n*Hết lì xì rồi~ Cảm ơn cậu đã hào phóng! 🌸*' : '\n\nNhanh tay bấm nút cướp nào! 👇')
+                locale,
+                title: t(locale, 'commands.lixi.embed_title'),
+                description: t(locale, 'commands.lixi.embed_desc', {
+                    user: userId,
+                    amount: fmt(amount, locale),
+                    parts,
+                    currency: config.CURRENCY
+                }) + listStr + statusStr
             });
             embed.setFooter({
-                text: `${parts - portions.length}/${parts} bao đã được nhận • ${embed.data.footer.text}`,
+                text: t(locale, 'commands.lixi.footer_text', {
+                    claimed: parts - portions.length,
+                    total: parts
+                }) + ` • ${embed.data.footer.text}`,
                 iconURL: embed.data.footer.icon_url
             });
             return embed;
@@ -72,9 +112,9 @@ module.exports = {
         const collector = msg.createMessageComponentCollector({ componentType: ComponentType.Button, time: 120_000 });
 
         collector.on('collect', async (i) => {
-            if (i.user.id === userId) return i.reply({ content: 'Không tự cướp lì xì của mình được đâu~ 😆', flags: MessageFlags.Ephemeral });
-            if (claimed.has(i.user.id)) return i.reply({ content: 'Cậu cướp rồi mà, để dành cho người khác nhé~ 🌸', flags: MessageFlags.Ephemeral });
-            if (portions.length === 0) return i.reply({ content: 'Hết lì xì mất rồi 😢', flags: MessageFlags.Ephemeral });
+            if (i.user.id === userId) return i.reply({ content: t(locale, 'commands.lixi.grab_self'), flags: MessageFlags.Ephemeral });
+            if (claimed.has(i.user.id)) return i.reply({ content: t(locale, 'commands.lixi.grab_already'), flags: MessageFlags.Ephemeral });
+            if (portions.length === 0) return i.reply({ content: t(locale, 'commands.lixi.grab_empty'), flags: MessageFlags.Ephemeral });
 
             const got = portions.pop();
             const tax = Math.floor(got * config.GIVE_TAX_PCT); // khớp RPC transfer_money_with_tax (floor)
@@ -85,7 +125,7 @@ module.exports = {
                 // Giver vừa hết tiền (tiêu chỗ khác) -> nhả bao lại, huỷ đánh dấu.
                 claimed.delete(i.user.id);
                 portions.push(got);
-                return i.reply({ content: 'Ơ, người phát tạm hết tiền rồi nên bao này chưa cướp được~ 😢', flags: MessageFlags.Ephemeral }).catch(() => {});
+                return i.reply({ content: t(locale, 'commands.lixi.grab_failed_giver_poor'), flags: MessageFlags.Ephemeral }).catch(() => {});
             }
             await i.update({ embeds: [render(portions.length === 0)], components: [row(portions.length === 0)] });
             if (portions.length === 0) collector.stop('done');

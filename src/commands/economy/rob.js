@@ -3,8 +3,9 @@ const { buildWaguriEmbed } = require('../../lib/embed');
 const db = require('../../database.js');
 const config = require('../../config');
 const { pvpEnabled } = require('../../lib/guildflags');
+const { getInteractionLanguage, t } = require('../../lib/i18n');
 
-const fmt = n => Number(n).toLocaleString('vi-VN');
+const fmt = (n, locale) => Number(n).toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -12,30 +13,51 @@ module.exports = {
         .setDescription('Cướp tiền trong ví người khác (rủi ro cao!)')
         .addUserOption(o => o.setName('target').setDescription('Mục tiêu').setRequired(true)),
     async execute(interaction) {
+        const locale = await getInteractionLanguage(interaction);
         await interaction.deferReply();
         const robberId = interaction.user.id;
         const target = interaction.options.getUser('target');
 
         if (!target) {
-            const embed = buildWaguriEmbed(interaction, 'error', { title: '🦹・Trộm cướp', description: 'Cậu định "ghé thăm" ai cơ? Nhập @người nhé~' });
+            const embed = buildWaguriEmbed(interaction, 'error', {
+                locale,
+                title: t(locale, 'commands.rob.embed_title_warning'),
+                description: t(locale, 'commands.rob.err_target_missing')
+            });
             return interaction.editReply({ embeds: [embed] });
         }
         if (target.bot) {
-            const embed = buildWaguriEmbed(interaction, 'error', { title: '🦹・Trộm cướp', description: 'Bot làm gì có ví mà cướp~ 😄' });
+            const embed = buildWaguriEmbed(interaction, 'error', {
+                locale,
+                title: t(locale, 'commands.rob.embed_title_warning'),
+                description: t(locale, 'commands.rob.err_bot')
+            });
             return interaction.editReply({ embeds: [embed] });
         }
         if (target.id === robberId) {
-            const embed = buildWaguriEmbed(interaction, 'error', { title: '🦹・Trộm cướp', description: 'Cậu tự cướp mình à? 🤨' });
+            const embed = buildWaguriEmbed(interaction, 'error', {
+                locale,
+                title: t(locale, 'commands.rob.embed_title_warning'),
+                description: t(locale, 'commands.rob.err_self')
+            });
             return interaction.editReply({ embeds: [embed] });
         }
         if (!await pvpEnabled(interaction.guildId || interaction.guild?.id)) {
-            const embed = buildWaguriEmbed(interaction, 'warning', { title: '🦹・Trộm cướp', description: 'Server này đã **tắt PvP** (cướp/trộm) rồi nha~ 🌸' });
+            const embed = buildWaguriEmbed(interaction, 'warning', {
+                locale,
+                title: t(locale, 'commands.rob.embed_title_warning'),
+                description: t(locale, 'commands.rob.err_pvp_disabled')
+            });
             return interaction.editReply({ embeds: [embed] });
         }
 
         const tgt = await db.getUser(target.id);
         if (!tgt || Number(tgt.wallet) < config.ROB.MIN_TARGET_WALLET) {
-            const embed = buildWaguriEmbed(interaction, 'warning', { title: '🦹・Trộm cướp', description: `Ví của <@${target.id}> trống trơn, chả có gì để lấy đâu~ 🌸` });
+            const embed = buildWaguriEmbed(interaction, 'warning', {
+                locale,
+                title: t(locale, 'commands.rob.embed_title_warning'),
+                description: t(locale, 'commands.rob.err_target_poor', { target: target.id })
+            });
             return interaction.editReply({ embeds: [embed] });
         }
 
@@ -48,7 +70,7 @@ module.exports = {
             const dogLvl = petLevel(targetPet.exp);
             if (dogLvl >= 5) {
                 dogBuff = true;
-                targetPetName = targetPet.name || 'Cún con';
+                targetPetName = targetPet.name || t(locale, 'species.cun') || 'Cún con';
             }
         }
 
@@ -61,7 +83,7 @@ module.exports = {
             const caoLvl = petLevel(robberPet.exp);
             if (caoLvl >= 5) {
                 caoBuff = true;
-                robberPetName = robberPet.name || 'Cáo nhỏ';
+                robberPetName = robberPet.name || t(locale, 'species.cao') || 'Cáo nhỏ';
             }
         }
 
@@ -69,8 +91,9 @@ module.exports = {
         const cd = await db.claimCooldown(robberId, 'rob', config.ROB.COOLDOWN_SECONDS);
         if (cd) {
             const embed = buildWaguriEmbed(interaction, 'warning', {
-                title: '🦹・Trộm cướp',
-                description: `Cậu vừa "ra tay" xong, nghỉ chút đã nhé~ Quay lại sau <t:${Math.floor(cd / 1000)}:R>.`
+                locale,
+                title: t(locale, 'commands.rob.embed_title_warning'),
+                description: t(locale, 'commands.rob.err_cooldown', { ts: Math.floor(cd / 1000) })
             });
             return interaction.editReply({ embeds: [embed] });
         }
@@ -85,16 +108,26 @@ module.exports = {
             }
             const ok = await db.transferMoney(target.id, robberId, amount);
             if (!ok) {
-                const embed = buildWaguriEmbed(interaction, 'error', { title: '🦹・Thất bại', description: 'Hụt rồi, con mồi nhanh tay cất tiền mất tiêu~' });
+                const embed = buildWaguriEmbed(interaction, 'error', {
+                    locale,
+                    title: t(locale, 'commands.rob.embed_title_fail'),
+                    description: t(locale, 'commands.rob.err_transfer_fail')
+                });
                 return interaction.editReply({ embeds: [embed] });
             }
             const me = await db.getUser(robberId);
-            let desc = `Cậu lén lấy được **${fmt(amount)}** ${config.CURRENCY} từ ví <@${target.id}>.\n💵 Số dư của cậu: **${fmt(me?.wallet || 0)}** ${config.CURRENCY}\n*(Waguri giả vờ không thấy gì~ 🙈)*`;
+            let desc = t(locale, 'commands.rob.success_desc', {
+                amount: fmt(amount, locale),
+                currency: config.CURRENCY,
+                target: target.id,
+                wallet: fmt(me?.wallet || 0, locale)
+            });
             if (caoBuff) {
-                desc += `\n🦊 Bé cáo **${robberPetName}** ranh mãnh giúp cậu trộm thêm 10% số tiền!`;
+                desc += `\n` + t(locale, 'commands.rob.success_cao_buff', { name: robberPetName });
             }
             const embedSuccess = buildWaguriEmbed(interaction, 'success', {
-                title: '🦹・Trộm thành công!',
+                locale,
+                title: t(locale, 'commands.rob.success_title'),
                 description: desc
             });
             return interaction.editReply({ embeds: [embedSuccess] });
@@ -114,20 +147,21 @@ module.exports = {
             const robberAfter = await db.getUser(robberId);
             const displayBal = robberAfter ? Number(robberAfter.wallet) : (Number(robber.wallet) - fine);
             
-            let desc = `Cậu bị bắt quả tang và phải nộp phạt **${fmt(fine)}** ${config.CURRENCY}.`;
+            let desc = t(locale, 'commands.rob.fail_desc_base', { fine: fmt(fine, locale), currency: config.CURRENCY });
             if (usedIns) {
-                desc += `\n🛡️ **Bảo hiểm Đường phố** đã kích hoạt giúp giảm 50% tiền phạt!`;
+                desc += `\n` + t(locale, 'commands.rob.fail_insurance');
             }
             if (caoBuff) {
-                desc += `\n🦊 Bé cáo **${robberPetName}** ranh mãnh tẩu tán bớt tang vật giúp cậu giảm 15% tiền phạt!`;
+                desc += `\n` + t(locale, 'commands.rob.fail_cao_buff', { name: robberPetName });
             }
             if (dogBuff) {
-                desc += `\n🐕 Bé cún **${targetPetName}** của <@${target.id}> sủa vang làm cậu giật mình bị phát hiện!`;
+                desc += `\n` + t(locale, 'commands.rob.fail_dog_buff', { name: targetPetName, target: target.id });
             }
-            desc += `\n💵 Số dư của cậu: **${fmt(displayBal)}** ${config.CURRENCY}\nLần sau đừng làm vậy nữa nhé~ 😟`;
+            desc += `\n` + t(locale, 'commands.rob.fail_desc_footer', { bal: fmt(displayBal, locale), currency: config.CURRENCY });
 
             const embedFail = buildWaguriEmbed(interaction, 'error', {
-                title: '🚨・Bị tóm rồi!',
+                locale,
+                title: t(locale, 'commands.rob.fail_title'),
                 description: desc
             });
             return interaction.editReply({ embeds: [embedFail] });

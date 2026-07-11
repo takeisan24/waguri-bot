@@ -8,7 +8,7 @@ import { getLocaleServer } from "../../lib/i18n";
 export async function generateMetadata() {
   const locale = await getLocaleServer();
   return {
-    title: locale === "en" ? "Wiki 🌸 - Waguri Bot Guide" : "Wiki 🌸 - Hướng dẫn chơi Waguri Bot",
+    title: locale === "en" ? "Wiki 🌸 - Waguri Bot Guide" : "Cẩm nang 🌸 - Hướng dẫn chơi Waguri Bot",
     description: locale === "en"
       ? "Full gameplay guide for Waguri Bot: economy, energy & fatigue, food & buffs, trading, minigames, pig raising, plant farming, jail, and AI chats."
       : "Hướng dẫn đầy đủ cách chơi Waguri: kiếm tiền, năng lượng & mệt mỏi, đồ ăn & buff, mua bán, minigame, nuôi heo, trồng cây, hệ giam và trò chuyện AI.",
@@ -484,7 +484,7 @@ export default async function Wiki() {
         // Vietnamese Wiki (Original)
         <main className="relative flex-1 flex flex-col items-center px-6 z-10 py-10 max-w-4xl mx-auto w-full space-y-6">
           <div className="text-center space-y-2">
-            <h1 className="text-3xl md:text-4xl font-black text-white">📖 Wiki — Hướng dẫn chơi Waguri</h1>
+            <h1 className="text-3xl md:text-4xl font-black text-white">📖 Cẩm nang — Hướng dẫn chơi Waguri</h1>
             <p className="text-slate-400 text-sm">
               Mọi lệnh dùng được bằng <code className="text-pink-300">/slash</code> hoặc prefix{" "}
               <code className="text-pink-300">w!</code> (ví dụ <code className="text-pink-300">w!work</code>). Tiền tệ là{" "}

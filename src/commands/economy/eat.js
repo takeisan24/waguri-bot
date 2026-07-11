@@ -2,6 +2,7 @@ const { SlashCommandBuilder } = require('discord.js');
 const db = require('../../database.js');
 const config = require('../../config');
 const { buildWaguriEmbed } = require('../../lib/embed');
+const { getInteractionLanguage, t } = require('../../lib/i18n');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -11,28 +12,39 @@ module.exports = {
         .addIntegerOption(o => o.setName('quantity').setDescription('Số lượng (mặc định 1)').setMinValue(1).setMaxValue(50)),
 
     async autocomplete(interaction) {
+        const locale = await getInteractionLanguage(interaction);
         const focused = interaction.options.getFocused().toLowerCase();
         const items = await db.getItems();
         const choices = items
             .filter(i => i.effect_type && i.effect_type !== 'none')
-            .filter(i => i.name.toLowerCase().includes(focused) || i.id.includes(focused))
+            .filter(i => {
+                const name = t(locale, `items.${i.id}.name`) || i.name;
+                return name.toLowerCase().includes(focused) || i.id.includes(focused);
+            })
             .slice(0, 25)
-            .map(i => ({ name: i.name, value: i.id }));
+            .map(i => {
+                const name = t(locale, `items.${i.id}.name`) || i.name;
+                return { name, value: i.id };
+            });
         await interaction.respond(choices);
     },
 
     async execute(interaction) {
+        const locale = await getInteractionLanguage(interaction);
         await interaction.deferReply();
         const itemId = interaction.options.getString('item');
         const qty = interaction.options.getInteger('quantity') || 1;
         const item = await db.getItem(itemId);
         if (!item) {
             const embed = buildWaguriEmbed(interaction, 'error', {
-                title: '😋・Sử dụng vật phẩm',
-                description: 'Mình không tìm thấy món này~ 🌸'
+                locale,
+                title: t(locale, 'commands.eat.embed_title'),
+                description: t(locale, 'commands.eat.err_item_not_found')
             });
             return interaction.editReply({ embeds: [embed] });
         }
+
+        const itemName = t(locale, `items.${item.id}.name`) || item.name;
 
         // Dùng lần lượt tới khi đủ số lượng hoặc hết đồ trong kho
         let used = 0, lastStatus = 'ok';
@@ -43,14 +55,22 @@ module.exports = {
         }
 
         if (used === 0) {
-            const msg = {
-                no_have: `Cậu chưa có **${item.name}** trong kho. Ghé \`/shop\` mua trước nhé~`,
-                not_consumable: `**${item.name}** không phải đồ ăn/uống, không dùng kiểu này được đâu~`,
-                no_item: 'Mình không tìm thấy món này~',
-                buff_better_exists: `Cậu đang có hiệu ứng buff xịn hơn/bằng **${item.name}** rồi, dùng tiếp sẽ bị lãng phí đấy~ 🌸`,
-            }[lastStatus] || 'Ơ, có lỗi rồi, cậu thử lại sau nhé~';
+            let msg;
+            if (lastStatus === 'no_have') {
+                msg = t(locale, 'commands.eat.err_no_have', { item: itemName });
+            } else if (lastStatus === 'not_consumable') {
+                msg = t(locale, 'commands.eat.err_not_consumable', { item: itemName });
+            } else if (lastStatus === 'no_item') {
+                msg = t(locale, 'commands.eat.err_item_not_found');
+            } else if (lastStatus === 'buff_better_exists') {
+                msg = t(locale, 'commands.eat.err_buff_better', { item: itemName });
+            } else {
+                msg = t(locale, 'commands.eat.err_system');
+            }
+
             const embed = buildWaguriEmbed(interaction, 'warning', {
-                title: '😋・Sử dụng vật phẩm',
+                locale,
+                title: t(locale, 'commands.eat.embed_title'),
                 description: msg
             });
             return interaction.editReply({ embeds: [embed] });
@@ -59,20 +79,26 @@ module.exports = {
         let effectText;
         if (item.effect_type === 'energy') {
             const energy = await db.getEnergy(interaction.user.id);
-            effectText = `năng lượng giờ là **${energy}/${config.ENERGY.MAX}** ⚡`;
+            effectText = t(locale, 'commands.eat.effect_energy', { current: energy, max: config.ENERGY.MAX });
         } else if (item.effect_type === 'health') {
             const u = await db.getUser(interaction.user.id);
-            effectText = `hồi **+${item.effect_value} sức khỏe** ❤️ (giờ ${u?.health ?? '?'}/100)`;
+            effectText = t(locale, 'commands.eat.effect_health', { value: item.effect_value, current: u?.health ?? '?' });
         } else if (item.effect_type === 'buff') {
-            effectText = `nhận buff **+${item.effect_value}% thu nhập** trong ${item.effect_duration_hours || 1} giờ 🍗`;
+            effectText = t(locale, 'commands.eat.effect_buff', { value: item.effect_value, hours: item.effect_duration_hours || 1 });
         } else {
-            effectText = 'xong!';
+            effectText = t(locale, 'commands.eat.effect_done');
         }
-        const note = used < qty ? ` *(kho chỉ còn đủ ${used} cái)*` : '';
+        const note = used < qty ? t(locale, 'commands.eat.effect_shortage_note', { count: used }) : '';
 
         const embed = buildWaguriEmbed(interaction, 'success', {
-            title: '😋・Sử dụng vật phẩm thành công!',
-            description: `Cậu đã dùng **${used}× ${item.name}** — ${effectText}${note}`
+            locale,
+            title: t(locale, 'commands.eat.success_title'),
+            description: t(locale, 'commands.eat.success_desc', {
+                count: used,
+                item: itemName,
+                effectText,
+                note
+            })
         });
         await interaction.editReply({ embeds: [embed] });
     },
