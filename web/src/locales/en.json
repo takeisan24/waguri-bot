@@ -271,7 +271,8 @@
     "subtitle_global": "Global Top — click a name to view detailed profile.",
     "view_global": "← View Global Leaderboard",
     "board_wealth": "💎 Wealthy (Net Worth)",
-    "board_level": "⭐ High Level (Level)"
+    "board_level": "⭐ High Level (Level)",
+    "board_bakery": "🍰 Gekka Bakery (reputation/likes)"
   },
   "profile": {
     "default_user": "Player",
@@ -292,6 +293,20 @@
     "stat_beloved": "💍 Beloved",
     "cta_text": "Want a profile like this? Invite Waguri to your server and start getting rich! 🌸",
     "cta_btn": "Invite Waguri 🌸"
+  },
+  "bakery": {
+    "default_title": "{name}'s Gekka Bakery 🍰",
+    "meta_title": "{name}'s Gekka Bakery 🍰 — Waguri",
+    "meta_desc": "Visit {name}'s Gekka Bakery, view decors, staff, and drop a like to support!",
+    "level": "Bakery Level: Level {level}",
+    "likes": "Likes: {count} ❤️",
+    "empty_decor": "No decoration placed in this slot yet~",
+    "no_staff": "No staff hired in this slot yet~",
+    "btn_like": "Like Bakery ❤️",
+    "like_limit": "You have reached your 3-like daily limit!",
+    "like_success": "Successfully liked {name}'s bakery! ❤️",
+    "not_found": "Bakery not found 🌸",
+    "not_found_desc": "This player has not opened a Gekka Bakery yet. Use `/tiembanh mo` on Discord to start!"
   },
   "faq": {
     "title": "Frequently Asked Questions",

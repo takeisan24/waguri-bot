@@ -163,6 +163,11 @@ module.exports = {
             const premium = user.premium_until && new Date(user.premium_until).getTime() > Date.now();
             if (premium && earnedMoney > 0) earnedMoney = Math.round(earnedMoney * (1 + config.PREMIUM.INCOME_BONUS));
 
+            // Prestige (Chuyển sinh): +5% thu nhập mỗi cấp prestige
+            if (user.prestige > 0 && earnedMoney > 0) {
+                earnedMoney = Math.round(earnedMoney * (1 + user.prestige * config.PRESTIGE.INCOME_BUFF_PER_LEVEL));
+            }
+
             // Sự kiện toàn cục (vd Tết x2): nhân thu nhập + EXP
             const eventMult = getEventMult();
             if (eventMult !== 1 && earnedMoney > 0) earnedMoney = Math.round(earnedMoney * eventMult);
@@ -221,6 +226,15 @@ module.exports = {
                 gainedExp = Math.round(gainedExp * 1.15);
             }
             if (eventMult !== 1) gainedExp = Math.round(gainedExp * eventMult);
+
+            // Đền thờ Clan: +2% EXP mỗi cấp đền thờ
+            if (user.clan_id) {
+                const clanUpgrades = await db.getClanUpgrade(user.clan_id);
+                if (clanUpgrades && clanUpgrades.shrine_level > 0) {
+                    gainedExp = Math.round(gainedExp * (1 + clanUpgrades.shrine_level * 0.02));
+                }
+            }
+
             const oldLevel = getLevelFromExp(Number(user.exp));
             const newExp = await db.updateExp(userId, gainedExp);
             const newLevel = newExp === null ? oldLevel : getLevelFromExp(newExp);

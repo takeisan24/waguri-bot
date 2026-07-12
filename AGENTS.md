@@ -90,6 +90,13 @@ Waguri là **Discord economy/RPG bot bản địa hóa văn hóa Việt**. Bot N
 - **Fail-safe đã có:** hoàn quota AI khi Gemini lỗi; cache 1h + fallback thời tiết (Học viện Kikyo, 25°C, trời quang) cho `/thoitiet`; `game_stakes` hoàn cược mồ côi khi restart.
 - **Telemetry kinh tế:** migration `0076` (`economy_snapshots` + RPC `snapshot_economy`); scheduler trong `index.js` chụp mỗi 12h; owner xem qua `/eco-admin report` (cung tiền/phân bố/xu hướng) → theo dõi lạm phát/exploit.
 - **Sổ Sứ Mệnh (Battle Pass) theo mùa giải — ĐÃ HOÀN THÀNH end-to-end:** migration `0079` (`battle_pass_users` + 3 RPCs), `0079b` (`add_ai_chat_pass_xp`), và `0079c` (`buy_premium_pass` fix) đã áp DB + verified. Lệnh `/pass` tương tác đẹp, tự động tính Season ID theo âm lịch. Tích hợp hooks cộng XP tự động vào `/daily`, `/quest`, cày cuốc và `/ask` (kèm quota chống spam AI 50 XP/ngày). Web Dashboard widget và trang chi tiết `/dashboard/pass` kèm Server Actions nhận quà, mua Premium đã hoàn thành.
+- **Chuyển sinh, Sự kiện thế giới, Đền thờ Clan, Huy hiệu & Thú cưng (Bot & Web Next.js) — ĐÃ HOÀN THÀNH 100%:**
+  - Vòng lặp Chuyển sinh (`/prestige` và RPC `prestige_user`) hoạt động hoàn hảo; Web `/u/[id]` hiển thị cấp Prestige và vòng viền Avatar hào quang phát sáng.
+  - Lệnh Sự kiện thế giới (`/worldevent`) và bảng xếp hạng đóng góp hoạt động đầy đủ.
+  - Đền thờ Clan (`/clan shrine` & `/clan deposit`) kích hoạt buff bị động tăng +2% EXP / cấp cho bang hội khi làm việc.
+  - Cửa hàng huy hiệu (`/cosmetic badge-buy`/`badge-equip`) và Hộp trưng bày 6 ô lấp lánh (Showcase Badges) trên Web `/u/[id]` đã được tích hợp hoàn chỉnh.
+  - Thú cưng tiến hóa Stage 1..3 và Cây kỹ năng bị động (`/pet skill-up`); xây dựng sơ đồ Cây kỹ năng SVG tương tác trực quan tại Web `/dashboard/pet` cho phép cộng điểm thông qua Server Actions.
+  - Đã có test tích hợp `test/backlog_max_depth.test.js` (97/97 tests pass) và type-checking Next.js frontend biên dịch hoàn toàn thành công.
 
 ---
 

@@ -15,13 +15,14 @@ module.exports = {
         .setDescription('Xóc Đĩa 🥢 — nhiều người đặt Chẵn/Lẻ cùng lúc, 1 lần xóc')
         .addIntegerOption(o => o.setName('bet').setDescription('Mức cược (mọi người cược bằng nhau)').setRequired(true).setMinValue(config.GAMBLE.MIN_BET)),
     async execute(interaction) {
+        await interaction.deferReply();
         const locale = await getInteractionLanguage(interaction);
         const sessionId = require('crypto').randomUUID();
         const bet = interaction.options.getInteger('bet');
         const err = await checkBet(bet, interaction.guildId);
         if (err) {
             const embed = buildWaguriEmbed(interaction, 'warning', { locale, description: `🌸 ${err}` });
-            return interaction.reply({ embeds: [embed] });
+            return interaction.editReply({ embeds: [embed] });
         }
 
         const bets = new Map(); // userId -> { side, username }
@@ -50,7 +51,11 @@ module.exports = {
             new ButtonBuilder().setCustomId('le').setLabel(t(locale, 'commands.xocdia.btn_le')).setStyle(ButtonStyle.Secondary).setEmoji('⚪'),
         );
 
-        await interaction.reply({ embeds: [render()], components: [row] });
+        if (interaction.deferred || interaction.replied) {
+            await interaction.editReply({ embeds: [render()], components: [row] });
+        } else {
+            await interaction.reply({ embeds: [render()], components: [row] });
+        }
         const msg = await interaction.fetchReply();
         const collector = msg.createMessageComponentCollector({ componentType: ComponentType.Button, time: WINDOW_MS });
 

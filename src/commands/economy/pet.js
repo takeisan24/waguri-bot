@@ -7,6 +7,35 @@ const { getInteractionLanguage, t } = require('../../lib/i18n');
 
 const fmt = (n, locale) => Number(n).toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN');
 
+function getPetStageInfo(speciesId, lvl, locale) {
+    const sp = findSpecies(speciesId);
+    const isEn = locale.startsWith('en');
+    if (lvl >= 30) {
+        const stageEmojis = { meo: '🦁', cun: '🐺', rong: '⚡', cao: '🦊', tho: '🐰', gau: '🐻' };
+        const stageNames = {
+            meo: isEn ? 'Cat King' : 'Hoàng Thượng Hoàng Gia',
+            cun: isEn ? 'Guard Dog' : 'Ngáo Thần Vệ Sĩ',
+            rong: isEn ? 'Black Dragon' : 'Hắc Long Vương',
+            cao: isEn ? 'Nine-Tailed Fox' : 'Cửu Vĩ Thiên Cáo',
+            tho: isEn ? 'Jade Rabbit' : 'Ngọc Thỏ Cung Trăng',
+            gau: isEn ? 'Divine Bear' : 'Bán Thần Hùng Vương'
+        };
+        return { emoji: stageEmojis[speciesId] || sp.emoji, stageName: stageNames[speciesId] || sp.name, stage: 3 };
+    } else if (lvl >= 10) {
+        const stageEmojis = { meo: '🐈', cun: '🐕', rong: '🐉', cao: '🦊', tho: '🐰', gau: '🐻' };
+        const stageNames = {
+            meo: isEn ? 'Adult Cat' : 'Mèo Lớn',
+            cun: isEn ? 'Adult Dog' : 'Chó Lớn',
+            rong: isEn ? 'Adult Dragon' : 'Rồng Trưởng Thành',
+            cao: isEn ? 'Mystic Fox' : 'Linh Cáo',
+            tho: isEn ? 'Swift Rabbit' : 'Linh Thỏ',
+            gau: isEn ? 'Grizzly Bear' : 'Gấu Xám'
+        };
+        return { emoji: stageEmojis[speciesId] || sp.emoji, stageName: stageNames[speciesId] || sp.name, stage: 2 };
+    }
+    return { emoji: sp?.emoji || '🐾', stageName: isEn ? sp?.name_en || sp?.name : sp?.name, stage: 1 };
+}
+
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('pet')
@@ -28,7 +57,14 @@ module.exports = {
                     { name: '🍰 Bánh Kem Dâu Gekka (Bánh nướng - x3.0 EXP)', value: 'banh_kem_dau' }
                 )))
         .addSubcommand(s => s.setName('rename').setDescription('Đổi tên thú cưng')
-            .addStringOption(o => o.setName('name').setDescription('Tên mới').setRequired(true))),
+            .addStringOption(o => o.setName('name').setDescription('Tên mới').setRequired(true)))
+        .addSubcommand(s => s.setName('skill-up').setDescription('Nâng cấp kỹ năng bị động cho thú cưng')
+            .addStringOption(o => o.setName('skill').setDescription('Chọn kỹ năng').setRequired(true)
+                .addChoices(
+                    { name: '🎣 May mắn câu cá (+% tỉ lệ cá hiếm)', value: 'fishing_luck' },
+                    { name: '⛏️ Nhân đôi quặng (+% cơ hội nhận x2 đá)', value: 'double_gem' },
+                    { name: '🍰 Nướng bánh Gekka (-% thời gian nướng bánh)', value: 'bakery_efficiency' }
+                ))),
     async execute(interaction) {
         const locale = await getInteractionLanguage(interaction);
         await interaction.deferReply();
@@ -76,15 +112,27 @@ module.exports = {
             const lvl = petLevel(pet.exp);
             const next = expForLevel(lvl + 1);
             const petName = pet.name || t(locale, `species.${pet.species}`) || sp?.name;
-            const speciesName = t(locale, `species.${pet.species}`) || sp?.name || pet.species;
+            const stageInfo = getPetStageInfo(pet.species, lvl, locale);
+
+            const isEn = locale.startsWith('en');
+            const skills = pet.skills || {};
+            const fishingLuckLvl = skills.fishing_luck || 0;
+            const doubleGemLvl = skills.double_gem || 0;
+            const bakeryLvl = skills.bakery_efficiency || 0;
+
+            const skillsText = isEn
+                ? `- 🎣 Fishing Luck: Lv.${fishingLuckLvl}/3\n- ⛏️ Double Ores: Lv.${doubleGemLvl}/2\n- 🍰 Bakery Efficiency: Lv.${bakeryLvl}/3`
+                : `- 🎣 May mắn Câu cá: Cấp ${fishingLuckLvl}/3\n- ⛏️ Nhân đôi Đá quý: Cấp ${doubleGemLvl}/2\n- 🍰 Hiệu suất Tiệm bánh: Cấp ${bakeryLvl}/3`;
 
             const embed = buildWaguriEmbed(interaction, 'info', {
                 locale,
-                title: `${sp?.emoji || '🐾'}・${petName}`,
+                title: `${stageInfo.emoji}・${petName}`,
                 fields: [
-                    { name: t(locale, 'commands.pet.field_species'), value: speciesName, inline: true },
+                    { name: t(locale, 'commands.pet.field_species'), value: `${stageInfo.stageName} (Stage ${stageInfo.stage})`, inline: true },
                     { name: t(locale, 'commands.pet.field_level'), value: `Lv.${lvl}`, inline: true },
                     { name: t(locale, 'commands.pet.field_exp', { current: pet.exp, next }), value: createWaguriBar(pet.exp, next, 10), inline: false },
+                    { name: isEn ? '✨ Passive Skills' : '✨ Kỹ năng bị động', value: skillsText, inline: true },
+                    { name: isEn ? '💡 Skill Points' : '💡 Điểm kỹ năng', value: `**${pet.skill_points || 0}**`, inline: true }
                 ]
             });
             return interaction.editReply({ embeds: [embed] });
@@ -131,7 +179,18 @@ module.exports = {
                     cost: fmt(cost, locale),
                     currency: config.CURRENCY
                 });
-                if (newLvl > oldLvl) desc += `\n` + t(locale, 'commands.pet.level_up', { lvl: newLvl });
+                if (newLvl > oldLvl) {
+                    desc += `\n` + t(locale, 'commands.pet.level_up', { lvl: newLvl });
+                    const oldPoints = Math.floor(oldLvl / 5);
+                    const newPoints = Math.floor(newLvl / 5);
+                    const pointsGained = newPoints - oldPoints;
+                    if (pointsGained > 0) {
+                        await db.addPetSkillPoints(userId, pointsGained);
+                        desc += `\n` + (locale.startsWith('en') 
+                            ? `✨ Your pet earned **+${pointsGained} Skill Points**!` 
+                            : `✨ Thú cưng nhận thêm **+${pointsGained} Điểm kỹ năng**!`);
+                    }
+                }
 
                 const embed = buildWaguriEmbed(interaction, 'success', {
                     locale,
@@ -180,7 +239,18 @@ module.exports = {
                     gain,
                     mult: cfg.mult
                 });
-                if (newLvl > oldLvl) desc += `\n` + t(locale, 'commands.pet.level_up', { lvl: newLvl });
+                if (newLvl > oldLvl) {
+                    desc += `\n` + t(locale, 'commands.pet.level_up', { lvl: newLvl });
+                    const oldPoints = Math.floor(oldLvl / 5);
+                    const newPoints = Math.floor(newLvl / 5);
+                    const pointsGained = newPoints - oldPoints;
+                    if (pointsGained > 0) {
+                        await db.addPetSkillPoints(userId, pointsGained);
+                        desc += `\n` + (locale.startsWith('en') 
+                            ? `✨ Your pet earned **+${pointsGained} Skill Points**!` 
+                            : `✨ Thú cưng nhận thêm **+${pointsGained} Điểm kỹ năng**!`);
+                    }
+                }
 
                 const embed = buildWaguriEmbed(interaction, 'success', {
                     locale,
@@ -189,6 +259,69 @@ module.exports = {
                 });
                 return interaction.editReply({ embeds: [embed] });
             }
+        }
+
+        if (sub === 'skill-up') {
+            if (!pet) {
+                const embed = buildWaguriEmbed(interaction, 'warning', {
+                    locale,
+                    description: t(locale, 'commands.pet.err_not_owned')
+                });
+                return interaction.editReply({ embeds: [embed] });
+            }
+            const skillId = interaction.options.getString('skill');
+            const skillPoints = pet.skill_points || 0;
+            if (skillPoints <= 0) {
+                const embed = buildWaguriEmbed(interaction, 'warning', {
+                    locale,
+                    description: locale.startsWith('en')
+                        ? 'Your pet does not have any Skill Points left! Feed it to level up.'
+                        : 'Thú cưng của cậu không còn Điểm kỹ năng nào! Hãy cho ăn để lên cấp.'
+                });
+                return interaction.editReply({ embeds: [embed] });
+            }
+
+            const maxLevel = skillId === 'double_gem' ? 2 : 3;
+            const skills = pet.skills || {};
+            const curLvl = skills[skillId] || 0;
+
+            if (curLvl >= maxLevel) {
+                const embed = buildWaguriEmbed(interaction, 'warning', {
+                    locale,
+                    description: locale.startsWith('en')
+                        ? `This skill has already reached its maximum level (${maxLevel})!`
+                        : `Kỹ năng này đã đạt cấp tối đa (${maxLevel})!`
+                });
+                return interaction.editReply({ embeds: [embed] });
+            }
+
+            skills[skillId] = curLvl + 1;
+            const newPoints = skillPoints - 1;
+
+            const ok = await db.updatePetSkills(userId, skills, newPoints);
+            if (!ok) {
+                const embed = buildWaguriEmbed(interaction, 'error', {
+                    locale,
+                    description: t(locale, 'commands.pet.err_system')
+                });
+                return interaction.editReply({ embeds: [embed] });
+            }
+
+            const isEn = locale.startsWith('en');
+            const skillNames = {
+                fishing_luck: isEn ? 'Fishing Luck' : 'May mắn Câu cá',
+                double_gem: isEn ? 'Double Ores' : 'Nhân đôi Đá quý',
+                bakery_efficiency: isEn ? 'Bakery Efficiency' : 'Hiệu suất Tiệm bánh'
+            };
+
+            const embed = buildWaguriEmbed(interaction, 'success', {
+                locale,
+                title: isEn ? 'Skill Upgraded!' : 'Nâng cấp kỹ năng thành công!',
+                description: isEn
+                    ? `Successfully upgraded **${skillNames[skillId]}** to **Level ${curLvl + 1}**! Remaining Skill Points: ${newPoints}.`
+                    : `Đã nâng cấp kỹ năng **${skillNames[skillId]}** lên **Cấp ${curLvl + 1}**! Điểm kỹ năng còn lại: ${newPoints}.`
+            });
+            return interaction.editReply({ embeds: [embed] });
         }
 
         if (sub === 'rename') {

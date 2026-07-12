@@ -20,6 +20,10 @@ const supabase = new Proxy({}, {
     }
 });
 
+function logError(method, err, extra = {}) {
+    console.error(`[DATABASE ERROR] in ${method}:`, err, extra);
+}
+
 /**
  * Lấy thông tin user (nếu chưa có thì tự động tạo mới với 0đ).
  * @param {string} userId - Discord ID của người dùng
@@ -2055,16 +2059,25 @@ module.exports = {
     bakeryCollectV2,
     bakeryHire,
     bakeryFire,
-    // tiệm bánh
-    getBakery,
-    bakeryOpen,
-    bakeryStock,
-    bakeryCollect,
-    bakeryUpgrade,
-    bakeryCollectV2,
-    bakeryHire,
-    bakeryFire,
     bakeryDecorate,
+    likeBakery,
+    getBakeryWithLikes,
+    getBakeryLeaderboard,
+    equipBadge,
+    prestigeUser,
+    contributeWorldEvent,
+    upgradeClanShrine,
+    getUserBadges,
+    unlockBadge,
+    getActiveWorldEvent,
+    createWorldEvent,
+    getWorldEventContributions,
+    getClanUpgrade,
+    updatePetSkills,
+    claimWorldEventReward,
+    getLatestWorldEvent,
+    clanDepositResource,
+    addPetSkillPoints,
     // battle pass
     getBattlePass,
     addPassXp,
@@ -2072,3 +2085,316 @@ module.exports = {
     buyPremiumPass,
     claimPassRewardsBulk,
 };
+
+async function likeBakery(likerId, ownerId) {
+    try {
+        const { data, error } = await supabase.rpc('like_bakery', {
+            p_liker_id: likerId,
+            p_bakery_owner_id: ownerId
+        });
+        if (error) throw error;
+        return data; // 'ok' | 'no_bakery' | 'limit_reached' | 'already_liked_today'
+    } catch (e) {
+        logError('likeBakery', e, { likerId, ownerId });
+        return null;
+    }
+}
+
+async function getBakeryWithLikes(userId) {
+    try {
+        // 1. Lấy thông tin tiệm bánh
+        const bakery = await getBakery(userId);
+        if (!bakery) return null;
+
+        // 2. Đếm số lượt thả tim
+        const { count, error } = await supabase
+            .from('bakery_likes')
+            .select('*', { count: 'exact', head: true })
+            .eq('bakery_owner_id', userId);
+        
+        if (error) throw error;
+        
+        return {
+            ...bakery,
+            likes: count || 0
+        };
+    } catch (e) {
+        logError('getBakeryWithLikes', e, { userId });
+        return null;
+    }
+}
+
+async function getBakeryLeaderboard(limit = 10, offset = 0) {
+    try {
+        const { data, error } = await supabase.rpc('get_bakery_leaderboard', {
+            p_limit: limit,
+            p_offset: offset
+        });
+        if (error) throw error;
+        return data || [];
+    } catch (e) {
+        logError('getBakeryLeaderboard', e, { limit, offset });
+        return [];
+    }
+}
+
+async function equipBadge(userId, badgeId, slot) {
+    try {
+        const { data, error } = await supabase.rpc('equip_badge', {
+            p_user_id: userId,
+            p_badge_id: badgeId,
+            p_slot: slot
+        });
+        if (error) throw error;
+        return data; // 'ok' | 'not_owned'
+    } catch (e) {
+        logError('equipBadge', e, { userId, badgeId, slot });
+        return null;
+    }
+}
+
+async function prestigeUser(userId, reqExp) {
+    try {
+        const { data, error } = await supabase.rpc('prestige_user', {
+            p_user_id: userId,
+            p_req_exp: reqExp
+        });
+        if (error) throw error;
+        return data; // { status: 'ok', new_prestige: x }
+    } catch (e) {
+        logError('prestigeUser', e, { userId, reqExp });
+        return null;
+    }
+}
+
+async function contributeWorldEvent(userId, eventId, amount) {
+    try {
+        const { data, error } = await supabase.rpc('contribute_world_event', {
+            p_user_id: userId,
+            p_event_id: eventId,
+            p_amount: amount
+        });
+        if (error) throw error;
+        return data; // 'ok' | 'event_ended' | 'insufficient'
+    } catch (e) {
+        logError('contributeWorldEvent', e, { userId, eventId, amount });
+        return null;
+    }
+}
+
+async function upgradeClanShrine(clanId, reqGold, reqWood, reqIron) {
+    try {
+        const { data, error } = await supabase.rpc('upgrade_clan_shrine', {
+            p_clan_id: clanId,
+            p_req_gold: reqGold,
+            p_req_wood: reqWood,
+            p_req_iron: reqIron
+        });
+        if (error) throw error;
+        return data; // 'ok' | 'no_clan' | 'insufficient_resources'
+    } catch (e) {
+        logError('upgradeClanShrine', e, { clanId, reqGold, reqWood, reqIron });
+        return null;
+    }
+}
+
+async function getUserBadges(userId) {
+    try {
+        const { data, error } = await supabase
+            .from('user_badges')
+            .select('*')
+            .eq('user_id', userId);
+        if (error) throw error;
+        return data || [];
+    } catch (e) {
+        logError('getUserBadges', e, { userId });
+        return [];
+    }
+}
+
+async function unlockBadge(userId, badgeId) {
+    try {
+        const { data, error } = await supabase
+            .from('user_badges')
+            .insert([{ user_id: userId, badge_id: badgeId }])
+            .select()
+            .single();
+        if (error && error.code !== '23505') throw error; // Ignore duplicate key
+        return true;
+    } catch (e) {
+        logError('unlockBadge', e, { userId, badgeId });
+        return false;
+    }
+}
+
+async function getActiveWorldEvent() {
+    try {
+        const { data, error } = await supabase
+            .from('world_events')
+            .select('*')
+            .gt('ends_at', new Date().toISOString())
+            .eq('completed', false)
+            .order('ends_at', { ascending: true })
+            .limit(1);
+        if (error) throw error;
+        return data && data.length > 0 ? data[0] : null;
+    } catch (e) {
+        logError('getActiveWorldEvent', e);
+        return null;
+    }
+}
+
+async function createWorldEvent(targetType, targetAmount, endsAt) {
+    try {
+        const { data, error } = await supabase
+            .from('world_events')
+            .insert([{ target_type: targetType, target_amount: targetAmount, ends_at: endsAt }])
+            .select()
+            .single();
+        if (error) throw error;
+        return data;
+    } catch (e) {
+        logError('createWorldEvent', e, { targetType, targetAmount, endsAt });
+        return null;
+    }
+}
+
+async function getWorldEventContributions(eventId) {
+    try {
+        const { data, error } = await supabase
+            .from('world_event_contributions')
+            .select('*')
+            .eq('event_id', eventId)
+            .order('amount', { ascending: false });
+        if (error) throw error;
+        return data || [];
+    } catch (e) {
+        logError('getWorldEventContributions', e, { eventId });
+        return [];
+    }
+}
+
+async function getClanUpgrade(clanId) {
+    try {
+        const { data, error } = await supabase
+            .from('clan_upgrades')
+            .select('*')
+            .eq('clan_id', clanId)
+            .maybeSingle();
+        if (error) throw error;
+        return data;
+    } catch (e) {
+        logError('getClanUpgrade', e, { clanId });
+        return null;
+    }
+}
+
+async function updatePetSkills(userId, skills, skillPoints) {
+    try {
+        const { data, error } = await supabase
+            .from('user_pets')
+            .update({ skills, skill_points: skillPoints })
+            .eq('user_id', userId)
+            .select()
+            .single();
+        if (error) throw error;
+        return data;
+    } catch (e) {
+        logError('updatePetSkills', e, { userId, skills, skillPoints });
+        return null;
+    }
+}
+
+async function claimWorldEventReward(userId, eventId) {
+    try {
+        const { data: event, error: errEvent } = await supabase
+            .from('world_events')
+            .select('completed')
+            .eq('id', eventId)
+            .single();
+        if (errEvent) throw errEvent;
+        if (!event || !event.completed) return 'not_completed';
+
+        const { data: contrib, error: errFetch } = await supabase
+            .from('world_event_contributions')
+            .select('*')
+            .eq('event_id', eventId)
+            .eq('user_id', userId)
+            .maybeSingle();
+        if (errFetch) throw errFetch;
+        if (!contrib) return 'no_contribution';
+        if (contrib.claimed) return 'already_claimed';
+
+        const { error: errClaim } = await supabase
+            .from('world_event_contributions')
+            .update({ claimed: true })
+            .eq('event_id', eventId)
+            .eq('user_id', userId);
+        if (errClaim) throw errClaim;
+
+        return 'ok';
+    } catch (e) {
+        logError('claimWorldEventReward', e, { userId, eventId });
+        return 'error';
+    }
+}
+
+async function getLatestWorldEvent() {
+    try {
+        const { data, error } = await supabase
+            .from('world_events')
+            .select('*')
+            .order('id', { ascending: false })
+            .limit(1);
+        if (error) throw error;
+        return data && data.length > 0 ? data[0] : null;
+    } catch (e) {
+        logError('getLatestWorldEvent', e);
+        return null;
+    }
+}
+
+async function clanDepositResource(clanId, itemId, amount) {
+    try {
+        const { data: clan, error: errGet } = await supabase
+            .from('clans')
+            .select('resources')
+            .eq('id', clanId)
+            .single();
+        if (errGet) throw errGet;
+        
+        const resources = clan.resources || {};
+        resources[itemId] = (resources[itemId] || 0) + amount;
+        
+        const { error: errUp } = await supabase
+            .from('clans')
+            .update({ resources })
+            .eq('id', clanId);
+        if (errUp) throw errUp;
+        return resources;
+    } catch (e) {
+        logError('clanDepositResource', e, { clanId, itemId, amount });
+        return null;
+    }
+}
+
+async function addPetSkillPoints(userId, points) {
+    try {
+        const { data, error } = await supabase
+            .from('user_pets')
+            .select('skill_points')
+            .eq('user_id', userId)
+            .single();
+        if (error) throw error;
+        
+        const newPoints = (data.skill_points || 0) + points;
+        await supabase
+            .from('user_pets')
+            .update({ skill_points: newPoints })
+            .eq('user_id', userId);
+        return newPoints;
+    } catch (e) {
+        logError('addPetSkillPoints', e, { userId, points });
+        return null;
+    }
+}

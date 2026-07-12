@@ -15,6 +15,7 @@ module.exports = {
         .setName('dovui')
         .setDescription('Đố vui 🧠 — trả lời nhanh & đúng nhất trong chat để thắng thưởng'),
     async execute(interaction) {
+        await interaction.deferReply();
         const locale = await getInteractionLanguage(interaction);
         if (active.has(interaction.channelId)) {
             const embed = buildWaguriEmbed(interaction, 'warning', { 
@@ -22,7 +23,7 @@ module.exports = {
                 title: t(locale, 'commands.dovui.title'), 
                 description: t(locale, 'commands.dovui.active_game') 
             });
-            return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+            return interaction.editReply({ embeds: [embed] });
         }
         // Cooldown mỗi người chống spam tạo câu đố để farm (đáp án thuộc bộ cố định).
         const cd = await db.claimCooldown(interaction.user.id, 'dovui', 60);
@@ -32,7 +33,7 @@ module.exports = {
                 title: t(locale, 'commands.dovui.title'), 
                 description: t(locale, 'commands.dovui.cooldown', { time: `<t:${Math.floor(cd / 1000)}:R>` }) 
             });
-            return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+            return interaction.editReply({ embeds: [embed] });
         }
 
         const QUIZ = locale === 'en' ? require('../../data/quiz_en') : require('../../data/quiz');
@@ -53,7 +54,7 @@ module.exports = {
         });
 
         try {
-            await interaction.reply({ embeds: [embedQ] });
+            await interaction.editReply({ embeds: [embedQ] });
 
             const channel = interaction.channel;
             const collector = channel.createMessageCollector({ filter: m => !m.author.bot, time: config.QUIZ.TIME_MS });

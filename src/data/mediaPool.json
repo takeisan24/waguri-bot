@@ -1,0 +1,31 @@
+{
+  "MAIN": [
+    "https://media.tenor.com/saOAfF_zx6UAAAAM/kaoruko-waguri-the-fragrant-flower-blooms-with-dignity.gif",
+    "https://media.tenor.com/P8-BVJfuXXYAAAAd/kaoruko-waguri.gif",
+    "https://media.tenor.com/VTxubF9zn9gAAAAd/kaoru-hana-wa-rin-to-saku-waguri-kaoruko.gif",
+    "https://media.tenor.com/y84DDAHiP3gAAAAd/kaoruko-waguri-flag-kaoruko-waguri.gif",
+    "https://media.tenor.com/gUP3bf_s600AAAAM/waguri-kaoruko.gif"
+  ],
+  "SUCCESS": [
+    "https://media.tenor.com/gUP3bf_s600AAAAM/waguri-kaoruko.gif",
+    "https://media.tenor.com/cKRjPvdD-yUAAAAd/kaoruko-kaoruko-waguri.gif",
+    "https://media.tenor.com/saOAfF_zx6UAAAAM/kaoruko-waguri-the-fragrant-flower-blooms-with-dignity.gif",
+    "https://media.tenor.com/TdCu1_KQmAcAAAAd/kaoruko-waguri-kaoruko.gif"
+  ],
+  "ERROR": [
+    "https://media.tenor.com/Jz4bNe6EF-wAAAAM/the-fragrant-flower-blooms-with-dignity-kaoru-hana-wa-rin-to-saku.gif",
+    "https://media.tenor.com/sBTF0SS7cnMAAAAd/kaoru-hana-wa-rin-to-saku-kaoruko-waguri.gif",
+    "https://media.tenor.com/WMRHrfBlNmEAAAAM/kaoruko-waguri-waguri-kaoruko.gif"
+  ],
+  "WARNING": [
+    "https://media.tenor.com/WMRHrfBlNmEAAAAM/kaoruko-waguri-waguri-kaoruko.gif",
+    "https://media.tenor.com/sBTF0SS7cnMAAAAd/kaoru-hana-wa-rin-to-saku-kaoruko-waguri.gif",
+    "https://media.tenor.com/saOAfF_zx6UAAAAM/kaoruko-waguri-the-fragrant-flower-blooms-with-dignity.gif"
+  ],
+  "JACKPOT": [
+    "https://media.tenor.com/TdCu1_KQmAcAAAAd/kaoruko-waguri-kaoruko.gif",
+    "https://media.tenor.com/cKRjPvdD-yUAAAAd/kaoruko-kaoruko-waguri.gif",
+    "https://media.tenor.com/gUP3bf_s600AAAAM/waguri-kaoruko.gif",
+    "https://media.tenor.com/saOAfF_zx6UAAAAM/kaoruko-waguri-the-fragrant-flower-blooms-with-dignity.gif"
+  ]
+}

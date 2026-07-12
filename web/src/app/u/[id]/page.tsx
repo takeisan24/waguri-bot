@@ -33,6 +33,18 @@ type Profile = {
   color: string | null;
   achievements: number;
   rank: number;
+  prestige?: number;
+  badges?: Array<{ badge_id: string; is_equipped: boolean; slot_index: number }>;
+};
+
+const BADGES: Record<string, { emoji: string; name_vi: string; name_en: string }> = {
+  rich: { emoji: '💰', name_vi: 'Triệu Phú Gekka', name_en: 'Gekka Millionaire' },
+  heart: { emoji: '💖', name_vi: 'Trái Tim Ấm Áp', name_en: 'Warm Heart' },
+  vip: { emoji: '👑', name_vi: 'Thành Viên Hoàng Gia', name_en: 'Royal Member' },
+  baker: { emoji: '🍰', name_vi: 'Vua Bánh Gekka', name_en: 'Gekka Bakery King' },
+  prestige_1: { emoji: '⭐', name_vi: 'Chuyển Sinh I', name_en: 'Prestige I' },
+  prestige_2: { emoji: '🌟', name_vi: 'Chuyển Sinh II', name_en: 'Prestige II' },
+  prestige_3: { emoji: '✨', name_vi: 'Chuyển Sinh III', name_en: 'Prestige III' }
 };
 
 async function getProfile(id: string): Promise<Profile | { hidden: true } | "notfound" | null> {
@@ -71,6 +83,8 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
   const locale = await getLocaleServer();
   const p = await getProfile(id);
   if (p === "notfound") notFound();
+
+  const isEn = locale.startsWith("en");
 
   return (
     <div className="relative min-h-screen flex flex-col bg-[#0d0812] text-slate-200 overflow-x-hidden">
@@ -111,14 +125,23 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                 {/* Header card */}
                 <div className="glass-panel rounded-3xl p-8 flex flex-col sm:flex-row items-center gap-6 border border-pink-300/20">
                   {prof.avatar ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={prof.avatar}
-                      alt={prof.username}
-                      width={96}
-                      height={96}
-                      className="rounded-full border-2 border-pink-300/40"
-                    />
+                    <div className="relative group flex-shrink-0">
+                      {prof.prestige && prof.prestige > 0 ? (
+                        <div className={`absolute -inset-1 rounded-full blur-sm opacity-80 group-hover:opacity-100 transition-opacity animate-pulse bg-gradient-to-r ${
+                          prof.prestige === 1 ? 'from-amber-400 to-yellow-500' :
+                          prof.prestige === 2 ? 'from-cyan-400 via-pink-500 to-purple-600' :
+                          'from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500 bg-[length:400%_400%]'
+                        }`} />
+                      ) : null}
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={prof.avatar}
+                        alt={prof.username}
+                        width={96}
+                        height={96}
+                        className="relative rounded-full border-2 border-pink-300/40 bg-[#0d0812] z-10"
+                      />
+                    </div>
                   ) : null}
                   <div className="flex-1 text-center sm:text-left">
                     {prof.title ? (
@@ -131,6 +154,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                     </h1>
                     <p className="text-pink-300 text-sm mt-1">
                       {prof.job || t("profile.default_job", locale)} · Lv.{prof.level}
+                      {prof.prestige && prof.prestige > 0 ? ` · 🌟 CS ${prof.prestige}` : ""}
                       {prof.clan ? ` · 🏰 ${prof.clan}` : ""}
                     </p>
                     <div className="mt-3">
@@ -147,6 +171,43 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                         />
                       </div>
                     </div>
+                  </div>
+                </div>
+
+                {/* Badge Showcase */}
+                <div className="glass-panel rounded-3xl p-6 border border-pink-300/10">
+                  <h3 className="text-sm font-bold text-pink-300/90 mb-4 flex items-center gap-2">
+                    🎖️ {isEn ? "Badges Showcase" : "Hộp Trưng Bày Huy Hiệu"}
+                  </h3>
+                  <div className="grid grid-cols-6 gap-3">
+                    {Array.from({ length: 6 }).map((_, idx) => {
+                      const slotNum = idx + 1;
+                      const equipped = (prof.badges || []).find(b => b.is_equipped && b.slot_index === slotNum);
+                      const badgeConf = equipped ? BADGES[equipped.badge_id] : null;
+
+                      return (
+                        <div
+                          key={slotNum}
+                          className="relative aspect-square rounded-2xl border border-dashed border-pink-300/10 bg-pink-500/5 flex items-center justify-center group/badge cursor-pointer hover:border-pink-300/30 hover:bg-pink-500/10 transition-all"
+                        >
+                          {badgeConf ? (
+                            <>
+                              <span className="text-3xl filter drop-shadow-[0_2px_8px_rgba(236,72,153,0.3)] animate-[bounce_3s_infinite_ease-in-out]">
+                                {badgeConf.emoji}
+                              </span>
+                              <div className="absolute bottom-full mb-2 hidden group-hover/badge:flex flex-col items-center z-20">
+                                <div className="bg-[#120a1c] border border-pink-300/20 text-white text-xs font-semibold py-1.5 px-3 rounded-xl shadow-xl whitespace-nowrap">
+                                  {isEn ? badgeConf.name_en : badgeConf.name_vi}
+                                </div>
+                                <div className="w-2.5 h-2.5 bg-[#120a1c] border-r border-b border-pink-300/20 transform rotate-45 -mt-1.5" />
+                              </div>
+                            </>
+                          ) : (
+                            <span className="text-xs text-slate-600/70 font-semibold">{slotNum}</span>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
 

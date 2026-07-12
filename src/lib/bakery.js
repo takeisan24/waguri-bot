@@ -31,8 +31,10 @@ function fillingStockGain(itemPrice, qty) {
  *   revenue: doanh thu nướng được · newStock: kho còn lại · capped: đầy trần (mất thời gian dư)
  *   stockLimited: hết nguyên liệu trước khi hết thời gian (nhắc tiếp NL).
  */
-function computeBake({ stock, level, lastCollectMs }, nowMs) {
-    const { rate, cap } = levelInfo(level);
+function computeBake({ stock, level, lastCollectMs, customRate, customCap }, nowMs) {
+    const base = levelInfo(level);
+    const rate = customRate !== undefined ? customRate : base.rate;
+    const cap = customCap !== undefined ? customCap : base.cap;
     const s = Math.max(0, Number(stock || 0));
     const elapsedMin = Math.max(0, Math.floor((nowMs - lastCollectMs) / 60000));
     const capMin = Math.floor(cap / rate);          // số phút để đầy trần
@@ -85,11 +87,12 @@ function computeBonuses(staffList = [], decorList = []) {
 }
 
 /** Lấy thông số hiệu dụng đã áp dụng bonus */
-function getEffectiveStats(level, staffList = [], decorList = []) {
+function getEffectiveStats(level, staffList = [], decorList = [], bakeryEfficiencyLvl = 0) {
     const base = levelInfo(level);
     const bonuses = computeBonuses(staffList, decorList);
+    const petBuffMult = 1.0 + (bakeryEfficiencyLvl * 0.05); // +5% speed per level
     return {
-        rate: Math.round(base.rate * bonuses.rateMult),
+        rate: Math.round(base.rate * bonuses.rateMult * petBuffMult),
         cap: Math.round(base.cap * bonuses.capMult),
         wagePct: bonuses.wagePct,
         cakeEvery: Math.round(B.CAKE_EVERY * (1.0 - bonuses.cakeDiscount))

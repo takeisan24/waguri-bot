@@ -31,6 +31,7 @@ module.exports = {
                .setDescription('Kết thúc/hủy phòng game Loto')
         ),
     async execute(interaction) {
+        await interaction.deferReply();
         const subcommand = interaction.options.getSubcommand();
         let cmd = '';
         let args = [];

@@ -25,17 +25,20 @@ async function subXem(interaction, locale) {
         description: t(locale, 'commands.tiembanh.not_open', { level: B.MIN_LEVEL, cost: fmt(B.OPEN_COST, locale), currency: C })
     })] });
 
+    const userPet = await db.getPet(interaction.user.id);
+    const petSkills = userPet?.skills || {};
+    const bakeryEfficiencyLvl = petSkills.bakery_efficiency || 0;
+
     const staffList = bk.staff || [];
     const decorList = bk.decor || [];
-    const eff = getEffectiveStats(bk.level, staffList, decorList);
+    const eff = getEffectiveStats(bk.level, staffList, decorList, bakeryEfficiencyLvl);
 
     // Tính toán doanh thu lazy
-    const est = computeBake({ stock: Number(bk.stock), level: bk.level, lastCollectMs: new Date(bk.last_collect_at).getTime() }, Date.now());
+    const est = computeBake({ stock: Number(bk.stock), level: bk.level, lastCollectMs: new Date(bk.last_collect_at).getTime(), customRate: eff.rate, customCap: eff.cap }, Date.now());
     
     // Nhân hệ số từ staff/decor lên doanh thu chờ thu
     const baseInfo = levelInfo(bk.level);
-    const rateMult = eff.rate / baseInfo.rate;
-    const estRevenue = Math.round(est.revenue * rateMult);
+    const estRevenue = est.revenue;
 
     const note = est.stockLimited ? t(locale, 'commands.tiembanh.status_no_stock')
         : est.capped ? t(locale, 'commands.tiembanh.status_capped')
@@ -130,9 +133,13 @@ async function subThu(interaction, locale) {
     const bk = await db.getBakery(interaction.user.id);
     if (!bk) return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'warning', { locale, title: t(locale, 'commands.tiembanh.thu_title'), description: t(locale, 'commands.tiembanh.nhap_no_bakery') })] });
     
+    const userPet = await db.getPet(interaction.user.id);
+    const petSkills = userPet?.skills || {};
+    const bakeryEfficiencyLvl = petSkills.bakery_efficiency || 0;
+
     const staffList = bk.staff || [];
     const decorList = bk.decor || [];
-    const eff = getEffectiveStats(bk.level, staffList, decorList);
+    const eff = getEffectiveStats(bk.level, staffList, decorList, bakeryEfficiencyLvl);
 
     const r = await db.bakeryCollectV2(interaction.user.id, eff.rate, eff.cap, eff.cakeEvery, eff.wagePct);
     if (!r || r.result === 'error') return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'error', { locale, title: t(locale, 'commands.tiembanh.thu_title'), description: t(locale, 'common.generic_error') })] });

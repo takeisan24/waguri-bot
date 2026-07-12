@@ -103,7 +103,15 @@ module.exports = {
 
         db.questIncr(userId, 'fish', 1); // nhiệm vụ: đếm mỗi lần đi câu (kể cả lần trắng tay)
 
-        const c = pickCatch();
+        let c = pickCatch();
+        // Gấu 🐻 passive: Lv. 5+ tăng +10% tỉ lệ câu trúng cá hiếm
+        const { petLevel } = require('../../data/pets');
+        if (userPet && userPet.species === 'gau' && petLevel(userPet.exp) >= 5 && c.name !== 'Cá hiếm' && c.name !== 'Rương kho báu') {
+            if (Math.random() < 0.10) {
+                c = FISH.find(f => f.name === 'Cá hiếm') || c;
+            }
+        }
+
         let payout = c.max > 0 ? Math.floor(Math.random() * (c.max - c.min + 1)) + c.min : 0;
         const fatigue = conditionMultiplier(energyLeft, user.health);
         const gross = payout;
@@ -186,8 +194,15 @@ module.exports = {
                         : `\n🐟 Giỏ cá có thêm **1× Cá Tươi** *(nguyên liệu \`/tiembanh\`)*`;
                 }
             } else if (c.name === 'Cá hiếm') {
+                const petSkills = userPet?.skills || {};
+                const fishingLuckLvl = petSkills.fishing_luck || 0;
+                let fishingLuckBuff = 0;
+                if (fishingLuckLvl === 1) fishingLuckBuff = 0.03;
+                else if (fishingLuckLvl === 2) fishingLuckBuff = 0.07;
+                else if (fishingLuckLvl === 3) fishingLuckBuff = 0.15;
+
                 const dropRates = config.COLLECTIONS?.DROP_RATES || { FISH_CA_RONG_VANG: 0.10 };
-                if (rand < dropRates.FISH_CA_RONG_VANG) {
+                if (rand < (dropRates.FISH_CA_RONG_VANG + fishingLuckBuff)) {
                     await db.giveItemAdmin(userId, 'ca_rong_vang', 1);
                     await db.discoverItem(userId, 'ca_rong_vang');
                     const iName = t(locale, 'items.ca_rong_vang.name') || 'Cá Rồng Kim Long';
@@ -210,8 +225,15 @@ module.exports = {
                         : `\n✨ Giỏ cá có thêm **1× Cá Ngon** *(nguyên liệu làm bánh đặc biệt!)*`;
                 }
             } else if (c.name === 'Rương kho báu') {
+                const petSkills = userPet?.skills || {};
+                const fishingLuckLvl = petSkills.fishing_luck || 0;
+                let fishingLuckBuff = 0;
+                if (fishingLuckLvl === 1) fishingLuckBuff = 0.03;
+                else if (fishingLuckLvl === 2) fishingLuckBuff = 0.07;
+                else if (fishingLuckLvl === 3) fishingLuckBuff = 0.15;
+
                 const dropRates = config.COLLECTIONS?.DROP_RATES || { FISH_CA_KOI_NHAT: 0.10 };
-                if (rand < dropRates.FISH_CA_KOI_NHAT) {
+                if (rand < (dropRates.FISH_CA_KOI_NHAT + fishingLuckBuff)) {
                     await db.giveItemAdmin(userId, 'ca_koi_nhat', 1);
                     await db.discoverItem(userId, 'ca_koi_nhat');
                     const iName = t(locale, 'items.ca_koi_nhat.name') || 'Cá Koi Hoàng Gia';

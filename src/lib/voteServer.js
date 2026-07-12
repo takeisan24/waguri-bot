@@ -94,6 +94,10 @@ async function buildProfilePayload(client, id) {
     let partner = null;
     if (prof.partner_id) { try { partner = (await client.users.fetch(String(prof.partner_id))).username; } catch { /* bỏ qua */ } }
 
+    const uObj = await db.getUser(id);
+    const prestige = uObj ? (uObj.prestige || 0) : 0;
+    const badges = await db.getUserBadges(id);
+
     const p = getProgress(Number(prof.exp || 0));
     const tier = tierOf(Number(prof.affection || 0));
     return {
@@ -108,11 +112,51 @@ async function buildProfilePayload(client, id) {
         color: /^[0-9a-fA-F]{6}$/.test(prof.color || '') ? `#${prof.color}` : null,
         achievements: Number(prof.achievements || 0),
         rank: Number(prof.wealth_rank || 0),
+        prestige,
+        badges,
+    };
+}
+
+async function buildBakeryPayload(client, id) {
+    const bakery = await db.getBakeryWithLikes(id);
+    if (!bakery) return null;
+
+    let username = 'Chủ tiệm', avatar = null;
+    try {
+        const u = await client.users.fetch(id);
+        username = u.username;
+        avatar = u.displayAvatarURL({ extension: 'png', size: 128 });
+    } catch { /* không fetch được */ }
+
+    return {
+        id,
+        username,
+        avatar,
+        level: bakery.level,
+        decor: bakery.decor || [],
+        staff: bakery.staff || [],
+        likes: bakery.likes || 0
     };
 }
 
 // Bảng xếp hạng (top theo tài sản hoặc cấp). guildId -> theo server, null -> toàn cầu.
 async function buildLeaderboardPayload(client, type, limit, guildId = null) {
+    if (type === 'bakery') {
+        const rows = await db.getBakeryLeaderboard(limit, 0);
+        const out = [];
+        for (const r of rows) {
+            let username = 'Chủ tiệm', avatar = null;
+            try { const u = await client.users.fetch(String(r.user_id)); username = u.username; avatar = u.displayAvatarURL({ extension: 'png', size: 64 }); } catch { /* bỏ qua */ }
+            out.push({
+                id: r.user_id, username, avatar,
+                value: Number(r.bakery_score || 0),
+                level: r.level,
+                likes: r.likes_count
+            });
+        }
+        return { type: 'bakery', rows: out };
+    }
+
     const sort = type === 'level' ? 'level' : 'networth';
     const rows = guildId
         ? await db.getLeaderboardGuild(sort, limit, guildId)
@@ -228,9 +272,19 @@ function startVoteServer(client) {
                     res.writeHead(200, JSONH); res.end(JSON.stringify(data));
                     return;
                 }
+                if (req.url.startsWith('/api/bakery/')) {
+                    const id = decodeURIComponent(req.url.slice('/api/bakery/'.length).split(/[?#]/)[0]).trim();
+                    if (!/^\d{5,25}$/.test(id)) { res.writeHead(400, JSONH); res.end('{"error":"bad_id"}'); return; }
+                    let data = cacheGet('b:' + id);
+                    if (!data) { data = await buildBakeryPayload(client, id); if (data) cacheSet('b:' + id, data); }
+                    if (!data) { res.writeHead(404, JSONH); res.end('{"error":"not_found"}'); return; }
+                    res.writeHead(200, JSONH); res.end(JSON.stringify(data));
+                    return;
+                }
                 if (req.url.startsWith('/api/leaderboard')) {
                     const q = new URL(req.url, 'http://local');
-                    const type = q.searchParams.get('type') === 'level' ? 'level' : 'wealth';
+                    const typeRaw = q.searchParams.get('type');
+                    const type = typeRaw === 'level' ? 'level' : (typeRaw === 'bakery' ? 'bakery' : 'wealth');
                     const limit = Math.min(Math.max(Number(q.searchParams.get('limit')) || 10, 1), 25);
                     const guildRaw = q.searchParams.get('guild');
                     const guild = guildRaw && /^\d{5,25}$/.test(guildRaw) ? guildRaw : null;

@@ -26,6 +26,7 @@ module.exports = {
                .setDescription('Kết thúc/hủy phòng game Bingo')
         ),
     async execute(interaction) {
+        await interaction.deferReply();
         const subcommand = interaction.options.getSubcommand();
         let cmd = '';
         const args = [];

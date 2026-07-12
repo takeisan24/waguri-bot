@@ -271,7 +271,8 @@
     "subtitle_global": "Top toàn cầu — bấm vào tên để xem hồ sơ chi tiết.",
     "view_global": "← Xem bảng toàn cầu",
     "board_wealth": "💎 Đại gia (tài sản)",
-    "board_level": "⭐ Cao thủ (cấp độ)"
+    "board_level": "⭐ Cao thủ (cấp độ)",
+    "board_bakery": "🍰 Tiệm Bánh Gekka (quy mô/lượt thích)"
   },
   "profile": {
     "default_user": "Người chơi",
@@ -292,6 +293,20 @@
     "stat_beloved": "💍 Người thương",
     "cta_text": "Muốn có hồ sơ như thế này? Mời Waguri về server và bắt đầu làm giàu nha! 🌸",
     "cta_btn": "Mời Waguri 🌸"
+  },
+  "bakery": {
+    "default_title": "Tiệm bánh Gekka của {name} 🍰",
+    "meta_title": "Tiệm bánh Gekka của {name} 🍰 — Waguri",
+    "meta_desc": "Ghé thăm tiệm bánh Gekka của {name}, ngắm nội thất trang trí và thả tim ủng hộ!",
+    "level": "Cấp tiệm: Cấp {level}",
+    "likes": "Lượt thích: {count} ❤️",
+    "empty_decor": "Chưa có đồ trang trí nào được sắp xếp ở slot này~",
+    "no_staff": "Chưa thuê nhân viên ở vị trí này~",
+    "btn_like": "Thả tim tiệm bánh ❤️",
+    "like_limit": "Hôm nay cậu đã thả tim 3 lần rồi nha!",
+    "like_success": "Đã thả tim tiệm bánh của {name} thành công! ❤️",
+    "not_found": "Không tìm thấy tiệm bánh 🌸",
+    "not_found_desc": "Người chơi này chưa mở Tiệm bánh Gekka. Hãy dùng lệnh `/tiembanh mo` trên Discord để bắt đầu nha!"
   },
   "faq": {
     "title": "Câu hỏi thường gặp",

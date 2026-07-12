@@ -31,18 +31,31 @@ module.exports = {
 
         const HEX = /^[0-9a-fA-F]{6}$/;
         const premium = user.premium_until && new Date(user.premium_until).getTime() > Date.now();
+        const userBadges = await db.getUserBadges(target.id);
+        const equippedBadges = userBadges
+            .filter(b => b.is_equipped)
+            .sort((a, b) => (a.slot_index || 0) - (b.slot_index || 0));
+        
+        let badgeString = '';
+        if (equippedBadges.length > 0) {
+            badgeString = equippedBadges.map(b => {
+                const conf = config.COSMETIC.BADGES?.[b.badge_id];
+                return conf ? conf.emoji : '';
+            }).filter(Boolean).join(' ');
+        }
 
         const numFmt = locale === 'en' ? 'en-US' : 'vi-VN';
         const jobName = job ? (t(locale, `data.jobs.${job.id}.name`) || job.name) : t(locale, 'commands.profile.no_job');
+        const prestigeVal = user.prestige > 0 ? ` (CS ${user.prestige} 🌟)` : '';
 
         const embed = buildWaguriEmbed(interaction, premium ? 'jackpot' : 'info', {
             locale,
             title: t(locale, 'commands.profile.title', { user: target.username }) + (premium ? ' 💎' : ''),
-            description: user.title ? `🏷️ *${user.title}*` : undefined,
+            description: (user.title || badgeString) ? `${user.title ? `🏷️ *${user.title}*` : ''}${badgeString ? `\n${badgeString}` : ''}` : undefined,
             thumbnail: target.displayAvatarURL(),
             fields: [
                 { name: t(locale, 'commands.profile.fields.job'), value: jobName, inline: true },
-                { name: t(locale, 'commands.profile.fields.level'), value: `Lv.${p.level}`, inline: true },
+                { name: t(locale, 'commands.profile.fields.level'), value: `Lv.${p.level}${prestigeVal}`, inline: true },
                 { name: t(locale, 'commands.profile.fields.energy'), value: `${energy}/${config.ENERGY.MAX} ⚡`, inline: true },
                 { name: t(locale, 'commands.profile.fields.wallet'), value: `${wallet.toLocaleString(numFmt)} ${config.CURRENCY}`, inline: true },
                 { name: t(locale, 'commands.profile.fields.bank'), value: `${bank.toLocaleString(numFmt)} ${config.CURRENCY}`, inline: true },

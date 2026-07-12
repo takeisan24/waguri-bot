@@ -3,7 +3,7 @@
 // Dùng: node scripts/backup-db.js  ->  backups/backup-<thời-gian>.json (đã .gitignore).
 // (Bot cũng TỰ backup mỗi 24h vào kênh BACKUP_CHANNEL_ID — xem src/lib/autobackup.js.)
 // ============================================================
-require('dotenv').config();
+require('../src/lib/envLoader');
 const fs = require('fs');
 const path = require('path');
 const { dumpAll } = require('../src/lib/backup');

@@ -21,13 +21,14 @@ module.exports = {
         .setDescription('Đua ngựa 🐎 — đặt cửa 1 con, thắng nhận x' + WIN_MULT)
         .addIntegerOption(o => o.setName('bet').setDescription('Mức cược (mọi người cược bằng nhau)').setRequired(true).setMinValue(config.GAMBLE.MIN_BET)),
     async execute(interaction) {
+        await interaction.deferReply();
         const locale = await getInteractionLanguage(interaction);
         const sessionId = require('crypto').randomUUID();
         const bet = interaction.options.getInteger('bet');
         const err = await checkBet(bet, interaction.guildId);
         if (err) {
             const embed = buildWaguriEmbed(interaction, 'warning', { locale, description: `🌸 ${err}` });
-            return interaction.reply({ embeds: [embed] });
+            return interaction.editReply({ embeds: [embed] });
         }
 
         const bets = new Map(); // userId -> { horse, username }
@@ -51,7 +52,11 @@ module.exports = {
         const row = new ActionRowBuilder().addComponents(
             HORSES.map(h => new ButtonBuilder().setCustomId(`h${h.n}`).setLabel(t(locale, 'commands.duangua.horse_name', { n: h.n })).setEmoji(h.c).setStyle(ButtonStyle.Secondary)));
 
-        await interaction.reply({ embeds: [render()], components: [row] });
+        if (interaction.deferred || interaction.replied) {
+            await interaction.editReply({ embeds: [render()], components: [row] });
+        } else {
+            await interaction.reply({ embeds: [render()], components: [row] });
+        }
         const msg = await interaction.fetchReply();
         const collector = msg.createMessageComponentCollector({ componentType: ComponentType.Button, time: WINDOW_MS });
 

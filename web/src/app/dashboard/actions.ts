@@ -33,3 +33,48 @@ export async function toggleVoteReminder() {
   await admin.from("users").update({ vote_reminder: next }).eq("user_id", id);
   revalidatePath("/dashboard");
 }
+
+export async function upgradePetSkill(skillId: string) {
+  const userId = await sessionDiscordId();
+  if (!userId) return { success: false, error: "Unauthorized" };
+
+  const admin = createAdminClient();
+  const { data: pet, error: petErr } = await admin
+    .from("user_pets")
+    .select("*")
+    .eq("user_id", userId)
+    .single();
+
+  if (petErr || !pet) {
+    return { success: false, error: "Pet not found" };
+  }
+
+  const skillPoints = pet.skill_points || 0;
+  if (skillPoints <= 0) {
+    return { success: false, error: "No skill points available" };
+  }
+
+  const maxLevel = skillId === "double_gem" ? 2 : 3;
+  const skills = (pet.skills as Record<string, number>) || {};
+  const curLvl = skills[skillId] || 0;
+
+  if (curLvl >= maxLevel) {
+    return { success: false, error: "Skill already at maximum level" };
+  }
+
+  const updatedSkills = { ...skills, [skillId]: curLvl + 1 };
+  const updatedPoints = skillPoints - 1;
+
+  const { error: updateErr } = await admin
+    .from("user_pets")
+    .update({ skills: updatedSkills, skill_points: updatedPoints })
+    .eq("user_id", userId);
+
+  if (updateErr) {
+    return { success: false, error: "Failed to update database" };
+  }
+
+  revalidatePath("/dashboard/pet");
+  revalidatePath("/dashboard");
+  return { success: true };
+}

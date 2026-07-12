@@ -22,15 +22,21 @@ module.exports = {
         .addSubcommand(s => s.setName('info').setDescription('Xem thông tin bang')
             .addStringOption(o => o.setName('name').setDescription('Tên bang (mặc định: bang của cậu)')))
         .addSubcommand(s => s.setName('list').setDescription('Bảng xếp hạng bang (theo quỹ)'))
-        .addSubcommand(s => s.setName('deposit').setDescription('Góp tiền vào quỹ bang')
-            .addIntegerOption(o => o.setName('amount').setDescription('Số tiền').setRequired(true).setMinValue(1)))
+        .addSubcommand(s => s.setName('deposit').setDescription('Góp tiền hoặc tài nguyên vào quỹ bang')
+            .addIntegerOption(o => o.setName('amount').setDescription('Số lượng').setRequired(true).setMinValue(1))
+            .addStringOption(o => o.setName('item').setDescription('Tài nguyên muốn góp (mặc định: xu)').setRequired(false)
+                .addChoices(
+                    { name: '🪵 Gỗ Tấm', value: 'tam_go' },
+                    { name: '🪙 Thỏi Sắt', value: 'thoi_sat' }
+                )))
         .addSubcommand(s => s.setName('withdraw').setDescription('Rút quỹ bang (chỉ trưởng bang)')
             .addIntegerOption(o => o.setName('amount').setDescription('Số tiền').setRequired(true).setMinValue(1)))
         .addSubcommand(s => s.setName('kick').setDescription('Đuổi thành viên (chỉ trưởng bang)')
             .addUserOption(o => o.setName('user').setDescription('Thành viên').setRequired(true)))
         .addSubcommand(s => s.setName('disband').setDescription('Giải tán bang (chỉ trưởng bang)'))
         .addSubcommand(s => s.setName('war').setDescription('Khai chiến với bang khác (chỉ trưởng bang)')
-            .addStringOption(o => o.setName('clan').setDescription('Tên bang đối thủ').setRequired(true))),
+            .addStringOption(o => o.setName('clan').setDescription('Tên bang đối thủ').setRequired(true)))
+        .addSubcommand(s => s.setName('shrine').setDescription('Xây dựng và nâng cấp Đền thờ bang hội để nhận buff EXP 🏛️')),
 
     async execute(interaction) {
         await interaction.deferReply();
@@ -76,11 +82,49 @@ module.exports = {
 
         if (sub === 'deposit') {
             const amount = interaction.options.getInteger('amount');
-            const r = await db.clanDeposit(me.id, amount);
-            if (!r) return replyEmbed('error', 'deposit_title', 'error_generic');
-            if (r.status === 'not_in') return replyEmbed('error', 'deposit_title', 'err_not_in_clan');
-            if (r.status === 'poor') return replyEmbed('error', 'deposit_title', 'err_poor_deposit');
-            return replyEmbed('success', 'deposit_title', 'deposit_success', { amount: fmt(amount, locale), currency: C, bank: fmt(r.bank, locale) });
+            const itemId = interaction.options.getString('item');
+
+            if (itemId) {
+                const u = await db.getUser(me.id);
+                if (!u?.clan_id) return replyEmbed('error', 'deposit_title', 'err_not_in_clan');
+
+                const taken = await db.takeItem(me.id, itemId, amount);
+                if (!taken) {
+                    const embed = buildWaguriEmbed(interaction, 'error', {
+                        locale,
+                        title: t(locale, 'commands.clan.deposit_title'),
+                        description: locale.startsWith('en') 
+                            ? `You do not have enough items in inventory!`
+                            : `Cậu không đủ vật phẩm trong kho đồ để đóng góp!`
+                    });
+                    return interaction.editReply({ embeds: [embed] });
+                }
+
+                const res = await db.clanDepositResource(u.clan_id, itemId, amount);
+                if (!res) {
+                    await db.giveItemAdmin(me.id, itemId, amount); // refund
+                    return replyEmbed('error', 'deposit_title', 'error_generic');
+                }
+
+                const isEn = locale.startsWith('en');
+                const itemName = itemId === 'tam_go' ? (isEn ? 'Wooden Planks' : 'Tấm Gỗ') : (isEn ? 'Iron Ingots' : 'Thỏi Sắt');
+                const emoji = itemId === 'tam_go' ? '🪵' : '🪙';
+
+                const embed = buildWaguriEmbed(interaction, 'success', {
+                    locale,
+                    title: t(locale, 'commands.clan.deposit_title'),
+                    description: isEn
+                        ? `Successfully deposited **${amount}x ${emoji} ${itemName}** to Clan Bank! Total: ${res[itemId]} owned by Clan.`
+                        : `Góp thành công **${amount}x ${emoji} ${itemName}** vào kho bang hội! Tổng số dư bang hội hiện có: ${res[itemId]}.`
+                });
+                return interaction.editReply({ embeds: [embed] });
+            } else {
+                const r = await db.clanDeposit(me.id, amount);
+                if (!r) return replyEmbed('error', 'deposit_title', 'error_generic');
+                if (r.status === 'not_in') return replyEmbed('error', 'deposit_title', 'err_not_in_clan');
+                if (r.status === 'poor') return replyEmbed('error', 'deposit_title', 'err_poor_deposit');
+                return replyEmbed('success', 'deposit_title', 'deposit_success', { amount: fmt(amount, locale), currency: C, bank: fmt(r.bank, locale) });
+            }
         }
 
         if (sub === 'withdraw') {
@@ -196,6 +240,72 @@ module.exports = {
                     await interaction.editReply({ embeds: [timeoutEmbed], components: [] }).catch(() => {});
                 }
             });
+            return;
+        }
+
+        if (sub === 'shrine') {
+            const u = await db.getUser(me.id);
+            if (!u?.clan_id) return replyEmbed('error', 'shrine_title', 'err_not_in_clan');
+            const clan = await db.clanById(u.clan_id);
+            if (!clan) return replyEmbed('error', 'shrine_title', 'err_clan_not_found_info');
+            
+            let upgrades = await db.getClanUpgrade(clan.id);
+            const shrineLevel = upgrades ? upgrades.shrine_level : 0;
+            
+            const nextLevel = shrineLevel + 1;
+            const reqGold = nextLevel * 20000;
+            const reqWood = nextLevel * 50;
+            const reqIron = nextLevel * 20;
+            
+            const isLeader = clan.leader_id === me.id;
+            const isEn = locale.startsWith('en');
+            
+            const woodInBank = clan.resources?.tam_go || 0;
+            const ironInBank = clan.resources?.thoi_sat || 0;
+            
+            const reqStatus = isEn
+                ? `**Upgrade Cost (Level ${nextLevel}):**\n- 💵 Coins: ${fmt(reqGold, locale)} / ${fmt(clan.bank, locale)} in Clan Bank\n- 🪵 Wood: ${reqWood} / ${woodInBank} in Clan Bank\n- 🪙 Iron: ${reqIron} / ${ironInBank} in Clan Bank`
+                : `**Chi phí nâng cấp (Cấp ${nextLevel}):**\n- 💵 Xu: ${fmt(reqGold, locale)} / ${fmt(clan.bank, locale)} trong quỹ bang\n- 🪵 Gỗ: ${reqWood} / ${woodInBank} trong quỹ bang\n- 🪙 Sắt: ${reqIron} / ${ironInBank} trong quỹ bang`;
+            
+            const embed = buildWaguriEmbed(interaction, 'info', {
+                locale,
+                title: isEn ? `🏛️ Clan Shrine — ${clan.name}` : `🏛️ Đền thờ Bang hội — ${clan.name}`,
+                description: isEn 
+                    ? `Welcome to the Clan Shrine! Upgrading the Shrine grants passive buffs to all members.\n\n**Current Buff:** +${shrineLevel * 2}% EXP gain from work.\n\n${reqStatus}`
+                    : `Chào mừng tới Đền thờ Bang hội! Nâng cấp Đền thờ để nhận buff kinh nghiệm bị động cho tất cả thành viên.\n\n**Buff hiện tại:** +${shrineLevel * 2}% EXP khi làm việc.\n\n${reqStatus}`
+            });
+            
+            if (isLeader) {
+                const row = new ActionRowBuilder().addComponents(
+                    new ButtonBuilder().setCustomId('shrine:upgrade').setLabel(isEn ? 'Upgrade Shrine' : 'Nâng cấp Đền thờ').setStyle(ButtonStyle.Primary)
+                );
+                const msg = await interaction.editReply({ embeds: [embed], components: [row] });
+                const collector = msg.createMessageComponentCollector({ componentType: ComponentType.Button, time: 30000 });
+                let answered = false;
+                collector.on('collect', async (i) => {
+                    if (i.user.id !== clan.leader_id) return i.reply({ content: isEn ? 'Only the leader can upgrade the shrine!' : 'Chỉ bang chủ mới có quyền nâng cấp đền thờ!', flags: MessageFlags.Ephemeral });
+                    if (answered) return i.deferUpdate().catch(() => {});
+                    answered = true;
+                    
+                    const r = await db.upgradeClanShrine(clan.id, reqGold, reqWood, reqIron);
+                    if (r === 'ok') {
+                        const successEmbed = buildWaguriEmbed(interaction, 'success', {
+                            locale,
+                            title: isEn ? 'Shrine Upgraded!' : 'Nâng cấp Đền thờ Thành công!',
+                            description: isEn
+                                ? `Congratulations! The Clan Shrine has been upgraded to **Level ${nextLevel}**! Active buff is now **+${nextLevel * 2}% EXP**.`
+                                : `Chúc mừng! Đền thờ bang hội đã được nâng cấp lên **Cấp ${nextLevel}**! Buff EXP tăng lên **+${nextLevel * 2}%**.`
+                        });
+                        return i.update({ embeds: [successEmbed], components: [] });
+                    } else if (r === 'insufficient_resources') {
+                        return i.reply({ content: isEn ? 'Not enough resources in Clan Bank!' : 'Không đủ nguyên liệu hoặc xu trong kho bang hội!', flags: MessageFlags.Ephemeral });
+                    } else {
+                        return i.reply({ content: isEn ? 'An error occurred during upgrade.' : 'Lỗi hệ thống khi nâng cấp.', flags: MessageFlags.Ephemeral });
+                    }
+                });
+            } else {
+                await interaction.editReply({ embeds: [embed] });
+            }
             return;
         }
 

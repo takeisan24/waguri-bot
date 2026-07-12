@@ -233,6 +233,7 @@
     "daily": {
       "success_title": "🎁・Daily Attendance Successful!",
       "already_claimed": "You have already checked in today~ Come back in {time}! 🌸",
+      "streak_freeze_activated": "\n❄️ **Streak Freeze Activated!** Your **{streak}-day streak** has been preserved successfully.",
       "nudge_newbie": "> 💡 New here? Type `/start` to claim your **welcome gift**~ 🎁\n",
       "nudge_member": "> 💡 Now, go to `/work` to earn more and check `/quest` for today's tasks~ 🌸\n",
       "greet_return": "🌸 Long time no see ({days} days)~ Welcome back, I missed you so much! 💕\n\n",
@@ -1827,6 +1828,9 @@
       },
       "ca_koi_nhat": {
         "name": "Japanese Koi"
+      },
+      "streak_freeze": {
+        "name": "Streak Freeze"
       },
       "da": {
         "name": "Stone"

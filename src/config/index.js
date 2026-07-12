@@ -1,6 +1,18 @@
 // ============================================================
 // config/index.js — Tập trung mọi hằng số cân bằng game.
 // ============================================================
+const fs = require('node:fs');
+const path = require('node:path');
+
+let loadedMediaPool = { MAIN: [], SUCCESS: [], ERROR: [], WARNING: [], JACKPOT: [] };
+try {
+    const mediaPoolPath = path.join(__dirname, '../data/mediaPool.json');
+    if (fs.existsSync(mediaPoolPath)) {
+        loadedMediaPool = JSON.parse(fs.readFileSync(mediaPoolPath, 'utf8'));
+    }
+} catch (e) {
+    console.warn('[SYSTEM WARNING] Failed to load mediaPool.json, using default fallback:', e.message);
+}
 
 module.exports = {
     // Tiền tố cho lệnh prefix (vd: w!work). Slash command vẫn dùng song song.
@@ -34,47 +46,8 @@ module.exports = {
         ERROR: '❌',
     },
 
-    // Ảnh/GIF Waguri theo trạng thái — MỖI trạng thái là 1 "pool" nhiều ảnh.
-    // Mỗi lần dựng embed sẽ RANDOM 1 ảnh trong pool -> thị giác đa dạng, "xoay tua".
-    // Cách thêm ảnh: dán thêm link Tenor (đuôi .gif) vào mảng tương ứng là xong.
-    // GIF Tenor đã verify; bản nét hơn: đổi đuôi ...AAAAM -> ...AAAAd / ...AAAAC.
-    // ĐỂ MẢNG RỖNG [] cho 1 trạng thái = trạng thái đó dùng avatar bot.
-    WAGURI_IMAGES: {
-        // Mặc định / info — Waguri dịu dàng, dễ thương
-        MAIN: [
-            'https://media.tenor.com/saOAfF_zx6UAAAAM/kaoruko-waguri-the-fragrant-flower-blooms-with-dignity.gif',
-            'https://media.tenor.com/P8-BVJfuXXYAAAAd/kaoruko-waguri.gif',
-            'https://media.tenor.com/VTxubF9zn9gAAAAd/kaoru-hana-wa-rin-to-saku-waguri-kaoruko.gif',
-            'https://media.tenor.com/y84DDAHiP3gAAAAd/kaoruko-waguri-flag-kaoruko-waguri.gif',
-            'https://media.tenor.com/gUP3bf_s600AAAAM/waguri-kaoruko.gif',
-        ],
-        // Thành công — vui tươi, rạng rỡ, cười
-        SUCCESS: [
-            'https://media.tenor.com/gUP3bf_s600AAAAM/waguri-kaoruko.gif',
-            'https://media.tenor.com/cKRjPvdD-yUAAAAd/kaoruko-kaoruko-waguri.gif',
-            'https://media.tenor.com/saOAfF_zx6UAAAAM/kaoruko-waguri-the-fragrant-flower-blooms-with-dignity.gif',
-            'https://media.tenor.com/TdCu1_KQmAcAAAAd/kaoruko-waguri-kaoruko.gif',
-        ],
-        // Lỗi / thất bại — buồn, bối rối, tiu nghỉu
-        ERROR: [
-            'https://media.tenor.com/Jz4bNe6EF-wAAAAM/the-fragrant-flower-blooms-with-dignity-kaoru-hana-wa-rin-to-saku.gif',
-            'https://media.tenor.com/sBTF0SS7cnMAAAAd/kaoru-hana-wa-rin-to-saku-kaoruko-waguri.gif',
-            'https://media.tenor.com/WMRHrfBlNmEAAAAM/kaoruko-waguri-waguri-kaoruko.gif',
-        ],
-        // Cảnh báo — bối rối, nhắc nhở nhẹ
-        WARNING: [
-            'https://media.tenor.com/WMRHrfBlNmEAAAAM/kaoruko-waguri-waguri-kaoruko.gif',
-            'https://media.tenor.com/sBTF0SS7cnMAAAAd/kaoru-hana-wa-rin-to-saku-kaoruko-waguri.gif',
-            'https://media.tenor.com/saOAfF_zx6UAAAAM/kaoruko-waguri-the-fragrant-flower-blooms-with-dignity.gif',
-        ],
-        // Jackpot — phấn khích, ăn mừng
-        JACKPOT: [
-            'https://media.tenor.com/TdCu1_KQmAcAAAAd/kaoruko-waguri-kaoruko.gif',
-            'https://media.tenor.com/cKRjPvdD-yUAAAAd/kaoruko-kaoruko-waguri.gif',
-            'https://media.tenor.com/gUP3bf_s600AAAAM/waguri-kaoruko.gif',
-            'https://media.tenor.com/saOAfF_zx6UAAAAM/kaoruko-waguri-the-fragrant-flower-blooms-with-dignity.gif',
-        ],
-    },
+    // Ảnh/GIF Waguri theo trạng thái — nạp động từ file mediaPool.json
+    WAGURI_IMAGES: loadedMediaPool,
 
     LEVELING: {
         BASE: 100, // tổng EXP để đạt level L = BASE * (L-1)^2
@@ -197,7 +170,27 @@ module.exports = {
     BINGO: { DEFAULT_BET: 500, HOUSE_CUT: 0.05 },
 
     // Cosmetic sink (flex, không ảnh hưởng cân bằng): danh hiệu + màu hồ sơ
-    COSMETIC: { TITLE_COST: 20000, COLOR_COST: 15000, MAX_TITLE_LEN: 30 },
+    COSMETIC: {
+        TITLE_COST: 20000,
+        COLOR_COST: 15000,
+        MAX_TITLE_LEN: 30,
+        BADGES: {
+            rich: { emoji: '💰', cost: 100000, name_vi: 'Triệu Phú Gekka', name_en: 'Gekka Millionaire' },
+            heart: { emoji: '💖', cost: 50000, name_vi: 'Trái Tim Ấm Áp', name_en: 'Warm Heart' },
+            vip: { emoji: '👑', cost: 200000, name_vi: 'Thành Viên Hoàng Gia', name_en: 'Royal Member' },
+            baker: { emoji: '🍰', cost: 80000, name_vi: 'Vua Bánh Gekka', name_en: 'Gekka Bakery King' },
+            prestige_1: { emoji: '⭐', cost: 0, name_vi: 'Chuyển Sinh I', name_en: 'Prestige I' },
+            prestige_2: { emoji: '🌟', cost: 0, name_vi: 'Chuyển Sinh II', name_en: 'Prestige II' },
+            prestige_3: { emoji: '✨', cost: 0, name_vi: 'Chuyển Sinh III', name_en: 'Prestige III' }
+        }
+    },
+
+    PRESTIGE: {
+        REQ_LEVEL: 50,
+        REQ_EXP: 240100, // 100 * (50-1)^2
+        INCOME_BUFF_PER_LEVEL: 0.05,
+        ENERGY_BUFF_PER_LEVEL: 5
+    },
 
     // Game nhiều người (ba cây, bingo, ma sói...): nhà cái cắt % pot = sink
     PARTY: { HOUSE_CUT: 0.05, JOIN_SECONDS: 30 },

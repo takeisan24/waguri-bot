@@ -11,7 +11,7 @@
 //   3) Ưng -> làm thật:  node scripts/build-support-server.js <SERVER_ID> --apply
 //      Dọn role/kênh rác thì thêm cờ:  --harden  --cleanup
 // ============================================================
-require('dotenv').config();
+require('../src/lib/envLoader');
 const {
     Client, GatewayIntentBits, ChannelType, EmbedBuilder, PermissionFlagsBits,
     GuildVerificationLevel, GuildExplicitContentFilter,

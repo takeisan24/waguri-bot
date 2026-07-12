@@ -324,6 +324,14 @@ export default async function Dashboard() {
                             ))}
                           </div>
                         )}
+                        <div className="flex justify-end mt-2 pt-2 border-t border-slate-800/60">
+                          <Link
+                            href="/dashboard/pet"
+                            className="inline-block px-3 py-1.5 rounded-full text-[10px] font-extrabold bg-pink-300 text-[#0d0812] hover:bg-pink-400 transition-all uppercase tracking-wider"
+                          >
+                            ⚡ {locale.startsWith("en") ? "Skill Tree" : "Cây kỹ năng"}
+                          </Link>
+                        </div>
                       </div>
                     );
                   })() : (

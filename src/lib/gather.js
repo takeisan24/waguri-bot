@@ -188,18 +188,46 @@ async function runGather(interaction, { title, table, energyCost = config.GATHER
         const rand = Math.random();
         if (rand < 0.45) {
             const matId = DROPS[key][Math.floor(Math.random() * DROPS[key].length)];
-            await db.giveItemAdmin(userId, matId, 1);
+            
+            const petSkills = userPet?.skills || {};
+            const doubleGemLvl = petSkills.double_gem || 0;
+            let qty = 1;
+            let doubleGemSuccess = false;
+            if (key === 'mine' && doubleGemLvl > 0) {
+                const doubleChance = doubleGemLvl === 1 ? 0.15 : 0.35;
+                if (Math.random() < doubleChance) {
+                    qty = 2;
+                    doubleGemSuccess = true;
+                }
+            }
+
+            await db.giveItemAdmin(userId, matId, qty);
             await db.discoverItem(userId, matId);
             const it = await db.getItem(matId);
             const itNameTrans = t(locale, `items.${matId}.name`) || it?.name || matId;
-            desc += locale.startsWith('en')
-                ? `\n🎒 Picked up: **1× ${itNameTrans}** *(for \`/craft\`)*`
-                : `\n🎒 Nhặt thêm: **1× ${itNameTrans}** *(để \`/craft\`)*`;
+            
+            if (doubleGemSuccess) {
+                desc += locale.startsWith('en')
+                    ? `\n🎒 Picked up: **${qty}× ${itNameTrans}** *(for \`/craft\` - ⛏️ Pet Double Ores!)*`
+                    : `\n🎒 Nhặt thêm: **${qty}× ${itNameTrans}** *(để \`/craft\` - ⛏️ Pet Nhân đôi Quặng!)*`;
+            } else {
+                desc += locale.startsWith('en')
+                    ? `\n🎒 Picked up: **${qty}× ${itNameTrans}** *(for \`/craft\`)*`
+                    : `\n🎒 Nhặt thêm: **${qty}× ${itNameTrans}** *(để \`/craft\`)*`;
+            }
         }
         
         // Vật phẩm cực hiếm (Độ hiếm nâng cao)
+        const petSkills = userPet?.skills || {};
+        const doubleGemLvl = petSkills.double_gem || 0;
         const dropRates = config.COLLECTIONS?.DROP_RATES || { MINE_VANG_DONG_TRIEU: 0.01, CHOP_KY_NAM: 0.005 };
-        if (key === 'mine' && Math.random() < dropRates.MINE_VANG_DONG_TRIEU) {
+        
+        let rareChanceMult = 1;
+        if (key === 'mine' && doubleGemLvl > 0) {
+            rareChanceMult += doubleGemLvl * 0.10;
+        }
+
+        if (key === 'mine' && Math.random() < (dropRates.MINE_VANG_DONG_TRIEU * rareChanceMult)) {
             await db.giveItemAdmin(userId, 'vang_dong_tren', 1);
             await db.discoverItem(userId, 'vang_dong_tren');
             const iName = t(locale, 'items.vang_dong_tren.name') || 'Vàng Đông Triều';

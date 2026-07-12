@@ -20,9 +20,9 @@ const API = BOT_API;
 const fmt = (n: number) => Number(n || 0).toLocaleString("vi-VN");
 const MEDALS = ["🥇", "🥈", "🥉"];
 
-type Row = { id: string; username: string; avatar: string | null; value: number };
+type Row = { id: string; username: string; avatar: string | null; value: number; level?: number; likes?: number };
 
-async function getBoard(type: "wealth" | "level", guild?: string): Promise<Row[]> {
+async function getBoard(type: "wealth" | "level" | "bakery", guild?: string): Promise<Row[]> {
   try {
     const url = `${API}/api/leaderboard?type=${type}&limit=10${guild ? `&guild=${encodeURIComponent(guild)}` : ""}`;
     const res = await fetch(url, { next: { revalidate: 60 } });
@@ -34,7 +34,21 @@ async function getBoard(type: "wealth" | "level", guild?: string): Promise<Row[]
   }
 }
 
-function Board({ title, rows, suffix = "", prefix = "", emptyText = "" }: { title: string; rows: Row[]; suffix?: string; prefix?: string; emptyText: string }) {
+function Board({
+  title,
+  rows,
+  suffix = "",
+  prefix = "",
+  emptyText = "",
+  type = "wealth"
+}: {
+  title: string;
+  rows: Row[];
+  suffix?: string;
+  prefix?: string;
+  emptyText: string;
+  type?: "wealth" | "level" | "bakery";
+}) {
   return (
     <div className="glass-panel rounded-3xl p-6 border border-pink-300/15 space-y-3">
       <h2 className="text-lg font-extrabold text-white">{title}</h2>
@@ -45,7 +59,7 @@ function Board({ title, rows, suffix = "", prefix = "", emptyText = "" }: { titl
           {rows.map((r, i) => (
             <li key={r.id}>
               <Link
-                href={`/u/${r.id}`}
+                href={type === "bakery" ? `/tiem/${r.id}` : `/u/${r.id}`}
                 className="flex items-center gap-3 rounded-xl px-3 py-2 hover:bg-pink-500/5 transition-colors"
               >
                 <span className="w-7 text-center font-bold text-pink-300">{MEDALS[i] || i + 1}</span>
@@ -57,9 +71,17 @@ function Board({ title, rows, suffix = "", prefix = "", emptyText = "" }: { titl
                 )}
                 <span className="flex-1 truncate text-slate-200">{r.username}</span>
                 <span className="font-bold text-white">
-                  {prefix}
-                  {fmt(r.value)}
-                  {suffix}
+                  {type === "bakery" ? (
+                    <span className="text-xs text-pink-300 font-medium">
+                      Lv.{r.level || 1} · {r.likes || 0} ❤️ ({fmt(r.value)} pts)
+                    </span>
+                  ) : (
+                    <>
+                      {prefix}
+                      {fmt(r.value)}
+                      {suffix}
+                    </>
+                  )}
                 </span>
               </Link>
             </li>
@@ -73,17 +95,18 @@ function Board({ title, rows, suffix = "", prefix = "", emptyText = "" }: { titl
 export default async function LeaderboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ guild?: string; name?: string }>;
+  searchParams: Promise<{ guild?: string; name?: string; tab?: string }>;
 }) {
   const locale = await getLocaleServer();
   const sp = await searchParams;
   const guild = sp.guild && /^\d{5,25}$/.test(sp.guild) ? sp.guild : undefined;
   const serverName = sp.name ? decodeURIComponent(sp.name) : null;
-  const [wealth, level] = await Promise.all([getBoard("wealth", guild), getBoard("level", guild)]);
+  const tab = sp.tab === "level" ? "level" : (sp.tab === "bakery" ? "bakery" : "wealth");
+  const rows = await getBoard(tab, guild);
 
   // "Hạng của bạn" — chỉ hiện ở BXH toàn cầu khi đang đăng nhập & hồ sơ không ẩn.
   let myRank: { rank: number; netWorth: number; username: string } | null = null;
-  if (!guild) {
+  if (!guild && tab === "wealth") {
     try {
       const supabase = await createClient();
       const {
@@ -130,6 +153,35 @@ export default async function LeaderboardPage({
             </Link>
           ) : null}
         </div>
+
+        {/* Tab Selection */}
+        <div className="flex justify-center gap-2 p-1.5 max-w-md mx-auto rounded-2xl bg-pink-950/10 border border-pink-300/10">
+          {(["wealth", "level", "bakery"] as const).map((tId) => {
+            const isActive = tab === tId;
+            const label = tId === "wealth" ? t("leaderboard.board_wealth", locale) :
+                          tId === "level" ? t("leaderboard.board_level", locale) :
+                          t("leaderboard.board_bakery", locale);
+            const queryParams = new URLSearchParams();
+            if (guild) queryParams.set("guild", guild);
+            if (serverName) queryParams.set("name", serverName);
+            queryParams.set("tab", tId);
+
+            return (
+              <Link
+                key={tId}
+                href={`/leaderboard?${queryParams.toString()}`}
+                className={`flex-1 text-center py-2 px-3 rounded-xl text-xs font-bold transition-all ${
+                  isActive
+                    ? "bg-pink-300 text-[#0d0812] shadow-lg shadow-pink-300/20"
+                    : "text-slate-400 hover:text-slate-200 hover:bg-pink-500/5"
+                }`}
+              >
+                {label}
+              </Link>
+            );
+          })}
+        </div>
+
         {myRank ? (
           <div className="glass-panel rounded-2xl px-5 py-3 flex items-center justify-between gap-4 border border-pink-400/30">
             <span className="text-sm text-pink-200">
@@ -140,9 +192,20 @@ export default async function LeaderboardPage({
             </span>
           </div>
         ) : null}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <Board title={t("leaderboard.board_wealth", locale)} rows={wealth} suffix=" VNĐ" emptyText={t("leaderboard.empty", locale)} />
-          <Board title={t("leaderboard.board_level", locale)} rows={level} prefix="Lv." emptyText={t("leaderboard.empty", locale)} />
+
+        <div className="max-w-2xl mx-auto">
+          <Board
+            type={tab}
+            title={
+              tab === "wealth" ? t("leaderboard.board_wealth", locale) :
+              tab === "level" ? t("leaderboard.board_level", locale) :
+              t("leaderboard.board_bakery", locale)
+            }
+            rows={rows}
+            suffix={tab === "wealth" ? " VNĐ" : ""}
+            prefix={tab === "level" ? "Lv." : ""}
+            emptyText={t("leaderboard.empty", locale)}
+          />
         </div>
       </main>
       <SiteFooter />

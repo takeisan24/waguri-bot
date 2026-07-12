@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('../src/lib/envLoader');
 const test = require('node:test');
 const assert = require('node:assert');
 
@@ -24,13 +24,16 @@ if (!hasTestDb) {
 
     const testUser1 = 'discord_test_user_1';
     const testUser2 = 'discord_test_user_2';
+    const testUser3 = 'discord_test_user_3';
 
     // Helper dọn dẹp data test
     async function cleanup() {
         // Xóa inventory, user và bakery test trước/sau khi chạy
-        await supabase.from('inventory').delete().in('user_id', [testUser1, testUser2]);
-        await supabase.from('bakeries').delete().in('user_id', [testUser1, testUser2]);
-        await supabase.from('users').delete().in('user_id', [testUser1, testUser2]);
+        await supabase.from('bakery_likes').delete().in('liker_id', [testUser1, testUser2, testUser3]);
+        await supabase.from('bakery_likes').delete().in('bakery_owner_id', [testUser1, testUser2, testUser3]);
+        await supabase.from('inventory').delete().in('user_id', [testUser1, testUser2, testUser3]);
+        await supabase.from('bakeries').delete().in('user_id', [testUser1, testUser2, testUser3]);
+        await supabase.from('users').delete().in('user_id', [testUser1, testUser2, testUser3]);
     }
 
     test.before(async () => {
@@ -334,5 +337,65 @@ if (!hasTestDb) {
         assert.strictEqual(res.affection, 100);
         assert.strictEqual(res.added, 0);
         assert.strictEqual(res.capped, true);
+    });
+
+    test('Integration: Streak Freeze - tự động kích hoạt bảo toàn chuỗi', async () => {
+        // Khởi tạo user và ép last_daily về 50 tiếng trước (trễ chuỗi)
+        await db.getUser(testUser1);
+        await supabase.from('users').update({ 
+            last_daily: new Date(Date.now() - 50 * 3600 * 1000).toISOString(),
+            daily_streak: 5
+        }).eq('user_id', testUser1);
+
+        // Trường hợp 1: Không có Đá Đông Cứng Chuỗi -> Reset streak về 1
+        let r = await db.claimDaily(testUser1);
+        assert.strictEqual(r.status, 'ok');
+        assert.strictEqual(r.streak, 1, 'Không có đá -> streak reset về 1');
+        assert.strictEqual(r.streak_freeze_used, false);
+
+        // Trường hợp 2: Có Đá Đông Cứng Chuỗi -> Trừ đá và bảo toàn chuỗi
+        // Thêm đá đông cứng chuỗi
+        await supabase.from('inventory').insert([{ user_id: testUser1, item_id: 'streak_freeze', quantity: 1 }]);
+        
+        // Ép lại last_daily về 50 tiếng trước
+        await supabase.from('users').update({ 
+            last_daily: new Date(Date.now() - 50 * 3600 * 1000).toISOString(),
+            daily_streak: 5
+        }).eq('user_id', testUser1);
+
+        r = await db.claimDaily(testUser1);
+        assert.strictEqual(r.status, 'ok');
+        assert.strictEqual(r.streak, 6, 'Có đá -> bảo toàn và cộng streak thành 6');
+        assert.strictEqual(r.streak_freeze_used, true, 'streak_freeze_used phải là true');
+
+        // Kiểm tra xem đá đã bị xóa khỏi kho đồ
+        const { data: inv } = await supabase.from('inventory').select('*').eq('user_id', testUser1).eq('item_id', 'streak_freeze');
+        assert.strictEqual(inv.length, 0, 'Đá đông cứng chuỗi đã bị khấu trừ sạch');
+    });
+
+    test('Integration: Gekka Bakery Likes & GetBakeryWithLikes', async () => {
+        // Mở tiệm bánh cho testUser3
+        await db.getUser(testUser3);
+        await db.getUser(testUser2);
+        
+        // Cho ví đủ tiền mở tiệm và cho sẵn bộ làm bánh trong kho
+        await supabase.from('users').update({ wallet: 60000 }).eq('user_id', testUser3);
+        await supabase.from('inventory').insert([{ user_id: testUser3, item_id: 'bo_lam_banh', quantity: 1 }]);
+
+        const openRes = await db.bakeryOpen(testUser3, 50000, 'bo_lam_banh');
+        assert.strictEqual(openRes, 'ok', 'Mở tiệm bánh thành công');
+
+        // Thử thả tim lần 1 -> Thành công
+        let likeRes = await db.likeBakery(testUser2, testUser3);
+        assert.strictEqual(likeRes, 'ok', 'Thả tim thành công lần đầu');
+
+        // Thử thả tim lần 2 trong cùng ngày -> Bị chặn trùng
+        likeRes = await db.likeBakery(testUser2, testUser3);
+        assert.strictEqual(likeRes, 'already_liked_today', 'Chặn thả tim trùng trong ngày');
+
+        // Lấy thông tin tiệm bánh kèm tim
+        const bk = await db.getBakeryWithLikes(testUser3);
+        assert.ok(bk, 'Lấy tiệm bánh thành công');
+        assert.strictEqual(bk.likes, 1, 'Số tim tích lũy bằng 1');
     });
 }

@@ -2,7 +2,7 @@
 // để khắc phục tình trạng lệnh hiện 2 lần (do đăng ký cả 2 scope).
 // Chạy 1 lần:  node clear-commands.js   (hoặc: npm run clear)
 // Sau đó khởi động lại bot -> nó đăng ký lại đúng 1 scope.
-require('dotenv').config();
+require('./src/lib/envLoader');
 const { REST, Routes } = require('discord.js');
 
 (async () => {

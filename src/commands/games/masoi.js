@@ -21,12 +21,13 @@ module.exports = {
         .setDescription('Ma Sói 🐺 — trò chơi suy luận nhiều người (4-15 người)')
         .addIntegerOption(o => o.setName('bet').setDescription('Tiền cược mỗi người').setRequired(true).setMinValue(config.GAMBLE.MIN_BET)),
     async execute(interaction) {
+        await interaction.deferReply();
         const locale = await getInteractionLanguage(interaction);
         const bet = interaction.options.getInteger('bet');
         const err = await checkBet(bet, interaction.guildId);
         if (err) {
             const embed = buildWaguriEmbed(interaction, 'warning', { locale, description: `🌸 ${err}` });
-            return interaction.reply({ embeds: [embed] });
+            return interaction.editReply({ embeds: [embed] });
         }
 
         const validate = async (userId) => {

@@ -9,6 +9,7 @@ module.exports = {
         .setDescription('Gửi confession ẩn danh (nên dùng /slash để ẩn danh)')
         .addStringOption(o => o.setName('message').setDescription('Điều cậu muốn gửi').setRequired(true)),
     async execute(interaction) {
+        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
         const locale = await getInteractionLanguage(interaction);
         const content = interaction.options.getString('message');
         const gid = interaction.guild?.id;
@@ -16,7 +17,7 @@ module.exports = {
             const embed = buildWaguriEmbed(interaction, 'error', {
                 description: t(locale, 'commands.confession.err_server_only')
             });
-            return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+            return interaction.editReply({ embeds: [embed] });
         }
 
         // 1. Chặn Mentions/Pings (User, Role, Everyone, Here)
@@ -26,7 +27,7 @@ module.exports = {
             const embed = buildWaguriEmbed(interaction, 'warning', {
                 description: t(locale, 'commands.confession.err_mentions')
             });
-            return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+            return interaction.editReply({ embeds: [embed] });
         }
 
         // 2. Kiểm tra và đặt Cooldown (15 phút = 900 giây)
@@ -39,7 +40,7 @@ module.exports = {
             const embed = buildWaguriEmbed(interaction, 'warning', {
                 description: t(locale, 'commands.confession.err_cooldown', { min, sec })
             });
-            return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+            return interaction.editReply({ embeds: [embed] });
         }
 
         const s = await db.getGuildSettings(gid);
@@ -47,7 +48,7 @@ module.exports = {
             const embed = buildWaguriEmbed(interaction, 'warning', {
                 description: t(locale, 'commands.confession.err_not_configured')
             });
-            return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+            return interaction.editReply({ embeds: [embed] });
         }
 
         const channel = interaction.guild.channels.cache.get(s.confession_channel)
@@ -56,7 +57,7 @@ module.exports = {
             const embed = buildWaguriEmbed(interaction, 'error', {
                 description: t(locale, 'commands.confession.err_channel_deleted')
             });
-            return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+            return interaction.editReply({ embeds: [embed] });
         }
 
         const num = await db.nextConfessionNumber(gid);
@@ -79,6 +80,6 @@ module.exports = {
         const successEmbed = buildWaguriEmbed(interaction, 'success', {
             description: t(locale, 'commands.confession.success_reply')
         });
-        return interaction.reply({ embeds: [successEmbed], flags: MessageFlags.Ephemeral });
+        return interaction.editReply({ embeds: [successEmbed] });
     },
 };

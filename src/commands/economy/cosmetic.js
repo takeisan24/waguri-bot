@@ -15,7 +15,27 @@ module.exports = {
             .addStringOption(o => o.setName('text').setDescription('Danh hiệu của cậu').setRequired(true)))
         .addSubcommand(s => s.setName('color').setDescription('Đặt màu hồ sơ (15.000 VNĐ)')
             .addStringOption(o => o.setName('hex').setDescription('Mã màu hex, vd F1C40F hoặc #5865F2').setRequired(true)))
-        .addSubcommand(s => s.setName('view').setDescription('Xem cosmetic hiện tại')),
+        .addSubcommand(s => s.setName('view').setDescription('Xem cosmetic hiện tại'))
+        .addSubcommand(s => s.setName('badge-buy').setDescription('Mua huy hiệu trưng bày')
+            .addStringOption(o => o.setName('badge').setDescription('Chọn huy hiệu').setRequired(true)
+                .addChoices(
+                    { name: '💰 Triệu Phú Gekka (100.000 VNĐ)', value: 'rich' },
+                    { name: '💖 Trái Tim Ấm Áp (50.000 VNĐ)', value: 'heart' },
+                    { name: '👑 Thành Viên Hoàng Gia (200.000 VNĐ)', value: 'vip' },
+                    { name: '🍰 Vua Bánh Gekka (80.000 VNĐ)', value: 'baker' }
+                )))
+        .addSubcommand(s => s.setName('badge-equip').setDescription('Trưng bày huy hiệu lên profile')
+            .addStringOption(o => o.setName('badge').setDescription('Chọn huy hiệu').setRequired(true)
+                .addChoices(
+                    { name: '💰 Triệu Phú Gekka', value: 'rich' },
+                    { name: '💖 Trái Tim Ấm Áp', value: 'heart' },
+                    { name: '👑 Thành Viên Hoàng Gia', value: 'vip' },
+                    { name: '🍰 Vua Bánh Gekka', value: 'baker' },
+                    { name: '⭐ Chuyển Sinh I', value: 'prestige_1' },
+                    { name: '🌟 Chuyển Sinh II', value: 'prestige_2' },
+                    { name: '✨ Chuyển Sinh III', value: 'prestige_3' }
+                ))
+            .addIntegerOption(o => o.setName('slot').setDescription('Vị trí trưng bày (1..6)').setRequired(true).setMinValue(1).setMaxValue(6))),
     async execute(interaction) {
         const locale = await getInteractionLanguage(interaction);
         await interaction.deferReply();
@@ -84,6 +104,55 @@ module.exports = {
             });
             embedSuccess.setColor(parseInt(hex, 16));
             return interaction.editReply({ embeds: [embedSuccess] });
+        }
+
+        if (sub === 'badge-buy') {
+            const badgeId = interaction.options.getString('badge');
+            const badgeConf = config.COSMETIC.BADGES?.[badgeId];
+            if (!badgeConf || badgeConf.cost <= 0) {
+                return replyEmbed('error', 'Lỗi / Error', 'Huy hiệu không hợp lệ hoặc không bán.');
+            }
+            
+            const u = await db.getUser(userId);
+            if (!u) return replyEmbed('error', 'Lỗi / Error', t(locale, 'common.db_error'));
+            
+            if (Number(u.wallet) < badgeConf.cost) {
+                return replyEmbed('error', 'Không đủ tiền / Insufficient Coins', `Cậu cần **${fmt(badgeConf.cost, locale)} xu** để mua huy hiệu này.`);
+            }
+            
+            const owned = await db.getUserBadges(userId);
+            if (owned.some(b => b.badge_id === badgeId)) {
+                return replyEmbed('warning', 'Đã sở hữu / Already Owned', 'Cậu đã sở hữu huy hiệu này rồi.');
+            }
+            
+            await db.addMoney(userId, -badgeConf.cost, 'wallet');
+            const ok = await db.unlockBadge(userId, badgeId);
+            if (!ok) {
+                await db.addMoney(userId, badgeConf.cost, 'wallet');
+                return replyEmbed('error', 'Lỗi / Error', 'Không thể mở khóa huy hiệu, vui lòng thử lại.');
+            }
+            
+            const badgeName = locale === 'en' ? badgeConf.name_en : badgeConf.name_vi;
+            return replyEmbed('success', 'Mua thành công / Purchase Success', `Cậu đã mua thành công huy hiệu **${badgeConf.emoji} ${badgeName}**! Hãy dùng \`/cosmetic badge-equip\` để trưng bày.`);
+        }
+
+        if (sub === 'badge-equip') {
+            const badgeId = interaction.options.getString('badge');
+            const slot = interaction.options.getInteger('slot');
+            
+            const owned = await db.getUserBadges(userId);
+            if (!owned.some(b => b.badge_id === badgeId)) {
+                return replyEmbed('error', 'Chưa sở hữu / Not Owned', 'Cậu chưa sở hữu huy hiệu này.');
+            }
+            
+            const r = await db.equipBadge(userId, badgeId, slot);
+            if (r === 'ok') {
+                const badgeConf = config.COSMETIC.BADGES?.[badgeId];
+                const badgeName = badgeConf ? `${badgeConf.emoji} ${locale === 'en' ? badgeConf.name_en : badgeConf.name_vi}` : badgeId;
+                return replyEmbed('success', 'Trang bị thành công / Equip Success', `Huy hiệu **${badgeName}** đã được trưng bày ở slot **#${slot}**.`);
+            } else {
+                return replyEmbed('error', 'Lỗi / Error', 'Không thể trang bị huy hiệu.');
+            }
         }
     },
 };

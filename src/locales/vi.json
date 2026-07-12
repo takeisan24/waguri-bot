@@ -233,6 +233,7 @@
     "daily": {
       "success_title": "🎁・Điểm danh thành công!",
       "already_claimed": "Hôm nay cậu điểm danh rồi mà~ Quay lại sau {time} nhé! 🌸",
+      "streak_freeze_activated": "\n❄️ **Đá Đông Cứng Chuỗi đã kích hoạt!** Chuỗi **{streak} ngày** của cậu đã được bảo toàn thành công.",
       "nudge_newbie": "> 💡 Người mới hả? Gõ `/start` nhận **quà chào mừng** nha~ 🎁\n",
       "nudge_member": "> 💡 Giờ thì đi `/work` kiếm thêm và xem `/quest` nhận nhiệm vụ hôm nay nha~ 🌸\n",
       "greet_return": "🌸 Lâu rồi mới gặp cậu ({days} ngày)~ Mừng cậu quay lại nha, mình nhớ cậu lắm đó! 💕\n\n",

@@ -1,6 +1,6 @@
 // Ép ưu tiên IPv4: tránh treo bắt tay WebSocket do IPv6 hỏng/định tuyến sai trên host (gây "Opening handshake has timed out").
 require('node:dns').setDefaultResultOrder('ipv4first');
-require('dotenv').config();
+require('./src/lib/envLoader');
 const fs = require('node:fs');
 const path = require('node:path');
 const { Client, Collection, GatewayIntentBits, REST, Routes } = require('discord.js');

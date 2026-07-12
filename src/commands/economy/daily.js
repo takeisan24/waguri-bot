@@ -46,6 +46,9 @@ module.exports = {
             ? `You received **${fmt(r.reward, locale)}** ${config.CURRENCY}!` 
             : `Cậu nhận được **${fmt(r.reward, locale)}** ${config.CURRENCY}!`;
 
+        if (r.streak_freeze_used) {
+            rewardsDesc += t(locale, 'commands.daily.streak_freeze_activated', { streak: r.streak });
+        }
         if (r.milestone && Number(r.milestone) > 0) {
             rewardsDesc += t(locale, 'commands.daily.milestone', { streak: r.streak, amount: fmt(r.milestone, locale), currency: config.CURRENCY });
         }

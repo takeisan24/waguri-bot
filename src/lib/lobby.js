@@ -46,6 +46,9 @@ function openLobby(interaction, opts) {
 
             const replyEphemeral = (targetInteraction, type, text) => {
                 const embed = buildWaguriEmbed(interaction, type, { locale, description: text });
+                if (targetInteraction.deferred || targetInteraction.replied) {
+                    return targetInteraction.followUp({ embeds: [embed], flags: MessageFlags.Ephemeral });
+                }
                 return targetInteraction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
             };
 
@@ -56,7 +59,11 @@ function openLobby(interaction, opts) {
             }
             players.set(hostId, interaction.user.username);
 
-            await interaction.reply({ embeds: [render()], components: [buttons()] });
+            if (interaction.deferred || interaction.replied) {
+                await interaction.editReply({ embeds: [render()], components: [buttons()] });
+            } else {
+                await interaction.reply({ embeds: [render()], components: [buttons()] });
+            }
             const msg = await interaction.fetchReply();
 
             const collector = msg.createMessageComponentCollector({ componentType: ComponentType.Button, time: joinSeconds * 1000 });

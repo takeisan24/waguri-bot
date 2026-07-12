@@ -17,7 +17,7 @@
 //  - State in-memory (loto/bingo, ngữ cảnh AI, cooldown) là theo-shard; an toàn vì mỗi
 //    guild nằm trọn 1 shard. Dữ liệu game/kinh tế nằm ở Supabase nên dùng chung bình thường.
 // ============================================================
-require('dotenv').config();
+require('./src/lib/envLoader');
 const fs = require('node:fs');
 const path = require('node:path');
 const { ShardingManager, REST, Routes } = require('discord.js');
