@@ -18,6 +18,9 @@
     "copyright": "© {year} Waguri Bot. Bản quyền thuộc về team phát triển Waguri."
   },
   "home": {
+    "float_bubble": "Chào mừng cậu đã ghé chơi tệ xá của tớ nha~ Chúc cậu một ngày thật nhiều niềm vui và may mắn! 🌸",
+    "float_scroll_top": "Cuộn lên đầu trang",
+    "float_chat": "Trò chuyện với Waguri",
     "hero": {
       "badge": "Waifu AI & RPG Việt Nam 🌸",
       "title_1": "Trò chuyện AI Waifu &",
@@ -332,6 +335,10 @@
     "write_btn": "Viết đánh giá trên Top.gg ⭐"
   },
   "commands": {
+    "meta_title": "Danh sách lệnh 📜 — Waguri Bot",
+    "meta_desc": "Tra cứu toàn bộ lệnh của Waguri: kiếm tiền, minigame, nuôi trồng, bang hội, tình cảm, AI và quản trị.",
+    "title": "Danh sách lệnh",
+    "subtitle": "Tất cả lệnh dùng được bằng /slash hoặc prefix w!. Gõ /help trong Discord để xem chi tiết từng lệnh.",
     "search_placeholder": "🔎 Tìm trong {count} lệnh... (vd: work, may rủi, bang)",
     "no_results": "Không tìm thấy lệnh nào khớp~ 🌸",
     "usage": "Cách dùng:",

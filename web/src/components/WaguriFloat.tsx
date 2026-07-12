@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useLanguage } from "./LanguageProvider";
 
 export default function WaguriFloat() {
+  const { t } = useLanguage();
   const [showScroll, setShowScroll] = useState(false);
   const [showBubble, setShowBubble] = useState(false);
 
@@ -45,7 +47,7 @@ export default function WaguriFloat() {
       >
         <div className="relative">
           <p className="leading-relaxed">
-            Chào mừng cậu đã ghé chơi tệ xá của tớ nha~ Chúc cậu một ngày thật nhiều niềm vui và may mắn! 🌸
+            {t("home.float_bubble")}
           </p>
           <button 
             onClick={() => setShowBubble(false)} 
@@ -68,7 +70,7 @@ export default function WaguriFloat() {
               ? "opacity-100 scale-100 translate-y-0" 
               : "opacity-0 scale-75 translate-y-4 pointer-events-none"
           }`}
-          title="Cuộn lên đầu trang"
+          title={t("home.float_scroll_top")}
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
@@ -79,7 +81,7 @@ export default function WaguriFloat() {
         <div 
           onClick={() => setShowBubble(!showBubble)}
           className="relative w-12 h-12 cursor-pointer hover:scale-105 active:scale-95 transition-all duration-300"
-          title="Trò chuyện với Waguri"
+          title={t("home.float_chat")}
         >
           <div className="w-full h-full rounded-full border border-pink-300/30 overflow-hidden bg-[#120c1a]">
             {/* eslint-disable-next-line @next/next/no-img-element */}

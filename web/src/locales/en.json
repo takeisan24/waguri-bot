@@ -18,6 +18,9 @@
     "copyright": "© {year} Waguri Bot. All rights reserved by the Waguri development team."
   },
   "home": {
+    "float_bubble": "Welcome to my humble place~ Wishing you a day full of joy and good luck! 🌸",
+    "float_scroll_top": "Scroll to top",
+    "float_chat": "Chat with Waguri",
     "hero": {
       "badge": "AI Waifu & RPG Game 🌸",
       "title_1": "AI Waifu Chat &",
@@ -332,6 +335,10 @@
     "write_btn": "Write a review on Top.gg ⭐"
   },
   "commands": {
+    "meta_title": "Commands List 📜 — Waguri Bot",
+    "meta_desc": "Explore all commands of Waguri: economy, minigames, farming, clans, relationships, AI, and admin.",
+    "title": "Commands List",
+    "subtitle": "All commands are available using /slash or w! prefix. Type /help in Discord to view details.",
     "search_placeholder": "🔎 Search {count} commands... (e.g. work, mini-game, clan)",
     "no_results": "No matching commands found~ 🌸",
     "usage": "Usage:",
