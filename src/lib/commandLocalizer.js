@@ -247,6 +247,14 @@ const COMMAND_DESCRIPTIONS = {
         vi: "Hẹn hò và tặng quà cho Waguri để bồi đắp tình cảm 💖",
         en: "Date and gift Waguri to build affection 💖"
     },
+    "prestige": {
+        vi: "Chuyển sinh — Khởi đầu mới với đặc quyền tối thượng 🌟",
+        en: "Prestige — A new beginning with ultimate perks 🌟"
+    },
+    "worldevent": {
+        vi: "Sự kiện cộng đồng toàn server 🌍",
+        en: "Server-wide co-op community event 🌍"
+    },
 
     // Cấu hình & Admin
     "config": {
@@ -415,7 +423,39 @@ const SUBCOMMAND_DESCRIPTIONS = {
 
     // announcements
     "announcement.view": { vi: "Xem thông báo mới nhất", en: "View latest announcements" },
-    "announcement.send": { vi: "Gửi thông báo mới", en: "Send a new announcement" }
+    "announcement.send": { vi: "Gửi thông báo mới", en: "Send a new announcement" },
+
+    // worldevent
+    "worldevent.view": { vi: "Xem tiến trình sự kiện co-op hôm nay", en: "View today's co-op event progress" },
+    "worldevent.contribute": { vi: "Đóng góp tài nguyên vào sự kiện chung", en: "Contribute resources to the co-op event" },
+    "worldevent.claim": { vi: "Nhận phần thưởng co-op của ngày", en: "Claim today's co-op reward" },
+
+    // cosmetic
+    "cosmetic.title": { vi: "Đặt danh hiệu (20.000 VNĐ)", en: "Set profile title (20,000 coins)" },
+    "cosmetic.color": { vi: "Đặt màu hồ sơ (15.000 VNĐ)", en: "Set profile color (15,000 coins)" },
+    "cosmetic.view": { vi: "Xem cosmetic hiện tại", en: "View current profile cosmetics" },
+    "cosmetic.badge-buy": { vi: "Mua huy hiệu trưng bày", en: "Buy badges for display" },
+    "cosmetic.badge-equip": { vi: "Trưng bày huy hiệu lên profile", en: "Equip badges to display showcase" },
+
+    // pet
+    "pet.adopt": { vi: "Nhận nuôi một bé", en: "Adopt a baby pet" },
+    "pet.view": { vi: "Xem thú cưng", en: "View your pet status" },
+    "pet.feed": { vi: "Cho thú cưng ăn để tăng kinh nghiệm", en: "Feed your pet to increase EXP" },
+    "pet.rename": { vi: "Đổi tên thú cưng", en: "Rename your pet" },
+    "pet.skill-up": { vi: "Nâng cấp kỹ năng bị động cho thú cưng", en: "Upgrade passive skills for your pet" },
+
+    // clan
+    "clan.create": { vi: "Lập bang mới (tốn 50,000 VNĐ)", en: "Create a new clan (costs 50,000 coins)" },
+    "clan.join": { vi: "Gia nhập một bang", en: "Join an existing clan" },
+    "clan.leave": { vi: "Rời bang", en: "Leave your current clan" },
+    "clan.info": { vi: "Xem thông tin bang", en: "View clan details" },
+    "clan.list": { vi: "Bảng xếp hạng bang (theo quỹ)", en: "Clan leaderboard (by treasury)" },
+    "clan.deposit": { vi: "Góp tiền hoặc tài nguyên vào quỹ bang", en: "Deposit money or resources to clan treasury" },
+    "clan.withdraw": { vi: "Rút quỹ bang (chỉ trưởng bang)", en: "Withdraw from clan treasury (leader only)" },
+    "clan.kick": { vi: "Đuổi thành viên (chỉ trưởng bang)", en: "Kick a member from clan (leader only)" },
+    "clan.disband": { vi: "Giải tán bang (chỉ trưởng bang)", en: "Disband the clan (leader only)" },
+    "clan.war": { vi: "Khai chiến với bang khác (chỉ trưởng bang)", en: "Declare war on another clan (leader only)" },
+    "clan.shrine": { vi: "Xây dựng và nâng cấp Đền thờ bang hội để nhận buff EXP 🏛️", en: "Build and upgrade Clan Shrine for EXP buffs 🏛️" }
 };
 
 const OPTION_DESCRIPTIONS = {
@@ -440,7 +480,10 @@ const OPTION_DESCRIPTIONS = {
     "message": { vi: "Nội dung tin nhắn/confession", en: "Message/confession content" },
     "channel": { vi: "Kênh văn bản chỉ định", en: "Designated text channel" },
     "hex": { vi: "Mã màu Hex (vd: F1C40F)", en: "Hex color code (e.g. F1C40F)" },
-    "text": { vi: "Nội dung văn bản/danh hiệu", en: "Text content/title" }
+    "text": { vi: "Nội dung văn bản/danh hiệu", en: "Text content/title" },
+    "id": { vi: "ID hoặc mã định danh", en: "ID or unique identifier" },
+    "species": { vi: "Loài thú cưng", en: "Pet species" },
+    "resource": { vi: "Tên tài nguyên", en: "Resource name" }
 };
 
 const CHOICE_LOCALIZATIONS = {

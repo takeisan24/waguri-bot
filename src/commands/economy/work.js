@@ -10,7 +10,7 @@ const { getEventMult } = require('../../lib/event');
 const { buildWaguriEmbed } = require('../../lib/embed');
 const { handleNewbieQuest } = require('../../lib/newbie');
 
-const { t } = require('../../lib/i18n');
+const { getInteractionLanguage, t } = require('../../lib/i18n');
 const scriptsVi = require('../../data/workScripts');
 const scriptsEn = require('../../data/workScripts_en');
 
@@ -29,7 +29,7 @@ module.exports = {
     async execute(interaction) {
         await interaction.deferReply();
         const userId = interaction.user.id;
-        const locale = interaction.locale;
+        const locale = await getInteractionLanguage(interaction);
 
         // 0. Cooldown nhẹ chống spam
         const cd = onCooldown('work', userId, config.ACTION_COOLDOWN_MS);
@@ -192,8 +192,12 @@ module.exports = {
                 .replace(/\{job\}/g, displayJobName);
             if (buffActive && earnedMoney > 0) resultMessage += ` *(buff +${Math.round((buffMult - 1) * 100)}%)*`;
             if (premium && earnedMoney > 0) resultMessage += ` *(Premium +${Math.round(config.PREMIUM.INCOME_BONUS * 100)}% 💎)*`;
-            if (eventMult > 1 && earnedMoney > 0) resultMessage += ` *(Sự kiện x${eventMult} 🎉)*`;
-            if (fatigue < 1 && earnedMoney > 0) resultMessage += ` *(mệt -${Math.round((1 - fatigue) * 100)}%)*`;
+            if (eventMult > 1 && earnedMoney > 0) {
+                resultMessage += locale.startsWith('en') ? ` *(Event x${eventMult} 🎉)*` : ` *(Sự kiện x${eventMult} 🎉)*`;
+            }
+            if (fatigue < 1 && earnedMoney > 0) {
+                resultMessage += locale.startsWith('en') ? ` *(fatigue -${Math.round((1 - fatigue) * 100)}%)*` : ` *(mệt -${Math.round((1 - fatigue) * 100)}%)*`;
+            }
             if (usedInsurance) {
                 resultMessage += locale.startsWith('en')
                     ? `\n🛡️ **Labor Insurance** activated, covering 80% of losses!`

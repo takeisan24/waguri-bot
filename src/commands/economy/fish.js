@@ -9,7 +9,7 @@ const { applyDisease } = require('../../lib/disease');
 const { getLevelFromExp, levelUpReward } = require('../../lib/leveling');
 const { getEventMult } = require('../../lib/event');
 
-const { t } = require('../../lib/i18n');
+const { getInteractionLanguage, t } = require('../../lib/i18n');
 
 const fmt = (n, locale) => Number(n).toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN');
 
@@ -30,7 +30,7 @@ module.exports = {
     async execute(interaction) {
         await interaction.deferReply();
         const userId = interaction.user.id;
-        const locale = interaction.locale;
+        const locale = await getInteractionLanguage(interaction);
 
         const user = await db.getUser(userId);
         const userHealth = user && user.health !== undefined ? user.health : 100;
@@ -141,7 +141,7 @@ module.exports = {
                 ? (locale.startsWith('en') ? ` *(base ${fmt(gross, locale)}, tired -${Math.round((1 - fatigue) * 100)}%)` : ` *(gốc ${fmt(gross, locale)}, mệt -${Math.round((1 - fatigue) * 100)}%)*`)
                 : '';
             const premStr = premium ? ` *(Premium +${Math.round(config.PREMIUM.INCOME_BONUS * 100)}% 💎)*` : '';
-            const evStr = eventMult > 1 ? ` *(Sự kiện x${eventMult} 🎉)*` : '';
+            const evStr = eventMult > 1 ? (locale.startsWith('en') ? ` *(Event x${eventMult} 🎉)*` : ` *(Sự kiện x${eventMult} 🎉)*`) : '';
 
             desc = locale.startsWith('en')
                 ? `You caught ${c.emoji} **${displayFishName}** and sold it for **+${fmt(payout, locale)}** ${config.CURRENCY}!${grossStr}${premStr}${evStr}`

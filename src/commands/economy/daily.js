@@ -3,7 +3,7 @@ const { buildWaguriEmbed } = require('../../lib/embed');
 const db = require('../../database.js');
 const config = require('../../config');
 const { handleNewbieQuest } = require('../../lib/newbie');
-const { t } = require('../../lib/i18n');
+const { getInteractionLanguage, t } = require('../../lib/i18n');
 
 const fmt = (n, locale) => Number(n).toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN');
 
@@ -13,7 +13,7 @@ module.exports = {
         .setDescription('Điểm danh nhận thưởng mỗi ngày'),
     async execute(interaction) {
         await interaction.deferReply();
-        const locale = interaction.locale;
+        const locale = await getInteractionLanguage(interaction);
         const r = await db.claimDaily(interaction.user.id);
         if (!r) {
             const embed = buildWaguriEmbed(interaction, 'error', { description: t(locale, 'common.retry_later') });

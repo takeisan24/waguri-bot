@@ -5,7 +5,7 @@ const db = require('../../database.js');
 const config = require('../../config');
 const { AFFECTION_TIERS, tierOf } = require('../../lib/ai/persona');
 const { buildWaguriEmbed, createWaguriBar } = require('../../lib/embed');
-const { t } = require('../../lib/i18n');
+const { getInteractionLanguage, t } = require('../../lib/i18n');
 
 const fmt = (n, locale) => Number(n).toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN');
 
@@ -119,7 +119,7 @@ module.exports = {
         await interaction.deferReply();
         const sub = interaction.options.getSubcommand();
         const userId = interaction.user.id;
-        const locale = interaction.locale;
+        const locale = await getInteractionLanguage(interaction);
         const now = Date.now();
 
         // 1. Lệnh xem trạng thái
