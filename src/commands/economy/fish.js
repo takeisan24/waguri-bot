@@ -105,7 +105,6 @@ module.exports = {
 
         let c = pickCatch();
         // Gấu 🐻 passive: Lv. 5+ tăng +10% tỉ lệ câu trúng cá hiếm
-        const { petLevel } = require('../../data/pets');
         if (userPet && userPet.species === 'gau' && petLevel(userPet.exp) >= 5 && c.name !== 'Cá hiếm' && c.name !== 'Rương kho báu') {
             if (Math.random() < 0.10) {
                 c = FISH.find(f => f.name === 'Cá hiếm') || c;
