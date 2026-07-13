@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "../../lib/supabase/server";
 import { createAdminClient } from "../../lib/supabase/admin";
 import { getDiscordIdentity } from "../../lib/discord";
+import { getLocaleServer } from "../../lib/i18n";
 
 // Lấy Discord ID của phiên đăng nhập đã xác thực (không tin tham số từ client).
 async function sessionDiscordId(): Promise<string | null> {
@@ -36,7 +37,12 @@ export async function toggleVoteReminder() {
 
 export async function upgradePetSkill(skillId: string) {
   const userId = await sessionDiscordId();
-  if (!userId) return { success: false, error: "Unauthorized" };
+  const locale = await getLocaleServer();
+  const isEn = locale.startsWith("en");
+
+  if (!userId) {
+    return { success: false, error: isEn ? "Unauthorized session" : "Phiên làm việc chưa xác thực" };
+  }
 
   const admin = createAdminClient();
   const { data: pet, error: petErr } = await admin
@@ -46,12 +52,12 @@ export async function upgradePetSkill(skillId: string) {
     .single();
 
   if (petErr || !pet) {
-    return { success: false, error: "Pet not found" };
+    return { success: false, error: isEn ? "Pet not found" : "Không tìm thấy thú cưng" };
   }
 
   const skillPoints = pet.skill_points || 0;
   if (skillPoints <= 0) {
-    return { success: false, error: "No skill points available" };
+    return { success: false, error: isEn ? "No skill points available" : "Hết điểm kỹ năng rồi cậu ơi" };
   }
 
   const maxLevel = skillId === "double_gem" ? 2 : 3;
@@ -59,7 +65,7 @@ export async function upgradePetSkill(skillId: string) {
   const curLvl = skills[skillId] || 0;
 
   if (curLvl >= maxLevel) {
-    return { success: false, error: "Skill already at maximum level" };
+    return { success: false, error: isEn ? "Skill already at maximum level" : "Kỹ năng đã đạt cấp tối đa" };
   }
 
   const updatedSkills = { ...skills, [skillId]: curLvl + 1 };
@@ -71,7 +77,7 @@ export async function upgradePetSkill(skillId: string) {
     .eq("user_id", userId);
 
   if (updateErr) {
-    return { success: false, error: "Failed to update database" };
+    return { success: false, error: isEn ? "Failed to update database" : "Lưu vào cơ sở dữ liệu thất bại" };
   }
 
   revalidatePath("/dashboard/pet");

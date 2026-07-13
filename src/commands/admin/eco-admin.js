@@ -4,13 +4,15 @@ const config = require('../../config');
 const { isOwner } = require('../../lib/owner');
 const { setBan } = require('../../lib/bans');
 const { buildWaguriEmbed } = require('../../lib/embed');
+const { getInteractionLanguage, t } = require('../../lib/i18n');
 
-const fmt = n => Number(n).toLocaleString('vi-VN');
+const fmt = (n, locale) => Number(n).toLocaleString(locale?.startsWith('en') ? 'en-US' : 'vi-VN');
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('eco-admin')
         .setDescription('Công cụ quản trị economy (chỉ owner)')
+        .setDefaultMemberPermissions(0)
         .addSubcommand(s => s.setName('addmoney').setDescription('Cộng/trừ tiền')
             .addUserOption(o => o.setName('user').setDescription('Người nhận').setRequired(true))
             .addIntegerOption(o => o.setName('amount').setDescription('Số tiền (âm để trừ)').setRequired(true))
@@ -62,10 +64,13 @@ module.exports = {
     },
 
     async execute(interaction) {
+        const locale = await getInteractionLanguage(interaction);
+        const isEn = locale?.startsWith('en');
+
         // Chặn người không phải owner (chủ app tự nhận + OWNER_IDS env)
         if (!await isOwner(interaction.client, interaction.user.id)) {
             const embed = buildWaguriEmbed(interaction, 'error', {
-                description: 'Lệnh này chỉ dành cho owner thôi nhé~ 🌸'
+                description: t(locale, 'commands.eco-admin.only_owner')
             });
             return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
         }
@@ -80,7 +85,7 @@ module.exports = {
             const snaps = await db.getEconomySnapshots(14);
             if (!snaps.length) {
                 return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'warning', {
-                    description: 'Chưa có dữ liệu telemetry kinh tế. Thử lại sau chút nhé~ 🌸'
+                    description: t(locale, 'commands.eco-admin.no_telemetry')
                 })] });
             }
             const C = config.CURRENCY;
@@ -90,19 +95,24 @@ module.exports = {
             const delta = (a, b) => {
                 if (b == null) return '';
                 const d = Number(a) - Number(b);
-                return ` (${d >= 0 ? '+' : ''}${fmt(d)})`;
+                return ` (${d >= 0 ? '+' : ''}${fmt(d, locale)})`;
             };
             const embed = buildWaguriEmbed(interaction, 'info', {
-                title: `📊・Telemetry Kinh Tế — ${cur.taken_on}`,
-                description:
-                    `**Tổng cung tiền:** ${fmt(cur.total_supply)} ${C}${delta(cur.total_supply, prev && prev.total_supply)}\n` +
-                    `　_so với ~tuần trước:${delta(cur.total_supply, weekRef && weekRef !== cur ? weekRef.total_supply : null) || ' —'}_\n` +
-                    `**Ví:** ${fmt(cur.total_wallet)} · **Ngân hàng:** ${fmt(cur.total_bank)}\n` +
-                    `**Người chơi:** ${fmt(cur.user_count)} (hoạt động 7d: ${fmt(cur.active_7d)} · Premium: ${fmt(cur.premium_count)})\n` +
-                    `**Giàu nhất:** ${fmt(cur.richest)} · **Trung bình:** ${fmt(cur.avg_supply)}`,
+                title: isEn ? `📊・Economy Telemetry — ${cur.taken_on}` : `📊・Telemetry Kinh Tế — ${cur.taken_on}`,
+                description: isEn
+                    ? `**Total Supply:** ${fmt(cur.total_supply, locale)} ${C}${delta(cur.total_supply, prev && prev.total_supply)}\n` +
+                      `　_vs ~last week:${delta(cur.total_supply, weekRef && weekRef !== cur ? weekRef.total_supply : null) || ' —'}_\n` +
+                      `**Wallet:** ${fmt(cur.total_wallet, locale)} · **Bank:** ${fmt(cur.total_bank, locale)}\n` +
+                      `**Players:** ${fmt(cur.user_count, locale)} (active 7d: ${fmt(cur.active_7d, locale)} · Premium: ${fmt(cur.premium_count, locale)})\n` +
+                      `**Richest:** ${fmt(cur.richest, locale)} · **Average:** ${fmt(cur.avg_supply, locale)}`
+                    : `**Tổng cung tiền:** ${fmt(cur.total_supply, locale)} ${C}${delta(cur.total_supply, prev && prev.total_supply)}\n` +
+                      `　_so với ~tuần trước:${delta(cur.total_supply, weekRef && weekRef !== cur ? weekRef.total_supply : null) || ' —'}_\n` +
+                      `**Ví:** ${fmt(cur.total_wallet, locale)} · **Ngân hàng:** ${fmt(cur.total_bank, locale)}\n` +
+                      `**Người chơi:** ${fmt(cur.user_count, locale)} (hoạt động 7d: ${fmt(cur.active_7d, locale)} · Premium: ${fmt(cur.premium_count, locale)})\n` +
+                      `**Giàu nhất:** ${fmt(cur.richest, locale)} · **Trung bình:** ${fmt(cur.avg_supply, locale)}`,
                 fields: [{
-                    name: '📈 Xu hướng cung tiền (mới → cũ)',
-                    value: snaps.slice(0, 10).map(s => `\`${s.taken_on}\` ${fmt(s.total_supply)} ${C}`).join('\n')
+                    name: t(locale, 'commands.eco-admin.trend_title'),
+                    value: snaps.slice(0, 10).map(s => `\`${s.taken_on}\` ${fmt(s.total_supply, locale)} ${C}`).join('\n')
                 }]
             });
             return interaction.editReply({ embeds: [embed] });
@@ -111,7 +121,7 @@ module.exports = {
         const target = interaction.options.getUser('user');
         if (!target) {
             const embed = buildWaguriEmbed(interaction, 'error', {
-                description: 'Thiếu người chơi.'
+                description: t(locale, 'commands.eco-admin.no_target')
             });
             return interaction.editReply({ embeds: [embed] });
         }
@@ -127,8 +137,10 @@ module.exports = {
             const ok = await db.addMoney(target.id, amount, field);
             const embed = buildWaguriEmbed(interaction, ok ? 'success' : 'error', {
                 description: ok
-                    ? `✅ Đã ${amount >= 0 ? 'cộng' : 'trừ'} **${fmt(Math.abs(amount))}** ${C} (${field}) cho <@${target.id}>.`
-                    : '❌ Thất bại (có thể số dư không đủ để trừ).'
+                    ? (amount >= 0
+                        ? t(locale, 'commands.eco-admin.addmoney_add_success', { amount: fmt(Math.abs(amount), locale), currency: C, field, user: target.id })
+                        : t(locale, 'commands.eco-admin.addmoney_sub_success', { amount: fmt(Math.abs(amount), locale), currency: C, field, user: target.id }))
+                    : t(locale, 'commands.eco-admin.addmoney_fail')
             });
             return interaction.editReply({ embeds: [embed] });
         }
@@ -137,7 +149,9 @@ module.exports = {
             const field = interaction.options.getString('field') || 'wallet';
             const ok = await db.setBalance(target.id, field, amount);
             const embed = buildWaguriEmbed(interaction, ok ? 'success' : 'error', {
-                description: ok ? `✅ Đặt ${field} của <@${target.id}> = **${fmt(amount)}** ${C}.` : '❌ Thất bại.'
+                description: ok
+                    ? t(locale, 'commands.eco-admin.setmoney_success', { field, user: target.id, amount: fmt(amount, locale), currency: C })
+                    : t(locale, 'commands.eco-admin.setmoney_fail')
             });
             return interaction.editReply({ embeds: [embed] });
         }
@@ -145,7 +159,9 @@ module.exports = {
             const value = interaction.options.getInteger('value');
             const ok = await db.setEnergy(target.id, value);
             const embed = buildWaguriEmbed(interaction, ok ? 'success' : 'error', {
-                description: ok ? `✅ Đặt năng lượng của <@${target.id}> = **${value}**.` : '❌ Thất bại.'
+                description: ok
+                    ? t(locale, 'commands.eco-admin.setenergy_success', { user: target.id, value })
+                    : t(locale, 'commands.eco-admin.setenergy_fail')
             });
             return interaction.editReply({ embeds: [embed] });
         }
@@ -153,7 +169,9 @@ module.exports = {
             const value = interaction.options.getInteger('value');
             const ok = await db.setExp(target.id, value);
             const embed = buildWaguriEmbed(interaction, ok ? 'success' : 'error', {
-                description: ok ? `✅ Đặt EXP của <@${target.id}> = **${fmt(value)}**.` : '❌ Thất bại.'
+                description: ok
+                    ? t(locale, 'commands.eco-admin.setexp_success', { user: target.id, value: fmt(value, locale) })
+                    : t(locale, 'commands.eco-admin.setexp_fail')
             });
             return interaction.editReply({ embeds: [embed] });
         }
@@ -162,8 +180,11 @@ module.exports = {
             const qty = interaction.options.getInteger('qty') || 1;
             const item = await db.getItem(itemId);
             const ok = await db.giveItemAdmin(target.id, itemId, qty);
+            const localizedItemName = item ? (t(locale, `data.items.${itemId}.name`) || item.name) : itemId;
             const embed = buildWaguriEmbed(interaction, ok ? 'success' : 'error', {
-                description: ok ? `✅ Đã cấp **${qty}× ${item ? item.name : itemId}** cho <@${target.id}>.` : '❌ Thất bại (item không tồn tại?).'
+                description: ok
+                    ? t(locale, 'commands.eco-admin.giveitem_success', { qty, name: localizedItemName, user: target.id })
+                    : t(locale, 'commands.eco-admin.giveitem_fail')
             });
             return interaction.editReply({ embeds: [embed] });
         }
@@ -172,27 +193,30 @@ module.exports = {
             const job = await db.getJob(jobId);
             if (!job) {
                 const embed = buildWaguriEmbed(interaction, 'error', {
-                    description: '❌ Không tìm thấy công việc này.'
+                    description: t(locale, 'commands.eco-admin.setjob_not_found')
                 });
                 return interaction.editReply({ embeds: [embed] });
             }
             const ok = await db.setUserJob(target.id, jobId);
+            const localizedJobName = t(locale, `jobs.names.${jobId}`) || job.name;
             const embed = buildWaguriEmbed(interaction, ok ? 'success' : 'error', {
-                description: ok ? `✅ Đã bổ nhiệm <@${target.id}> làm **${job.name}**.` : '❌ Thất bại.'
+                description: ok
+                    ? t(locale, 'commands.eco-admin.setjob_success', { user: target.id, name: localizedJobName })
+                    : t(locale, 'commands.eco-admin.setjob_fail')
             });
             return interaction.editReply({ embeds: [embed] });
         }
         if (sub === 'ban') {
             const ok = await setBan(target.id, true);
             const embed = buildWaguriEmbed(interaction, ok ? 'success' : 'error', {
-                description: ok ? `🚫 Đã chặn <@${target.id}> dùng bot.` : '❌ Thất bại.'
+                description: ok ? t(locale, 'commands.eco-admin.ban_success', { user: target.id }) : t(locale, 'commands.eco-admin.ban_fail')
             });
             return interaction.editReply({ embeds: [embed] });
         }
         if (sub === 'unban') {
             const ok = await setBan(target.id, false);
             const embed = buildWaguriEmbed(interaction, ok ? 'success' : 'error', {
-                description: ok ? `✅ Đã bỏ chặn <@${target.id}>.` : '❌ Thất bại.'
+                description: ok ? t(locale, 'commands.eco-admin.unban_success', { user: target.id }) : t(locale, 'commands.eco-admin.unban_fail')
             });
             return interaction.editReply({ embeds: [embed] });
         }
@@ -201,18 +225,17 @@ module.exports = {
             const until = await db.grantPremium(target.id, days);
             const embed = buildWaguriEmbed(interaction, until ? 'success' : 'error', {
                 description: until
-                    ? `✅ Đã cấp **Premium ${days} ngày** cho <@${target.id}> — hết hạn <t:${Math.floor(new Date(until).getTime() / 1000)}:R>.`
-                    : '❌ Thất bại.'
+                    ? t(locale, 'commands.eco-admin.premium_success', { days, user: target.id, time: Math.floor(new Date(until).getTime() / 1000) })
+                    : t(locale, 'commands.eco-admin.premium_fail')
             });
             return interaction.editReply({ embeds: [embed] });
         }
         if (sub === 'resetuser') {
-            // Hành động hủy diệt -> bắt buộc xác nhận để tránh gõ nhầm
             const confirmRow = new ActionRowBuilder().addComponents(
-                new ButtonBuilder().setCustomId('reset_yes').setLabel('Xóa sạch').setStyle(ButtonStyle.Danger),
-                new ButtonBuilder().setCustomId('reset_no').setLabel('Hủy').setStyle(ButtonStyle.Secondary));
+                new ButtonBuilder().setCustomId('reset_yes').setLabel(t(locale, 'commands.eco-admin.btn_reset_yes')).setStyle(ButtonStyle.Danger),
+                new ButtonBuilder().setCustomId('reset_no').setLabel(t(locale, 'commands.eco-admin.btn_reset_no')).setStyle(ButtonStyle.Secondary));
             const warn = buildWaguriEmbed(interaction, 'warning', {
-                description: `⚠️ Sắp **XÓA SẠCH** toàn bộ dữ liệu của <@${target.id}> — không thể hoàn tác. Xác nhận? (20s)`
+                description: t(locale, 'commands.eco-admin.reset_warn', { user: target.id })
             });
             const msg = await interaction.editReply({ embeds: [warn], components: [confirmRow] });
             try {
@@ -221,14 +244,14 @@ module.exports = {
                     filter: i => i.user.id === interaction.user.id,
                 });
                 if (btn.customId === 'reset_no') {
-                    return btn.update({ embeds: [buildWaguriEmbed(interaction, 'info', { description: 'Đã hủy, không xóa gì cả~ 🌸' })], components: [] });
+                    return btn.update({ embeds: [buildWaguriEmbed(interaction, 'info', { description: t(locale, 'commands.eco-admin.reset_cancel') })], components: [] });
                 }
                 const ok = await db.resetUser(target.id);
                 return btn.update({ embeds: [buildWaguriEmbed(interaction, ok ? 'success' : 'error', {
-                    description: ok ? `✅ Đã reset toàn bộ dữ liệu của <@${target.id}>.` : '❌ Thất bại.'
+                    description: ok ? t(locale, 'commands.eco-admin.reset_success', { user: target.id }) : t(locale, 'commands.eco-admin.reset_fail')
                 })], components: [] });
             } catch {
-                return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'info', { description: 'Hết giờ xác nhận, không xóa gì cả~ 🌸' })], components: [] }).catch(() => {});
+                return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'info', { description: t(locale, 'commands.eco-admin.reset_timeout') })], components: [] }).catch(() => {});
             }
         }
     },

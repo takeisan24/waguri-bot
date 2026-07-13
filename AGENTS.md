@@ -76,7 +76,7 @@ Waguri là **Discord economy/RPG bot bản địa hóa văn hóa Việt**. Bot N
 
 ## 4. TRẠNG THÁI HIỆN TẠI (cập nhật 2026-07-11 — sửa khi đổi lớn)
 
-- **Release:** GitHub tag mới nhất `v2.1.0` ("Đợt 2: Tối ưu DX, Chống Clone & Khử Treo Game"). `package.json` = `2.1.0`.
+- **Release:** GitHub tag mới nhất `v2.2.0` ("Đợt 3: Bản địa hóa toàn diện & Bảo mật Admin"). `package.json` = `2.2.0`.
 - **Hardening Đa ngôn ngữ (i18n) — ĐÃ HOÀN THÀNH 100% end-to-end:**
   - **Discord Bot:** Bản dịch song ngữ Anh & Việt đã phủ 100% tất cả các nhóm lệnh (bao gồm Economy, Games, Fun, Utility, Admin), hỗ trợ đầy đủ localization cho slash command definitions, choices và autocomplete.
   - **Web Next.js:** Dịch toàn bộ trang Landing, cá nhân, Sổ sứ mệnh, Premium, Leaderboard, `/u/[id]`, lỗi. Trang Wiki được tách song ngữ tĩnh, đổi tên hiển thị tiếng Việt thành "Cẩm nang". Các components được hoàn thiện i18n 100%.

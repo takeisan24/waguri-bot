@@ -455,7 +455,44 @@ const SUBCOMMAND_DESCRIPTIONS = {
     "clan.kick": { vi: "Đuổi thành viên (chỉ trưởng bang)", en: "Kick a member from clan (leader only)" },
     "clan.disband": { vi: "Giải tán bang (chỉ trưởng bang)", en: "Disband the clan (leader only)" },
     "clan.war": { vi: "Khai chiến với bang khác (chỉ trưởng bang)", en: "Declare war on another clan (leader only)" },
-    "clan.shrine": { vi: "Xây dựng và nâng cấp Đền thờ bang hội để nhận buff EXP 🏛️", en: "Build and upgrade Clan Shrine for EXP buffs 🏛️" }
+    "clan.shrine": { vi: "Xây dựng và nâng cấp Đền thờ bang hội để nhận buff EXP 🏛️", en: "Build and upgrade Clan Shrine for EXP buffs 🏛️" },
+
+    // bank
+    "bank.balance": { vi: "Xem số dư ví, ngân hàng và cấp độ", en: "View wallet, bank balance, and level" },
+    "bank.gui": { vi: "Gửi tiền từ ví vào ngân hàng", en: "Deposit money from wallet to bank" },
+    "bank.rut": { vi: "Rút tiền từ ngân hàng về ví", en: "Withdraw money from bank to wallet" },
+
+    // henho
+    "henho.view": { vi: "Xem trạng thái tình cảm của cậu với Waguri", en: "View affection status with Waguri" },
+    "henho.di-choi": { vi: "Dắt Waguri đi dạo ngắm cảnh Kikyo (Tốn 20 năng lượng)", en: "Take Waguri out for a walk in Kikyo (Costs 20 energy)" },
+    "henho.tang-qua": { vi: "Tặng quà trong túi đồ để tăng độ thiện cảm", en: "Gift items from inventory to increase affection" },
+
+    // jobs
+    "jobs.list": { vi: "Xem tất cả các nghề nghiệp", en: "List all available jobs" },
+    "jobs.info": { vi: "Xem chi tiết một nghề nghiệp", en: "View detailed information about a job" },
+    "jobs.apply": { vi: "Nộp đơn xin việc", en: "Apply for a job" },
+    "jobs.quit": { vi: "Xin nghỉ việc hiện tại", en: "Resign from current job" },
+
+    // craft
+    "craft.list": { vi: "Xem công thức chế tạo", en: "View crafting recipes" },
+    "craft.make": { vi: "Chế tạo một món đồ", en: "Craft an item" },
+
+    // eco-admin
+    "eco-admin.addmoney": { vi: "Cộng/trừ tiền của người chơi", en: "Add/subtract money of a player" },
+    "eco-admin.setmoney": { vi: "Đặt cứng số dư của người chơi", en: "Set balance of a player" },
+    "eco-admin.setenergy": { vi: "Đặt năng lượng của người chơi", en: "Set energy of a player" },
+    "eco-admin.setexp": { vi: "Đặt EXP của người chơi", en: "Set EXP of a player" },
+    "eco-admin.giveitem": { vi: "Cấp vật phẩm miễn phí cho người chơi", en: "Give free items to a player" },
+    "eco-admin.setjob": { vi: "Bổ nhiệm công việc cho người chơi", en: "Set job of a player" },
+    "eco-admin.premium": { vi: "Cấp/gia hạn Premium cho người chơi", en: "Grant/extend Premium for a player" },
+    "eco-admin.ban": { vi: "Chặn user dùng bot", en: "Ban a user from using the bot" },
+    "eco-admin.unban": { vi: "Bỏ chặn user", en: "Unban a user" },
+    "eco-admin.resetuser": { vi: "Xóa sạch dữ liệu một người chơi", en: "Wipe all data of a player" },
+    "eco-admin.report": { vi: "📊 Báo cáo telemetry kinh tế (cung tiền, phân bố, xu hướng)", en: "📊 View economic telemetry report (money supply, distribution, trends)" },
+
+    // premium-admin
+    "premium-admin.cho": { vi: "Xem các đơn Premium đang chờ duyệt", en: "View pending Premium orders" },
+    "premium-admin.duyet": { vi: "Xác nhận đã nhận tiền & kích hoạt 1 đơn", en: "Approve a Premium order & activate benefits" }
 };
 
 const OPTION_DESCRIPTIONS = {
@@ -483,7 +520,46 @@ const OPTION_DESCRIPTIONS = {
     "text": { vi: "Nội dung văn bản/danh hiệu", en: "Text content/title" },
     "id": { vi: "ID hoặc mã định danh", en: "ID or unique identifier" },
     "species": { vi: "Loài thú cưng", en: "Pet species" },
-    "resource": { vi: "Tên tài nguyên", en: "Resource name" }
+    "resource": { vi: "Tên tài nguyên", en: "Resource name" },
+
+    // Specific option translations using parentName.optionName
+    "bank.balance.target": { vi: "Người muốn xem (mặc định: bạn)", en: "Player to view (default: yourself)" },
+    "bank.gui.amount": { vi: "Số tiền hoặc \"all\"", en: "Amount of money or \"all\"" },
+    "bank.rut.amount": { vi: "Số tiền hoặc \"all\"", en: "Amount of money or \"all\"" },
+    "henho.tang-qua.item": { vi: "Chọn quà muốn tặng", en: "Choose gift item" },
+    "jobs.info.job": { vi: "Mã nghề cần xem", en: "Job ID to view" },
+    "jobs.apply.job": { vi: "Mã nghề muốn ứng tuyển", en: "Job ID to apply" },
+    "craft.make.item": { vi: "Vật phẩm muốn chế tạo", en: "Item ID to craft" },
+    "craft.make.qty": { vi: "Số lượng chế tạo", en: "Quantity to craft" },
+    "premium-admin.duyet.ma": { vi: "Mã đơn (nội dung CK, vd WAGURI...)", en: "Order code (e.g. WAGURI...)" },
+    "getinvite.server": { vi: "Server cần lấy link mời (bỏ trống = hiện tại)", en: "Server to invite (empty = current server)" },
+    "eco-admin.addmoney.field": { vi: "Ví hay ngân hàng", en: "Wallet or bank" },
+    "eco-admin.setmoney.field": { vi: "Ví hay ngân hàng", en: "Wallet or bank" },
+    "eco-admin.addmoney.user": { vi: "Người nhận", en: "Recipient player" },
+    "eco-admin.setmoney.user": { vi: "Người chơi", en: "Player" },
+    "eco-admin.setenergy.user": { vi: "Người chơi", en: "Player" },
+    "eco-admin.setexp.user": { vi: "Người chơi", en: "Player" },
+    "eco-admin.giveitem.user": { vi: "Người nhận", en: "Recipient player" },
+    "eco-admin.setjob.user": { vi: "Người chơi", en: "Player" },
+    "eco-admin.premium.user": { vi: "Người chơi", en: "Player" },
+    "eco-admin.ban.user": { vi: "Người chơi", en: "Player" },
+    "eco-admin.unban.user": { vi: "Người chơi", en: "Player" },
+    "eco-admin.resetuser.user": { vi: "Người chơi", en: "Player" },
+    "eco-admin.addmoney.amount": { vi: "Số tiền (âm để trừ)", en: "Amount of money (negative to subtract)" },
+    "eco-admin.setmoney.amount": { vi: "Số tiền", en: "Amount of money" },
+    "eco-admin.setenergy.value": { vi: "Giá trị năng lượng", en: "Energy value" },
+    "eco-admin.setexp.value": { vi: "Giá trị kinh nghiệm", en: "EXP value" },
+    "eco-admin.giveitem.item": { vi: "Vật phẩm cấp phát", en: "Item ID" },
+    "eco-admin.giveitem.qty": { vi: "Số lượng cấp phát (mặc định 1)", en: "Quantity to give (default 1)" },
+    "eco-admin.setjob.job": { vi: "Mã nghề bổ nhiệm", en: "Job ID to set" },
+    "eco-admin.premium.days": { vi: "Số ngày cấp", en: "Number of days" },
+
+    // Generic fallbacks
+    "server": { vi: "Server cần chọn", en: "Target server" },
+    "ma": { vi: "Mã giao dịch/đơn", en: "Transaction/order code" },
+    "qty": { vi: "Số lượng", en: "Quantity" },
+    "job": { vi: "Nghề nghiệp", en: "Job" },
+    "days": { vi: "Số ngày", en: "Number of days" }
 };
 
 const CHOICE_LOCALIZATIONS = {
@@ -512,7 +588,9 @@ const CHOICE_LOCALIZATIONS = {
     "waifu": { vi: "Waifu anime 🌸", en: "Waifu anime 🌸" },
     // config lang
     "vi": { vi: "Tiếng Việt 🇻🇳", en: "Vietnamese 🇻🇳" },
-    "en": { vi: "Tiếng Anh 🇬🇧", en: "English 🇬🇧" }
+    "en": { vi: "Tiếng Anh 🇬🇧", en: "English 🇬🇧" },
+    "wallet": { vi: "Ví", en: "Wallet" },
+    "bank": { vi: "Ngân hàng", en: "Bank" }
 };
 
 /**
@@ -587,7 +665,8 @@ function localizeOption(parentName, opt) {
     } 
     // B. Nếu là Regular Option (type 3-11)
     else {
-        const optDesc = OPTION_DESCRIPTIONS[opt.name];
+        const specificKey = `${parentName}.${opt.name}`;
+        const optDesc = OPTION_DESCRIPTIONS[specificKey] || OPTION_DESCRIPTIONS[opt.name];
         if (optDesc) {
             opt.description = optDesc.vi;
             opt.description_localizations = {

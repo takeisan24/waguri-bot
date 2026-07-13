@@ -84,7 +84,8 @@ export default function BattlePassClient({
           giftMsg += t("pass.claimed_coins", { count: numFmt(res.coins) });
         }
         if (res.title) {
-          giftMsg += t("pass.claimed_title", { title: res.title });
+          const displayTitle = t("titles." + res.title) || res.title;
+          giftMsg += t("pass.claimed_title", { title: displayTitle });
         }
         if (res.items && Object.keys(res.items).length > 0) {
           giftMsg += t("pass.claimed_items_header");
@@ -115,7 +116,8 @@ export default function BattlePassClient({
       }
     }
     if (reward.title) {
-      parts.push(t("pass.exclusive_title", { title: reward.title }));
+      const displayTitle = t("titles." + reward.title) || reward.title;
+      parts.push(t("pass.exclusive_title", { title: displayTitle }));
     }
     return parts.join(" & ");
   };

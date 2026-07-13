@@ -7,17 +7,21 @@ import { createAdminClient } from "../../../lib/supabase/admin";
 import { getDiscordIdentity } from "../../../lib/discord";
 import { getCurrentSeasonId } from "../../../lib/game";
 import * as rewardsConfig from "../../../data/battlepass_rewards";
+import { getLocaleServer } from "../../../lib/i18n";
 
 // Server Action: Mua Sổ Sứ Mệnh Premium
 export async function buyPremiumPassAction() {
   const supabase = await createClient();
+  const locale = await getLocaleServer();
+  const isEn = locale.startsWith("en");
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { success: false, error: "Chưa đăng nhập!" };
+  if (!user) return { success: false, error: isEn ? "Not logged in!" : "Chưa đăng nhập!" };
 
   const { id } = getDiscordIdentity(user);
-  if (!id) return { success: false, error: "Lỗi danh tính Discord!" };
+  if (!id) return { success: false, error: isEn ? "Discord identity error!" : "Lỗi danh tính Discord!" };
 
   const seasonId = getCurrentSeasonId();
   const admin = createAdminClient();
@@ -30,7 +34,7 @@ export async function buyPremiumPassAction() {
 
   if (error) {
     console.error("[BUY PASS ACTION ERROR]", error);
-    return { success: false, error: "Lỗi kết nối cơ sở dữ liệu!" };
+    return { success: false, error: isEn ? "Database connection error!" : "Lỗi kết nối cơ sở dữ liệu!" };
   }
 
   if (res === "ok") {
@@ -39,25 +43,32 @@ export async function buyPremiumPassAction() {
     return { success: true };
   }
 
-  const errMap: { [key: string]: string } = {
+  const errMap: { [key: string]: string } = isEn ? {
+    insufficient_funds: "You don't have enough coins in your wallet to buy the Premium Pass!",
+    already_premium: "You already own the Premium Pass for this season!",
+    user_not_found: "Player account not found!",
+  } : {
     insufficient_funds: "Cậu không đủ xu ảo trong ví để mua Premium Pass rồi!",
     already_premium: "Cậu đã sở hữu Premium Pass của mùa giải này rồi!",
     user_not_found: "Không tìm thấy tài khoản người chơi!",
   };
 
-  return { success: false, error: errMap[res as string] || `Lỗi không xác định: ${res}` };
+  return { success: false, error: errMap[res as string] || (isEn ? `Unknown error: ${res}` : `Lỗi không xác định: ${res}`) };
 }
 
 // Server Action: Nhận toàn bộ quà hợp lệ (claimAll)
 export async function claimPassRewardsAction() {
   const supabase = await createClient();
+  const locale = await getLocaleServer();
+  const isEn = locale.startsWith("en");
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { success: false, error: "Chưa đăng nhập!" };
+  if (!user) return { success: false, error: isEn ? "Not logged in!" : "Chưa đăng nhập!" };
 
   const { id } = getDiscordIdentity(user);
-  if (!id) return { success: false, error: "Lỗi danh tính Discord!" };
+  if (!id) return { success: false, error: isEn ? "Discord identity error!" : "Lỗi danh tính Discord!" };
 
   const seasonId = getCurrentSeasonId();
   const admin = createAdminClient();
@@ -72,14 +83,14 @@ export async function claimPassRewardsAction() {
 
   if (fetchErr) {
     console.error("[CLAIM PASS ACTION ERROR]", fetchErr);
-    return { success: false, error: "Lỗi kết nối cơ sở dữ liệu!" };
+    return { success: false, error: isEn ? "Database connection error!" : "Lỗi kết nối cơ sở dữ liệu!" };
   }
 
   // Nếu chưa có tiến trình, mặc định Level 0
   const bpXp = bp?.xp ?? 0;
   const currentLvl = Math.floor(bpXp / rewardsConfig.XP_PER_LEVEL);
   if (currentLvl === 0) {
-    return { success: false, error: "Cấp độ Sổ Sứ Mệnh của cậu quá thấp (chưa đạt cấp 1) để nhận quà!" };
+    return { success: false, error: isEn ? "Your Lunar Pass level is too low (below level 1) to claim rewards!" : "Cấp độ Sổ Sứ Mệnh của cậu quá thấp (chưa đạt cấp 1) để nhận quà!" };
   }
 
   const freeClaimed = new Set((bp?.claimed_free as number[]) || []);
@@ -123,7 +134,7 @@ export async function claimPassRewardsAction() {
   }
 
   if (freeToClaim.length === 0 && premiumToClaim.length === 0) {
-    return { success: false, error: "Cậu đã nhận hết phần thưởng khả dụng ở cấp độ hiện tại rồi!" };
+    return { success: false, error: isEn ? "You have already claimed all available rewards for your current level!" : "Cậu đã nhận hết phần thưởng khả dụng ở cấp độ hiện tại rồi!" };
   }
 
   const itemsArray = Object.entries(itemsToGive).map(([id, qty]) => ({ id, qty }));
@@ -142,7 +153,7 @@ export async function claimPassRewardsAction() {
 
   if (claimErr) {
     console.error("[CLAIM PASS ACTION RPC ERROR]", claimErr);
-    return { success: false, error: "Lỗi thực thi nhận quà trên cơ sở dữ liệu!" };
+    return { success: false, error: isEn ? "Failed to execute reward claim in the database!" : "Lỗi thực thi nhận quà trên cơ sở dữ liệu!" };
   }
 
   if (res === "ok") {
@@ -158,12 +169,17 @@ export async function claimPassRewardsAction() {
     };
   }
 
-  const errMap: { [key: string]: string } = {
+  const errMap: { [key: string]: string } = isEn ? {
+    pass_not_found: "Lunar Pass info not found!",
+    level_locked: "Claim level exceeds your current Lunar Pass level!",
+    already_claimed: "One of the selected milestones has already been claimed!",
+    premium_locked: "You requested Premium rewards but haven't unlocked the Premium Pass!",
+  } : {
     pass_not_found: "Không tìm thấy thông tin Sổ Sứ Mệnh!",
     level_locked: "Yêu cầu cấp độ quà vượt quá cấp độ Sổ Sứ Mệnh hiện có!",
     already_claimed: "Một trong các mốc phần thưởng đã được nhận từ trước rồi!",
     premium_locked: "Yêu cầu nhận quà nhánh Premium nhưng cậu chưa mở khóa Premium!",
   };
 
-  return { success: false, error: errMap[res as string] || `Lỗi không xác định: ${res}` };
+  return { success: false, error: errMap[res as string] || (isEn ? `Unknown error: ${res}` : `Lỗi không xác định: ${res}`) };
 }

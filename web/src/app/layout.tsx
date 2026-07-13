@@ -17,29 +17,43 @@ const baloo = Baloo_2({
   display: "swap",
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL("https://waguri-bot.vercel.app"),
-  title: "Waguri 🌸 - AI Waifu & Game Kinh Tế RPG Việt Nam",
-  description: "Trò chuyện AI waifu cùng Waguri Kaoruko, trải nghiệm game kinh tế nhập vai thuần Việt (đi làm, mở nghề, minigame may rủi, lì xì, bang hội...) ngay trên server Discord của bạn!",
-  keywords: ["Waguri", "Discord Bot", "Economy Bot", "RPG Bot", "AI Waifu", "Game Discord tiếng Việt", "Trò chuyện AI"],
-  authors: [{ name: "takei" }],
-  alternates: { canonical: "/" },
-  appleWebApp: { capable: true, title: "Waguri", statusBarStyle: "black-translucent" },
-  // og:image / twitter:image lấy tự động từ app/opengraph-image.tsx & twitter-image.tsx
-  openGraph: {
-    title: "Waguri 🌸 - AI Waifu & Game Kinh Tế RPG Việt Nam",
-    description: "Trò chuyện AI waifu cùng Waguri Kaoruko, trải nghiệm game kinh tế nhập vai thuần Việt ngay trên Discord!",
-    url: "https://waguri-bot.vercel.app",
-    siteName: "Waguri Bot",
-    locale: "vi_VN",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Waguri 🌸 - AI Waifu & Game Kinh Tế RPG Việt Nam",
-    description: "Trò chuyện AI waifu cùng Waguri Kaoruko, trải nghiệm game kinh tế nhập vai thuần Việt ngay trên Discord!",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocaleServer();
+  const isEn = locale.startsWith('en');
+
+  const title = isEn 
+    ? "Waguri 🌸 - AI Waifu & RPG Economy Discord Bot" 
+    : "Waguri 🌸 - AI Waifu & Game Kinh Tế RPG Việt Nam";
+  const description = isEn
+    ? "Chat with AI waifu Waguri Kaoruko, experience a Vietnamese-themed RPG economy game (work, professions, casual/gambling games, guild...) right on your Discord server!"
+    : "Trò chuyện AI waifu cùng Waguri Kaoruko, trải nghiệm game kinh tế nhập vai thuần Việt (đi làm, mở nghề, minigame may rủi, lì xì, bang hội...) ngay trên server Discord của bạn!";
+  const keywords = isEn
+    ? ["Waguri", "Discord Bot", "Economy Bot", "RPG Bot", "AI Waifu", "Vietnamese Discord Game", "AI Chat"]
+    : ["Waguri", "Discord Bot", "Economy Bot", "RPG Bot", "AI Waifu", "Game Discord tiếng Việt", "Trò chuyện AI"];
+
+  return {
+    metadataBase: new URL("https://waguri-bot.vercel.app"),
+    title,
+    description,
+    keywords,
+    authors: [{ name: "takei" }],
+    alternates: { canonical: "/" },
+    appleWebApp: { capable: true, title: "Waguri", statusBarStyle: "black-translucent" },
+    openGraph: {
+      title,
+      description,
+      url: "https://waguri-bot.vercel.app",
+      siteName: "Waguri Bot",
+      locale: isEn ? "en_US" : "vi_VN",
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
+  };
+}
 
 export const viewport = {
   themeColor: "#ffb7c5",

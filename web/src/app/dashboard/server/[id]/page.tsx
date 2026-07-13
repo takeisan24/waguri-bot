@@ -4,32 +4,47 @@ import { redirect } from "next/navigation";
 import { createClient } from "../../../../lib/supabase/server";
 import { createAdminClient } from "../../../../lib/supabase/admin";
 import { setGuildFlag } from "./actions";
+import { getLocaleServer, t } from "../../../../lib/i18n";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Cấu hình server — Waguri 🌸", robots: { index: false } };
+
+export async function generateMetadata() {
+  const locale = await getLocaleServer();
+  return {
+    title: `${t("server_config.page_title", locale)}`,
+    robots: { index: false },
+  };
+}
 
 function Toggle({
   label,
   desc,
   on,
   action,
+  locale,
 }: {
   label: string;
   desc: string;
   on: boolean;
   action: () => Promise<void>;
+  locale: string;
 }) {
   return (
     <div className="flex items-center justify-between gap-4 border-t border-slate-800 pt-4 first:border-0 first:pt-0">
       <div>
         <p className="text-sm font-semibold text-white">
-          {label} {on ? <span className="text-emerald-400">🟢 Bật</span> : <span className="text-rose-400">🔴 Tắt</span>}
+          {label}{" "}
+          {on ? (
+            <span className="text-emerald-400">{t("server_config.toggle_on", locale)}</span>
+          ) : (
+            <span className="text-rose-400">{t("server_config.toggle_off", locale)}</span>
+          )}
         </p>
         <p className="text-xs text-slate-400">{desc}</p>
       </div>
       <form action={action}>
         <button className="px-4 py-2 rounded-full text-xs font-bold border border-pink-300/30 text-pink-200 hover:border-pink-300/60 transition-all whitespace-nowrap">
-          {on ? "Tắt đi" : "Bật lên"}
+          {on ? t("server_config.btn_off", locale) : t("server_config.btn_on", locale)}
         </button>
       </form>
     </div>
@@ -38,6 +53,7 @@ function Toggle({
 
 export default async function ServerConfig({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const locale = await getLocaleServer();
   const supabase = await createClient();
   const {
     data: { user },
@@ -46,7 +62,7 @@ export default async function ServerConfig({ params }: { params: Promise<{ id: s
 
   const guilds = (user.user_metadata?.guilds as { id: string; name: string; manage?: boolean }[] | undefined) ?? [];
   const guild = guilds.find((g) => g.id === id);
-  if (!guild || !guild.manage) redirect("/dashboard"); // không có quyền Quản lý Server
+  if (!guild || !guild.manage) redirect("/dashboard");
 
   const admin = createAdminClient();
   const { data } = await admin.from("guild_settings").select("settings").eq("guild_id", id).single();
@@ -69,42 +85,46 @@ export default async function ServerConfig({ params }: { params: Promise<{ id: s
 
       <main className="flex-1 w-full max-w-3xl mx-auto px-6 py-6 space-y-6">
         <div>
-          <h1 className="text-2xl font-black text-white">⚙️ Cấu hình server</h1>
+          <h1 className="text-2xl font-black text-white">{t("server_config.header_title", locale)}</h1>
           <p className="text-pink-300 text-sm mt-1">🏰 {guild.name}</p>
           <p className="text-xs text-slate-500 mt-1">
-            Đổi ở đây sẽ áp dụng NGAY cho bot (và đồng bộ với lệnh <code>/config</code> trong Discord).
+            {t("server_config.subtitle", locale)}
           </p>
         </div>
 
         <div className="glass-panel rounded-3xl p-6 space-y-4 border border-pink-300/10">
           <Toggle
-            label="Trò chuyện AI (@tag Waguri)"
-            desc="Cho phép thành viên trò chuyện với Waguri bằng AI khi tag bot."
+            label={t("server_config.ai_label", locale)}
+            desc={t("server_config.ai_desc", locale)}
             on={aiOn}
             action={setGuildFlag.bind(null, id, "ai_enabled", aiOn ? "0" : "1")}
+            locale={locale}
           />
           <Toggle
-            label="PvP (cướp /rob + trộm heo/cây)"
-            desc="Cho phép người chơi cướp tiền & trộm nông sản của nhau."
+            label={t("server_config.pvp_label", locale)}
+            desc={t("server_config.pvp_desc", locale)}
             on={pvpOn}
             action={setGuildFlag.bind(null, id, "pvp", pvpOn ? "0" : "1")}
+            locale={locale}
           />
           <Toggle
-            label="Trò may rủi (bài cào, tài xỉu, xóc đĩa…)"
-            desc="Cho phép thành viên chơi các trò đặt cược. Tắt = mọi lệnh chơi bị từ chối nhẹ nhàng."
+            label={t("server_config.gamble_label", locale)}
+            desc={t("server_config.gamble_desc", locale)}
             on={gambleOn}
             action={setGuildFlag.bind(null, id, "gambling", gambleOn ? "0" : "1")}
+            locale={locale}
           />
           <Toggle
-            label="Tạm giam (Discord timeout) khi vi phạm"
-            desc="Khi công an kiểm tra trò may rủi: bật = tạm giam (timeout); tắt = chỉ phạt tiền."
+            label={t("server_config.jail_label", locale)}
+            desc={t("server_config.jail_desc", locale)}
             on={jailOn}
             action={setGuildFlag.bind(null, id, "police_jail", jailOn ? "0" : "1")}
+            locale={locale}
           />
         </div>
 
         <p className="text-xs text-slate-500">
-          💡 Đặt kênh AI / kênh confession bằng lệnh <code>/config</code> trong Discord (có bộ chọn kênh tiện hơn).
+          {t("server_config.tip", locale)}
         </p>
       </main>
     </div>

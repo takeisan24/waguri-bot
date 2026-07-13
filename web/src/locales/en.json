@@ -357,5 +357,41 @@
     "desc": "Oops, the page you are looking for does not exist~ How about going back to the home page to play with Waguri?",
     "back_home": "Back to Home 🌸",
     "view_commands": "View Commands"
+  },
+  "server_config": {
+    "page_title": "Server Settings — Waguri 🌸",
+    "header_title": "⚙️ Server Settings",
+    "subtitle": "Changes made here apply INSTANTLY to the bot (and sync with /config command in Discord).",
+    "toggle_on": "🟢 Enabled",
+    "toggle_off": "🔴 Disabled",
+    "btn_on": "Enable",
+    "btn_off": "Disable",
+    "ai_label": "AI Chatting (@tag Waguri)",
+    "ai_desc": "Allow members to chat with Waguri using AI when tagging the bot.",
+    "pvp_label": "PvP (robbing /rob + stealing farm crops)",
+    "pvp_desc": "Allow players to rob coins & steal agricultural products from each other.",
+    "gamble_label": "Casual & Gambling Games (loto, dice, blackjack…)",
+    "gamble_desc": "Allow members to play betting games. Disabling this politely rejects all game commands.",
+    "jail_label": "Jail (Discord timeout) on violations",
+    "jail_desc": "When police patrols inspect gambling: Enabled = timeout user; Disabled = fine only.",
+    "tip": "💡 Configure AI channel / confession channel using /config command in Discord (which has a convenient channel picker)."
+  },
+  "premium_pay": {
+    "premium_pay": "Premium Payment 💎",
+    "back_packages": "← Back to Packages",
+    "success_title": "Payment Successful!",
+    "success_desc": "Premium activated 💎 +{months} months. Waguri thanks you so much~ 🌸",
+    "back_dashboard": "Back to Dashboard →",
+    "gateway_unconfigured": "⚠️ Payment gateway is not configured (missing recipient account). Please contact the bot owner!",
+    "scan_title": "Scan QR Code to Pay",
+    "package_info": "{months}-month Plan · {amount} VND",
+    "bank_label": "Bank",
+    "account_label": "Account Number",
+    "holder_label": "Account Holder",
+    "amount_label": "Amount",
+    "msg_label": "Transfer Message",
+    "warning_msg": "⚠️ You MUST keep the exact message {code} for reference. Once transferred, click the button below to notify me!",
+    "claimed_status": "✅ Transfer notified! I will verify & activate Premium shortly (usually within a few minutes). This page will auto-update when done 💕",
+    "transferred_btn": "✅ I have transferred the money"
   }
 }

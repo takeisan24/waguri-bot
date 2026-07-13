@@ -2,18 +2,21 @@ const { SlashCommandBuilder } = require('discord.js');
 const db = require('../../database.js');
 const config = require('../../config');
 const { buildWaguriEmbed } = require('../../lib/embed');
+const { getInteractionLanguage, t } = require('../../lib/i18n');
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('nghingoi')
-        .setDescription('Đi ngủ một giấc để hồi đầy năng lượng 😴 (gõ được cả w!ngu)'),
+        .setDescription('Đi ngủ một giấc để hồi đầy năng lượng 😴'),
     async execute(interaction) {
         await interaction.deferReply();
+        const locale = await getInteractionLanguage(interaction);
+
         const cd = await db.claimCooldown(interaction.user.id, 'sleep', config.SLEEP_COOLDOWN_SECONDS);
         if (cd) {
             const embed = buildWaguriEmbed(interaction, 'warning', {
-                title: '😴 Giấc ngủ trưa',
-                description: `Cậu vừa ngủ dậy mà~ 😴 Ngủ tiếp được sau <t:${Math.floor(cd / 1000)}:R> nhé.`
+                title: t(locale, 'commands.nghingoi.cooldown_title'),
+                description: t(locale, 'commands.nghingoi.cooldown_desc', { time: Math.floor(cd / 1000) })
             });
             return interaction.editReply({ embeds: [embed] });
         }
@@ -22,8 +25,8 @@ module.exports = {
         await db.addHealth(interaction.user.id, 100);
 
         const embed = buildWaguriEmbed(interaction, 'success', {
-            title: '😴 Ngủ một giấc thật ngon',
-            description: `Cậu đã nghỉ ngơi, hồi đầy **${config.ENERGY.MAX}** ⚡ năng lượng, phục hồi **100 ❤️ sức khỏe** và **hết mệt mỏi** hẳn! Sẵn sàng làm việc cùng tớ tiếp nào~ 🌸`
+            title: t(locale, 'commands.nghingoi.success_title'),
+            description: t(locale, 'commands.nghingoi.success_desc', { energy: config.ENERGY.MAX })
         });
         await interaction.editReply({ embeds: [embed] });
     },

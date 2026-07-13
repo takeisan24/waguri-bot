@@ -455,30 +455,20 @@
       "status_growing": "🌱 **{name}** is growing — watered **{count}/3**. Continue using `tuoinuoc` (every 3 hours) or `bonphan` (200) to speed it up."
     },
     "album": {
-      "title": "📖 Collection Album of {user}",
-      "main_desc": "📖 **Collection Album of {user}**\nOverall progress: **{current}/{total}** items discovered (**{pct}%**)",
-      "rarity_stats_title": "Statistics by Rarity:",
-      "footer_self": "Click the buttons below to claim rewards when you complete a set!",
-      "footer_other": "Viewing someone else's album",
-      "sets_title": "🎨 Special Collections — {user}",
-      "status_lock": "🔒 Incomplete",
-      "status_claimed": "✅ Claimed",
-      "status_ready": "🎁 Ready to claim!",
-      "item_unlocked": " 🏅 **{name}** ({emoji} {rarity})",
-      "item_locked": " 🔒 *{name}* (not discovered)",
-      "set_status": "Status",
-      "set_reward": "Reward",
-      "set_title_label": "Title",
-      "required_items": "Required items",
-      "btn_claimed_set": "Claimed {emoji}",
-      "btn_ready_set": "Claim {emoji}",
-      "btn_incomplete_set": "Incomplete {emoji}",
-      "btn_stats": "Statistics",
-      "btn_sets": "Collections",
-      "congrats": "🎉 Congratulations **{user}** for completing the **{name}** collection!\n🎁 Successfully claimed **+{reward}** coins and a new title: `{title}`! 🌟",
-      "already_claimed": "You have already claimed the reward for this collection~ 🌸",
-      "not_completed": "You haven't collected all required items yet~ Keep grinding! 💪",
-      "error": "An error occurred while claiming reward, please try again later! 😟"
+      "title": "📔 {user}'s Collector Album",
+      "prog_desc": "To claim collection rewards, type `/album nhan <collection_code>`.",
+      "col_rewards_title": "🎁 Collection Rewards",
+      "unlocked": "Unlocked",
+      "claimed": "Claimed",
+      "claim_btn": "Claim Reward",
+      "claim_fail": "Error claiming reward, please try again later~",
+      "claim_not_found": "Collection `{code}` not found~",
+      "claim_not_enough": "You haven't collected all items in `{code}` yet~ 🌸",
+      "claim_already": "You have already claimed rewards for `{code}`~ 🌸",
+      "claim_success": "🎉 You claimed rewards for `{code}`! Received **+{reward} coins** and the title **\"{title}\"** ✨!",
+      "reward_claimed": "Collection `{code}` reward claimed! 🎉",
+      "collection": "Collection",
+      "stats": "Album Stats"
     },
     "pass": {
       "status_claimed": "✅ [Claimed]",
@@ -1681,6 +1671,85 @@
       "title_book": "🧾 Your Debt Ledger",
       "book_footer": "Repay: /vay tra · Collect overdue: /vay doi",
       "err_invalid_sub": "Invalid subcommand~ Try `/vay muon`, `/vay tra`, `/vay doi`, or `/vay so`!"
+    },
+    "eco-admin": {
+      "only_owner": "This command is only for the bot owner~ 🌸",
+      "set_wallet": "Set <@{user}>'s wallet balance to **{amount}** {currency}.",
+      "set_bank": "Set <@{user}>'s bank balance to **{amount}** {currency}.",
+      "add_wallet": "Added **{amount}** {currency} to <@{user}>'s wallet.",
+      "sub_wallet": "Subtracted **{amount}** {currency} from <@{user}>'s wallet.",
+      "add_bank": "Added **{amount}** {currency} to <@{user}>'s bank.",
+      "sub_bank": "Subtracted **{amount}** {currency} from <@{user}>'s bank.",
+      "set_energy": "Set <@{user}>'s energy to **{value}** ⚡.",
+      "set_exp": "Set <@{user}>'s EXP to **{value}** (Lv.{level}).",
+      "give_item": "Granted **{qty}x {item}** to <@{user}> 🎒.",
+      "set_job": "Appointed job **{job}** to <@{user}> 💼.",
+      "ban_user": "Banned <@{user}> from using the bot 🛑.",
+      "unban_user": "Unbanned <@{user}> 🟢.",
+      "reset_user": "Wiped all data of <@{user}> and disbanded their clan if any ⚠️.",
+      "premium_active": "Granted/extended Waguri Premium for <@{user}> by **{days} days**! New expiry: {until} 💎"
+    },
+    "premium-admin": {
+      "only_owner": "This command is only for the bot owner~ 🌸",
+      "pending_title": "💎 Pending Premium Orders",
+      "pending_none": "No orders pending approval~ 🌸",
+      "pending_desc": "{lines}\n\n🔔 = buyer clicked \"already transferred\". Approve with `/premium-admin duyet`.",
+      "duyet_fail_not_found": "Order `{code}` not found~",
+      "duyet_fail_generic": "An error occurred while approving, please try again later~",
+      "duyet_already": "Order `{code}` was already activated (Premium until {time}).",
+      "dm_buyer_thanks": "🌸 Thank you for upgrading to **Waguri Premium** 💎!\nI have activated **+{months} months** for you~{until}\nType `/premium` to view your perks 💕",
+      "duyet_success_title": "✅ Approved Premium Order",
+      "duyet_success_desc": "Activated **+{months} months** for <@{user}> (order `{code}`). Premium until {time}. Notified them via DM 🌸"
+    },
+    "getinvite": {
+      "only_owner": "This command is only for the bot owner~ 🌸",
+      "fail_find": "No server found matching `{id}`~ 🌸",
+      "fail_no_text": "This server does not have any text channels to create an invite link~ 🌸",
+      "success": "Sent the invite link for server **{name}** to your DMs~ 💕",
+      "dm_success": "Here is the invite link for server **{name}**:\n{link}"
+    },
+    "serverinfo": {
+      "only_guild": "This command can only be used in a server~ 🌸",
+      "no_perm": "You need the **Manage Server** permission to use this command~ 🌸",
+      "report_title": "# 📋 Audit report for server \"{name}\"",
+      "report_by": "*Generated by /serverinfo — send this file to support staff for server optimization & polish.*",
+      "report_overview": "## 🏠 Overview",
+      "report_name": "- Name: **{name}** (ID `{id}`)",
+      "report_members": "- Members: **{count}**",
+      "report_owner": "- Server Owner: <@{ownerId}> (`{ownerId}`)",
+      "report_created": "- Created at: {date}",
+      "report_locale": "- Language: {locale} · Verification: {verif}",
+      "report_boost": "- Boost: Tier {tier} ({count} boosts)",
+      "report_emojis": "- Emojis: {emojis} · Stickers: {stickers} · Roles: {roles}",
+      "report_community": "- **Community Mode**: {status}",
+      "report_special": "- Special Channels: rules={rules} · system={system} · updates={updates}",
+      "report_channels_cat": "## 📚 Channels (by category)",
+      "report_channels_orphan": "### 📁 (No category)",
+      "report_roles": "## 🎭 Roles (highest → lowest, with prominent permissions)",
+      "report_waguri_config": "## 🌸 Current Waguri settings (guild_settings)",
+      "report_waguri_perms": "## 🔑 Bot permissions on server",
+      "embed_title": "📋 Server Overview: \"{name}\"",
+      "members_field": "👥 Members",
+      "roles_field": "🎭 Roles",
+      "boost_field": "✨ Boost",
+      "channels_field": "📚 Channels",
+      "community_field": "🏛️ Community Mode",
+      "config_field": "🌸 Waguri Settings",
+      "missing_perms_field": "🔑 Missing Bot Permissions",
+      "full_detail_field": "📎 Full Details",
+      "full_detail_value": "The list of **every channel + role + permission** is in the attached `.md` file. Download and submit it for audit~ 💕",
+      "ok_perms": "✅ All necessary permissions granted",
+      "rules_screening_warning": " (Discord rules-screening/onboarding not enabled)",
+      "empty_category": "  *(empty)*",
+      "missing_perms_prefix": "❌ ",
+      "community_on": "🟢 ON",
+      "community_off": "🔴 OFF"
+    },
+    "nghingoi": {
+      "cooldown_title": "😴 Cozy Nap",
+      "cooldown_desc": "You just woke up~ 😴 You can sleep again <t:{time}:R>.",
+      "success_title": "😴 Sweet Dreams",
+      "success_desc": "You rested and restored full **{energy}** ⚡ energy, recovered **100 ❤️ health**, and cleared your fatigue! Ready to work with me again~ 🌸"
     }
   },
   "data": {
@@ -1909,7 +1978,7 @@
     },
     "quests": {
       "daily": {
-        "name": "Daily check-in today"
+        "name": "Check in today"
       },
       "vote": {
         "name": "Vote for Waguri on Top.gg"
@@ -1918,25 +1987,25 @@
         "name": "Diligent: work 3 times"
       },
       "work6": {
-        "name": "Hardworking: work 6 times"
+        "name": "Industrious: work 6 times"
       },
       "earn3k": {
-        "name": "Earn 3,000 VNĐ"
+        "name": "Earn 3,000 coins"
       },
       "earn8k": {
-        "name": "Earn 8,000 VNĐ"
+        "name": "Earn 8,000 coins"
       },
       "gamble2": {
-        "name": "Win 2 gamble minigames"
+        "name": "Win 2 casual/gambling games"
       },
       "fish3": {
         "name": "Go fishing 3 times"
       },
       "gather3": {
-        "name": "Mine or chop wood 3 times"
+        "name": "Mine ores/chop wood 3 times"
       },
       "bake1": {
-        "name": "Collect Gekka Bakery revenue 1 time"
+        "name": "Collect Gekka Bakery revenue once"
       }
     },
     "plants": {
@@ -2028,6 +2097,128 @@
       "ma_ket": "♑ Capricorn",
       "bao_binh": "♒ Aquarius",
       "song_ngu": "♓ Pisces"
+    },
+    "achievements": {
+      "lv5": {
+        "name": "🌱 Novice",
+        "desc": "Reach Level 5"
+      },
+      "lv15": {
+        "name": "💼 Professional",
+        "desc": "Reach Level 15"
+      },
+      "lv30": {
+        "name": "👑 Master",
+        "desc": "Reach Level 30"
+      },
+      "rich_100k": {
+        "name": "💰 Well-off",
+        "desc": "Net worth of 100,000 coins"
+      },
+      "rich_1m": {
+        "name": "💸 Millionaire",
+        "desc": "Net worth of 1,000,000 coins"
+      },
+      "rich_10m": {
+        "name": "🏦 Billionaire",
+        "desc": "Net worth of 10,000,000 coins"
+      },
+      "job_chutich": {
+        "name": "🎩 Undercover Chairman",
+        "desc": "Work as an Undercover Chairman"
+      },
+      "job_daigia": {
+        "name": "🏛️ Real Estate Tycoon",
+        "desc": "Work as a Real Estate Tycoon"
+      },
+      "own_mercedes": {
+        "name": "🚙 Luxury Ride",
+        "desc": "Own a Mercedes G63"
+      },
+      "own_sieuxe": {
+        "name": "🏎️ Speedster",
+        "desc": "Own a Lamborghini Supercar"
+      },
+      "own_duthuyen": {
+        "name": "🛥️ Yacht Owner",
+        "desc": "Own a Yacht"
+      },
+      "lv40": {
+        "name": "🌟 Legend",
+        "desc": "Reach Level 40"
+      },
+      "own_bietthu": {
+        "name": "🏠 Homeowner",
+        "desc": "Own a Villa"
+      },
+      "own_canho": {
+        "name": "🏢 Cozy Apartment",
+        "desc": "Own an Apartment"
+      },
+      "craft_master": {
+        "name": "💍 Craftsman",
+        "desc": "Craft Gemstone Jewelry"
+      },
+      "married": {
+        "name": "💕 Tied the Knot",
+        "desc": "Get married to someone"
+      },
+      "love_500": {
+        "name": "💗 Deep Bond",
+        "desc": "Affection reaches 500"
+      },
+      "love_2000": {
+        "name": "💞 Lifetime Partners",
+        "desc": "Affection reaches 2,000"
+      },
+      "has_clan": {
+        "name": "🏰 Clan Member",
+        "desc": "Join a clan"
+      },
+      "is_premium": {
+        "name": "💎 Noble",
+        "desc": "Own Waguri Premium"
+      },
+      "streak_30": {
+        "name": "🔥 Dedicated",
+        "desc": "Daily check-in for 30 consecutive days"
+      },
+      "bakery_open": {
+        "name": "🍰 Shop Owner",
+        "desc": "Open Gekka Bakery"
+      },
+      "bakery_lv5": {
+        "name": "🧁 Sweet King",
+        "desc": "Bakery reaches Lv.5"
+      },
+      "pet_lv10": {
+        "name": "🐾 Loyal Companion",
+        "desc": "Pet reaches Level 10"
+      },
+      "fish_shark": {
+        "name": "🦈 Shark Fisher",
+        "desc": "Catch a Rare Fish (keep in inventory)"
+      },
+      "fish_treasure": {
+        "name": "🐟 Premium Catch",
+        "desc": "Catch a Good Fish (keep in inventory)"
+      },
+      "newbie_done": {
+        "name": "🔰 Graduated",
+        "desc": "Complete the 5-step Newbie quest line"
+      },
+      "affection_300": {
+        "name": "💞 Waguri's Soulmate",
+        "desc": "Affection with Waguri reaches 300"
+      },
+      "streak_7": {
+        "name": "📅 Diligent",
+        "desc": "Daily check-in for 7 consecutive days"
+      },
+      "craft_5": {
+        "name": "🔨 Blacksmith",
+        "desc": "Craft a Wooden Furniture Set (in inventory)"
+      }
     }
   },
   "lib": {
@@ -2057,5 +2248,198 @@
     "cao": "Fox Cub",
     "tho": "Bunny",
     "gau": "Bear Cub"
+  },
+  "rarity": {
+    "common": "Common",
+    "uncommon": "Uncommon",
+    "rare": "Rare",
+    "epic": "Epic",
+    "legendary": "Legendary"
+  },
+  "titles": {
+    "Cày Cuốc Chuyên Cần 🌾": "Diligent Farmer 🌾",
+    "Vương Giả Sổ Sứ Mệnh 👑": "Lunar Pass Monarch 👑"
+  },
+  "items": {
+    "can_cau": {
+      "name": "Iron Fishing Rod"
+    },
+    "cuoc_sat": {
+      "name": "Iron Hoe"
+    },
+    "riu_sat": {
+      "name": "Iron Axe"
+    },
+    "bo_do_sua_xe": {
+      "name": "Gekka Baking Kit"
+    },
+    "do_trom": {
+      "name": "Lockpick"
+    },
+    "the_sinh_vien": {
+      "name": "Student ID Card"
+    },
+    "mu_noi": {
+      "name": "Beret Hat"
+    },
+    "hop_but": {
+      "name": "Pencil Case"
+    },
+    "laptop": {
+      "name": "Subaru's Laptop"
+    },
+    "may_quay": {
+      "name": "Subaru's Camera"
+    },
+    "ban_phim_co": {
+      "name": "Mechanical Keyboard"
+    },
+    "xe_dap": {
+      "name": "Bicycle"
+    },
+    "xe_wave": {
+      "name": "Wave Scooter"
+    },
+    "xe_sh": {
+      "name": "Vespa Scooter"
+    },
+    "sh": {
+      "name": "Honda SH Scooter"
+    },
+    "o_to_cu": {
+      "name": "Used Car"
+    },
+    "o_to_vinfast": {
+      "name": "VinFast EV"
+    },
+    "mercedes": {
+      "name": "Mercedes-Benz Luxury Sedan"
+    },
+    "bh_lao_dong": {
+      "name": "Labor Insurance"
+    },
+    "bh_duong_pho": {
+      "name": "School Safety Insurance"
+    },
+    "che_ba_mau": {
+      "name": "Three-Color Dessert"
+    },
+    "banh_mi": {
+      "name": "Vietnamese Banh Mi"
+    },
+    "xoi": {
+      "name": "Sticky Rice"
+    },
+    "banh_cuon": {
+      "name": "Steamed Rice Rolls"
+    },
+    "tra_sua": {
+      "name": "Milk Tea"
+    },
+    "goi_cuon": {
+      "name": "Fresh Spring Rolls"
+    },
+    "banh_xeo": {
+      "name": "Crispy Pancake"
+    },
+    "mi_quang": {
+      "name": "Quang Noodles"
+    },
+    "com_tam": {
+      "name": "Broken Rice"
+    },
+    "pho": {
+      "name": "Phở Beef Noodle Soup"
+    },
+    "bun_bo": {
+      "name": "Bún Bò Huế Spicy Beef Noodle Soup"
+    },
+    "ca_phe": {
+      "name": "Vietnamese Iced Coffee"
+    },
+    "nuoc_tang_luc": {
+      "name": "Gekka Fruit Soda"
+    },
+    "chao_ga": {
+      "name": "Chicken Rice Porridge"
+    },
+    "hop_y_te": {
+      "name": "First-Aid Kit"
+    },
+    "ca_phe_trung": {
+      "name": "Egg Coffee"
+    },
+    "com_ga": {
+      "name": "Chicken Rice"
+    },
+    "banh_trung_thu": {
+      "name": "Mooncake"
+    },
+    "banh_chung": {
+      "name": "Bánh Chưng Rice Cake"
+    },
+    "ve_vip": {
+      "name": "Strawberry Shortcake"
+    },
+    "ve_dai_gia": {
+      "name": "Cheesecake"
+    },
+    "nuoc_chanh": {
+      "name": "Lemonade"
+    },
+    "thuoc_cam_cum": {
+      "name": "Cold Medicine"
+    },
+    "ca_tuoi": {
+      "name": "Fresh Fish"
+    },
+    "ca_ngon": {
+      "name": "Tasty Fish"
+    },
+    "ca_hiem": {
+      "name": "Rare Fish"
+    },
+    "ca_rong_vang": {
+      "name": "Golden Arowana"
+    },
+    "ca_koi_nhat": {
+      "name": "Japanese Koi"
+    },
+    "streak_freeze": {
+      "name": "Streak Freeze"
+    },
+    "da": {
+      "name": "Stone"
+    },
+    "quang_sat": {
+      "name": "Iron Ore"
+    },
+    "go": {
+      "name": "Wood"
+    },
+    "vang_dong_tren": {
+      "name": "Dong Trieu Gold"
+    },
+    "ky_nam": {
+      "name": "Ky Nam Wood"
+    },
+    "tam_go": {
+      "name": "Wooden Plank"
+    },
+    "thoi_sat": {
+      "name": "Iron Ingot"
+    },
+    "noi_that": {
+      "name": "Furniture"
+    },
+    "trang_suc": {
+      "name": "Jewelry"
+    },
+    "tram_huong_vong": {
+      "name": "Agarwood Bracelet"
+    },
+    "vuong_mieng_gold": {
+      "name": "Golden Crown"
+    }
   }
 }

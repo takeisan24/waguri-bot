@@ -14,10 +14,10 @@ const { getInteractionLanguage, t } = require('../../lib/i18n');
 const scriptsVi = require('../../data/workScripts');
 const scriptsEn = require('../../data/workScripts_en');
 
-const fmt = (n, locale) => Number(n).toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN');
+const fmt = (n, locale) => Number(n).toLocaleString(locale?.startsWith('en') ? 'en-US' : 'vi-VN');
 
 function pickLine(jobKey, category, locale) {
-    const scripts = locale === 'en' ? scriptsEn : scriptsVi;
+    const scripts = locale?.startsWith('en') ? scriptsEn : scriptsVi;
     const set = (scripts[jobKey] && scripts[jobKey][category]) || scripts.default[category];
     return set[Math.floor(Math.random() * set.length)];
 }
@@ -30,6 +30,7 @@ module.exports = {
         await interaction.deferReply();
         const userId = interaction.user.id;
         const locale = await getInteractionLanguage(interaction);
+        const isEn = locale?.startsWith('en');
 
         // 0. Cooldown nhẹ chống spam
         const cd = onCooldown('work', userId, config.ACTION_COOLDOWN_MS);
@@ -53,15 +54,13 @@ module.exports = {
             const userHealth = user.health !== undefined ? user.health : 100;
             if (userHealth < 30) {
                 const embed = buildWaguriEmbed(interaction, 'warning', {
-                    title: locale.startsWith('en') ? '🏥 Weak Health' : '🏥 Sức khỏe quá yếu',
+                    title: isEn ? '🏥 Weak Health' : '🏥 Sức khỏe quá yếu',
                     description: t(locale, 'common.low_health', { current: userHealth })
                 });
                 return interaction.editReply({ embeds: [embed] });
             }
 
             // 2. Kiểm tra phương tiện di chuyển trong kho đồ để tính chi phí năng lượng.
-            //    Xét MỌI xe trong config.VEHICLES, chọn xe có energy_cost THẤP NHẤT đang sở hữu
-            //    (khớp thứ tự ưu tiên của RPC use_vehicle).
             const inv = await db.getInventory(userId);
             const vehKeys = Object.keys(config.VEHICLES);
             const ownedVehicles = inv.filter(i => vehKeys.includes(i.item_id)).map(i => i.item_id);
@@ -143,7 +142,6 @@ module.exports = {
                 }
                 earnedMoney = -loss;
                 color = config.COLORS.WARNING;
-                // (Bỏ trừ sức khỏe khi /work — sức khỏe chỉ giảm khi có BỆNH; xem hệ Disease.)
             } else if (Math.random() < (catBuff ? (config.WORK.JACKPOT_CHANCE + 0.05) : config.WORK.JACKPOT_CHANCE)) {
                 category = 'jackpot';
                 earnedMoney = Math.round(maxWage * config.WORK.JACKPOT_MULT * buffMult);
@@ -159,7 +157,7 @@ module.exports = {
             const grossMoney = earnedMoney;
             if (earnedMoney > 0) earnedMoney = Math.round(earnedMoney * fatigue);
 
-            // Premium: +% thu nhập (user đã fetch sẵn, không tốn query thêm)
+            // Premium: +% thu nhập
             const premium = user.premium_until && new Date(user.premium_until).getTime() > Date.now();
             if (premium && earnedMoney > 0) earnedMoney = Math.round(earnedMoney * (1 + config.PREMIUM.INCOME_BONUS));
 
@@ -193,23 +191,23 @@ module.exports = {
             if (buffActive && earnedMoney > 0) resultMessage += ` *(buff +${Math.round((buffMult - 1) * 100)}%)*`;
             if (premium && earnedMoney > 0) resultMessage += ` *(Premium +${Math.round(config.PREMIUM.INCOME_BONUS * 100)}% 💎)*`;
             if (eventMult > 1 && earnedMoney > 0) {
-                resultMessage += locale.startsWith('en') ? ` *(Event x${eventMult} 🎉)*` : ` *(Sự kiện x${eventMult} 🎉)*`;
+                resultMessage += isEn ? ` *(Event x${eventMult} 🎉)*` : ` *(Sự kiện x${eventMult} 🎉)*`;
             }
             if (fatigue < 1 && earnedMoney > 0) {
-                resultMessage += locale.startsWith('en') ? ` *(fatigue -${Math.round((1 - fatigue) * 100)}%)*` : ` *(mệt -${Math.round((1 - fatigue) * 100)}%)*`;
+                resultMessage += isEn ? ` *(fatigue -${Math.round((1 - fatigue) * 100)}%)*` : ` *(mệt -${Math.round((1 - fatigue) * 100)}%)*`;
             }
             if (usedInsurance) {
-                resultMessage += locale.startsWith('en')
+                resultMessage += isEn
                     ? `\n🛡️ **Labor Insurance** activated, covering 80% of losses!`
                     : `\n🛡️ **Bảo hiểm Lao động** đã kích hoạt giúp gánh 80% thiệt hại!`;
             }
             if (category === 'jackpot' && catBuff) {
-                resultMessage += locale.startsWith('en')
+                resultMessage += isEn
                     ? `\n🐱 Kitten **${userPetName}** rubbed against you, bringing fortune to your pocket!`
                     : `\n🐱 Bé mèo **${userPetName}** dụi dụi mang lại tài lộc đầy túi!`;
             }
             if (rongBuff) {
-                resultMessage += locale.startsWith('en')
+                resultMessage += isEn
                     ? `\n🐲 Baby Dragon **${rongName}** lent dragon power, giving +15% EXP!`
                     : `\n🐲 Bé rồng **${rongName}** truyền long lực giúp cậu nhận thêm 15% EXP!`;
             }
@@ -218,7 +216,7 @@ module.exports = {
             if (usedVehicle) {
                 const vehicleName = config.VEHICLES[usedVehicle.vehicle_id]?.name || usedVehicle.vehicle_id;
                 const vehicleNameTrans = t(locale, `items.${usedVehicle.vehicle_id}.name`) || vehicleName;
-                resultMessage += locale.startsWith('en')
+                resultMessage += isEn
                     ? `\n🚗 You drove **${vehicleNameTrans}** to work (Durability: ${usedVehicle.durability}/100)${usedVehicle.broken ? ' ⚠️ *Vehicle broke after this trip!*' : ''}`
                     : `\n🚗 Cậu đã lái **${vehicleNameTrans}** đi làm (Độ bền xe: ${usedVehicle.durability}/100)${usedVehicle.broken ? ' ⚠️ *Xe đã bị hỏng sau chuyến đi này!*' : ''}`;
             }
@@ -252,31 +250,28 @@ module.exports = {
                 }
             }
 
-            // 6. Embed — kèm 1 gợi ý "bước tiếp theo" theo ngữ cảnh (dẫn dắt người mới)
+            // 6. Embed
             let tip = '';
-            if (locale.startsWith('en')) {
+            if (isEn) {
                 if (!user.onboarded) tip = 'New here? Type `/start` to claim your **welcome gift** from me~ 🎁';
                 else if (category === 'fail') tip = 'A bit unlucky, but don\'t be sad~ Better luck next time, I believe in you! 🌸';
                 else if (!user.job_id) tip = 'You are working as a **freelancer** — type `/jobs` to get a job for a higher salary~ 💼';
-                else if (energyLeft < energyCost * 2) tip = 'Energy is running low, take a break with `/eat` or `/nghingoi`~ 🌸';
-                else if (newLevel > oldLevel) tip = 'Leveled up! Visit `/jobs` to check if a better job is unlocked~ ✨';
             } else {
-                if (!user.onboarded) tip = 'Người mới hả? Gõ `/start` nhận **quà chào mừng** từ mình nha~ 🎁';
-                else if (category === 'fail') tip = 'Đen một chút thôi mà, đừng buồn nha~ Lần sau may mắn hơn, mình tin cậu! 🌸';
-                else if (!user.job_id) tip = 'Cậu đang làm **nghề tự do** — gõ `/jobs` xin nghề để lương cao hơn nha~ 💼';
-                else if (energyLeft < energyCost * 2) tip = 'Năng lượng sắp cạn rồi, `/eat` hoặc `/nghingoi` nghỉ chút cho lại sức nhé~ 🌸';
-                else if (newLevel > oldLevel) tip = 'Lên cấp rồi nè! Ghé `/jobs` xem có mở nghề xịn hơn không nha~ ✨';
+                if (!user.onboarded) tip = 'Cậu mới đến hả? Gõ `/start` để nhận **quà chào mừng** của mình nha~ 🎁';
+                else if (category === 'fail') tip = 'Hơi thiếu may mắn chút nhưng đừng buồn nha~ Trận sau sẽ tốt hơn thôi, mình tin cậu! 🌸';
+                else if (!user.job_id) tip = 'Cậu đang làm **Nghề tự do** — hãy gõ `/jobs` để xin việc có thu nhập cao hơn nhé~ 💼';
             }
+
             const description = `> ${resultMessage}\n\n` + (tip ? `> 💡 ${tip}\n` : '');
             
-            const fieldWalletName = locale.startsWith('en') ? '💵 Wallet Balance' : '💵 Số dư ví';
-            const fieldXpName = locale.startsWith('en') ? 'Experience' : 'Kinh nghiệm';
-            const fieldLvlName = locale.startsWith('en') ? 'Level' : 'Cấp độ';
-            const fieldEnergyName = locale.startsWith('en') ? 'Energy' : 'Năng lượng';
-            const fieldHealthName = locale.startsWith('en') ? '❤️ Health' : '❤️ Sức khỏe';
+            const fieldWalletName = isEn ? '💵 Wallet Balance' : '💵 Số dư ví';
+            const fieldXpName = isEn ? 'Experience' : 'Kinh nghiệm';
+            const fieldLvlName = isEn ? 'Level' : 'Cấp độ';
+            const fieldEnergyName = isEn ? 'Energy' : 'Năng lượng';
+            const fieldHealthName = isEn ? '❤️ Health' : '❤️ Sức khỏe';
 
             const grossStr = fatigue < 1 && grossMoney > 0
-                ? (locale.startsWith('en')
+                ? (isEn
                     ? ` *(base ${fmt(grossMoney, locale)}, tired -${Math.round((1 - fatigue) * 100)}%)*`
                     : ` *(gốc ${fmt(grossMoney, locale)}, mệt -${Math.round((1 - fatigue) * 100)}%)*`)
                 : '';
@@ -292,8 +287,8 @@ module.exports = {
             if (newLevel > oldLevel) {
                 const bonus = levelUpReward(oldLevel, newLevel);
                 if (bonus > 0) await db.addMoney(userId, bonus, 'wallet');
-                const lvlUpTitle = locale.startsWith('en') ? '🎉 Level Up!' : '🎉 Lên cấp!';
-                const lvlUpDesc = locale.startsWith('en')
+                const lvlUpTitle = isEn ? '🎉 Level Up!' : '🎉 Lên cấp!';
+                const lvlUpDesc = isEn
                     ? `Congratulations on reaching **Level ${newLevel}**! Bonus: **+${fmt(bonus, locale)}** ${config.CURRENCY} 🎁`
                     : `Chúc mừng cậu đạt **Level ${newLevel}**! Thưởng **+${fmt(bonus, locale)}** ${config.CURRENCY} 🎁`;
                 fields.push({ name: lvlUpTitle, value: lvlUpDesc, inline: false });
@@ -303,21 +298,23 @@ module.exports = {
             const embedType = typeMap[category] || 'success';
             
             const embed = buildWaguriEmbed(interaction, embedType, {
-                title: '💼・Kết quả làm việc',
+                title: isEn ? '💼・Work Result' : '💼・Kết quả làm việc',
                 description,
                 fields
             }).setTimestamp();
 
-            // Nút "Làm tiếp" — bấm để làm việc lần nữa (vẫn qua cooldown/năng lượng).
+            // Nút "Làm tiếp" — bấm để làm việc lần nữa
             const row = new ActionRowBuilder().addComponents(
-                new ButtonBuilder().setCustomId(`work:again:${userId}`).setLabel('🔄 Làm tiếp').setStyle(ButtonStyle.Secondary)
+                new ButtonBuilder().setCustomId(`work:again:${userId}`).setLabel(isEn ? '🔄 Work Again' : '🔄 Làm tiếp').setStyle(ButtonStyle.Secondary)
             );
             await interaction.editReply({ embeds: [embed], components: [row] });
 
         } catch (error) {
             console.error('[WORK COMMAND ERROR]', error);
             const embed = buildWaguriEmbed(interaction, 'error', {
-                description: 'Ơ, có lỗi khi xử lý lệnh làm việc rồi, cậu thử lại sau nhé~ 🌸'
+                description: isEn 
+                    ? 'Oops, an error occurred while processing the work command. Please try again later~ 🌸'
+                    : 'Ơ, có lỗi khi xử lý lệnh làm việc rồi, cậu thử lại sau nhé~ 🌸'
             });
             await interaction.editReply({ embeds: [embed] });
         }

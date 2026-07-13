@@ -356,5 +356,41 @@
     "desc": "Ơ, trang cậu tìm không có ở đây rồi~ Hay là quay về trang chủ chơi với Waguri nhé?",
     "back_home": "Về trang chủ 🌸",
     "view_commands": "Xem lệnh"
+  },
+  "server_config": {
+    "page_title": "Cấu hình server — Waguri 🌸",
+    "header_title": "⚙️ Cấu hình server",
+    "subtitle": "Đổi ở đây sẽ áp dụng NGAY cho bot (và đồng bộ với lệnh /config trong Discord).",
+    "toggle_on": "🟢 Bật",
+    "toggle_off": "🔴 Tắt",
+    "btn_on": "Bật lên",
+    "btn_off": "Tắt đi",
+    "ai_label": "Trò chuyện AI (@tag Waguri)",
+    "ai_desc": "Cho phép thành viên trò chuyện với Waguri bằng AI khi tag bot.",
+    "pvp_label": "PvP (cướp /rob + trộm heo/cây)",
+    "pvp_desc": "Cho phép người chơi cướp tiền & trộm nông sản của nhau.",
+    "gamble_label": "Trò may rủi (bài cào, tài xỉu, xóc đĩa…)",
+    "gamble_desc": "Cho phép thành viên chơi các trò đặt cược. Tắt = mọi lệnh chơi bị từ chối nhẹ nhàng.",
+    "jail_label": "Tạm giam (Discord timeout) khi vi phạm",
+    "jail_desc": "Khi công an kiểm tra trò may rủi: bật = tạm giam (timeout); tắt = chỉ phạt tiền.",
+    "tip": "💡 Đặt kênh AI / kênh confession bằng lệnh /config trong Discord (có bộ chọn kênh tiện hơn)."
+  },
+  "premium_pay": {
+    "page_title": "Thanh toán Premium 💎",
+    "back_packages": "← Đổi gói",
+    "success_title": "Thanh toán thành công!",
+    "success_desc": "Đã kích hoạt Premium 💎 +{months} tháng. Waguri cảm ơn cậu nhiều lắm~ 🌸",
+    "back_dashboard": "Về Dashboard →",
+    "gateway_unconfigured": "⚠️ Cổng thanh toán chưa được cấu hình (thiếu tài khoản nhận). Liên hệ owner nhé!",
+    "scan_title": "Quét mã để thanh toán",
+    "package_info": "Gói {months} tháng · {amount}đ",
+    "bank_label": "Ngân hàng",
+    "account_label": "Số tài khoản",
+    "holder_label": "Chủ tài khoản",
+    "amount_label": "Số tiền",
+    "msg_label": "Nội dung CK",
+    "warning_msg": "⚠️ Bắt buộc giữ đúng nội dung {code} để đối chiếu. Chuyển xong, bấm nút bên dưới để báo cho mình nhé!",
+    "claimed_status": "✅ Đã ghi nhận! Mình sẽ kiểm tra & kích hoạt Premium sớm nhất (thường trong ít phút). Trang này tự cập nhật khi xong 💕",
+    "transferred_btn": "✅ Tôi đã chuyển khoản xong"
   }
 }

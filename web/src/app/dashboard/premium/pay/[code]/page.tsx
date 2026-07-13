@@ -9,12 +9,23 @@ import { vietqrUrl, VCB_INFO } from "../../../../../lib/premium";
 import { claimPremiumOrder } from "../../actions";
 import PayStatus from "./PayStatus";
 import CopyHint from "./CopyHint";
+import { getLocaleServer, t } from "../../../../../lib/i18n";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Thanh toán Premium 💎", robots: { index: false } };
+
+export async function generateMetadata() {
+  const locale = await getLocaleServer();
+  return {
+    title: `${t("premium_pay.page_title", locale)}`,
+    robots: { index: false },
+  };
+}
 
 export default async function PayPage({ params }: { params: Promise<{ code: string }> }) {
   const { code } = await params;
+  const locale = await getLocaleServer();
+  const isEn = locale.startsWith("en");
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -38,6 +49,8 @@ export default async function PayPage({ params }: { params: Promise<{ code: stri
   const bank = VCB_INFO.bank();
   const holder = VCB_INFO.holder();
 
+  const amountStr = isEn ? `${fmtVND(order.amount)} VND` : `${fmtVND(order.amount)}đ`;
+
   return (
     <div className="relative min-h-screen flex flex-col bg-[#0d0812] text-slate-200">
       <header className="w-full max-w-xl mx-auto px-6 py-5 flex items-center justify-between">
@@ -45,7 +58,7 @@ export default async function PayPage({ params }: { params: Promise<{ code: stri
           WAGURI <span className="text-pink-400">🌸</span>
         </Link>
         <Link href="/dashboard/premium" className="text-xs font-bold text-slate-400 hover:text-pink-300">
-          ← Đổi gói
+          {t("premium_pay.back_packages", locale)}
         </Link>
       </header>
 
@@ -53,28 +66,27 @@ export default async function PayPage({ params }: { params: Promise<{ code: stri
         {paid ? (
           <div className="glass-panel rounded-3xl p-8 text-center border border-emerald-400/30 space-y-3">
             <p className="text-5xl">🎉</p>
-            <h1 className="text-2xl font-black text-white">Thanh toán thành công!</h1>
+            <h1 className="text-2xl font-black text-white">{t("premium_pay.success_title", locale)}</h1>
             <p className="text-emerald-300 text-sm">
-              Đã kích hoạt Premium 💎 +{order.months} tháng. Waguri cảm ơn cậu nhiều lắm~ 🌸
+              {t("premium_pay.success_desc", locale, { months: order.months })}
             </p>
             <Link
               href="/dashboard"
               className="inline-block mt-2 px-5 py-2.5 rounded-full bg-pink-500 text-white text-sm font-bold hover:bg-pink-400"
             >
-              Về Dashboard →
+              {t("premium_pay.back_dashboard", locale)}
             </Link>
           </div>
         ) : !acc ? (
           <div className="glass-panel rounded-3xl p-8 text-center border border-amber-400/30 text-amber-200 text-sm">
-            ⚠️ Cổng thanh toán chưa được cấu hình (thiếu tài khoản nhận). Liên hệ owner nhé!
+            {t("premium_pay.gateway_unconfigured", locale)}
           </div>
         ) : (
           <div className="glass-panel rounded-3xl p-6 sm:p-7 border border-pink-300/20 space-y-5">
             <div className="text-center">
-              <h1 className="text-xl font-black text-white">Quét mã để thanh toán</h1>
+              <h1 className="text-xl font-black text-white">{t("premium_pay.scan_title", locale)}</h1>
               <p className="text-pink-200/80 text-sm mt-1">
-                Gói {order.months} tháng ·{" "}
-                <span className="font-bold text-white">{fmtVND(order.amount)}đ</span>
+                {t("premium_pay.package_info", locale, { months: order.months, amount: fmtVND(order.amount) })}
               </p>
             </div>
 
@@ -82,7 +94,7 @@ export default async function PayPage({ params }: { params: Promise<{ code: stri
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={vietqrUrl(order.amount, order.code)}
-                alt="VietQR thanh toán Premium"
+                alt="VietQR"
                 width={256}
                 height={256}
                 className="rounded-2xl bg-white p-2 w-64 h-64 object-contain"
@@ -90,27 +102,25 @@ export default async function PayPage({ params }: { params: Promise<{ code: stri
             </div>
 
             <div className="rounded-2xl bg-[#1c1424] p-4 text-sm space-y-2">
-              <Row label="Ngân hàng" value={bank} />
-              <Row label="Số tài khoản" value={acc} copy />
-              {holder ? <Row label="Chủ tài khoản" value={holder} /> : null}
-              <Row label="Số tiền" value={`${fmtVND(order.amount)}đ`} copy copyValue={String(order.amount)} />
-              <Row label="Nội dung CK" value={order.code} copy highlight />
+              <Row label={t("premium_pay.bank_label", locale)} value={bank} />
+              <Row label={t("premium_pay.account_label", locale)} value={acc} copy />
+              {holder ? <Row label={t("premium_pay.holder_label", locale)} value={holder} /> : null}
+              <Row label={t("premium_pay.amount_label", locale)} value={amountStr} copy copyValue={String(order.amount)} />
+              <Row label={t("premium_pay.msg_label", locale)} value={order.code} copy highlight />
             </div>
 
             <p className="text-[11px] text-amber-200/80 leading-relaxed">
-              ⚠️ <b>Bắt buộc</b> giữ đúng nội dung <b>{order.code}</b> để đối chiếu. Chuyển xong, bấm nút bên dưới để
-              báo cho mình nhé!
+              {t("premium_pay.warning_msg", locale, { code: order.code })}
             </p>
 
             {order.claimed_at ? (
               <div className="rounded-2xl bg-emerald-500/10 border border-emerald-400/30 p-4 text-center text-sm text-emerald-200">
-                ✅ Đã ghi nhận! Mình sẽ kiểm tra & kích hoạt Premium sớm nhất (thường trong ít phút). Trang này tự
-                cập nhật khi xong 💕
+                {t("premium_pay.claimed_status", locale)}
               </div>
             ) : (
               <form action={claimPremiumOrder.bind(null, order.code)}>
                 <button className="w-full px-4 py-3 rounded-full bg-pink-500 text-white text-sm font-bold hover:bg-pink-400 transition-all">
-                  ✅ Tôi đã chuyển khoản xong
+                  {t("premium_pay.transferred_btn", locale)}
                 </button>
               </form>
             )}

@@ -106,6 +106,7 @@ async function buildProfilePayload(client, id) {
         wallet: Number(prof.wallet || 0), bank: Number(prof.bank || 0),
         netWorth: Number(prof.wallet || 0) + Number(prof.bank || 0),
         job: prof.job || null,
+        job_id: uObj?.job_id || null,
         affection: Number(prof.affection || 0), affectionTier: tier ? tier.name : null,
         partner, clan: prof.clan || null,
         title: prof.title || null,
@@ -114,6 +115,7 @@ async function buildProfilePayload(client, id) {
         rank: Number(prof.wealth_rank || 0),
         prestige,
         badges,
+        language: uObj?.language || 'vi',
     };
 }
 

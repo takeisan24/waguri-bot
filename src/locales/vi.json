@@ -1681,6 +1681,85 @@
       "title_book": "🧾 Sổ nợ của cậu",
       "book_footer": "Trả nợ: /vay tra · Đòi nợ quá hạn: /vay doi",
       "err_invalid_sub": "Lệnh con không hợp lệ~ Thử `/vay muon`, `/vay tra`, `/vay doi`, hoặc `/vay so` nhé!"
+    },
+    "eco-admin": {
+      "only_owner": "Lệnh này chỉ dành cho owner thôi nhé~ 🌸",
+      "set_wallet": "Đặt số dư ví của <@{user}> thành **{amount}** {currency}.",
+      "set_bank": "Đặt số dư ngân hàng của <@{user}> thành **{amount}** {currency}.",
+      "add_wallet": "Cộng **{amount}** {currency} vào ví của <@{user}>.",
+      "sub_wallet": "Trừ **{amount}** {currency} từ ví của <@{user}>.",
+      "add_bank": "Cộng **{amount}** {currency} vào ngân hàng của <@{user}>.",
+      "sub_bank": "Trừ **{amount}** {currency} từ ngân hàng của <@{user}>.",
+      "set_energy": "Đặt năng lượng của <@{user}> thành **{value}** ⚡.",
+      "set_exp": "Đặt EXP của <@{user}> thành **{value}** (Lv.{level}).",
+      "give_item": "Đã cấp **{qty}x {item}** cho <@{user}> 🎒.",
+      "set_job": "Bổ nhiệm công việc **{job}** cho <@{user}> 💼.",
+      "ban_user": "Đã chặn <@{user}> dùng bot 🛑.",
+      "unban_user": "Đã bỏ chặn <@{user}> 🟢.",
+      "reset_user": "Đã xóa sạch dữ liệu của <@{user}> và giải tán bang hội của họ nếu có ⚠️.",
+      "premium_active": "Đã cấp/gia hạn Waguri Premium cho <@{user}> thêm **{days} ngày**! Hạn dùng mới: {until} 💎"
+    },
+    "premium-admin": {
+      "only_owner": "Lệnh này chỉ dành cho owner thôi nhé~ 🌸",
+      "pending_title": "💎 Đơn Premium đang chờ",
+      "pending_none": "Không có đơn nào đang chờ duyệt~ 🌸",
+      "pending_desc": "{lines}\n\n🔔 = buyer đã bấm \"đã chuyển khoản\". Duyệt bằng `/premium-admin duyet`.",
+      "duyet_fail_not_found": "Không tìm thấy đơn `{code}`~",
+      "duyet_fail_generic": "Có lỗi khi duyệt, thử lại sau nhé~",
+      "duyet_already": "Đơn `{code}` đã được kích hoạt trước đó rồi (Premium tới {time}).",
+      "dm_buyer_thanks": "🌸 Cảm ơn cậu đã nâng cấp **Waguri Premium** 💎!\nMình đã kích hoạt **+{months} tháng** cho cậu rồi nè~{until}\nGõ `/premium` để xem quyền lợi nha 💕",
+      "duyet_success_title": "✅ Đã duyệt đơn Premium",
+      "duyet_success_desc": "Kích hoạt **+{months} tháng** cho <@{user}> (đơn `{code}`). Premium tới {time}. Đã DM báo cho họ 🌸"
+    },
+    "getinvite": {
+      "only_owner": "Lệnh này chỉ dành cho owner thôi nhé~ 🌸",
+      "fail_find": "Không tìm thấy server nào khớp với `{id}`~ 🌸",
+      "fail_no_text": "Server này không có kênh văn bản nào để tạo link mời~ 🌸",
+      "success": "Đã gửi link mời của server **{name}** qua DM của cậu rồi nhé~ 💕",
+      "dm_success": "Đây là link mời của server **{name}**:\n{link}"
+    },
+    "serverinfo": {
+      "only_guild": "Lệnh này chỉ dùng trong server nhé~ 🌸",
+      "no_perm": "Cần quyền **Quản lý Server** để dùng lệnh này nhé~ 🌸",
+      "report_title": "# 📋 Báo cáo server \"{name}\" (cho audit Waguri)",
+      "report_by": "*Xuất bởi /serverinfo — gửi file này cho người hỗ trợ để tổng hợp & polish server.*",
+      "report_overview": "## 🏠 Tổng quan",
+      "report_name": "- Tên: **{name}** (ID `{id}`)",
+      "report_members": "- Thành viên: **{count}**",
+      "report_owner": "- Chủ server: <@{ownerId}> (`{ownerId}`)",
+      "report_created": "- Tạo lúc: {date}",
+      "report_locale": "- Ngôn ngữ: {locale} · Xác minh: {verif}",
+      "report_boost": "- Boost: cấp {tier} ({count} boost)",
+      "report_emojis": "- Emoji: {emojis} · Sticker: {stickers} · Role: {roles}",
+      "report_community": "- **Community Mode**: {status}",
+      "report_special": "- Kênh đặc biệt: rules={rules} · system={system} · updates={updates}",
+      "report_channels_cat": "## 📚 Kênh (theo nhóm)",
+      "report_channels_orphan": "### 📁 (không thuộc nhóm nào)",
+      "report_roles": "## 🎭 Roles (cao → thấp, kèm quyền nổi bật)",
+      "report_waguri_config": "## 🌸 Cấu hình Waguri hiện tại (guild_settings)",
+      "report_waguri_perms": "## 🔑 Quyền của Waguri trên server",
+      "embed_title": "📋 Tổng quan server \"{name}\"",
+      "members_field": "👥 Thành viên",
+      "roles_field": "🎭 Roles",
+      "boost_field": "✨ Boost",
+      "channels_field": "📚 Kênh",
+      "community_field": "🏛️ Community Mode",
+      "config_field": "🌸 Cấu hình Waguri",
+      "missing_perms_field": "🔑 Quyền Waguri còn thiếu",
+      "full_detail_field": "📎 Chi tiết đầy đủ",
+      "full_detail_value": "Danh sách **từng kênh + từng role + quyền** nằm trong file `.md` đính kèm (Discord không hiện hết được trong 1 tin). Tải về & gửi lại để audit nhé~ 💕",
+      "ok_perms": "✅ Đủ quyền cần thiết",
+      "rules_screening_warning": " (chưa có rules-screening/onboarding của Discord)",
+      "empty_category": "  *(trống)*",
+      "missing_perms_prefix": "❌ ",
+      "community_on": "🟢 BẬT",
+      "community_off": "🔴 Tắt"
+    },
+    "nghingoi": {
+      "cooldown_title": "😴 Giấc ngủ trưa",
+      "cooldown_desc": "Cậu vừa ngủ dậy mà~ 😴 Ngủ tiếp được sau <t:{time}:R> nhé.",
+      "success_title": "😴 Ngủ một giấc thật ngon",
+      "success_desc": "Cậu đã nghỉ ngơi, hồi đầy **{energy}** ⚡ năng lượng, phục hồi **100 ❤️ sức khỏe** và **hết mệt mỏi** hẳn! Sẵn sàng làm việc cùng tớ tiếp nào~ 🌸"
     }
   },
   "lib": {
@@ -1726,6 +1805,160 @@
       "ma_ket": "♑ Ma Kết",
       "bao_binh": "♒ Bảo Bình",
       "song_ngu": "♓ Song Ngư"
+    },
+    "achievements": {
+      "lv5": {
+        "name": "🌱 Tập Sự",
+        "desc": "Đạt Level 5"
+      },
+      "lv15": {
+        "name": "💼 Chuyên Nghiệp",
+        "desc": "Đạt Level 15"
+      },
+      "lv30": {
+        "name": "👑 Bậc Thầy",
+        "desc": "Đạt Level 30"
+      },
+      "rich_100k": {
+        "name": "💰 Khá Giả",
+        "desc": "Tổng tài sản 100.000"
+      },
+      "rich_1m": {
+        "name": "💸 Triệu Phú",
+        "desc": "Tổng tài sản 1.000.000"
+      },
+      "rich_10m": {
+        "name": "🏦 Tỷ Phú",
+        "desc": "Tổng tài sản 10.000.000"
+      },
+      "job_chutich": {
+        "name": "🎩 Chủ Tịch",
+        "desc": "Làm nghề Chủ Tịch Giả Danh"
+      },
+      "job_daigia": {
+        "name": "🏛️ Đại Gia",
+        "desc": "Làm nghề Đại Gia Bất Động Sản"
+      },
+      "own_mercedes": {
+        "name": "🚙 Xe Sang",
+        "desc": "Sở hữu Mercedes G63"
+      },
+      "own_sieuxe": {
+        "name": "🏎️ Tốc Độ",
+        "desc": "Sở hữu Siêu Xe Lamborghini"
+      },
+      "own_duthuyen": {
+        "name": "🛥️ Dân Chơi",
+        "desc": "Sở hữu Du Thuyền"
+      },
+      "lv40": {
+        "name": "🌟 Huyền Thoại",
+        "desc": "Đạt Level 40"
+      },
+      "own_bietthu": {
+        "name": "🏠 An Gia",
+        "desc": "Sở hữu Biệt Thự"
+      },
+      "own_canho": {
+        "name": "🏢 An Cư",
+        "desc": "Sở hữu Căn Hộ Chung Cư"
+      },
+      "craft_master": {
+        "name": "💍 Nghệ Nhân",
+        "desc": "Chế được Trang Sức Đá Quý"
+      },
+      "married": {
+        "name": "💕 Đã Có Đôi",
+        "desc": "Kết hôn với một người"
+      },
+      "love_500": {
+        "name": "💗 Mặn Nồng",
+        "desc": "Tình cảm cặp đôi đạt 500"
+      },
+      "love_2000": {
+        "name": "💞 Phu Thê",
+        "desc": "Tình cảm cặp đôi đạt 2.000"
+      },
+      "has_clan": {
+        "name": "🏰 Bang Chúng",
+        "desc": "Gia nhập một bang hội"
+      },
+      "is_premium": {
+        "name": "💎 Quý Tộc",
+        "desc": "Sở hữu gói Premium"
+      },
+      "streak_30": {
+        "name": "🔥 Chuyên Cần",
+        "desc": "Điểm danh 30 ngày liên tiếp"
+      },
+      "bakery_open": {
+        "name": "🍰 Chủ Tiệm",
+        "desc": "Mở tiệm bánh Gekka"
+      },
+      "bakery_lv5": {
+        "name": "🧁 Vua Bánh Ngọt",
+        "desc": "Tiệm bánh đạt Lv.5"
+      },
+      "pet_lv10": {
+        "name": "🐾 Bạn Đồng Hành",
+        "desc": "Thú cưng đạt Level 10"
+      },
+      "fish_shark": {
+        "name": "🦈 Ngư Ông",
+        "desc": "Câu được Cá hiếm (giữ trong kho)"
+      },
+      "fish_treasure": {
+        "name": "🐟 Cá Hảo Hạng",
+        "desc": "Câu được Cá ngon (giữ trong kho)"
+      },
+      "newbie_done": {
+        "name": "🔰 Tốt Nghiệp",
+        "desc": "Hoàn thành chuỗi 5 bước Tân thủ"
+      },
+      "affection_300": {
+        "name": "💞 Tri Kỷ Waguri",
+        "desc": "Thiện cảm Waguri đạt 300"
+      },
+      "streak_7": {
+        "name": "📅 Siêng Năng",
+        "desc": "Điểm danh 7 ngày liên tiếp"
+      },
+      "craft_5": {
+        "name": "🔨 Thợ Rèn",
+        "desc": "Chế tạo Bộ Nội Thất Gỗ (trong kho)"
+      }
+    },
+    "quests": {
+      "daily": {
+        "name": "Điểm danh hôm nay"
+      },
+      "vote": {
+        "name": "Vote cho Waguri trên Top.gg"
+      },
+      "work3": {
+        "name": "Chăm chỉ: đi làm 3 lần"
+      },
+      "work6": {
+        "name": "Cần mẫn: đi làm 6 lần"
+      },
+      "earn3k": {
+        "name": "Kiếm được 3.000 VNĐ"
+      },
+      "earn8k": {
+        "name": "Kiếm được 8.000 VNĐ"
+      },
+      "gamble2": {
+        "name": "Thắng minigame may rủi 2 ván"
+      },
+      "fish3": {
+        "name": "Đi câu cá 3 lần"
+      },
+      "gather3": {
+        "name": "Đào mỏ/chặt gỗ 3 lần"
+      },
+      "bake1": {
+        "name": "Thu doanh thu Tiệm Bánh Gekka 1 lần"
+      }
     }
   },
   "species": {
@@ -1735,5 +1968,16 @@
     "cao": "Cáo nhỏ",
     "tho": "Thỏ con",
     "gau": "Gấu con"
+  },
+  "rarity": {
+    "common": "Thường",
+    "uncommon": "Không thông dụng",
+    "rare": "Hiếm",
+    "epic": "Sử thi",
+    "legendary": "Huyền thoại"
+  },
+  "titles": {
+    "Cày Cuốc Chuyên Cần 🌾": "Cày Cuốc Chuyên Cần 🌾",
+    "Vương Giả Sổ Sứ Mệnh 👑": "Vương Giả Sổ Sứ Mệnh 👑"
   }
 }

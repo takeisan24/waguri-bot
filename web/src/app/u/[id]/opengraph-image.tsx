@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 import { BOT_API } from "../../../lib/botApi";
 
-export const alt = "Hồ sơ Waguri";
+export const alt = "Waguri Profile - Hồ sơ Waguri";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -25,11 +25,36 @@ async function loadFonts(): Promise<FontEntry[]> {
   return fontCache;
 }
 
-const fmt = (n: number) => Number(n || 0).toLocaleString("vi-VN");
+const JOB_TRANSLATIONS: Record<string, string> = {
+  ban_tra_da: "West Lake Iced Tea Seller",
+  nhat_ve_chai: "Kikyo Hall Sweeper",
+  phu_ho: "Gekka Bakery Assistant",
+  shipper: "Gekka Cake Courier",
+  sinh_vien: "Student Part-timer",
+  nong_dan: "Farm Hand",
+  tho_sua_xe: "Gekka Pastry Baker",
+  xe_om: "Ride-hailing Rider",
+  moi_gioi: "Gekka Bakery Manager",
+  streamer: "Kikyo Discipline Officer",
+  dev: "Cake Decorator Specialist",
+  chu_tich: "Gekka Director General",
+  dai_gia: "Gekka Chain Owner"
+};
+
+interface ProfilePayload {
+  username?: string;
+  level?: number;
+  netWorth?: number;
+  rank?: number;
+  job?: string;
+  job_id?: string;
+  language?: string;
+  hidden?: boolean;
+}
 
 export default async function Image({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  let p: Record<string, unknown> | null = null;
+  let p: ProfilePayload | null = null;
   try {
     const res = await fetch(`${API}/api/profile/${id}`, { next: { revalidate: 60 } });
     if (res.ok) p = await res.json();
@@ -38,12 +63,21 @@ export default async function Image({ params }: { params: Promise<{ id: string }
   }
   const fonts = await loadFonts();
 
+  const isEn = p && p.language === "en";
+  const fmt = (n: number) => Number(n || 0).toLocaleString(isEn ? "en-US" : "vi-VN");
+
   const hidden = !p || p.hidden === true;
   const username = (hidden ? "Waguri" : (p!.username as string)) || "Người chơi";
   const level = hidden ? 0 : Number(p!.level || 0);
   const netWorth = hidden ? 0 : Number(p!.netWorth || 0);
   const rank = hidden ? 0 : Number(p!.rank || 0);
-  const job = hidden ? "" : ((p!.job as string) || "Nghề tự do");
+
+  const jobKey = hidden ? "" : ((p!.job_id as string) || "");
+  const job = hidden 
+    ? "" 
+    : (isEn 
+        ? (JOB_TRANSLATIONS[jobKey] || (p!.job as string) || "Freelancer") 
+        : ((p!.job as string) || "Nghề tự do"));
 
   const Stat = ({ label, value }: { label: string; value: string }) => (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
@@ -55,7 +89,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
   return new ImageResponse(
     (
       <div
-        style={{
+         style={{
           width: "100%",
           height: "100%",
           display: "flex",
@@ -68,11 +102,13 @@ export default async function Image({ params }: { params: Promise<{ id: string }
         }}
       >
         <div style={{ display: "flex", fontSize: 32, letterSpacing: 8, color: "#ffb7c5", fontWeight: 600 }}>
-          WAGURI · HỒ SƠ
+          {isEn ? "WAGURI · PROFILE" : "WAGURI · HỒ SƠ"}
         </div>
         <div style={{ display: "flex", marginTop: 18, fontSize: 80, fontWeight: 600 }}>{username}</div>
         <div style={{ display: "flex", marginTop: 6, fontSize: 30, color: "#cbd5e1" }}>
-          {hidden ? "Cùng Waguri làm giàu trên Discord!" : job}
+          {hidden 
+            ? (isEn ? "Make your fortune with Waguri on Discord!" : "Cùng Waguri làm giàu trên Discord!") 
+            : job}
         </div>
         <div
           style={{
@@ -85,9 +121,9 @@ export default async function Image({ params }: { params: Promise<{ id: string }
             padding: "36px 60px",
           }}
         >
-          <Stat label="CẤP ĐỘ" value={hidden ? "?" : `Lv.${level}`} />
-          <Stat label="TÀI SẢN" value={hidden ? "?" : fmt(netWorth)} />
-          <Stat label="HẠNG GIÀU" value={hidden ? "?" : `#${rank}`} />
+          <Stat label={isEn ? "LEVEL" : "CẤP ĐỘ"} value={hidden ? "?" : `Lv.${level}`} />
+          <Stat label={isEn ? "NET WORTH" : "TÀI SẢN"} value={hidden ? "?" : fmt(netWorth)} />
+          <Stat label={isEn ? "RANK" : "HẠNG GIÀU"} value={hidden ? "?" : `#${rank}`} />
         </div>
         <div style={{ display: "flex", marginTop: 40, fontSize: 28, color: "#94a3b8" }}>
           waguri-bot.vercel.app
