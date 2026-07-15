@@ -185,3 +185,30 @@ if (diffHours > 48) { // trễ hơn mốc điểm danh
   }
   ```
 * Toàn bộ lệnh chạy tại client hoặc test sẽ import tệp này đầu tiên để đảm bảo tính an toàn dữ liệu.
+
+---
+
+## 7. PHẦN H: BẢN TIN & WEB CHANGELOG (v2.3)
+
+### 7.1 Giao diện Trang chủ & Lịch sử Bản vá `/changelog`
+* **Rút gọn bản tin trang chủ:**
+  * Giới hạn hiển thị tối đa 2 tin tức mới nhất từ tệp dữ liệu dùng chung `changelogs.json`.
+  * Thêm nút chuyển tiếp dạng link văn bản lấp lánh (với hiệu ứng hover dịch chuyển nhẹ 4px) trỏ đến trang `/changelog`.
+* **Trang `/changelog` (Dòng thời gian):**
+  * Dựng một trục dọc (vertical timeline axis) dùng đường kẻ đứt nét màu `{colors.glass-border}`.
+  * Mỗi bản vá được thể hiện bằng một hạt tròn phát sáng (glow node) trên trục dọc.
+  * Hạt tròn của bản cập nhật mới nhất sử dụng màu hồng `{colors.primary}` (Rose 500), các bản cập nhật cũ hơn dùng màu tím `{colors.secondary}` hoặc xám Slate.
+  * Các khối nội dung bản vá sử dụng `{components.card}` với hiệu ứng dịch chuyển khi hover (scale-up nhẹ 1.01x).
+  * Tiêu đề bản vá dùng `{typography.title-lg}`, danh mục chi tiết dùng `{typography.body-md}`.
+  * Hỗ trợ đầy đủ chế độ chuyển đổi song ngữ Anh/Việt tương ứng qua cookie ngữ cảnh.
+
+## 8. PHẦN I: CHỢ ĐẤU GIÁ NÂNG CAO (ADVANCED AUCTIONS)
+* **Giao diện Bot Discord:**
+  * Hiển thị bảng danh sách phiên đấu giá hoạt động qua Embeds của Waguri (sử dụng màu `{colors.primary}` làm accent chính).
+  * Lượt đấu giá mới nhất được đánh dấu nổi bật bằng tên thẻ Tag người chơi và số tiền bid.
+  * Khi có người bị vượt giá (outbid), gửi cảnh báo DM trực tiếp dạng Embed màu đỏ hổ phách (`#E11D48`) để gây chú ý.
+
+## 9. PHẦN J: THƯỞNG VAI TRÒ THEO CẤP (ROLE REWARDS)
+* **Giao diện Bot & Server Support:**
+  * Đồng bộ và gán tự động màu sắc vai trò và danh vị tương ứng theo cấp độ người chơi tại Discord Support Server.
+
