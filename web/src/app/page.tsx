@@ -15,6 +15,7 @@ import WaguriFloat from "../components/WaguriFloat";
 import HeroContent from "../components/HeroContent";
 import FeaturesGrid from "../components/FeaturesGrid";
 import { getLocaleServer } from "../lib/i18n";
+import changelogs from "../data/changelogs.json";
 
 export default async function Home() {
   const locale = await getLocaleServer();
@@ -113,53 +114,54 @@ export default async function Home() {
                 </div>
               )}
 
-              {/* Update 1 */}
-              <div className="border-l-2 border-slate-700 pl-4 space-y-2 opacity-80">
-                <div className="flex items-center gap-2">
-                  <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-pink-500/10 text-pink-200 border border-pink-300/10">05/07/2026</span>
-                </div>
-                <h3 className="text-base font-bold text-white">
-                  {isEn ? "Phase 1: Command Merging & Pet Skill Buffs" : "Đợt 1: Gộp Lệnh Tiện Lợi & Vá Lỗ Hổng Pet"}
-                </h3>
-                {isEn ? (
-                  <ul className="text-xs md:text-sm text-slate-300 space-y-1.5 list-disc pl-4">
-                    <li><strong>UX Restructuring:</strong> Merged 15 commands into 6 unified commands: <code>/image</code>, <code>/action</code>, <code>/couple</code>, <code>/store</code>, <code>/bank</code>, <code>/bot</code> for a smoother grinding experience.</li>
-                    <li><strong>Pet Passive Skills:</strong> Unlocked Level 5+ passive skills for Baby Dragon (+15% EXP), Little Fox (+10% steal & reduced penalty), Baby Rabbit (-15% energy cost), Baby Bear (+10% crop yield & higher sell prices).</li>
-                    <li><strong>Smarter AI:</strong> Waguri now automatically recalls your occupation, pet name/species, bakery, and health status during chat.</li>
-                    <li><strong>Automated Notifications:</strong> Added `/config announcement-channel` to receive news automatically.</li>
-                  </ul>
-                ) : (
-                  <ul className="text-xs md:text-sm text-slate-300 space-y-1.5 list-disc pl-4">
-                    <li><strong>Tái cấu trúc UX:</strong> Gộp 15 lệnh thành 6 lệnh hợp nhất: <code>/image</code>, <code>/action</code>, <code>/couple</code>, <code>/store</code>, <code>/bank</code>, <code>/bot</code> giúp menu lệnh mượt mà, dễ cày cuốc.</li>
-                    <li><strong>Thú cưng trỗi dậy:</strong> Mở khoá passive skill cấp 5+ cho Rồng con (+15% EXP), Cáo nhỏ (+10% trộm & giảm phạt), Thỏ con (giảm 15% năng lượng), Gấu con (+10% sản lượng & tăng giá bán).</li>
-                    <li><strong>AI thông minh hơn:</strong> Waguri giờ đã tự động hiểu nghề nghiệp, tên/loài pet, tiệm bánh, và sức khỏe thực tế của bạn khi chat.</li>
-                    <li><strong>Thông báo tự động:</strong> Tích hợp cấu hình kênh cập nhật <code>/config announcement-channel</code> để tự động nhận tin tức từ dev.</li>
-                  </ul>
-                )}
-              </div>
+              {changelogs.slice(0, 2).map((item, idx) => {
+                const borderColors = {
+                  pink: "border-pink-500/40 text-pink-300 bg-pink-500/10",
+                  purple: "border-purple-500/40 text-purple-300 bg-purple-500/10",
+                  blue: "border-blue-500/40 text-blue-300 bg-blue-500/10",
+                  green: "border-green-500/40 text-green-300 bg-green-500/10"
+                };
+                const tagColorClass = borderColors[item.tagColor as keyof typeof borderColors] || borderColors.pink;
 
-              {/* Update 2 */}
-              <div className="border-l-2 border-slate-700 pl-4 space-y-2 opacity-80">
-                <div className="flex items-center gap-2">
-                  <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-500/20 text-purple-200 border border-purple-300/10">04/07/2026</span>
-                </div>
-                <h3 className="text-base font-bold text-white">
-                  {isEn ? "Gekka Bakery & Employee Staffing" : "Vận Hành Tiệm Bánh Gekka & Thuê Nhân Viên"}
-                </h3>
-                {isEn ? (
-                  <ul className="text-xs md:text-sm text-slate-300 space-y-1.5 list-disc pl-4">
-                    <li><strong>Hire Waguri&apos;s friends as bakers:</strong> Hire Rintaro, Subaru, Usami, Saku, Ayato, Madoka.</li>
-                    <li><strong>Bakery Decorations:</strong> Craft Wooden Furniture Sets, Gem Ornaments to speed up passive baking.</li>
-                    <li><strong>Gifts for Affection:</strong> Purchase bouquets, gift boxes, teddy bears to raise affection levels.</li>
-                  </ul>
-                ) : (
-                  <ul className="text-xs md:text-sm text-slate-300 space-y-1.5 list-disc pl-4">
-                    <li><strong>Thuê bạn bè Waguri làm thợ:</strong> Thuê Rintaro, Subaru, Usami, Saku, Ayato, Madoka làm nhân viên phụ tiệm bánh.</li>
-                    <li><strong>Đồ trang trí tiệm bánh:</strong> Chế tạo Bộ nội thất gỗ, Trang sức đá quý để tăng tốc độ nướng bánh thụ động.</li>
-                    <li><strong>Tặng quà tăng thiện cảm:</strong> Mua bó hoa, hộp quà, gấu bông để tặng Waguri tăng điểm thân thiết.</li>
-                  </ul>
-                )}
-              </div>
+                return (
+                  <div key={idx} className="border-l-2 border-slate-700 pl-4 space-y-2 opacity-90 hover:opacity-100 transition-opacity">
+                    <div className="flex items-center gap-2">
+                      <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-pink-500/10 text-pink-200 border border-pink-300/10">
+                        {item.date}
+                      </span>
+                      {item.tag && (
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-bold border ${tagColorClass}`}>
+                          {item.tag}
+                        </span>
+                      )}
+                    </div>
+                    <h3 className="text-base font-bold text-white">
+                      {isEn ? item.title_en : item.title_vi}
+                    </h3>
+                    <ul className="text-xs md:text-sm text-slate-300 space-y-1.5 list-disc pl-4">
+                      {(isEn ? item.details_en : item.details_vi).map((detail, dIdx) => {
+                        const parts = detail.split("**");
+                        return (
+                          <li key={dIdx}>
+                            {parts.map((part, pIdx) => 
+                              pIdx % 2 === 1 ? <strong key={pIdx} className="text-white">{part}</strong> : part
+                            )}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="mt-8 pt-4 border-t border-pink-300/10 text-center">
+              <Link
+                href="/changelog"
+                className="inline-flex items-center gap-1.5 text-xs md:text-sm font-bold text-pink-400 hover:text-pink-300 transition-all hover:translate-x-1 duration-200"
+              >
+                {isEn ? "View full changelog history →" : "Xem toàn bộ lịch sử các bản vá →"}
+              </Link>
             </div>
           </div>
         </section>

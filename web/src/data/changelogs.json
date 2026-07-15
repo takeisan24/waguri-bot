@@ -1,0 +1,76 @@
+[
+  {
+    "date": "15/07/2026",
+    "title_vi": "Đợt 4: Chợ Đấu Giá Nâng Cao & Thưởng Role Cấp Độ",
+    "title_en": "Phase 4: Advanced Auctions & Tiered Role Rewards",
+    "tag": "v2.3.0",
+    "tagColor": "pink",
+    "details_vi": [
+      "**Chợ Đấu Giá Nâng Cao (/market):** Ra mắt cơ chế đấu giá vật phẩm nguyên tử, sử dụng Escrow tạm giữ tiền cược, hoàn tiền tự động khi bị outbid, chống shill bidding và chống bắn tỉa (Anti-sniping 3 phút cuối).",
+      "**Thưởng vai trò (Role Reward):** Tự động đồng bộ và trao vai trò Discord tương ứng theo cấp độ của người chơi tại Server Support của Waguri.",
+      "**GDPR & Bảo mật nâng cao:** Chặn xoá tài khoản chơi qua `/deletedata` khi người dùng đang có đấu giá hoặc đặt bid đang hoạt động.",
+      "**Đồng bộ Command Explorer:** Đồng bộ toàn diện danh sách lệnh đấu giá song ngữ lên Dashboard Web."
+    ],
+    "details_en": [
+      "**Advanced Auctions (/market):** Launched item auctions with secure escrow bidding, atomic outbid refunds, shill bidding blocks, and anti-sniping protection (3-minute window extension).",
+      "**Role Rewards:** Automatically synchronizes and assigns corresponding Discord roles based on player level in Waguri's Support Server.",
+      "**GDPR & Security:** Prevents account deletion via `/deletedata` if a user has active auctions or is the leading bidder.",
+      "**Web Sync:** Synchronized all auction command definitions bilingual onto the Web Dashboard."
+    ]
+  },
+  {
+    "date": "11/07/2026",
+    "title_vi": "Đợt 3: Bản địa hóa song ngữ 100% & Ký ức AI Waguri",
+    "title_en": "Phase 3: 100% i18n Hardening & AI Memory System",
+    "tag": "v2.2.0",
+    "tagColor": "purple",
+    "details_vi": [
+      "**Hardening Đa ngôn ngữ (i18n):** Bản dịch song ngữ Anh & Việt đã phủ 100% tất cả các nhóm lệnh Bot (Economy, Games, Fun, Utility, Admin) và 100% các trang Web Next.js.",
+      "**Ký ức AI (Trí nhớ Waguri):** Waguri tự động ghi nhớ các chi tiết đặc sắc (thông qua marker ẩn) và đưa vào system prompt. Tích hợp lệnh tự xóa dữ liệu `/deletedata` tuân thủ GDPR.",
+      "**Sổ Sứ Mệnh (Battle Pass):** Bổ sung lệnh `/pass` nhận thưởng theo mùa giải âm lịch, tích hợp cày XP tự động qua việc trò chuyện AI `/ask` hoặc cày cuốc.",
+      "**Sổ Tay Sưu Tầm & Độ Hiếm:** Ra mắt lệnh `/album` hiển thị bộ sưu tập vật phẩm theo độ hiếm (Rarity) cùng nút nhận thưởng nguyên tử."
+    ],
+    "details_en": [
+      "**100% i18n Hardening:** Completed full bilingual English & Vietnamese translation coverage for all 78 Discord Bot commands and all web pages.",
+      "**AI Memory System:** Waguri now extracts and stores memorable facts during conversations to inject into context, alongside GDPR-compliant `/deletedata` options.",
+      "**Battle Pass (/pass):** Introduced seasonal lunar calendar rewards, earning XP automatically by playing or chatting with AI (/ask).",
+      "**Collector Album & Rarity:** Released `/album` to track collection statistics by item Rarity with atomic reward claiming."
+    ]
+  },
+  {
+    "date": "05/07/2026",
+    "title_vi": "Đợt 1: Gộp Lệnh Tiện Lợi & Vá Lỗ Hổng Pet",
+    "title_en": "Phase 1: Command Merging & Pet Skill Buffs",
+    "tag": "v2.0.0",
+    "tagColor": "blue",
+    "details_vi": [
+      "**Tái cấu trúc UX:** Gộp 15 lệnh thành 6 lệnh hợp nhất: `/image`, `/action`, `/couple`, `/store`, `/bank`, `/bot` giúp menu lệnh mượt mà, dễ cày cuốc.",
+      "**Thú cưng trỗi dậy:** Mở khoá passive skill cấp 5+ cho Rồng con (+15% EXP), Cáo nhỏ (+10% trộm & giảm phạt), Thỏ con (giảm 15% năng lượng), Gấu con (+10% sản lượng & tăng giá bán).",
+      "**AI thông minh hơn:** Waguri giờ đã tự động hiểu nghề nghiệp, tên/loài pet, tiệm bánh, và sức khỏe thực tế của bạn khi chat.",
+      "**Thông báo tự động:** Tích hợp cấu hình kênh cập nhật `/config announcement-channel` để tự động nhận tin tức từ dev."
+    ],
+    "details_en": [
+      "**UX Restructuring:** Merged 15 commands into 6 unified commands: `/image`, `/action`, `/couple`, `/store`, `/bank`, `/bot` for a smoother grinding experience.",
+      "**Pet Passive Skills:** Unlocked Level 5+ passive skills for Baby Dragon (+15% EXP), Little Fox (+10% steal & reduced penalty), Baby Rabbit (-15% energy cost), Baby Bear (+10% crop yield & higher sell prices).",
+      "**Smarter AI:** Waguri now automatically recalls your occupation, pet name/species, bakery, and health status during chat.",
+      "**Automated Notifications:** Added `/config announcement-channel` to receive news automatically."
+    ]
+  },
+  {
+    "date": "04/07/2026",
+    "title_vi": "Tiền Đề: Vận Hành Tiệm Bánh Gekka & Thuê Nhân Viên",
+    "title_en": "Alpha: Gekka Bakery & Employee Staffing",
+    "tag": "v1.5.0",
+    "tagColor": "green",
+    "details_vi": [
+      "**Thuê bạn bè Waguri làm thợ:** Thuê Rintaro, Subaru, Usami, Saku, Ayato, Madoka làm nhân viên phụ tiệm bánh.",
+      "**Đồ trang trí tiệm bánh:** Chế tạo Bộ nội thất gỗ, Trang sức đá quý để tăng tốc độ nướng bánh thụ động.",
+      "**Tặng quà tăng thiện cảm:** Mua bó hoa, hộp quà, gấu bông để tặng Waguri tăng điểm thân thiết."
+    ],
+    "details_en": [
+      "**Hire Waguri's friends as bakers:** Hire Rintaro, Subaru, Usami, Saku, Ayato, Madoka as bakery employees.",
+      "**Bakery Decorations:** Craft Wooden Furniture Sets, Gem Ornaments to speed up passive baking.",
+      "**Gifts for Affection:** Purchase bouquets, gift boxes, teddy bears to raise affection levels."
+    ]
+  }
+]
