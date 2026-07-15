@@ -87,6 +87,19 @@ module.exports = {
         if (isBanned(message.author.id)) return;
         recordMembership(message.guild.id, message.author.id); // BXH theo server — fire-and-forget
 
+        // Tự động đồng bộ role cấp độ nếu gửi tin nhắn ở Server Support
+        if (message.guild.id === config.ROLE_REWARDS.SUPPORT_GUILD_ID && message.member) {
+            const { syncSupportGuildRoles } = require('../lib/supportReward');
+            const user = await db.getUser(message.author.id);
+            if (user) {
+                const { getLevelFromExp } = require('../lib/leveling');
+                const level = getLevelFromExp(Number(user.exp || 0));
+                syncSupportGuildRoles(message.member, level).catch(e => {
+                    console.error('[ROLE SYNC ERROR] messageCreate:', e);
+                });
+            }
+        }
+
         const prefix = config.PREFIX;
 
         // --- 1) Lệnh prefix (vd: w!work) ---

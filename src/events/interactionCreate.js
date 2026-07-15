@@ -36,6 +36,19 @@ module.exports = {
             // Ghi nhận user thuộc guild (cho BXH theo server) — fire-and-forget
             recordMembership(interaction.guildId, interaction.user.id);
 
+            // Tự động đồng bộ role cấp độ nếu tương tác diễn ra ở Server Support
+            if (interaction.guildId === config.ROLE_REWARDS.SUPPORT_GUILD_ID && interaction.member) {
+                const { syncSupportGuildRoles } = require('../lib/supportReward');
+                const user = await db.getUser(interaction.user.id);
+                if (user) {
+                    const { getLevelFromExp } = require('../lib/leveling');
+                    const level = getLevelFromExp(Number(user.exp || 0));
+                    syncSupportGuildRoles(interaction.member, level).catch(e => {
+                        console.error('[ROLE SYNC ERROR] interactionCreate:', e);
+                    });
+                }
+            }
+
             const locale = await getInteractionLanguage(interaction);
 
             // Chặn user bị ban

@@ -269,6 +269,13 @@ module.exports = {
             desc += locale.startsWith('en')
                 ? `\n🎉 Reached **Level ${newLevel}**! Bonus: **+${fmt(bonus, locale)}** ${config.CURRENCY} 🎁`
                 : `\n🎉 Lên **Level ${newLevel}**! Thưởng **+${fmt(bonus, locale)}** ${config.CURRENCY} 🎁`;
+
+            // Gợi ý tham gia server support nếu vượt mốc cấp độ và ở server cộng đồng ngoài
+            const { getMilestoneInviteMessage } = require('../../lib/supportReward');
+            const inviteMsg = getMilestoneInviteMessage(oldLevel, newLevel, locale);
+            if (inviteMsg && interaction.guildId !== config.ROLE_REWARDS.SUPPORT_GUILD_ID) {
+                desc += `\n\n${inviteMsg}`;
+            }
         }
 
         // Cộng XP Sổ Sứ Mệnh (20% cơ hội rơi 20-30 XP)

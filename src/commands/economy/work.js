@@ -288,9 +288,17 @@ module.exports = {
                 const bonus = levelUpReward(oldLevel, newLevel);
                 if (bonus > 0) await db.addMoney(userId, bonus, 'wallet');
                 const lvlUpTitle = isEn ? '🎉 Level Up!' : '🎉 Lên cấp!';
-                const lvlUpDesc = isEn
+                let lvlUpDesc = isEn
                     ? `Congratulations on reaching **Level ${newLevel}**! Bonus: **+${fmt(bonus, locale)}** ${config.CURRENCY} 🎁`
                     : `Chúc mừng cậu đạt **Level ${newLevel}**! Thưởng **+${fmt(bonus, locale)}** ${config.CURRENCY} 🎁`;
+
+                // Gợi ý tham gia server support nếu vượt mốc cấp độ và ở server cộng đồng ngoài
+                const { getMilestoneInviteMessage } = require('../../lib/supportReward');
+                const inviteMsg = getMilestoneInviteMessage(oldLevel, newLevel, locale);
+                if (inviteMsg && interaction.guildId !== config.ROLE_REWARDS.SUPPORT_GUILD_ID) {
+                    lvlUpDesc += `\n\n${inviteMsg}`;
+                }
+
                 fields.push({ name: lvlUpTitle, value: lvlUpDesc, inline: false });
             }
 

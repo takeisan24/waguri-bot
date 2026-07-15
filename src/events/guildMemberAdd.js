@@ -21,6 +21,18 @@ module.exports = {
                 }
             }
 
+            // Tự động gán các role mốc cấp độ nếu đây là Server Support
+            const supportGuildId = require('../config').ROLE_REWARDS.SUPPORT_GUILD_ID;
+            if (supportGuildId && member.guild.id === supportGuildId) {
+                const user = await db.getUser(member.id);
+                if (user) {
+                    const { getLevelFromExp } = require('../lib/leveling');
+                    const level = getLevelFromExp(Number(user.exp || 0));
+                    const { syncSupportGuildRoles } = require('../lib/supportReward');
+                    await syncSupportGuildRoles(member, level);
+                }
+            }
+
             // 2. Xác định kênh chào mừng
             const supportId = process.env.SUPPORT_GUILD_ID;
             let channel = null;
