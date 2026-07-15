@@ -212,3 +212,23 @@ if (diffHours > 48) { // trễ hơn mốc điểm danh
 * **Giao diện Bot & Server Support:**
   * Đồng bộ và gán tự động màu sắc vai trò và danh vị tương ứng theo cấp độ người chơi tại Discord Support Server.
 
+---
+
+## 10. PHẦN K: STATUS PAGE TRÊN WEB (v2.3)
+
+### 10.1 Giao diện Trang Trạng Thái `/status`
+* **Cơ chế kiểm tra trạng thái (Status Check):**
+  * Gửi yêu cầu HTTP Fetch client-side tới `{BOT_API}/` (Health Check) và `{BOT_API}/stats` (Stats Check).
+  * Đo lường thời gian phản hồi (Response Latency) làm thông số Ping/Độ trễ.
+  * Nếu kết nối thành công (`200 OK` chứa "Waguri OK"): Trạng thái là **Operational** (Hoạt động tốt) với mã màu xanh lá cây (`#22C55E`).
+  * Nếu kết nối thất bại hoặc quá hạn (timeout 4s): Trạng thái là **Offline** (Ngoại tuyến) với mã màu đỏ (`#EF4444`).
+* **Bố cục giao diện (Layout):**
+  * Tiêu đề chính dạng thẻ Card lớn `{components.card}` hiển thị tổng quan trạng thái hệ thống: "Tất cả hệ thống hoạt động tốt" (All Systems Operational) kèm nhịp đập phát sáng (glowing pulse).
+  * Lưới grid 3 cột thông tin chi tiết:
+    1. **Discord Bot Gateway**: Trực quan hóa kết nối qua API của bot.
+    2. **Database (Supabase)**: Trạng thái kết nối DB (kiểm tra client-side Supabase connection).
+    3. **Cổng Thanh Toán Casso**: Trực quan hóa cổng webhook Casso.
+  * Widget hiển thị thông số hiệu năng (Servers & Users) dạng đồng hồ số hoặc đồ họa hình cột mini.
+  * Dòng biểu đồ thanh trạng thái mô phỏng 90 ngày gần nhất (Uptime bar) sử dụng màu xanh/tím để tạo điểm nhấn cao cấp.
+
+
