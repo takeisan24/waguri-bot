@@ -1030,6 +1030,21 @@ async function refundAiQuota(userId) {
     }
 }
 
+/** Gọi RPC claim_support_gift. Trả true/false hoặc null nếu lỗi. */
+async function claimSupportGift(userId, rewardCoins) {
+    try {
+        const { data, error } = await supabase.rpc('claim_support_gift', {
+            user_id_p: userId,
+            reward_coins_p: rewardCoins
+        });
+        if (error) throw error;
+        return data; // trả về boolean từ Postgres
+    } catch (error) {
+        console.error('[DATABASE ERROR] claimSupportGift():', error);
+        return null;
+    }
+}
+
 /**
  * Ghi/cập nhật 1 mẩu ký ức của Waguri về người dùng (Key-Value, vd 'ten_pet' -> 'Miu').
  * Trả object ai_memory mới hoặc null nếu lỗi.
@@ -1495,6 +1510,82 @@ async function marketMine(sellerId) {
     } catch (error) { console.error('[DATABASE ERROR] marketMine():', error); return []; }
 }
 
+// ============================================================
+//  CHỢ ĐẤU GIÁ (Auctions — advanced escrow model)
+// ============================================================
+async function createAuction(sellerId, itemId, qty, startingBid, minIncrement, hours, guildId, channelId) {
+    try {
+        const { data, error } = await supabase.rpc('auction_create', {
+            p_seller: sellerId,
+            p_item: itemId,
+            p_qty: qty,
+            p_starting_bid: startingBid,
+            p_min_increment: minIncrement,
+            p_hours: hours,
+            p_fee: config.AUCTION.LISTING_FEE,
+            p_guild: guildId,
+            p_channel: channelId
+        });
+        if (error) throw error;
+        return data;
+    } catch (error) { console.error('[DATABASE ERROR] createAuction():', error); return null; }
+}
+
+async function placeBid(bidderId, auctionId, amount) {
+    try {
+        const { data, error } = await supabase.rpc('auction_bid', {
+            p_bidder: bidderId,
+            p_auction: auctionId,
+            p_amount: amount
+        });
+        if (error) throw error;
+        return data;
+    } catch (error) { console.error('[DATABASE ERROR] placeBid():', error); return null; }
+}
+
+async function cancelAuction(sellerId, auctionId) {
+    try {
+        const { data, error } = await supabase.rpc('auction_cancel', {
+            p_seller: sellerId,
+            p_auction: auctionId
+        });
+        if (error) throw error;
+        return data;
+    } catch (error) { console.error('[DATABASE ERROR] cancelAuction():', error); return null; }
+}
+
+async function getActiveAuctions(limit = 25) {
+    try {
+        const { data } = await supabase.from('auctions')
+            .select('*')
+            .eq('status', 'active')
+            .order('ends_at', { ascending: true }) // sắp xếp kết thúc sớm nhất xếp trước
+            .limit(limit);
+        return data || [];
+    } catch (error) { console.error('[DATABASE ERROR] getActiveAuctions():', error); return []; }
+}
+
+async function getMyAuctions(userId) {
+    try {
+        const { data } = await supabase.from('auctions')
+            .select('*')
+            .eq('seller_id', userId)
+            .eq('status', 'active')
+            .order('created_at');
+        return data || [];
+    } catch (error) { console.error('[DATABASE ERROR] getMyAuctions():', error); return []; }
+}
+
+async function resolveExpiredAuctions(taxRate = config.AUCTION.TAX_PCT) {
+    try {
+        const { data, error } = await supabase.rpc('auction_resolve_expired', {
+            p_tax_rate: taxRate
+        });
+        if (error) throw error;
+        return data || [];
+    } catch (error) { console.error('[DATABASE ERROR] resolveExpiredAuctions():', error); return []; }
+}
+
 /** Tăng điểm tình cảm cặp đôi (cả hai vợ chồng). Trả {status, love, partner} hoặc null. */
 async function coupleLove(userId, amount) {
     try {
@@ -1879,6 +1970,7 @@ module.exports = {
     getPendingPremiumOrders,
     approvePremiumOrder,
     claimWelcomeBonus,
+    claimSupportGift,
     touchLastSeen,
     getPublicProfile,
     setProfilePublic,
@@ -2044,6 +2136,13 @@ module.exports = {
     marketCancel,
     marketActive,
     marketMine,
+    // auctions
+    createAuction,
+    placeBid,
+    cancelAuction,
+    getActiveAuctions,
+    getMyAuctions,
+    resolveExpiredAuctions,
     // admin
     setBalance,
     setExp,

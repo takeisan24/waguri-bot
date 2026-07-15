@@ -30,7 +30,7 @@ const CATEGORIES_VI: Cat[] = [
     name: "🏪 Cửa hàng & Kho",
     cmds: [
       ["store", "cửa hàng: xem danh sách, mua bán vật phẩm (list · buy · sell) 🏪"],
-      ["market", "chợ mua bán giữa người chơi 🛒"],
+      ["market", "chợ mua bán & đấu giá đồ giữa người chơi 🛒 (view · mine · sell · buy · cancel · auctions · auction · bid · cancel-auction)"],
       ["inventory", "xem kho đồ"],
       ["album", "xem sổ tay sưu tầm vật phẩm và nhận thưởng bộ sưu tập 📖"],
       ["pass", "xem và nhận thưởng Sổ Sứ Mệnh (Battle Pass) 📖"],
@@ -91,6 +91,7 @@ const CATEGORIES_VI: Cat[] = [
     cmds: [
       ["image", "xem ảnh động vật hoặc waifu dễ thương (cat · dog · waifu) 🖼️"],
       ["thoitiet", "xem thời tiết một thành phố"],
+      ["claim-support", "nhận quà gia nhập Server Support độc quyền 🎁"],
       ["announcement", "xem hoặc gửi thông báo cập nhật (view · send) 📢"],
     ],
   },
@@ -160,7 +161,7 @@ const CATEGORIES_EN: Cat[] = [
     name: "🏪 Store & Inventory",
     cmds: [
       ["store", "store: list, buy, or sell items 🏪"],
-      ["market", "player market for trading 🛒"],
+      ["market", "player market & auctions 🛒 (view · mine · sell · buy · cancel · auctions · auction · bid · cancel-auction)"],
       ["inventory", "view inventory"],
       ["album", "view collector handbook & claim collection rewards 📖"],
       ["pass", "view and claim Battle Pass rewards 📖"],
@@ -221,6 +222,7 @@ const CATEGORIES_EN: Cat[] = [
     cmds: [
       ["image", "view cute animals or waifu photos (cat · dog · waifu) 🖼️"],
       ["thoitiet", "check weather in a city"],
+      ["claim-support", "claim exclusive Support Server join rewards 🎁"],
       ["announcement", "view or send announcements 📢"],
     ],
   },

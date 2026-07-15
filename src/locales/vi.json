@@ -60,6 +60,11 @@
     "newly_sick_note": "🤒 Ôi, cậu vừa **đổ bệnh** do làm quá sức! Thu nhập sẽ giảm cho tới khi `/hospital` chữa."
   },
   "commands": {
+    "claim_support": {
+      "err_not_member": "Cậu ơi, hình như cậu chưa tham gia Server Support của Waguri rồi... 🥺 Hãy tham gia tại đây để nhận quà và trò chuyện cùng mọi người nhé: {url}",
+      "err_already_claimed": "Ôi, cậu đã nhận phần quà gia nhập Server Support trước đó rồi mà~ 🎁 Cảm ơn cậu đã đồng hành cùng mình nhé!",
+      "success": "A! Chúc mừng cậu đã nhận quà thành công! 🎉 Cậu được cộng **+{coins} xu** vào ví. Cảm ơn cậu rất nhiều vì đã tham gia Server Support của mình nha! 🌸"
+    },
     "bank": {
       "deposit_title": "🏦・Gửi tiền",
       "withdraw_title": "🏦・Rút tiền",
@@ -1246,6 +1251,7 @@
         "bot": "thông tin, trạng thái, hỗ trợ, mời bot (ping · about · support · invite)",
         "server": "thông tin server",
         "user": "thông tin người dùng",
+        "claim-support": "nhận quà gia nhập Server Support độc quyền 🎁",
         "deletedata": "xoá toàn bộ dữ liệu cá nhân của bạn (không hoàn tác) 🗑️",
         "help": "bảng trợ giúp này"
       }
@@ -1583,7 +1589,30 @@
       "title_cancel": "🛒 Hủy đăng bán",
       "err_not_yours": "Đây không phải món cậu đăng bán~",
       "cancel_success_title": "🛒 Hủy đăng bán thành công",
-      "cancel_success_desc": "Đã gỡ **{qty}× {name}** khỏi chợ, đồ trả về kho rồi nhé~ 🎒"
+      "cancel_success_desc": "Đã gỡ **{qty}× {name}** khỏi chợ, đồ trả về kho rồi nhé~ 🎒",
+      "err_auctions_empty": "Hiện tại không có phiên đấu giá nào đang diễn ra cả~ 🔨",
+      "title_auctions": "🔨 Đấu Giá — Phiên đang hoạt động",
+      "auction_highest_bidder": " | Lượt bid cao nhất: {bid} {currency} ({user})",
+      "auction_no_bids": " | Giá khởi điểm: {starting} {currency} (chưa có bid)",
+      "auction_line": "`#{id}` **{qty}× {name}** của {seller}{highest}\n⏱️ Kết thúc: {ends}\n",
+      "title_auction": "🔨 Tạo đấu giá vật phẩm",
+      "err_poor_fee": "Cậu cần **{fee}** {currency} để trả phí đăng đấu giá (chống spam)~ 😟",
+      "auction_success_title": "🔨 Tạo đấu giá thành công!",
+      "auction_success_desc": "Đã đăng đấu giá **{qty}× {name}** (mã `#{id}`) với:\n💵 Giá khởi điểm: **{starting} {currency}**\n📈 Bước giá tối thiểu: **{inc} {currency}**\n⏱️ Thời gian kết thúc: **{ends}**\n\n*Phí đăng tin đã thu: {fee} {currency} (không hoàn lại)*",
+      "title_bid": "💰 Đặt giá đấu",
+      "err_auction_not_active": "Phiên đấu giá này không hoạt động hoặc đã bị hủy~",
+      "err_auction_ended": "Phiên đấu giá này đã hết hạn kết thúc mất rồi 😢",
+      "err_own_bid": "Cậu không thể đặt giá trên phiên đấu giá của chính mình~ 😄",
+      "err_highest_bid": "Cậu đã là người trả giá cao nhất cho phiên này rồi mà~",
+      "err_low_bid": "Đặt giá không thành công! Cậu cần đặt tối thiểu **{min} {currency}** nha~",
+      "err_poor_bid": "Cậu không có đủ **{amount} {currency}** trong ví để đặt giá~ 😟",
+      "bid_success_title": "💰 Đặt giá thành công!",
+      "bid_success_desc": "Cậu đã đặt giá **{amount} {currency}** cho phiên đấu giá **#{id}**! Tiền đã được tạm giữ tại Escrow an toàn. Cùng chờ kết quả nhé~ 🌸",
+      "err_max_bid_limit": "Giá trị đặt bid hoặc giá khởi điểm vượt quá giới hạn an toàn tối đa: **{limit} xu**.",
+      "title_cancel_auction": "🔨 Hủy phiên đấu giá",
+      "err_cancel_auction_has_bids": "Không thể hủy phiên đấu giá này vì đã có người đặt giá rồi~ 😢",
+      "cancel_auction_success_title": "🔨 Hủy phiên đấu giá thành công!",
+      "cancel_auction_success_desc": "Đã hủy phiên đấu giá **#{id}** và hoàn trả lại **{qty}× {name}** về kho đồ của cậu nhé~ 🎒"
     },
     "repair": {
       "embed_title_warning": "🛠️・Sửa công cụ",

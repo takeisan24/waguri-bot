@@ -104,6 +104,7 @@ module.exports = {
         USER_COOLDOWN_MS: 4000,  // chống spam mỗi người
         FREE_DAILY: 15,          // số lượt chat AI/ngày cho user thường
         PREMIUM_DAILY: 150,      // số lượt chat AI/ngày cho user Premium
+        DISABLE_QUOTA_LIMIT: true, // tạm thời tắt chặn giới hạn chat AI
     },
 
     // Câu cá / đào mỏ / chặt gỗ (nguồn thu PvE, tốn năng lượng)
@@ -203,6 +204,14 @@ module.exports = {
 
     // Chợ mua bán đồ giữa người chơi (chợ cắt % = sink)
     MARKET: { FEE_PCT: 0.05, MIN_PRICE: 1 },
+    AUCTION: {
+        LISTING_FEE: 1000,          // phí đăng đấu giá (1000 xu)
+        TAX_PCT: 0.05,              // thuế sàn 5%
+        MIN_STARTING_BID: 100,      // giá khởi điểm tối thiểu
+        MIN_INCREMENT: 10,          // bước giá tối thiểu
+        MAX_EXTENSION_MS: 3600000,  // giới hạn gia hạn tối đa (1 giờ)
+        MAX_BID_LIMIT: 9000000000000000, // giá trị bid tối đa an toàn cho Javascript Number
+    },
 
     // Bang hội: phí lập bang (sink) + cược chiến tranh bang
     CLAN: { CREATE_COST: 50000, WAR_STAKE: 20000 },
@@ -294,6 +303,20 @@ module.exports = {
             noi_that: { name: 'Bộ Nội Thất Gỗ', rate: 0.05 },
             trang_suc: { name: 'Trang Sức Đá Quý', rate: 0.06 }
         },
+    },
+
+    // Hạng mục Thưởng Vai Trò theo cấp tại Server Support
+    ROLE_REWARDS: {
+        SUPPORT_GUILD_ID: process.env.SUPPORT_GUILD_ID || '1517931376865710120',
+        SUPPORT_INVITE: process.env.SUPPORT_INVITE || 'https://discord.gg/waguri',
+        GIFT_COINS: 10000,
+        MILESTONES: [
+            { level: 5, roleId: process.env.ROLE_LV5 || '1517931405903204423', name_vi: 'Tập sự Gekka 🧁', name_en: 'Gekka Apprentice 🧁' },
+            { level: 15, roleId: process.env.ROLE_LV15 || '1517931408831090729', name_vi: 'Thợ Bánh Kikyo 🌸', name_en: 'Kikyo Baker 🌸' },
+            { level: 30, roleId: process.env.ROLE_LV30 || '1517931411519770734', name_vi: 'Tri kỷ Waguri 💞', name_en: 'Waguri Soulmate 💞' },
+            { level: 50, roleId: process.env.ROLE_LV50 || '1517931413813952573', name_vi: 'Hộ vệ Chidori 🛡️', name_en: 'Chidori Guardian 🛡️' },
+            { level: 100, roleId: process.env.ROLE_LV100 || '1517931416972099614', name_vi: 'Chủ chuỗi Gekka 🍰', name_en: 'Gekka Master 🍰' },
+        ]
     },
 
     // Web app (dashboard, mua Premium...). Đổi qua env WEB_URL nếu deploy domain khác.

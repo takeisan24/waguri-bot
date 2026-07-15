@@ -60,6 +60,11 @@
     "newly_sick_note": "🤒 Oh, you just **got sick** from overworking! Income is reduced until you cure it at `/hospital`."
   },
   "commands": {
+    "claim_support": {
+      "err_not_member": "Oh dear, it seems you haven't joined the Waguri Support Server yet... 🥺 Please join here to get your reward and chat with everyone: {url}",
+      "err_already_claimed": "Oops, you have already claimed the Support Server join gift before~ 🎁 Thank you for staying with me!",
+      "success": "Ah! Congratulations on claiming your gift successfully! 🎉 **+{coins} coins** have been added to your wallet. Thank you so much for joining my Support Server! 🌸"
+    },
     "bank": {
       "deposit_title": "🏦・Deposit",
       "withdraw_title": "🏦・Withdraw",
@@ -1236,6 +1241,7 @@
         "bot": "bot status, support, invite (ping · about · support · invite)",
         "server": "server overview information",
         "user": "discord user overview information",
+        "claim-support": "claim exclusive Support Server join rewards 🎁",
         "deletedata": "permanently delete all your game data (irreversible) 🗑️",
         "help": "this help guidebook command"
       }
@@ -1573,7 +1579,30 @@
       "title_cancel": "🛒 Delist Item",
       "err_not_yours": "This listing does not belong to you~",
       "cancel_success_title": "🛒 Delisted Successfully",
-      "cancel_success_desc": "Removed **{qty}× {name}** from the marketplace and returned to your inventory~ 🎒"
+      "cancel_success_desc": "Removed **{qty}× {name}** from the marketplace and returned to your inventory~ 🎒",
+      "err_auctions_empty": "There are no active auctions running currently~ 🔨",
+      "title_auctions": "🔨 Auctions — Active Sessions",
+      "auction_highest_bidder": " | Highest bid: {bid} {currency} ({user})",
+      "auction_no_bids": " | Starting bid: {starting} {currency} (no bids)",
+      "auction_line": "`#{id}` **{qty}× {name}** by {seller}{highest}\n⏱️ Ends at: {ends}\n",
+      "title_auction": "🔨 Create Auction",
+      "err_poor_fee": "You need **{fee}** {currency} to pay the auction listing fee (spam prevention)~ 😟",
+      "auction_success_title": "🔨 Auction Created Successfully!",
+      "auction_success_desc": "Listed **{qty}× {name}** (ID `#{id}`) for auction with:\n💵 Starting Bid: **{starting} {currency}**\n📈 Minimum Increment: **{inc} {currency}**\n⏱️ End Time: **{ends}**\n\n*Listing fee collected: {fee} {currency} (non-refundable)*",
+      "title_bid": "💰 Place Bid",
+      "err_auction_not_active": "This auction is not active or has been cancelled~",
+      "err_auction_ended": "This auction has already ended 😢",
+      "err_own_bid": "You cannot place a bid on your own auction~ 😄",
+      "err_highest_bid": "You are already the highest bidder for this auction~",
+      "err_low_bid": "Bid failed! You must bid at least **{min} {currency}**~",
+      "err_poor_bid": "You do not have enough **{amount} {currency}** in your wallet to place this bid~ 😟",
+      "bid_success_title": "💰 Bid Placed Successfully!",
+      "bid_success_desc": "You successfully bid **{amount} {currency}** on auction **#{id}**! Funds have been securely escrowed. Let's wait for the results~ 🌸",
+      "err_max_bid_limit": "Bid value or starting bid exceeds safe numerical limit: **{limit} coins**.",
+      "title_cancel_auction": "🔨 Cancel Auction",
+      "err_cancel_auction_has_bids": "Cannot cancel this auction because bids have already been placed~ 😢",
+      "cancel_auction_success_title": "🔨 Auction Cancelled Successfully!",
+      "cancel_auction_success_desc": "Cancelled auction **#{id}** and returned **{qty}× {name}** to your inventory~ 🎒"
     },
     "repair": {
       "embed_title_warning": "🛠️・Repair Tool",
