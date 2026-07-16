@@ -2311,15 +2311,16 @@ async function getUserBadges(userId) {
     }
 }
 
+/** Mở khóa huy hiệu. Trả TRUE chỉ khi chèn MỚI (ON CONFLICT DO NOTHING -> select rỗng nếu đã có),
+ *  để caller trao thưởng / tính tiền ĐÚNG 1 lần (chống double-charge & cấp trùng). */
 async function unlockBadge(userId, badgeId) {
     try {
         const { data, error } = await supabase
             .from('user_badges')
-            .insert([{ user_id: userId, badge_id: badgeId }])
-            .select()
-            .single();
-        if (error && error.code !== '23505') throw error; // Ignore duplicate key
-        return true;
+            .upsert([{ user_id: userId, badge_id: badgeId }], { onConflict: 'user_id,badge_id', ignoreDuplicates: true })
+            .select('badge_id');
+        if (error) throw error;
+        return !!(data && data.length > 0);
     } catch (e) {
         logError('unlockBadge', e, { userId, badgeId });
         return false;
@@ -2416,7 +2417,7 @@ async function claimWorldEventReward(userId, eventId) {
 
         const { data: contrib, error: errFetch } = await supabase
             .from('world_event_contributions')
-            .select('*')
+            .select('claimed')
             .eq('event_id', eventId)
             .eq('user_id', userId)
             .maybeSingle();
@@ -2424,12 +2425,17 @@ async function claimWorldEventReward(userId, eventId) {
         if (!contrib) return 'no_contribution';
         if (contrib.claimed) return 'already_claimed';
 
-        const { error: errClaim } = await supabase
+        // NGUYÊN TỬ: chỉ set claimed nếu đang CHƯA claimed (false/null). Hai lần bấm đồng thời
+        // -> chỉ đúng 1 UPDATE khớp dòng; lần thua trả về 'already_claimed' (chống nhân bản item).
+        const { data: claimed, error: errClaim } = await supabase
             .from('world_event_contributions')
             .update({ claimed: true })
             .eq('event_id', eventId)
-            .eq('user_id', userId);
+            .eq('user_id', userId)
+            .not('claimed', 'is', true)
+            .select('user_id');
         if (errClaim) throw errClaim;
+        if (!claimed || claimed.length === 0) return 'already_claimed';
 
         return 'ok';
     } catch (e) {
@@ -2454,6 +2460,10 @@ async function getLatestWorldEvent() {
 }
 
 async function clanDepositResource(clanId, itemId, amount) {
+    // M2: sau khi áp dụng migration 0087 lên DB (prod + test), đổi thân hàm này sang
+    //     supabase.rpc('clan_deposit_resource', { p_clan_id: clanId, p_item_id: itemId, p_amount: amount })
+    //     để cộng tài nguyên nguyên tử (chống mất contribution khi 2 thành viên nạp cùng lúc).
+    //     Tạm giữ read-modify-write để không phụ thuộc RPC chưa deploy.
     try {
         const { data: clan, error: errGet } = await supabase
             .from('clans')
@@ -2461,10 +2471,10 @@ async function clanDepositResource(clanId, itemId, amount) {
             .eq('id', clanId)
             .single();
         if (errGet) throw errGet;
-        
+
         const resources = clan.resources || {};
         resources[itemId] = (resources[itemId] || 0) + amount;
-        
+
         const { error: errUp } = await supabase
             .from('clans')
             .update({ resources })

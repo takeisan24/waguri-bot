@@ -125,11 +125,15 @@ module.exports = {
                 return replyEmbed('warning', 'Đã sở hữu / Already Owned', 'Cậu đã sở hữu huy hiệu này rồi.');
             }
             
-            await db.addMoney(userId, -badgeConf.cost, 'wallet');
-            const ok = await db.unlockBadge(userId, badgeId);
-            if (!ok) {
+            // Trừ tiền nguyên tử TRƯỚC + kiểm return -> không cấp badge free nếu guard chặn (không đủ tiền).
+            if (!await db.addMoney(userId, -badgeConf.cost, 'wallet')) {
+                return replyEmbed('error', 'Không đủ tiền / Insufficient Coins', `Cậu cần **${fmt(badgeConf.cost, locale)} xu** để mua huy hiệu này.`);
+            }
+            const isNew = await db.unlockBadge(userId, badgeId);
+            if (!isNew) {
+                // Đã sở hữu (mua trùng / đua đồng thời) -> hoàn tiền, không tính phí lần 2.
                 await db.addMoney(userId, badgeConf.cost, 'wallet');
-                return replyEmbed('error', 'Lỗi / Error', 'Không thể mở khóa huy hiệu, vui lòng thử lại.');
+                return replyEmbed('warning', 'Đã sở hữu / Already Owned', 'Cậu đã sở hữu huy hiệu này rồi.');
             }
             
             const badgeName = locale === 'en' ? badgeConf.name_en : badgeConf.name_vi;
