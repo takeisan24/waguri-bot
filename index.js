@@ -22,8 +22,16 @@ const client = new Client({
 // 0. CHỐNG CRASH TOÀN CỤC
 // Bot KHÔNG được sập vì 1 promise lỗi hay 1 exception lẻ (vd Supabase chập chờn).
 // ---------------------------------------------------------
-process.on('unhandledRejection', (reason) => { console.error('[UNHANDLED REJECTION]', reason); logError('Unhandled Rejection', reason); });
-process.on('uncaughtException', (error) => { console.error('[UNCAUGHT EXCEPTION]', error); logError('Uncaught Exception', error); });
+process.on('unhandledRejection', (reason) => {
+    console.error('[UNHANDLED REJECTION]', reason);
+    logError('Unhandled Rejection', reason);
+    process.exit(1);
+});
+process.on('uncaughtException', (error) => {
+    console.error('[UNCAUGHT EXCEPTION]', error);
+    logError('Uncaught Exception', error);
+    process.exit(1);
+});
 
 // Tắt mượt: đóng kết nối Discord gọn gàng khi nhận tín hiệu dừng (Wispbyte/PM2/Ctrl+C restart)
 let shuttingDown = false;
@@ -183,65 +191,71 @@ async function runEconomySnapshot() {
         const snap = await db.snapshotEconomy();
         if (snap) console.log(`[TELEMETRY] Kinh tế ${snap.taken_on}: cung tiền ${snap.total_supply}, ${snap.user_count} user (${snap.active_7d} hoạt động 7d).`);
     } catch (e) { logError('economy_snapshot', e); }
+    if (!shuttingDown) {
+        setTimeout(runEconomySnapshot, 12 * 60 * 60_000).unref();
+    }
 }
 setTimeout(runEconomySnapshot, 30_000).unref();            // chụp lần đầu sau khi khởi động ổn định
-setInterval(runEconomySnapshot, 12 * 60 * 60_000).unref(); // rồi mỗi 12h
 
 // Trình phân giải các phiên đấu giá đã kết thúc tự động mỗi phút
 async function runAuctionResolution() {
     try {
         const resolved = await db.resolveExpiredAuctions();
-        if (!resolved || resolved.length === 0) return;
+        if (resolved && resolved.length > 0) {
+            console.log(`[AUCTION] Đã kết thúc ${resolved.length} phiên đấu giá.`);
+            const items = await db.getItems();
 
-        console.log(`[AUCTION] Đã kết thúc ${resolved.length} phiên đấu giá.`);
-        const items = await db.getItems();
+            for (const r of resolved) {
+                const item = items.find(i => i.id === r.item_id);
+                const itemName = item ? item.name : r.item_id;
 
-        for (const r of resolved) {
-            const item = items.find(i => i.id === r.item_id);
-            const itemName = item ? item.name : r.item_id;
-
-            // 1. Gửi tin nhắn về channel gốc của máy chủ
-            try {
-                const channel = await client.channels.fetch(r.channel_id).catch(() => null);
-                if (channel && channel.isTextBased()) {
-                    if (r.outcome === 'sold') {
-                        await channel.send(`🎉 **[ĐẤU GIÁ KẾT THÚC]** Chúc mừng <@${r.highest_bidder_id}> đã thắng phiên đấu giá **#${r.id}** của <@${r.seller_id}>! Đã nhận được **${r.qty}** ${itemName} với giá **${Number(r.current_bid).toLocaleString('vi-VN')} xu**!`);
-                    } else {
-                        await channel.send(`🔨 **[ĐẤU GIÁ KẾT THÚC]** Phiên đấu giá **#${r.id}** của <@${r.seller_id}> (bán **${r.qty}** ${itemName}) đã kết thúc mà không có ai đặt giá. Vật phẩm đã được hoàn lại về kho người bán.`);
-                    }
-                }
-            } catch (e) {
-                console.error(`[AUCTION ERROR] Không thể gửi thông báo về channel ${r.channel_id}:`, e.message);
-            }
-
-            // 2. Gửi DM cho người thắng và người bán
-            if (r.outcome === 'sold') {
-                // Gửi DM cho người thắng
+                // 1. Gửi tin nhắn về channel gốc của máy chủ
                 try {
-                    const winner = await client.users.fetch(r.highest_bidder_id).catch(() => null);
-                    if (winner) {
-                        await winner.send(`🎉 Chúc mừng cậu đã thắng phiên đấu giá **#${r.id}**! Cậu đã nhận được **${r.qty}** ${itemName} với giá **${Number(r.current_bid).toLocaleString('vi-VN')} xu**.`);
+                    const channel = await client.channels.fetch(r.channel_id).catch(() => null);
+                    if (channel && channel.isTextBased()) {
+                        if (r.outcome === 'sold') {
+                            await channel.send(`🎉 **[ĐẤU GIÁ KẾT THÚC]** Chúc mừng <@${r.highest_bidder_id}> đã thắng phiên đấu giá **#${r.id}** của <@${r.seller_id}>! Đã nhận được **${r.qty}** ${itemName} với giá **${Number(r.current_bid).toLocaleString('vi-VN')} xu**!`);
+                        } else {
+                            await channel.send(`🔨 **[ĐẤU GIÁ KẾT THÚC]** Phiên đấu giá **#${r.id}** của <@${r.seller_id}> (bán **${r.qty}** ${itemName}) đã kết thúc mà không có ai đặt giá. Vật phẩm đã được hoàn lại về kho người bán.`);
+                        }
                     }
                 } catch (e) {
-                    console.log(`[DM WARN] Không thể gửi DM cho người thắng ${r.highest_bidder_id}: ${e.message}`);
+                    console.error(`[AUCTION ERROR] Không thể gửi thông báo về channel ${r.channel_id}:`, e.message);
                 }
 
-                // Gửi DM cho người bán
-                try {
-                    const sellerUser = await client.users.fetch(r.seller_id).catch(() => null);
-                    if (sellerUser) {
-                        await sellerUser.send(`💰 Phiên đấu giá **#${r.id}** của cậu đã kết thúc thành công! Cậu nhận được **${Number(r.net_payout).toLocaleString('vi-VN')} xu** (sau khi trừ 5% thuế sàn).`);
+                // 2. Gửi DM cho người thắng và người bán
+                if (r.outcome === 'sold') {
+                    // Gửi DM cho người thắng
+                    try {
+                        const winner = await client.users.fetch(r.highest_bidder_id).catch(() => null);
+                        if (winner) {
+                            await winner.send(`🎉 Chúc mừng cậu đã thắng phiên đấu giá **#${r.id}**! Cậu đã nhận được **${r.qty}** ${itemName} với giá **${Number(r.current_bid).toLocaleString('vi-VN')} xu**.`);
+                        }
+                    } catch (e) {
+                        console.log(`[DM WARN] Không thể gửi DM cho người thắng ${r.highest_bidder_id}: ${e.message}`);
                     }
-                } catch (e) {
-                    console.log(`[DM WARN] Không thể gửi DM cho người bán ${r.seller_id}: ${e.message}`);
+
+                    // Gửi DM cho người bán
+                    try {
+                        const sellerUser = await client.users.fetch(r.seller_id).catch(() => null);
+                        if (sellerUser) {
+                            await sellerUser.send(`💰 Phiên đấu giá **#${r.id}** của cậu đã kết thúc thành công! Cậu nhận được **${Number(r.net_payout).toLocaleString('vi-VN')} xu** (sau khi trừ 5% thuế sàn).`);
+                        }
+                    } catch (e) {
+                        console.log(`[DM WARN] Không thể gửi DM cho người bán ${r.seller_id}: ${e.message}`);
+                    }
                 }
             }
         }
     } catch (e) {
         console.error('[AUCTION ERROR] runAuctionResolution():', e);
+    } finally {
+        if (!shuttingDown) {
+            setTimeout(runAuctionResolution, 60_000).unref();
+        }
     }
 }
-setInterval(runAuctionResolution, 60_000).unref();
+setTimeout(runAuctionResolution, 60_000).unref();
 
 // Đăng nhập có retry/backoff (5s, 10s, ... tối đa 60s) — không bỏ cuộc khi bắt tay timeout lúc khởi động.
 (async function startBot() {

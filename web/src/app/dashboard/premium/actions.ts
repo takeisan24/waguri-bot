@@ -22,6 +22,19 @@ export async function createPremiumOrder(plan: string) {
   if (!id) redirect("/login");
 
   const admin = createAdminClient();
+
+  // M11: Giới hạn tối đa 5 hóa đơn trạng thái 'pending' để chống spam
+  const { data: pendingOrders } = await admin
+    .from("premium_orders")
+    .select("code")
+    .eq("user_id", id)
+    .eq("status", "pending")
+    .limit(6);
+
+  if (pendingOrders && pendingOrders.length >= 5) {
+    redirect("/dashboard/premium?error=too_many_pending");
+  }
+
   const { data, error } = await admin.rpc("create_premium_order", {
     p_user: id,
     p_plan: plan,
