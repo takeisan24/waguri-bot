@@ -2,15 +2,16 @@
 
 import { useEffect, useState } from "react";
 import { BOT_API } from "../lib/botApi";
+import { useLanguage } from "./LanguageProvider";
 
 // Endpoint /stats do bot tự phục vụ (src/lib/voteServer.js) — JSON { servers, users }.
 const STATS_URL = `${BOT_API}/stats`;
 
 type Stats = { servers: number; users: number };
 
-const fmt = (n: number) => n.toLocaleString("vi-VN");
-
 export default function LiveStats() {
+  const { t, locale } = useLanguage();
+  const fmt = (n: number) => n.toLocaleString(locale === "en" ? "en-US" : "vi-VN");
   const [stats, setStats] = useState<Stats | null>(null);
 
   useEffect(() => {
@@ -37,10 +38,10 @@ export default function LiveStats() {
   return (
     <div className="flex flex-wrap items-center justify-center gap-3 pt-2 text-sm">
       <span className="inline-flex items-center gap-2 rounded-full border border-pink-300/20 bg-pink-500/5 px-4 py-1.5 text-pink-200 backdrop-blur-md">
-        🌸 Đang phục vụ <strong className="text-pink-300">{fmt(stats.servers)}</strong> server
+        🌸 {t("livestats.serving")} <strong className="text-pink-300">{fmt(stats.servers)}</strong> {t("livestats.servers")}
       </span>
       <span className="inline-flex items-center gap-2 rounded-full border border-pink-300/20 bg-pink-500/5 px-4 py-1.5 text-pink-200 backdrop-blur-md">
-        👥 <strong className="text-pink-300">{fmt(stats.users)}</strong> thành viên
+        👥 <strong className="text-pink-300">{fmt(stats.users)}</strong> {t("livestats.members")}
       </span>
     </div>
   );

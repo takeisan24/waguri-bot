@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { BOT_API } from "../lib/botApi";
+import { useLanguage } from "./LanguageProvider";
 
 // Banner sự kiện toàn cục đang chạy (đồng bộ với lịch sự kiện auto của bot — data/events.js).
 // Fetch client-side (như LiveStats) để không chặn render & không cần force-dynamic ở landing.
 type Ev = { active: boolean; mult: number; name: string | null; until: number };
 
 export default function EventBanner() {
+  const { t } = useLanguage();
   const [ev, setEv] = useState<Ev | null>(null);
 
   useEffect(() => {
@@ -33,9 +35,9 @@ export default function EventBanner() {
   return (
     <div className="rounded-2xl border border-amber-300/30 bg-gradient-to-r from-amber-500/10 via-pink-500/10 to-purple-500/10 px-5 py-3 text-center backdrop-blur-md">
       <span className="text-sm font-bold text-amber-200">
-        🎉 Đang có sự kiện{" "}
-        {ev.name ? <span className="text-white">{ev.name}</span> : "đặc biệt"} — nhân{" "}
-        <span className="text-white">x{ev.mult}</span> thu nhập &amp; EXP toàn server! 🌸
+        {t("event_banner.prefix")}{" "}
+        <span className="text-white">{ev.name || t("event_banner.special")}</span> —{" "}
+        {t("event_banner.boost", { mult: ev.mult })} 🌸
       </span>
     </div>
   );

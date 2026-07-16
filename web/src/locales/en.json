@@ -6,6 +6,27 @@
     "loading": "Redirecting...",
     "back": "← Back to home"
   },
+  "livestats": {
+    "serving": "Serving",
+    "servers": "servers",
+    "members": "members"
+  },
+  "lb_teaser": {
+    "title": "🏆 Top Tycoons",
+    "subtitle": "Waguri's richest players — can you make the top?",
+    "updating": "Leaderboard is updating~ 🌸",
+    "currency": "coins",
+    "view_full": "View full leaderboard →"
+  },
+  "event_banner": {
+    "prefix": "🎉 Event active:",
+    "special": "special",
+    "boost": "×{mult} income & EXP server-wide!"
+  },
+  "share": {
+    "copied": "✅ Copied!",
+    "share": "🔗 Share profile"
+  },
   "nav": {
     "commands": "Commands",
     "wiki": "Wiki",

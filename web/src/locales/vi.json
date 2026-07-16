@@ -6,6 +6,27 @@
     "loading": "Đang chuyển...",
     "back": "← Về trang chủ"
   },
+  "livestats": {
+    "serving": "Đang phục vụ",
+    "servers": "server",
+    "members": "thành viên"
+  },
+  "lb_teaser": {
+    "title": "🏆 Top Đại Gia",
+    "subtitle": "Những người chơi giàu nhất Waguri — bạn có lọt top không?",
+    "updating": "Bảng xếp hạng đang cập nhật~ 🌸",
+    "currency": "VNĐ",
+    "view_full": "Xem bảng xếp hạng đầy đủ →"
+  },
+  "event_banner": {
+    "prefix": "🎉 Đang có sự kiện",
+    "special": "đặc biệt",
+    "boost": "nhân x{mult} thu nhập & EXP toàn server!"
+  },
+  "share": {
+    "copied": "✅ Đã copy!",
+    "share": "🔗 Chia sẻ hồ sơ"
+  },
   "nav": {
     "commands": "Lệnh",
     "wiki": "Cẩm nang",

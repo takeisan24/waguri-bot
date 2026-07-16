@@ -3,15 +3,17 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { BOT_API } from "../lib/botApi";
+import { useLanguage } from "./LanguageProvider";
 
 // Teaser top đại gia — fetch CLIENT-side (như LiveStats) để KHÔNG chặn render landing.
 const API = BOT_API;
 const MEDALS = ["🥇", "🥈", "🥉"];
-const fmt = (n: number) => Number(n || 0).toLocaleString("vi-VN");
 
 type Row = { id: string; username: string; avatar: string | null; value: number };
 
 export default function LeaderboardTeaser() {
+  const { t, locale } = useLanguage();
+  const fmt = (n: number) => Number(n || 0).toLocaleString(locale === "en" ? "en-US" : "vi-VN");
   const [rows, setRows] = useState<Row[] | null>(null); // null = đang tải
 
   useEffect(() => {
@@ -31,8 +33,8 @@ export default function LeaderboardTeaser() {
   return (
     <section className="w-full py-12 md:py-16">
       <div className="text-center max-w-2xl mx-auto mb-8 space-y-2">
-        <h2 className="text-3xl md:text-4xl font-extrabold text-white">🏆 Top Đại Gia</h2>
-        <p className="text-slate-400 text-sm md:text-base">Những người chơi giàu nhất Waguri — bạn có lọt top không?</p>
+        <h2 className="text-3xl md:text-4xl font-extrabold text-white">{t("lb_teaser.title")}</h2>
+        <p className="text-slate-400 text-sm md:text-base">{t("lb_teaser.subtitle")}</p>
       </div>
       <div className="max-w-xl mx-auto glass-panel rounded-3xl p-5 border border-pink-300/15">
         {rows === null ? (
@@ -47,7 +49,7 @@ export default function LeaderboardTeaser() {
             ))}
           </ol>
         ) : rows.length === 0 ? (
-          <p className="text-center text-slate-500 text-sm py-4">Bảng xếp hạng đang cập nhật~ 🌸</p>
+          <p className="text-center text-slate-500 text-sm py-4">{t("lb_teaser.updating")}</p>
         ) : (
           <ol className="space-y-1.5">
             {rows.map((r, i) => (
@@ -65,7 +67,7 @@ export default function LeaderboardTeaser() {
                   )}
                   <span className="flex-1 truncate text-slate-200">{r.username}</span>
                   <span className="font-bold text-white">
-                    {fmt(r.value)} <span className="text-pink-300/70 text-xs">VNĐ</span>
+                    {fmt(r.value)} <span className="text-pink-300/70 text-xs">{t("lb_teaser.currency")}</span>
                   </span>
                 </Link>
               </li>
@@ -74,7 +76,7 @@ export default function LeaderboardTeaser() {
         )}
         <div className="text-center mt-3">
           <Link href="/leaderboard" className="inline-block text-sm font-bold text-pink-300 hover:text-pink-200">
-            Xem bảng xếp hạng đầy đủ →
+            {t("lb_teaser.view_full")}
           </Link>
         </div>
       </div>
