@@ -1,16 +1,18 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import CherryBlossom from "../../components/CherryBlossom";
 import SiteHeader from "../../components/SiteHeader";
 import SiteFooter from "../../components/SiteFooter";
 import { BOT_API } from "../../lib/botApi";
 import { createClient } from "../../lib/supabase/client";
+import { useLanguage } from "../../components/LanguageProvider";
 
 type SystemStatus = "loading" | "online" | "offline";
 
 export default function StatusPage() {
-  const [locale, setLocale] = useState<"vi" | "en">("vi");
+  // locale lấy từ context (server đã đọc cookie) — tránh flash & không setState trong effect.
+  const { locale } = useLanguage();
   const [botStatus, setBotStatus] = useState<SystemStatus>("loading");
   const [dbStatus, setDbStatus] = useState<SystemStatus>("loading");
   
@@ -25,26 +27,14 @@ export default function StatusPage() {
   const [isAuto, setIsAuto] = useState(true);
   const [countdown, setCountdown] = useState(30);
 
-  // Sync locale from document cookie if present
-  useEffect(() => {
-    // Đọc đúng tên cookie mà LanguageProvider ghi ('locale'), không phải 'WAGURI_LOCALE'.
-    const match = document.cookie.match(/(?:^|;\s*)locale=(vi|en)/);
-    if (match) setLocale(match[1] as "vi" | "en");
-  }, []);
-
   // Update Dynamic Document Title
   useEffect(() => {
     document.title = locale === "en" ? "System Status — Waguri" : "Trạng Thái Hệ Thống — Waguri";
   }, [locale]);
 
-  const runStatusCheck = React.useCallback(async () => {
-    setIsRefreshing(true);
-    setBotStatus("loading");
-    setDbStatus("loading");
-    setGatewayPing(null);
-    setDbPing(null);
-    setApiPing(null);
-
+  // Các phép đo sức khoẻ (async) — mọi setState đều nằm SAU await nên không vi phạm
+  // rule react-hooks/set-state-in-effect của React 19.
+  const checkServices = useCallback(async () => {
     // 1. Check Bot Health Check & Api Ping
     const apiStart = Date.now();
     try {
@@ -66,7 +56,7 @@ export default function StatusPage() {
       } else {
         setBotStatus("offline");
       }
-    } catch (e) {
+    } catch {
       setBotStatus("offline");
     }
 
@@ -90,7 +80,7 @@ export default function StatusPage() {
           }
         }
       }
-    } catch (e) {
+    } catch {
       // Keep previous stats
     }
 
@@ -98,23 +88,25 @@ export default function StatusPage() {
     const dbStart = Date.now();
     try {
       const supabase = createClient();
-      const timeoutPromise = new Promise((_, reject) =>
+      // Promise<never>: nhánh timeout không trả giá trị, để Promise.race suy đúng
+      // kiểu response của Supabase (khỏi cần cast `as any`).
+      const timeoutPromise = new Promise<never>((_, reject) =>
         setTimeout(() => reject(new Error("Timeout")), 4000)
       );
-      
+
       const queryPromise = supabase
         .from("world_events")
         .select("id")
         .limit(1);
 
-      const { error } = await Promise.race([queryPromise, timeoutPromise]) as any;
+      const { error } = await Promise.race([queryPromise, timeoutPromise]);
 
       const duration = Date.now() - dbStart;
 
       if (error) throw error;
       setDbStatus("online");
       setDbPing(duration);
-    } catch (e) {
+    } catch {
       setDbStatus("offline");
     }
 
@@ -122,10 +114,23 @@ export default function StatusPage() {
     setCountdown(30);
   }, []);
 
-  // Initial load
+  // Reset hiển thị về "đang tải" rồi chạy probe — dùng cho nút Refresh & auto-refresh.
+  const runStatusCheck = useCallback(() => {
+    setIsRefreshing(true);
+    setBotStatus("loading");
+    setDbStatus("loading");
+    setGatewayPing(null);
+    setDbPing(null);
+    setApiPing(null);
+    void checkServices();
+  }, [checkServices]);
+
+  // Initial load — kick probe đầu tiên trong callback setTimeout (giống effect
+  // setInterval bên dưới): setState chỉ chạy trong callback, không đồng bộ trong effect.
   useEffect(() => {
-    runStatusCheck();
-  }, []);
+    const id = setTimeout(() => void checkServices(), 0);
+    return () => clearTimeout(id);
+  }, [checkServices]);
 
   // Handle Auto-Refresh interval timer with memory cleanup
   useEffect(() => {

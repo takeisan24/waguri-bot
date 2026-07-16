@@ -1,5 +1,9 @@
 "use client";
 
+/* Ảnh trong mockup là avatar/reaction từ nhiều CDN Discord bất kỳ, chỉ mang tính
+   trang trí — dùng <img> cố ý thay cho next/image (không cần tối ưu LCP/remotePatterns). */
+/* eslint-disable @next/next/no-img-element */
+
 import React, { useState, useEffect, useRef } from "react";
 
 interface EmbedField {

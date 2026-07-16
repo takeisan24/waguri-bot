@@ -22,7 +22,6 @@ type BattlePassClientProps = {
 };
 
 export default function BattlePassClient({
-  userId: _userId,
   username,
   wallet,
   bp,
