@@ -10,7 +10,8 @@ function parseAmount(raw, max = Infinity) {
     if (!m) return null;
     const mult = { k: 1e3, m: 1e6, tr: 1e6, b: 1e9, ty: 1e9 }[m[2]] || 1;
     const n = Math.floor(parseFloat(m[1]) * mult);
-    return n > 0 ? n : null;
+    // Number.isFinite: chặn chuỗi số cực dài -> parseFloat=Infinity lọt vào thao tác tiền.
+    return Number.isFinite(n) && n > 0 ? n : null;
 }
 
 module.exports = { parseAmount };

@@ -36,6 +36,10 @@ function t(locale, key, params = {}) {
                 return substitute(fallbackValue, params);
             }
         }
+        // Namespace TÊN VẬT PHẨM: vi chưa có 'items'/'data.items' -> trả undefined để call-site
+        // dùng fallback tên trong DB (tiếng Việt) thay vì hiện raw key 'items.go.name'.
+        // Các key khác vẫn trả về key để lộ rõ chỗ thiếu dịch (không đổi hành vi cũ).
+        if (key.startsWith('items.') || key.startsWith('data.items.')) return undefined;
         return key;
     }
     
