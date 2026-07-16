@@ -105,7 +105,8 @@ module.exports = {
         USER_COOLDOWN_MS: 4000,  // chống spam mỗi người
         FREE_DAILY: 15,          // số lượt chat AI/ngày cho user thường
         PREMIUM_DAILY: 150,      // số lượt chat AI/ngày cho user Premium
-        DISABLE_QUOTA_LIMIT: true, // tạm thời tắt chặn giới hạn chat AI
+        // (Đã bỏ cờ DISABLE_QUOTA_LIMIT: nó không được dùng ở đâu -> quota AI vẫn luôn bật.
+        //  Giữ cap để tránh đội chi phí Gemini. Muốn tắt cap thì chỉnh trực tiếp consumeAiQuota.)
     },
 
     // Câu cá / đào mỏ / chặt gỗ (nguồn thu PvE, tốn năng lượng)
