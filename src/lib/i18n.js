@@ -28,18 +28,20 @@ function t(locale, key, params = {}) {
     
     // Tìm giá trị lồng nhau theo key (ví dụ: 'common.btn.confirm')
     const value = key.split('.').reduce((obj, k) => obj?.[k], lang);
-    if (!value) {
+    // Dùng `== null` (không phải `!value`) để một bản dịch rỗng "" hợp lệ không bị coi là thiếu.
+    if (value == null) {
         // Fallback sang tiếng Việt nếu không có bản dịch tiếng Anh
         if (langCode !== 'vi') {
             const fallbackValue = key.split('.').reduce((obj, k) => obj?.[k], locales.vi);
-            if (fallbackValue) {
+            if (fallbackValue != null) {
                 return substitute(fallbackValue, params);
             }
         }
-        // Namespace TÊN VẬT PHẨM: vi chưa có 'items'/'data.items' -> trả undefined để call-site
-        // dùng fallback tên trong DB (tiếng Việt) thay vì hiện raw key 'items.go.name'.
-        // Các key khác vẫn trả về key để lộ rõ chỗ thiếu dịch (không đổi hành vi cũ).
-        if (key.startsWith('items.') || key.startsWith('data.items.')) return undefined;
+        // Namespace DỮ LIỆU/TÊN THỰC THỂ ('items.*' và mọi 'data.*': tên vật phẩm, nghề,
+        // cây trồng, bộ sưu tập...) đều lấy tên gốc từ DB. vi chưa có các key này -> trả
+        // undefined để call-site dùng fallback `|| tênDB` thay vì lộ raw key
+        // (vd người Việt thấy 'data.jobs.shipper.name'). Key khác vẫn trả key để lộ chỗ thiếu dịch.
+        if (key.startsWith('items.') || key.startsWith('data.')) return undefined;
         return key;
     }
     
