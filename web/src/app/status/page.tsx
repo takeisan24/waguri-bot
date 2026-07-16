@@ -27,7 +27,8 @@ export default function StatusPage() {
 
   // Sync locale from document cookie if present
   useEffect(() => {
-    const match = document.cookie.match(/WAGURI_LOCALE=(vi|en)/);
+    // Đọc đúng tên cookie mà LanguageProvider ghi ('locale'), không phải 'WAGURI_LOCALE'.
+    const match = document.cookie.match(/(?:^|;\s*)locale=(vi|en)/);
     if (match) setLocale(match[1] as "vi" | "en");
   }, []);
 

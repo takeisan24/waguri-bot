@@ -13,7 +13,8 @@ async function userManages(guildId: string): Promise<boolean> {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return false;
-  const guilds = (user.user_metadata?.guilds as { id: string; manage?: boolean }[] | undefined) ?? [];
+  // app_metadata: chỉ service-role ghi được (set ở auth/callback) -> không giả mạo được từ client.
+  const guilds = (user.app_metadata?.guilds as { id: string; manage?: boolean }[] | undefined) ?? [];
   return guilds.some((g) => g.id === guildId && g.manage === true);
 }
 

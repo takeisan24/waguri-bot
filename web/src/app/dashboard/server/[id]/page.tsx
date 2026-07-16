@@ -60,7 +60,7 @@ export default async function ServerConfig({ params }: { params: Promise<{ id: s
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const guilds = (user.user_metadata?.guilds as { id: string; name: string; manage?: boolean }[] | undefined) ?? [];
+  const guilds = (user.app_metadata?.guilds as { id: string; name: string; manage?: boolean }[] | undefined) ?? [];
   const guild = guilds.find((g) => g.id === id);
   if (!guild || !guild.manage) redirect("/dashboard");
 

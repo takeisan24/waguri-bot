@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "../../../lib/supabase/server";
+import { createAdminClient } from "../../../lib/supabase/admin";
 import { BOT_API } from "../../../lib/botApi";
 
 // Đích redirect sau khi Supabase xử lý OAuth Discord -> đổi code lấy phiên.
@@ -33,7 +34,13 @@ export async function GET(request: Request) {
                 manage: g.owner === true || (BigInt(g.permissions || "0") & BigInt(32)) === BigInt(32),
               }))
               .slice(0, 30);
-            await supabase.auth.updateUser({ data: { guilds: mutual } });
+            // Ghi vào app_metadata (CHỈ service-role sửa được) thay vì user_metadata (client tự sửa được)
+            // -> cờ `manage` không thể bị giả mạo từ trình duyệt để leo thang quyền sửa cấu hình server.
+            const uid = data.user?.id;
+            if (uid) {
+              const admin = createAdminClient();
+              await admin.auth.admin.updateUserById(uid, { app_metadata: { guilds: mutual } });
+            }
           }
         }
       } catch {

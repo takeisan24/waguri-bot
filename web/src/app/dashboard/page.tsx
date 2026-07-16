@@ -41,7 +41,7 @@ export default async function Dashboard() {
   if (!id) redirect("/login");
 
   const guilds =
-    (user.user_metadata?.guilds as { id: string; name: string; icon: string | null; manage?: boolean }[] | undefined) ?? [];
+    (user.app_metadata?.guilds as { id: string; name: string; icon: string | null; manage?: boolean }[] | undefined) ?? [];
   const manageGuilds = guilds.filter((g) => g.manage);
 
   const admin = createAdminClient();
