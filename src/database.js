@@ -4,7 +4,43 @@ const config = require('./config');
 // 1. Tải các biến môi trường cấu hình Supabase
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
-const rawClient = (supabaseUrl && supabaseKey) ? createClient(supabaseUrl, supabaseKey) : null;
+
+// Fetch bền hơn cho Supabase: đặt deadline mỗi request để mạng chập chờn không treo
+// vô hạn (biến hang thành lỗi bắt được bởi các catch → return null/[] sẵn có), và
+// retry 1 lần CHỈ khi lỗi ở BƯỚC BẮT TAY KẾT NỐI — lúc đó request chưa hề chạm server
+// nên an toàn với cả RPC không idempotent (không sợ cộng/trừ tiền 2 lần).
+const SUPABASE_TIMEOUT_MS = Number(process.env.SUPABASE_TIMEOUT_MS) || 10_000;
+const isConnectPhaseError = (err) => {
+    const code = err?.cause?.code || err?.code;
+    // Chỉ các mã "chưa kết nối được" (DNS/connect) — KHÔNG gồm ECONNRESET (có thể xảy ra
+    // sau khi server đã nhận & xử lý request → retry sẽ double-execute).
+    return code === 'UND_ERR_CONNECT_TIMEOUT' || code === 'ECONNREFUSED'
+        || code === 'ENOTFOUND' || code === 'EAI_AGAIN';
+};
+const resilientFetch = async (url, options = {}) => {
+    const runOnce = async () => {
+        const ac = new AbortController();
+        const timer = setTimeout(() => ac.abort(), SUPABASE_TIMEOUT_MS);
+        try {
+            return await fetch(url, { ...options, signal: ac.signal });
+        } finally {
+            clearTimeout(timer);
+        }
+    };
+    try {
+        return await runOnce();
+    } catch (err) {
+        if (isConnectPhaseError(err)) return await runOnce();
+        throw err;
+    }
+};
+
+const rawClient = (supabaseUrl && supabaseKey)
+    ? createClient(supabaseUrl, supabaseKey, {
+        auth: { persistSession: false, autoRefreshToken: false },
+        global: { fetch: resilientFetch },
+    })
+    : null;
 
 if (!rawClient) {
     console.warn('[WARNING] Thiếu cấu hình SUPABASE_URL hoặc SUPABASE_SERVICE_KEY trong file .env. Truy cập DB sẽ bị lỗi.');
