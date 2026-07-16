@@ -16,6 +16,7 @@ describe('HTTP Vote & Stats Server Integration Tests', () => {
     before(() => {
         // Mock client discord.js cơ bản
         clientMock = {
+            ws: { ping: 42 },
             user: { id: '123456789', displayAvatarURL: () => 'https://waguri.avatar.url' },
             guilds: {
                 cache: {
@@ -59,6 +60,7 @@ describe('HTTP Vote & Stats Server Integration Tests', () => {
         const json = await res.json();
         assert.strictEqual(json.servers, 5);
         assert.strictEqual(json.users, 30);
+        assert.strictEqual(json.gatewayPing, 42);
     });
 
     test('POST /casso/webhook returns 401 if secure-token header is invalid', async () => {

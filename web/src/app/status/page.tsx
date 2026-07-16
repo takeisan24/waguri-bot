@@ -13,10 +13,17 @@ export default function StatusPage() {
   const [locale, setLocale] = useState<"vi" | "en">("vi");
   const [botStatus, setBotStatus] = useState<SystemStatus>("loading");
   const [dbStatus, setDbStatus] = useState<SystemStatus>("loading");
-  const [ping, setPing] = useState<number | null>(null);
+  
+  const [gatewayPing, setGatewayPing] = useState<number | null>(null);
+  const [dbPing, setDbPing] = useState<number | null>(null);
+  const [apiPing, setApiPing] = useState<number | null>(null);
+  
   const [servers, setServers] = useState<number | null>(null);
   const [users, setUsers] = useState<number | null>(null);
+  
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isAuto, setIsAuto] = useState(true);
+  const [countdown, setCountdown] = useState(30);
 
   // Sync locale from document cookie if present
   useEffect(() => {
@@ -24,15 +31,22 @@ export default function StatusPage() {
     if (match) setLocale(match[1] as "vi" | "en");
   }, []);
 
-  const runStatusCheck = async () => {
+  // Update Dynamic Document Title
+  useEffect(() => {
+    document.title = locale === "en" ? "System Status — Waguri" : "Trạng Thái Hệ Thống — Waguri";
+  }, [locale]);
+
+  const runStatusCheck = React.useCallback(async () => {
     setIsRefreshing(true);
     setBotStatus("loading");
     setDbStatus("loading");
-    setPing(null);
+    setGatewayPing(null);
+    setDbPing(null);
+    setApiPing(null);
 
-    const startTime = Date.now();
+    // 1. Check Bot Health Check & Api Ping
+    const apiStart = Date.now();
     try {
-      // 1. Check Bot Health Check & Ping
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 4000);
 
@@ -43,11 +57,11 @@ export default function StatusPage() {
       clearTimeout(timeoutId);
 
       const text = await healthRes.text();
-      const duration = Date.now() - startTime;
+      const duration = Date.now() - apiStart;
 
       if (healthRes.ok && text.includes("Waguri OK")) {
         setBotStatus("online");
-        setPing(duration);
+        setApiPing(duration);
       } else {
         setBotStatus("offline");
       }
@@ -55,8 +69,8 @@ export default function StatusPage() {
       setBotStatus("offline");
     }
 
+    // 2. Check Bot Stats & Gateway Ping
     try {
-      // 2. Check Bot Stats
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 4000);
       const statsRes = await fetch(`${BOT_API}/stats`, { 
@@ -70,32 +84,64 @@ export default function StatusPage() {
         if (typeof data.servers === "number") {
           setServers(data.servers);
           setUsers(data.users);
+          if (typeof data.gatewayPing === "number") {
+            setGatewayPing(data.gatewayPing);
+          }
         }
       }
     } catch (e) {
-      // Keep previous stats or hide
+      // Keep previous stats
     }
 
+    // 3. Check Supabase Connectivity via public table world_events
+    const dbStart = Date.now();
     try {
-      // 3. Check Supabase Connectivity
       const supabase = createClient();
-      const { data, error } = await supabase
-        .from("items")
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Timeout")), 4000)
+      );
+      
+      const queryPromise = supabase
+        .from("world_events")
         .select("id")
         .limit(1);
 
+      const { error } = await Promise.race([queryPromise, timeoutPromise]) as any;
+
+      const duration = Date.now() - dbStart;
+
       if (error) throw error;
       setDbStatus("online");
+      setDbPing(duration);
     } catch (e) {
       setDbStatus("offline");
     }
 
     setIsRefreshing(false);
-  };
+    setCountdown(30);
+  }, []);
 
+  // Initial load
   useEffect(() => {
     runStatusCheck();
   }, []);
+
+  // Handle Auto-Refresh interval timer with memory cleanup
+  useEffect(() => {
+    if (!isAuto) return;
+
+    const interval = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          runStatusCheck();
+          return 30;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [isAuto, runStatusCheck]);
 
   const isEn = locale === "en";
 
@@ -141,27 +187,61 @@ export default function StatusPage() {
                 : "Giám sát và kiểm tra hiệu năng thời gian thực của Waguri Bot."}
             </p>
           </div>
-          <button
-            onClick={runStatusCheck}
-            disabled={isRefreshing}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-pink-500/10 hover:bg-pink-500/20 border border-pink-500/20 hover:border-pink-500/40 text-pink-300 hover:text-white transition-all text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
-          >
-            <svg
-              className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+          <div className="flex items-center gap-3">
+            {/* Auto Refresh Toggle */}
+            <div className="flex items-center gap-2.5 bg-pink-500/5 px-3 py-2 rounded-xl border border-pink-500/10 shadow-md">
+              <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                {isEn ? "Auto Refresh" : "Tự Động Làm Mới"}
+              </span>
+              <button
+                onClick={() => {
+                  setIsAuto(!isAuto);
+                  if (!isAuto) setCountdown(30);
+                }}
+                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-300 focus:outline-none cursor-pointer ${
+                  isAuto ? "bg-pink-500" : "bg-slate-700"
+                }`}
+              >
+                <span
+                  className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform duration-300 ${
+                    isAuto ? "translate-x-5" : "translate-x-1"
+                  }`}
+                />
+              </button>
+            </div>
+
+            <button
+              onClick={runStatusCheck}
+              disabled={isRefreshing}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-pink-500/10 hover:bg-pink-500/20 border border-pink-500/20 hover:border-pink-500/40 text-pink-300 hover:text-white transition-all text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed shadow-lg cursor-pointer"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M21 21v-5h-.581m0 0a8.003 8.003 0 11-15.357-2"
-              />
-            </svg>
-            {isEn ? "Refresh Status" : "Làm Mới Trạng Thái"}
-          </button>
+              <svg
+                className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M21 21v-5h-.581m0 0a8.003 8.003 0 11-15.357-2"
+                />
+              </svg>
+              {isEn ? "Refresh" : "Làm Mới"}
+            </button>
+          </div>
         </div>
+
+        {/* Auto Refresh progress line */}
+        {isAuto && (
+          <div className="w-full h-[2px] bg-slate-800/80 rounded-full overflow-hidden mb-6 relative">
+            <div
+              className="h-full bg-gradient-to-r from-pink-500 to-purple-500 transition-all duration-1000 linear"
+              style={{ width: `${(countdown / 30) * 100}%` }}
+            />
+          </div>
+        )}
 
         {/* Overall Status Banner */}
         <div className="w-full mb-8">
@@ -221,8 +301,8 @@ export default function StatusPage() {
               </p>
             </div>
             <div className="mt-4 pt-4 border-t border-pink-300/5 flex justify-between items-center text-xs">
-              <span className="text-slate-400">{isEn ? "Latency:" : "Độ trễ (Ping):"}</span>
-              <strong className="text-white">{ping ? `${ping}ms` : botStatus === "online" ? "<50ms" : "—"}</strong>
+              <span className="text-slate-400">{isEn ? "Gateway Ping:" : "Độ trễ Gateway:"}</span>
+              <strong className="text-white">{gatewayPing !== null ? `${gatewayPing}ms` : botStatus === "online" ? "<50ms" : "—"}</strong>
             </div>
           </div>
 
@@ -238,8 +318,8 @@ export default function StatusPage() {
               </p>
             </div>
             <div className="mt-4 pt-4 border-t border-pink-300/5 flex justify-between items-center text-xs">
-              <span className="text-slate-400">{isEn ? "Queries status:" : "Trạng thái truy vấn:"}</span>
-              <strong className="text-white">{dbStatus === "online" ? (isEn ? "Stable" : "Ổn định") : "—"}</strong>
+              <span className="text-slate-400">{isEn ? "Query Latency:" : "Độ trễ truy vấn:"}</span>
+              <strong className="text-white">{dbPing !== null ? `${dbPing}ms` : dbStatus === "online" ? "Stable" : "—"}</strong>
             </div>
           </div>
 
@@ -255,8 +335,8 @@ export default function StatusPage() {
               </p>
             </div>
             <div className="mt-4 pt-4 border-t border-pink-300/5 flex justify-between items-center text-xs">
-              <span className="text-slate-400">{isEn ? "Gateway hook:" : "Trạng thái cổng:"}</span>
-              <strong className="text-white">{botStatus === "online" ? (isEn ? "Listening" : "Đang chờ") : "—"}</strong>
+              <span className="text-slate-400">{isEn ? "API Ping:" : "Phản hồi API:"}</span>
+              <strong className="text-white">{apiPing !== null ? `${apiPing}ms` : botStatus === "online" ? "Listening" : "—"}</strong>
             </div>
           </div>
         </div>

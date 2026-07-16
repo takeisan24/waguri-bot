@@ -318,14 +318,16 @@ function startVoteServer(client) {
                 res.setHeader('Access-Control-Allow-Origin', '*');
                 try {
                     const { servers, users } = await getPublicStats(client);
+                    const gatewayPing = client.ws ? (client.ws.ping !== -1 ? client.ws.ping : null) : null;
                     res.writeHead(200, { 'Content-Type': 'application/json' });
-                    res.end(JSON.stringify({ servers, users }));
+                    res.end(JSON.stringify({ servers, users, gatewayPing }));
                 } catch {
                     res.writeHead(500); res.end();
                 }
                 return;
             }
             // Health check (uptime ping)
+            res.setHeader('Access-Control-Allow-Origin', '*');
             res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
             res.end('Waguri OK 🌸');
             return;

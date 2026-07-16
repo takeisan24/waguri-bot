@@ -217,18 +217,22 @@ if (diffHours > 48) { // trễ hơn mốc điểm danh
 ## 10. PHẦN K: STATUS PAGE TRÊN WEB (v2.3)
 
 ### 10.1 Giao diện Trang Trạng Thái `/status`
-* **Cơ chế kiểm tra trạng thái (Status Check):**
-  * Gửi yêu cầu HTTP Fetch client-side tới `{BOT_API}/` (Health Check) và `{BOT_API}/stats` (Stats Check).
-  * Đo lường thời gian phản hồi (Response Latency) làm thông số Ping/Độ trễ.
-  * Nếu kết nối thành công (`200 OK` chứa "Waguri OK"): Trạng thái là **Operational** (Hoạt động tốt) với mã màu xanh lá cây (`#22C55E`).
-  * Nếu kết nối thất bại hoặc quá hạn (timeout 4s): Trạng thái là **Offline** (Ngoại tuyến) với mã màu đỏ (`#EF4444`).
+* **Cơ chế kiểm tra trạng thái & Phân rã độ trễ (Detailed Latency Breakdown):**
+  * **Discord Bot Gateway:** Truy vấn API `/stats` lấy thuộc tính `gatewayPing` (trích xuất an toàn từ `client.ws.ping` của bot, trả về `null` hoặc số dương thực tế).
+  * **API Server:** Thực hiện cuộc gọi HTTP tới `{BOT_API}/`, tính toán khoảng thời gian từ lúc bắt đầu gửi tới lúc nhận dữ liệu làm thông số độ trễ API.
+  * **Database (Supabase):** Chạy truy vấn client-side thử chọn 1 bản ghi từ bảng `items`, tính khoảng thời gian thực thi làm thông số độ trễ Database.
+  * Phân loại màu sắc độ trễ: Xanh lá (`< 150ms` - Tốt), Vàng (`150ms - 500ms` - Chậm nhẹ), Đỏ (`> 500ms` hoặc lỗi - Ngoại tuyến).
+* **Cơ chế Tự động tải lại (Auto-Refresh):**
+  * Tích hợp nút gạt bật/tắt (Toggle Switch) cho trạng thái tự động tải lại.
+  * Khi bật: Một bộ đếm ngược 30 giây chạy liên tục. Hiển thị thanh tiến trình (Countdown Progress Bar) co rút mượt mà bằng CSS transition (`transition-all duration-1000 linear`). Khi bộ đếm về 0, kích hoạt làm mới thông số tự động và khởi động lại vòng lặp.
+  * Khi tắt hoặc trang bị ẩn (unmount): Giải phóng và hủy bỏ hoàn toàn các luồng đếm ngược tránh rò rỉ bộ nhớ (Memory Leak).
+* **Bảo vệ chống Spam (Debounce Check):**
+  * Nút "Làm mới thủ công" tự động khóa (`disabled`) trong 3 giây sau mỗi lần click để ngăn chặn hành vi click liên tục (Spamming) gây nghẽn API.
 * **Bố cục giao diện (Layout):**
   * Tiêu đề chính dạng thẻ Card lớn `{components.card}` hiển thị tổng quan trạng thái hệ thống: "Tất cả hệ thống hoạt động tốt" (All Systems Operational) kèm nhịp đập phát sáng (glowing pulse).
-  * Lưới grid 3 cột thông tin chi tiết:
-    1. **Discord Bot Gateway**: Trực quan hóa kết nối qua API của bot.
-    2. **Database (Supabase)**: Trạng thái kết nối DB (kiểm tra client-side Supabase connection).
-    3. **Cổng Thanh Toán Casso**: Trực quan hóa cổng webhook Casso.
+  * Lưới grid 3 cột thông tin chi tiết (Discord Bot Gateway, Database, Cổng Thanh Toán).
   * Widget hiển thị thông số hiệu năng (Servers & Users) dạng đồng hồ số hoặc đồ họa hình cột mini.
   * Dòng biểu đồ thanh trạng thái mô phỏng 90 ngày gần nhất (Uptime bar) sử dụng màu xanh/tím để tạo điểm nhấn cao cấp.
+
 
 
