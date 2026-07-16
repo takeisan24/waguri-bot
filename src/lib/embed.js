@@ -70,9 +70,17 @@ function pickWaguriImage(key = 'MAIN') {
     if (Array.isArray(pool)) {
         const list = pool.filter(Boolean);
         if (!list.length) return undefined;
-        return list[Math.floor(Math.random() * list.length)];
+        const img = list[Math.floor(Math.random() * list.length)];
+        if (img && img.startsWith('/')) {
+            return `${config.WEB_URL}${img}`;
+        }
+        return img;
     }
-    return pool; // chuỗi đơn (định dạng cũ)
+    const single = pool;
+    if (single && single.startsWith('/')) {
+        return `${config.WEB_URL}${single}`;
+    }
+    return single;
 }
 
 /**
