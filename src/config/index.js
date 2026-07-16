@@ -99,6 +99,7 @@ module.exports = {
     // AI persona Waguri (Google Gemini)
     AI: {
         GEMINI_MODEL: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
+        GEMINI_PREMIUM_MODEL: process.env.GEMINI_PREMIUM_MODEL || 'gemini-2.5-pro',
         MAX_CONTEXT_TURNS: 6,    // số lượt hội thoại gần nhất giữ lại theo kênh
         MAX_OUTPUT_TOKENS: 600,  // đủ dài cho câu trả lời tự nhiên (vẫn gọn cho Discord)
         USER_COOLDOWN_MS: 4000,  // chống spam mỗi người

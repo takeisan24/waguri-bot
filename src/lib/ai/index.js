@@ -201,9 +201,10 @@ async function chatWithWaguri(channelId, userId, userName, userText, locale) {
         systemPrompt += `\n[Ngôn ngữ: Trả lời hoàn toàn bằng tiếng Việt chuẩn, tự nhiên, dễ thương, không pha trộn tiếng nước ngoài. Không dùng từ tiếng Anh trừ phi bắt buộc.]`;
     }
 
+    const modelToUse = q.premium ? config.AI.GEMINI_PREMIUM_MODEL : config.AI.GEMINI_MODEL;
     let reply;
     try {
-        reply = await provider.chat(systemPrompt, history, framed);
+        reply = await provider.chat(systemPrompt, history, framed, { model: modelToUse });
     } catch (error) {
         console.error('[AI ERROR] Gemini API bị chập chờn hoặc quá 20s không phản hồi:', error.message);
 
