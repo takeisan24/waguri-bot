@@ -1,4 +1,11 @@
 {
+  "login": {
+    "title": "Sign in",
+    "desc": "Sign in with Discord to view your personal dashboard~",
+    "btn": "Sign in with Discord",
+    "loading": "Redirecting...",
+    "back": "← Back to home"
+  },
   "nav": {
     "commands": "Commands",
     "wiki": "Wiki",

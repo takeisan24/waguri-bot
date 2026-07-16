@@ -1,4 +1,11 @@
 {
+  "login": {
+    "title": "Đăng nhập",
+    "desc": "Đăng nhập bằng Discord để xem bảng điều khiển cá nhân của cậu nha~",
+    "btn": "Đăng nhập bằng Discord",
+    "loading": "Đang chuyển...",
+    "back": "← Về trang chủ"
+  },
   "nav": {
     "commands": "Lệnh",
     "wiki": "Cẩm nang",

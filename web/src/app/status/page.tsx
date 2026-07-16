@@ -151,14 +151,6 @@ export default function StatusPage() {
 
   const isEn = locale === "en";
 
-  // Uptime mock array for visual timeline (90 bars)
-  const uptimeBars = Array.from({ length: 45 }, (_, i) => {
-    // Make 1 or 2 historical bars yellow to simulate a minor latency spike for realistic styling
-    if (i === 12) return "warning";
-    if (i === 28) return "warning";
-    return "success";
-  });
-
   const getOverallStatus = () => {
     if (botStatus === "loading" || dbStatus === "loading") return "loading";
     if (botStatus === "online" && dbStatus === "online") return "online";
@@ -308,7 +300,7 @@ export default function StatusPage() {
             </div>
             <div className="mt-4 pt-4 border-t border-pink-300/5 flex justify-between items-center text-xs">
               <span className="text-slate-400">{isEn ? "Gateway Ping:" : "Độ trễ Gateway:"}</span>
-              <strong className="text-white">{gatewayPing !== null ? `${gatewayPing}ms` : botStatus === "online" ? "<50ms" : "—"}</strong>
+              <strong className="text-white">{gatewayPing !== null ? `${gatewayPing}ms` : botStatus === "online" ? (isEn ? "Online" : "Trực tuyến") : "—"}</strong>
             </div>
           </div>
 
@@ -374,41 +366,6 @@ export default function StatusPage() {
           </div>
         )}
 
-        {/* Simulated Uptime Bar Section */}
-        <div className="glass-panel p-6 rounded-2xl border border-pink-300/10 shadow-lg w-full">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-bold text-white text-sm">
-              {isEn ? "System Uptime (Last 90 Days)" : "Lịch Sử Hoạt Động (90 ngày qua)"}
-            </h3>
-            <span className="text-xs text-green-400 font-extrabold">99.98% Uptime</span>
-          </div>
-
-          {/* Timeline Grid */}
-          <div className="flex gap-[3px] md:gap-[4px] items-end justify-between h-8 mb-2">
-            {uptimeBars.map((status, i) => {
-              const bg = status === "success" 
-                ? "bg-green-500/70 hover:bg-green-500" 
-                : "bg-yellow-500/70 hover:bg-yellow-500";
-              const title = status === "success"
-                ? `${90 - i * 2} days ago: 100% uptime`
-                : `${90 - i * 2} days ago: Minor latency spike (99.8%)`;
-
-              return (
-                <div
-                  key={i}
-                  className={`flex-1 h-6 rounded-[2px] transition-all cursor-pointer ${bg}`}
-                  title={title}
-                />
-              );
-            })}
-          </div>
-
-          <div className="flex justify-between items-center text-xs text-slate-500 mt-2">
-            <span>90 {isEn ? "days ago" : "ngày trước"}</span>
-            <span className="w-16 h-[1px] bg-slate-800 flex-1 mx-4" />
-            <span>{isEn ? "Today" : "Hôm nay"}</span>
-          </div>
-        </div>
       </main>
 
       <SiteFooter />

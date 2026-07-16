@@ -3,8 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { createClient } from "../../lib/supabase/client";
+import { useLanguage } from "../../components/LanguageProvider";
 
 export default function LoginPage() {
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
 
   const signIn = async () => {
@@ -32,9 +34,9 @@ export default function LoginPage() {
           WAGURI <span className="text-pink-400">🌸</span>
         </Link>
         <div className="space-y-2">
-          <h1 className="text-xl font-extrabold text-white">Đăng nhập</h1>
+          <h1 className="text-xl font-extrabold text-white">{t("login.title")}</h1>
           <p className="text-slate-400 text-sm">
-            Đăng nhập bằng Discord để xem bảng điều khiển cá nhân của cậu nha~
+            {t("login.desc")}
           </p>
         </div>
         <button
@@ -42,10 +44,10 @@ export default function LoginPage() {
           disabled={loading}
           className="w-full px-6 py-3 rounded-full font-bold bg-[#5865F2] text-white hover:bg-[#4752c4] transition-all disabled:opacity-60 flex items-center justify-center gap-2"
         >
-          {loading ? "Đang chuyển..." : "Đăng nhập bằng Discord"}
+          {loading ? t("login.loading") : t("login.btn")}
         </button>
         <Link href="/" className="block text-xs text-slate-500 hover:text-pink-300">
-          ← Về trang chủ
+          {t("login.back")}
         </Link>
       </div>
     </div>
