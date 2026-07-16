@@ -114,8 +114,22 @@ async function stakeCollect(sessionId, game, channelId, userId, amount) {
 }
 /** Ván xong bình thường: xoá dòng cược (cược đã thành pot & trả thưởng). */
 async function stakeSettle(sessionId) {
-    try { const { error } = await supabase.rpc('stake_settle', { p_session: sessionId }); if (error) throw error; return true; }
-    catch (error) { console.error('[DATABASE ERROR] stakeSettle():', error); return false; }
+    // Thử lại 1 lần: nếu stake_settle lỗi mà không xoá dòng cược, stakeRefundOrphans khi restart
+    // sẽ HOÀN LẠI cược dù đã trả thưởng (dupe). Retry + log critical để thu hẹp cửa sổ lỗi.
+    for (let attempt = 1; attempt <= 2; attempt++) {
+        try {
+            const { error } = await supabase.rpc('stake_settle', { p_session: sessionId });
+            if (error) throw error;
+            return true;
+        } catch (error) {
+            console.error(`[DATABASE ERROR] stakeSettle() lần ${attempt}:`, error);
+            if (attempt === 2) {
+                console.error(`[CRITICAL] stakeSettle THẤT BẠI session=${sessionId} — cần dọn dòng cược thủ công để tránh hoàn cược trùng.`);
+                return false;
+            }
+        }
+    }
+    return false;
 }
 /** Huỷ ván: hoàn cược cho mọi người chơi rồi xoá. Trả tổng đã hoàn. */
 async function stakeRefundSession(sessionId) {

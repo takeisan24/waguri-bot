@@ -78,7 +78,7 @@ module.exports = {
         let win = matches > 0;
         if (win) {
             const payout = bet * (1 + matches);
-            await db.addMoney(userId, payout, 'wallet');
+            if (!await db.addMoney(userId, payout, 'wallet')) console.error(`[PAYOUT FAIL] baucua user=${userId} payout=${payout}`);
             db.questIncr(userId, 'gamble_win', 1);
             desc += t(locale, 'commands.baucua.win_msg', { winAmount: fmt(payout - bet, locale), currency: config.CURRENCY });
         } else {

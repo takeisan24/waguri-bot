@@ -55,7 +55,7 @@ module.exports = {
         let desc = t(locale, 'commands.coinflip.coin_dropped', { flip: flipName });
         if (win) {
             const payout = Math.round(bet * config.GAMBLE.COINFLIP_MULT);
-            await db.addMoney(userId, payout, 'wallet');
+            if (!await db.addMoney(userId, payout, 'wallet')) console.error(`[PAYOUT FAIL] coinflip user=${userId} payout=${payout}`);
             db.questIncr(userId, 'gamble_win', 1);
             desc += t(locale, 'commands.coinflip.win_msg', { winAmount: fmt(payout - bet, locale), currency: config.CURRENCY });
         } else {

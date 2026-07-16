@@ -69,7 +69,7 @@ module.exports = {
 
         if (win) {
             const payout = Math.round(bet * config.GAMBLE.TAIXIU_MULT);
-            await db.addMoney(userId, payout, 'wallet');
+            if (!await db.addMoney(userId, payout, 'wallet')) console.error(`[PAYOUT FAIL] taixiu user=${userId} payout=${payout}`);
             db.questIncr(userId, 'gamble_win', 1);
             desc += t(locale, 'commands.taixiu.win_msg', { winAmount: fmt(payout - bet, locale), currency: config.CURRENCY });
         } else {

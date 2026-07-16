@@ -25,7 +25,8 @@ const client = new Client({
 process.on('unhandledRejection', (reason) => {
     console.error('[UNHANDLED REJECTION]', reason);
     logError('Unhandled Rejection', reason);
-    process.exit(1);
+    // KHÔNG exit: rejection lẻ (vd Discord API/DM lỗi, Supabase chập chờn) thường phục hồi được;
+    // exit ở đây gây restart-loop và làm mất mọi ván game/interaction đang chạy.
 });
 process.on('uncaughtException', (error) => {
     console.error('[UNCAUGHT EXCEPTION]', error);

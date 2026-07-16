@@ -141,13 +141,15 @@ module.exports = {
                     }
                     const bonus = await db.claimWelcomeBonus(interaction.user.id, config.WELCOME.BONUS);
                     if (bonus > 0) {
-                        await interaction.update({
+                        // Reply ephemeral (KHÔNG update) -> không sửa/xóa nút trên tin nhắn chung của người khác.
+                        // Mỗi người tự nhận quà của mình; claimWelcomeBonus đã nguyên tử chống nhận đúp.
+                        await interaction.reply({
                             embeds: [buildWaguriEmbed(interaction, 'success', {
                                 locale,
                                 title: t(locale, 'commands.start.claim_success_title'),
                                 description: t(locale, 'commands.start.claim_success_desc', { bonus: fmtLocal(bonus), currency: config.CURRENCY })
                             })],
-                            components: [],
+                            flags: MessageFlags.Ephemeral,
                         });
                     } else {
                         await interaction.reply({ content: t(locale, 'commands.start.claim_already'), flags: MessageFlags.Ephemeral });
@@ -204,6 +206,10 @@ module.exports = {
                 try {
                     const thread = interaction.channel;
                     if (thread && thread.isThread()) {
+                        // Chỉ nhân viên (Quản lý Luồng) mới được đóng ticket — chống người lạ đóng griefing.
+                        if (!interaction.memberPermissions?.has('ManageThreads')) {
+                            return interaction.reply({ content: locale.startsWith('en') ? '🌸 Only staff can close this ticket.' : '🌸 Chỉ nhân viên mới có thể đóng ticket này nha~', flags: MessageFlags.Ephemeral });
+                        }
                         await interaction.reply({
                             content: t(locale, 'commands.ticket.closed_by', { user: interaction.user.id }),
                         });

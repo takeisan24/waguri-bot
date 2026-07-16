@@ -98,7 +98,9 @@ module.exports = {
             if (settled) return;
             settled = true;
             const payout = { win: bet * 2, blackjack: Math.floor(bet * 2.5), push: bet, lose: 0 }[outcome];
-            if (payout > 0) await db.addMoney(userId, payout, 'wallet');
+            if (payout > 0) {
+                if (!await db.addMoney(userId, payout, 'wallet')) console.error(`[PAYOUT FAIL] blackjack user=${userId} payout=${payout}`);
+            }
             if (outcome === 'win' || outcome === 'blackjack') db.questIncr(userId, 'gamble_win', 1);
             const net = payout - bet;
             let note = {
@@ -156,6 +158,7 @@ module.exports = {
         };
 
         collector.on('collect', async (i) => {
+            if (settled) return i.deferUpdate().catch(() => {}); // ván đã kết thúc -> nuốt click thừa (chống double-hit -> embeds:[undefined])
             if (i.customId === 'hit') {
                 player.push(deck.pop());
                 if (handValue(player) > 21) {
