@@ -8,6 +8,38 @@ const { activeSeasons, SEASON_LABEL } = require('../season');
 
 const gemini = require('./gemini'); // provider AI duy nhất: Google Gemini
 
+let mangaLore = {};
+try {
+    mangaLore = require('../../data/manga_lore.json');
+} catch (e) {
+    console.warn('[SYSTEM WARNING] Failed to load manga_lore.json:', e.message);
+}
+
+function findMatchingLore(text) {
+    if (!text) return [];
+    const normalized = text.toLowerCase();
+    const matches = [];
+    if (normalized.includes('bánh su kem') || normalized.includes('creampuff')) {
+        if (mangaLore.banh_su_kem) matches.push(mangaLore.banh_su_kem);
+    }
+    if (normalized.includes('bánh ngọt') || normalized.includes('bánh nướng') || normalized.includes('tiệm bánh')) {
+        if (mangaLore.banh_ngot) matches.push(mangaLore.banh_ngot);
+    }
+    if (normalized.includes('học tập') || normalized.includes('học hành') || normalized.includes('thi cử') || normalized.includes('kiểm tra') || normalized.includes('bài tập')) {
+        if (mangaLore.hoc_tap) matches.push(mangaLore.hoc_tap);
+    }
+    if (normalized.includes('che ô') || normalized.includes('mưa') || normalized.includes('trời mưa') || normalized.includes('chiếc ô')) {
+        if (mangaLore.che_o) matches.push(mangaLore.che_o);
+    }
+    if (normalized.includes('subaru') || normalized.includes('hoshina')) {
+        if (mangaLore.subaru) matches.push(mangaLore.subaru);
+    }
+    if (normalized.includes('rintaro') || normalized.includes('tsumugi')) {
+        if (mangaLore.rintaro) matches.push(mangaLore.rintaro);
+    }
+    return matches.slice(0, 2); // Tối đa chèn 2 ý ngữ cảnh để không làm phình prompt
+}
+
 const contexts = new Map();  // channelId -> [{role,content}]
 const ctxSeen = new Map();   // channelId -> lần hoạt động gần nhất (ms) — để dọn ngữ cảnh cũ
 const cooldowns = new Map(); // userId -> timestamp hết cooldown
@@ -194,6 +226,20 @@ async function chatWithWaguri(channelId, userId, userName, userText, locale) {
     if (seas.length) nowBits.push(`đang vào mùa ${seas.join(' & ')}`);
     if (nowBits.length) systemPrompt += `\n[Bối cảnh hôm nay: ${nowBits.join('; ')}. Nếu hợp ngữ cảnh, nhắc tới một cách tự nhiên & vui vẻ, đừng gượng ép.]`;
 
+    // Nhạy bén thời gian theo buổi
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 9) {
+        systemPrompt += `\n[Thời gian: Bây giờ là buổi sáng sớm. Waguri nên gửi lời chúc ngày mới ấm áp và nhắc người dùng nhớ ăn sáng đầy đủ nhé.]`;
+    } else if (hour >= 23 || hour < 4) {
+        systemPrompt += `\n[Thời gian: Bây giờ là đêm muộn rồi. Waguri hãy dịu dàng khuyên người dùng đi ngủ sớm, thể hiện sự lo lắng chân thành cho sức khoẻ của họ nhé.]`;
+    }
+
+    // Quét từ khoá manga lore
+    const matchedLore = findMatchingLore(userText);
+    for (const loreFact of matchedLore) {
+        systemPrompt += `\n[Lore truyện: ${loreFact}]`;
+    }
+
     // 💡 Chỉ thị ngôn ngữ ép Gemini phản hồi theo locale
     if (locale && locale.toLowerCase().startsWith('en')) {
         systemPrompt += `\n[Ngôn ngữ: Người dùng đang sử dụng tiếng Anh (English). Hãy trả lời hoàn toàn bằng tiếng Anh. Giữ nguyên tính cách Waguri dịu dàng, xưng hô thân thiết (chọn xưng hô cậu - mình hoặc tri kỷ bằng tiếng Anh tự nhiên như "you - I", "my soulmate", hoặc các từ gọi thân mật ngọt ngào khác phù hợp với điểm thiện cảm ${aff}).]`;
@@ -206,12 +252,20 @@ async function chatWithWaguri(channelId, userId, userName, userText, locale) {
     try {
         reply = await provider.chat(systemPrompt, history, framed, { model: modelToUse });
     } catch (error) {
-        console.error('[AI ERROR] Gemini API bị chập chờn hoặc quá 20s không phản hồi:', error.message);
-
-        // Hoàn lại lượt quota đã trừ ở đầu hàm (qua helper, theo quy ước database.js)
-        await db.refundAiQuota(userId);
-
-        return { ok: false, reason: 'error' };
+        console.error('[AI ERROR] Gemini API failed:', error.message);
+        if (q.premium && modelToUse !== config.AI.GEMINI_MODEL) {
+            console.warn(`[AI WARNING] Premium model ${modelToUse} failed, falling back to base model:`, error.message);
+            try {
+                reply = await provider.chat(systemPrompt, history, framed, { model: config.AI.GEMINI_MODEL });
+            } catch (fallbackError) {
+                console.error('[AI ERROR] Both Premium and Fallback base model failed:', fallbackError.message);
+                await db.refundAiQuota(userId);
+                return { ok: false, reason: 'error' };
+            }
+        } else {
+            await db.refundAiQuota(userId);
+            return { ok: false, reason: 'error' };
+        }
     }
     if (!reply) return { ok: false, reason: 'error' };
     reply = extractAndStoreMemory(reply, userId, memory); // trích & lưu ký ức, loại marker khỏi hiển thị
@@ -230,4 +284,16 @@ async function chatWithWaguri(channelId, userId, userName, userText, locale) {
     return { ok: true, reply };
 }
 
-module.exports = { chatWithWaguri, onCooldown, parseMemoryMarkers, sanitizeMemoryKey };
+function clearUserContexts(userId) {
+    let cleared = 0;
+    for (const [key, history] of contexts.entries()) {
+        if (key.endsWith(`:${userId}`)) {
+            contexts.delete(key);
+            ctxSeen.delete(key);
+            cleared++;
+        }
+    }
+    return cleared;
+}
+
+module.exports = { chatWithWaguri, onCooldown, parseMemoryMarkers, sanitizeMemoryKey, clearUserContexts };

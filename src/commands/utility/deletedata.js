@@ -2,6 +2,7 @@ const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, Compo
 const db = require('../../database.js');
 const { buildWaguriEmbed } = require('../../lib/embed');
 const { getInteractionLanguage, t } = require('../../lib/i18n');
+const { clearUserContexts } = require('../../lib/ai');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -43,6 +44,7 @@ module.exports = {
             const res = await db.deleteUserData(userId);
             let e;
             if (res === 'ok') {
+                clearUserContexts(userId);
                 e = buildWaguriEmbed(interaction, 'success', {
                     locale,
                     title: t(locale, 'commands.deletedata.success_title'),
