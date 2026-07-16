@@ -63,9 +63,13 @@ module.exports = {
         collector.on('collect', async (i) => {
             const hName = t(locale, 'commands.duangua.horse_name', { n: bets.get(i.user.id)?.horse + 1 });
             if (bets.has(i.user.id)) return i.reply({ content: t(locale, 'commands.duangua.already_bet', { horse: hName }), flags: MessageFlags.Ephemeral });
-            if (!await db.stakeCollect(sessionId, 'duangua', interaction.channelId, i.user.id, bet)) return i.reply({ content: t(locale, 'commands.duangua.err_insufficient_funds', { bet: fmt(bet, locale), currency: config.CURRENCY }), flags: MessageFlags.Ephemeral });
             const horse = Number(i.customId.slice(1)) - 1;
+            // GIỮ CHỖ đồng bộ TRƯỚC await -> chặn double-click thu cược 2 lần (race). Nhả chỗ nếu thu tiền lỗi.
             bets.set(i.user.id, { horse, username: i.user.username });
+            if (!await db.stakeCollect(sessionId, 'duangua', interaction.channelId, i.user.id, bet)) {
+                bets.delete(i.user.id);
+                return i.reply({ content: t(locale, 'commands.duangua.err_insufficient_funds', { bet: fmt(bet, locale), currency: config.CURRENCY }), flags: MessageFlags.Ephemeral });
+            }
             const horseChosenName = t(locale, 'commands.duangua.horse_name', { n: horse + 1 });
             await i.reply({ content: t(locale, 'commands.duangua.bet_success', { horse: horseChosenName, emoji: HORSES[horse].c, bet: fmt(bet, locale), currency: config.CURRENCY }), flags: MessageFlags.Ephemeral });
             await interaction.editReply({ embeds: [render()], components: [row] }).catch(() => {});

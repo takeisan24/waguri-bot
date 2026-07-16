@@ -3,6 +3,7 @@ const { buildWaguriEmbed } = require('../../lib/embed');
 const db = require('../../database.js');
 const config = require('../../config');
 const { getInteractionLanguage, t } = require('../../lib/i18n');
+const { gamblingEnabled } = require('../../lib/guildflags');
 
 const fmt = (n, locale) => Number(n).toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN');
 const COMMON = ['banh_mi', 'ca_phe', 'xoi', 'soda_gekka'];
@@ -16,6 +17,12 @@ module.exports = {
         await interaction.deferReply();
         const locale = await getInteractionLanguage(interaction);
         const userId = interaction.user.id;
+        // Tôn trọng cài đặt server tắt trò may rủi (giống các game khác qua checkBet).
+        if (interaction.guildId && !(await gamblingEnabled(interaction.guildId))) {
+            return interaction.editReply(locale.startsWith('en')
+                ? '🌸 This server has disabled games of chance~'
+                : '🌸 Máy chủ này đã **tắt trò may rủi** rồi nha~');
+        }
         const cost = config.CRATE.COST;
         if (!await db.addMoney(userId, -cost, 'wallet')) {
             return interaction.editReply(t(locale, 'commands.crate.err_poor', { cost: fmt(cost, locale), currency: config.CURRENCY }));

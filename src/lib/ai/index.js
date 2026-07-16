@@ -203,7 +203,9 @@ async function chatWithWaguri(channelId, userId, userName, userText, locale) {
         specialGuide = 'Trò chuyện cực kỳ ấm áp, quan tâm lo lắng từng chút một, thỉnh thoảng trêu đùa nhẹ nhàng.';
     }
 
-    let systemPrompt = `${WAGURI_SYSTEM_PROMPT}\n\n[Người đang trò chuyện: ${userName} — thân thiết: ${t.name} (${aff} điểm); ${ctxBits.join('; ')}. Hãy trò chuyện ${t.guide}. ${specialGuide} Có thể chủ động hoặc khéo léo nhắc tới các thông tin này (như tiệm bánh của họ, thú cưng của họ) một cách tự nhiên và sinh động khi hợp ngữ cảnh.]`;
+    // Chặn prompt injection qua tên hiển thị Discord: loại [ ] và xuống dòng, giới hạn độ dài.
+    const safeName = String(userName || '').replace(/[[\]\r\n]/g, ' ').trim().slice(0, 64) || 'bạn';
+    let systemPrompt = `${WAGURI_SYSTEM_PROMPT}\n\n[Người đang trò chuyện: ${safeName} — thân thiết: ${t.name} (${aff} điểm); ${ctxBits.join('; ')}. Hãy trò chuyện ${t.guide}. ${specialGuide} Có thể chủ động hoặc khéo léo nhắc tới các thông tin này (như tiệm bánh của họ, thú cưng của họ) một cách tự nhiên và sinh động khi hợp ngữ cảnh.]`;
 
     // Ký ức Waguri: những mẩu thông tin cô ấy đã nhớ về người này -> nhắc lại tự nhiên cho thân mật.
     if (memory) {
@@ -211,7 +213,7 @@ async function chatWithWaguri(channelId, userId, userName, userText, locale) {
             .filter(([k, v]) => k && v != null && String(v).trim())
             .map(([k, v]) => `${k}: ${String(v).slice(0, 200)}`);
         if (bits.length) {
-            systemPrompt += `\n[Điều Waguri còn nhớ về ${userName}: ${bits.join('; ')}. Nếu hợp ngữ cảnh, nhắc lại một cách tự nhiên & ấm áp để thể hiện mình nhớ họ, đừng liệt kê máy móc.]`;
+            systemPrompt += `\n[Điều Waguri còn nhớ về ${safeName}: ${bits.join('; ')}. Nếu hợp ngữ cảnh, nhắc lại một cách tự nhiên & ấm áp để thể hiện mình nhớ họ, đừng liệt kê máy móc.]`;
         }
     }
 
@@ -226,8 +228,8 @@ async function chatWithWaguri(channelId, userId, userName, userText, locale) {
     if (seas.length) nowBits.push(`đang vào mùa ${seas.join(' & ')}`);
     if (nowBits.length) systemPrompt += `\n[Bối cảnh hôm nay: ${nowBits.join('; ')}. Nếu hợp ngữ cảnh, nhắc tới một cách tự nhiên & vui vẻ, đừng gượng ép.]`;
 
-    // Nhạy bén thời gian theo buổi
-    const hour = new Date().getHours();
+    // Nhạy bén thời gian theo buổi (theo giờ Việt Nam UTC+7, không phụ thuộc timezone của host).
+    const hour = new Date(Date.now() + 7 * 3600 * 1000).getUTCHours();
     if (hour >= 5 && hour < 9) {
         systemPrompt += `\n[Thời gian: Bây giờ là buổi sáng sớm. Waguri nên gửi lời chúc ngày mới ấm áp và nhắc người dùng nhớ ăn sáng đầy đủ nhé.]`;
     } else if (hour >= 23 || hour < 4) {
@@ -267,7 +269,11 @@ async function chatWithWaguri(channelId, userId, userName, userText, locale) {
             return { ok: false, reason: 'error' };
         }
     }
-    if (!reply) return { ok: false, reason: 'error' };
+    if (!reply) {
+        // Gemini trả rỗng (thường do safety-filter chặn) -> hoàn lại lượt quota đã trừ ở đầu hàm.
+        await db.refundAiQuota(userId);
+        return { ok: false, reason: 'error' };
+    }
     reply = extractAndStoreMemory(reply, userId, memory); // trích & lưu ký ức, loại marker khỏi hiển thị
     reply = formatReply(reply, userId, userName); // @mention + bọc lệnh trong `code`
 

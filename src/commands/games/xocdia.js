@@ -62,8 +62,12 @@ module.exports = {
         collector.on('collect', async (i) => {
             const choiceName = bets.get(i.user.id)?.side === 'chan' ? t(locale, 'commands.xocdia.btn_chan') : t(locale, 'commands.xocdia.btn_le');
             if (bets.has(i.user.id)) return i.reply({ content: t(locale, 'commands.xocdia.already_bet', { side: choiceName }), flags: MessageFlags.Ephemeral });
-            if (!await db.stakeCollect(sessionId, 'xocdia', interaction.channelId, i.user.id, bet)) return i.reply({ content: t(locale, 'commands.xocdia.err_insufficient_funds', { bet: fmt(bet, locale), currency: config.CURRENCY }), flags: MessageFlags.Ephemeral });
+            // GIỮ CHỖ đồng bộ TRƯỚC await -> chặn double-click thu cược 2 lần (race). Nhả chỗ nếu thu tiền lỗi.
             bets.set(i.user.id, { side: i.customId, username: i.user.username });
+            if (!await db.stakeCollect(sessionId, 'xocdia', interaction.channelId, i.user.id, bet)) {
+                bets.delete(i.user.id);
+                return i.reply({ content: t(locale, 'commands.xocdia.err_insufficient_funds', { bet: fmt(bet, locale), currency: config.CURRENCY }), flags: MessageFlags.Ephemeral });
+            }
             const btnName = i.customId === 'chan' ? `${t(locale, 'commands.xocdia.btn_chan')} 🔴` : `${t(locale, 'commands.xocdia.btn_le')} ⚪`;
             await i.reply({ content: t(locale, 'commands.xocdia.bet_success', { side: btnName, bet: fmt(bet, locale), currency: config.CURRENCY }), flags: MessageFlags.Ephemeral });
             await interaction.editReply({ embeds: [render()], components: [row] }).catch(() => {});

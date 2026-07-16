@@ -53,7 +53,13 @@ for (const folder of fs.readdirSync(foldersPath)) {
 
     const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
     for (const file of commandFiles) {
-        const command = require(path.join(commandsPath, file));
+        let command;
+        try {
+            command = require(path.join(commandsPath, file));
+        } catch (e) {
+            console.error(`[SYSTEM] Không thể nạp lệnh ${file}, bỏ qua (không làm sập khởi động):`, e.message);
+            continue;
+        }
         if ('data' in command && 'execute' in command) {
             client.commands.set(command.data.name, command);
             const cmdJSON = command.data.toJSON();
@@ -119,7 +125,13 @@ if (process.env.SKIP_DEPLOY === '1') {
 // ---------------------------------------------------------
 const eventsPath = path.join(__dirname, 'src', 'events');
 for (const file of fs.readdirSync(eventsPath).filter(f => f.endsWith('.js'))) {
-    const event = require(path.join(eventsPath, file));
+    let event;
+    try {
+        event = require(path.join(eventsPath, file));
+    } catch (e) {
+        console.error(`[SYSTEM] Không thể nạp event ${file}, bỏ qua (không làm sập khởi động):`, e.message);
+        continue;
+    }
     if (event.once) {
         client.once(event.name, (...args) => event.execute(...args));
     } else {

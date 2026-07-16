@@ -321,12 +321,16 @@ async function handleLotoPrefix(message, cmd, args) {
                 }
             }
 
+            // Chốt ván ĐỒNG BỘ trước mọi await để tick kế tiếp không tái nhập -> trả thưởng 2 lần (double-payout).
+            if (winners.length > 0) {
+                clearInterval(interval);
+                curGame.status = 'done';
+                activeLotoGames.delete(channelId);
+            }
+
             await curGame.msg.edit({ embeds: [renderProgress(paddedNum)] }).catch(() => {});
 
             if (winners.length > 0) {
-                clearInterval(interval);
-                activeLotoGames.delete(channelId);
-
                 const rawPrize = pot;
                 const houseCut = Math.floor(rawPrize * HOUSE_CUT);
                 const prize = rawPrize - houseCut;

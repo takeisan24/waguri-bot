@@ -16,6 +16,8 @@ setInterval(() => {
     const today = new Date().toISOString().slice(0, 10);
     for (const [uid, exp] of rewardCD) if (exp < now) rewardCD.delete(uid);
     for (const [uid, d] of rewardDaily) if (d.date !== today) rewardDaily.delete(uid);
+    // Dọn ván nối từ bị bỏ dở > 1h (chống rò bộ nhớ: Map games không tự xóa nếu không /noitu stop).
+    for (const [cid, g] of games) if (now - (g.lastAt || 0) > 60 * 60 * 1000) games.delete(cid);
 }, 30 * 60 * 1000).unref();
 
 /** Trả true nếu được phép thưởng lần này (đồng thời ghi nhận cooldown + cap ngày). */
@@ -37,7 +39,7 @@ function canRewardNoitu(userId) {
 function startGame(channelId) {
     const phrase = START[Math.floor(Math.random() * START.length)];
     const lastWord = phrase.split(' ')[1];
-    games.set(channelId, { lastWord, used: new Set([phrase]), lastPlayer: null, count: 0 });
+    games.set(channelId, { lastWord, used: new Set([phrase]), lastPlayer: null, count: 0, lastAt: Date.now() });
     return { phrase, lastWord };
 }
 function stopGame(channelId) {
@@ -67,6 +69,7 @@ async function handleMessage(message) {
     g.used.add(content);
     g.lastPlayer = message.author.id;
     g.count++;
+    g.lastAt = Date.now();
     message.react('✅').catch(() => {});
     // Thưởng nối đúng — chỉ khi qua cooldown + chưa chạm cap ngày (chống 2 acc luân phiên farm).
     if (canRewardNoitu(message.author.id)) {

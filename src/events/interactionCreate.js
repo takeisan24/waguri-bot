@@ -115,9 +115,10 @@ module.exports = {
 
         // --- Component (button / select menu / modal) ---
         if (interaction.isButton()) {
+            // Ngôn ngữ dùng chung cho MỌI handler nút (tránh ReferenceError ở các nhánh không tự khai báo).
+            const locale = await getInteractionLanguage(interaction);
             // Nút "Tắt nhắc" trong DM nhắc vote -> tắt nhận nhắc cho user này.
             if (interaction.customId === 'vote_remind_off') {
-                const locale = await getInteractionLanguage(interaction);
                 try {
                     await db.setVoteReminder(interaction.user.id, false);
                     await interaction.update({
@@ -132,7 +133,6 @@ module.exports = {
 
             // Nút "Nhận quà chào mừng" của /start & lời chào server.
             if (interaction.customId === 'start:claim') {
-                const locale = await getInteractionLanguage(interaction);
                 const fmtLocal = n => Number(n).toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN');
                 try {
                     const minAgeMs = 7 * 24 * 60 * 60 * 1000; // 7 ngày

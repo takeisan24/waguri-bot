@@ -195,10 +195,9 @@ module.exports = {
                 }
             }
 
-            // Cập nhật AI memory ẩn
-            const memory = user.ai_memory || {};
-            memory.dia_diem_hen_gan_nhat = `${scene.name} (vào ngày ${new Date().toLocaleDateString('vi-VN')})`;
-            await db.updateAiMemory(userId, memory);
+            // Cập nhật AI memory ẩn (updateAiMemory là KV: userId, key, value).
+            const diaDiem = `${scene.name} (vào ngày ${new Date().toLocaleDateString('vi-VN')})`;
+            await db.updateAiMemory(userId, 'dia_diem_hen_gan_nhat', diaDiem);
 
             const embedTitle = locale.startsWith('en')
                 ? `🥰 Dating with Waguri: ${scene.name}`

@@ -255,7 +255,8 @@ module.exports = {
                 }
                 return;
             }
-            message.reply(res.reply.slice(0, 2000)).catch(() => {});
+            // allowedMentions rỗng: chặn AI bị "mồi" để @everyone/@here/tag role hàng loạt (prompt injection).
+            message.reply({ content: res.reply.slice(0, 2000), allowedMentions: { parse: [] } }).catch(() => {});
             return;
         }
 

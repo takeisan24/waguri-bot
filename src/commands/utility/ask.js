@@ -40,6 +40,7 @@ module.exports = {
             }
         }
 
-        await interaction.editReply(res.reply.slice(0, 2000));
+        // allowedMentions rỗng: chặn AI bị "mồi" để @everyone/@here/tag role hàng loạt (prompt injection).
+        await interaction.editReply({ content: res.reply.slice(0, 2000), allowedMentions: { parse: [] } });
     },
 };

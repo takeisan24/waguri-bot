@@ -33,7 +33,7 @@ async function chat(systemPrompt, history, userText, options = {}) {
     ];
 
     const model = ai.getGenerativeModel({
-        model: config.AI.GEMINI_MODEL,
+        model: options.model || config.AI.GEMINI_MODEL, // tôn trọng model do tầng trên chọn (Premium / fallback)
         systemInstruction: systemPrompt,
         safetySettings,
         generationConfig: {

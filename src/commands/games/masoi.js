@@ -51,6 +51,8 @@ module.exports = {
             return interaction.followUp({ embeds: [embed] });
         }
 
+        let stakesResolved = false; // đảm bảo cược luôn được settle/refund dù lỗi ở BẤT KỲ phase nào
+        try {
         const channel = interaction.channel;
         const roleMap = assignRoles(staked.map(p => p.id));
         const state = { players: {} };
@@ -257,6 +259,7 @@ module.exports = {
 
         if (!team) {
             await db.stakeRefundSession(sessionId);
+            stakesResolved = true;
             const drawEmbed = buildWaguriEmbed(interaction, 'warning', {
                 locale,
                 title: t(locale, 'commands.masoi.end_draw_title'),
@@ -272,6 +275,7 @@ module.exports = {
         const share = Math.floor(prize / payees.length);
         for (const id of payees) { await db.addMoney(id, share, 'wallet'); db.questIncr(id, 'gamble_win', 1); }
         await db.stakeSettle(sessionId);
+        stakesResolved = true;
 
         const winType = team === 'wolves' ? 'error' : 'success';
         const winEmbed = buildWaguriEmbed(interaction, winType, {
@@ -284,5 +288,11 @@ module.exports = {
             iconURL: winEmbed.data.footer.icon_url
         });
         await channel.send({ embeds: [winEmbed] });
+        } catch (err) {
+            console.error('[MASOI FATAL]', err);
+        } finally {
+            // Lưới an toàn: nếu vì lỗi mà chưa settle/refund thì hoàn cược cho mọi người (chống kẹt tiền tới restart).
+            if (!stakesResolved) await db.stakeRefundSession(sessionId).catch(() => {});
+        }
     },
 };
