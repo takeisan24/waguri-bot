@@ -5,6 +5,8 @@
 /* eslint-disable @next/next/no-img-element */
 
 import React, { useState, useEffect, useRef } from "react";
+import { useLanguage } from "./LanguageProvider";
+import { MOCKUP, type MockEmbedText } from "../data/mockup";
 
 interface EmbedField {
   name: string;
@@ -36,48 +38,20 @@ interface Message {
   commandExecuted?: string;
 }
 
-const WAGURI_QUOTES = [
-  "Bánh kem dâu của Rintaro làm ở tiệm Gekka luôn là ngon nhất! 🍰",
-  "Subaru-chan luôn bảo vệ tớ chu đáo, tớ thật may mắn khi có cậu ấy! 👭",
-  "Nhìn Rintaro trông hơi ngầu nhưng anh ấy là người dịu dàng nhất tớ từng biết đó~ 🥰",
-  "Dù bức tường giữa Kikyo và Chidori có cao đến đâu, chỉ cần chúng mình chân thành thì sẽ vượt qua hết! 🧱🌸",
-  "Cố lên nhé! Hôm nay cậu đã vất vả rồi, tớ luôn ở sau cổ vũ cậu! 💪🌸"
-];
-
 const BOT_AVATAR = "/waguri-avatar.svg";
 const USER_AVATAR = "/user-avatar.svg";
 
-// Trả lời trò chuyện theo tính cách Waguri (mô phỏng AI chat — nhận biết vài từ khoá cho vui).
-const CHAT_REPLIES = [
-  "Hì hì, được trò chuyện với cậu tớ vui lắm đó~ 🌸",
-  "Cậu hôm nay thế nào rồi? Nhớ giữ gìn sức khoẻ nhé! 💕",
-  "Tớ luôn ở đây lắng nghe cậu mà, đừng ngại chia sẻ nha~",
-  "Cậu giỏi lắm! Cố thêm chút nữa thôi là được rồi! 💪🌸",
-  "Nghe cậu nói mà tớ thấy ấm lòng ghê~ Cảm ơn cậu nhiều! 🥰",
-];
-
-function chatReplyFor(text: string): string {
-  const t = text.toLowerCase();
-  if (/buồn|mệt|chán|khóc|stress|áp lực/.test(t))
-    return "Ôi, cậu đừng buồn nha~ Mọi chuyện rồi sẽ ổn thôi, tớ luôn ở bên cậu mà. Ôm cậu một cái nè! 🤗🌸";
-  if (/yêu|thương|thích|crush|cưới/.test(t))
-    return "E-eh?! Cậu làm tớ ngại quá đi à~ 😳🌸 Nhưng mà... tớ cũng quý cậu nhiều lắm đó!";
-  if (/chào|hi|hello|hế lô|alo|xin chào/.test(t))
-    return "Chào cậu! 🌸 Rất vui được gặp cậu~ Hôm nay cậu muốn làm gì cùng tớ nào?";
-  if (/ăn|đói|bánh|cơm|trà sữa/.test(t))
-    return "Cậu đói rồi à? Tớ mời cậu một góc bánh kem dâu mới nướng ở tiệm Gekka nhé! 🍰🌸";
-  if (/\?|sao|gì|thế nào|là ai/.test(t))
-    return "Câu hỏi hay đó~ Tớ là Waguri, trợ lý kiêm bạn đồng hành của cậu. Cứ gõ /ask để hỏi tớ bất cứ điều gì nha! 💬🌸";
-  return CHAT_REPLIES[Math.floor(Math.random() * CHAT_REPLIES.length)];
-}
-
 export default function DiscordMockup() {
+  const { locale } = useLanguage();
+  const M = MOCKUP[locale === "en" ? "en" : "vi"];
+  const fmt = (n: number) => n.toLocaleString(locale === "en" ? "en-US" : "vi-VN");
+
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
       author: { name: "Waguri", avatar: BOT_AVATAR, isBot: true },
-      time: "Hôm nay lúc 16:30",
-      content: "🌸 Chào mừng cậu đã ghé thăm thế giới của tớ! Hãy thử tương tác bằng các nút lệnh bên dưới nhé~",
+      time: M.todayAt("16:30"),
+      content: M.initialMsg,
     }
   ]);
   const [isTyping, setIsTyping] = useState(false);
@@ -103,192 +77,71 @@ export default function DiscordMockup() {
     setTimeout(() => {
       setIsTyping(false);
       const now = new Date();
-      const timeStr = `Hôm nay lúc ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-      const quote = WAGURI_QUOTES[Math.floor(Math.random() * WAGURI_QUOTES.length)];
+      const timeStr = M.todayAt(`${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`);
+      const quote = M.quotes[Math.floor(Math.random() * M.quotes.length)];
+      const footerText = `🌸 Waguri • ${quote}`;
 
+      // Dựng message bot từ text embed (song ngữ) + phần trang trí (color/image/footer).
+      const mk = (color: string, text: MockEmbedText, image?: string): Message => ({
+        id: nextId(),
+        author: { name: "Waguri", avatar: BOT_AVATAR, isBot: true },
+        time: timeStr,
+        embed: { color, ...text, image, footerText, footerIcon: BOT_AVATAR },
+      });
+
+      const WIN_GIF = "https://media.tenor.com/TdCu1_KQmAcAAAAM/kaoruko-waguri-kaoruko.gif";
+      const LOSE_GIF = "https://media.tenor.com/Jz4bNe6EF-wAAAAM/the-fragrant-flower-blooms-with-dignity-kaoru-hana-wa-rin-to-saku.gif";
       let response: Message;
 
       if (command === "/work") {
-        const randGold = Math.floor(Math.random() * 70) + 30;
-        response = {
-          id: nextId(),
-          author: { name: "Waguri", avatar: BOT_AVATAR, isBot: true },
-          time: timeStr,
-          embed: {
-            color: "#ff9eaa", // INFO pink
-            title: "💼 KIẾM TIỀN - Đứng đường",
-            description: `Cậu đã đi làm công việc **Đứng đường** chăm chỉ và kiếm được **${randGold.toLocaleString()} VNĐ**! ⚡ Năng lượng tiêu hao: **10**. Năng lượng còn lại: **90/100**.\n\n*Hôm nay cậu đã làm việc cực kỳ vất vả rồi đấy!*`,
-            image: "https://media.tenor.com/gUP3bf_s600AAAAM/waguri-kaoruko.gif",
-            footerText: `🌸 Waguri • ${quote}`,
-            footerIcon: BOT_AVATAR
-          }
-        };
+        const gold = Math.floor(Math.random() * 70) + 30;
+        response = mk("#ff9eaa", M.work(fmt(gold)), "https://media.tenor.com/gUP3bf_s600AAAAM/waguri-kaoruko.gif");
       } else if (command === "/ask") {
-        response = {
-          id: nextId(),
-          author: { name: "Waguri", avatar: BOT_AVATAR, isBot: true },
-          time: timeStr,
-          embed: {
-            color: "#ffb7c5",
-            title: "💬 TRÒ CHUYỆN CÙNG WAGURI",
-            description: "Hì hì, tớ lúc nào cũng trân trọng và yêu quý mọi người mà! Chỉ cần cậu luôn vui vẻ và cố gắng mỗi ngày, Waguri sẽ luôn đồng hành và cổ vũ cho cậu đấy nhé! Cậu có muốn ăn thử một góc bánh kem dâu mới nướng ở tiệm Gekka không nào? 🍰🌸",
-            image: "https://media.tenor.com/saOAfF_zx6UAAAAM/kaoruko-waguri-the-fragrant-flower-blooms-with-dignity.gif",
-            footerText: `🌸 Waguri • ${quote}`,
-            footerIcon: BOT_AVATAR
-          }
-        };
+        response = mk("#ffb7c5", M.ask, "https://media.tenor.com/saOAfF_zx6UAAAAM/kaoruko-waguri-the-fragrant-flower-blooms-with-dignity.gif");
       } else if (command === "/taixiu") {
         const win = Math.random() > 0.5;
-        const dice1 = Math.floor(Math.random() * 6) + 1;
-        const dice2 = Math.floor(Math.random() * 6) + 1;
-        const dice3 = Math.floor(Math.random() * 6) + 1;
-        const total = dice1 + dice2 + dice3;
-        const resultType = total >= 11 ? "Tài" : "Xỉu";
-
-        response = {
-          id: nextId(),
-          author: { name: "Waguri", avatar: BOT_AVATAR, isBot: true },
-          time: timeStr,
-          embed: win ? {
-            color: "#8de0a6", // SUCCESS Green
-            title: "🎲 TÀI XỈU - Chiến thắng! 🎉",
-            description: `🎲 Kết quả xúc xắc: **[${dice1}, ${dice2}, ${dice3}] ➔ ${total} (${resultType})**\n\nCậu đặt cửa vào **${resultType} (50,000 VNĐ)** và đã chiến thắng ngọt ngào!\nCậu nhận lại **99,000 VNĐ**! (+49,000 VNĐ sau thuế 2%) 🪙`,
-            image: "https://media.tenor.com/TdCu1_KQmAcAAAAM/kaoruko-waguri-kaoruko.gif",
-            footerText: `🌸 Waguri • ${quote}`,
-            footerIcon: BOT_AVATAR
-          } : {
-            color: "#ff8e9e", // ERROR Red
-            title: "🎲 TÀI XỈU - Thất bại!",
-            description: `🎲 Kết quả xúc xắc: **[${dice1}, ${dice2}, ${dice3}] ➔ ${total} (${resultType})**\n\nCậu đặt cửa vào **${resultType === "Tài" ? "Xỉu" : "Tài"} (50,000 VNĐ)** nhưng xúc xắc lại ra **${resultType}**.\nCậu mất trắng **50,000 VNĐ** rồi... Đừng buồn nhé, làm lại ván khác vận may sẽ đến mà! 🥺`,
-            image: "https://media.tenor.com/Jz4bNe6EF-wAAAAM/the-fragrant-flower-blooms-with-dignity-kaoru-hana-wa-rin-to-saku.gif",
-            footerText: `🌸 Waguri • ${quote}`,
-            footerIcon: BOT_AVATAR
-          }
-        };
+        const d = [0, 1, 2].map(() => Math.floor(Math.random() * 6) + 1);
+        const total = d[0] + d[1] + d[2];
+        response = mk(win ? "#8de0a6" : "#ff8e9e", M.taixiu(win, d.join(", "), total, total >= 11), win ? WIN_GIF : LOSE_GIF);
       } else if (command === "/daily") {
         const streak = Math.floor(Math.random() * 15) + 1;
         const bonus = streak * 500;
-        response = {
-          id: nextId(),
-          author: { name: "Waguri", avatar: BOT_AVATAR, isBot: true },
-          time: timeStr,
-          embed: {
-            color: "#8de0a6",
-            title: "📅 ĐIỂM DANH HÀNG NGÀY",
-            description: `Điểm danh thành công! Cậu nhận **${(5000 + bonus).toLocaleString()} VNĐ** hôm nay. 🌸\n🔥 Chuỗi điểm danh: **${streak} ngày** liên tiếp — giữ vững nhé!`,
-            fields: [
-              { name: "💵 Thưởng cơ bản", value: "5,000 VNĐ", inline: true },
-              { name: "🔥 Thưởng streak", value: `+${bonus.toLocaleString()} VNĐ`, inline: true },
-            ],
-            image: "https://media.tenor.com/gUP3bf_s600AAAAM/waguri-kaoruko.gif",
-            footerText: `🌸 Waguri • ${quote}`,
-            footerIcon: BOT_AVATAR
-          }
-        };
+        response = mk("#8de0a6", M.daily(fmt(5000 + bonus), streak, fmt(bonus)), "https://media.tenor.com/gUP3bf_s600AAAAM/waguri-kaoruko.gif");
       } else if (command === "/baucua") {
         const symbols = ["🦌", "🦀", "🐓", "🐟", "🦐", "🍐"];
         const roll = [0, 1, 2].map(() => symbols[Math.floor(Math.random() * 6)]);
         const hits = roll.filter((s) => s === "🦀").length;
-        response = {
-          id: nextId(),
-          author: { name: "Waguri", avatar: BOT_AVATAR, isBot: true },
-          time: timeStr,
-          embed: hits > 0 ? {
-            color: "#8de0a6",
-            title: "🦀 BẦU CUA - Thắng rồi! 🎉",
-            description: `Bàn lắc ra: ${roll.join("  ")}\nCậu đặt **🦀 Cua (50,000 VNĐ)** và trúng **${hits}** con → nhận về **${(hits * 50000).toLocaleString()} VNĐ**! 🪙`,
-            image: "https://media.tenor.com/TdCu1_KQmAcAAAAM/kaoruko-waguri-kaoruko.gif",
-            footerText: `🌸 Waguri • ${quote}`,
-            footerIcon: BOT_AVATAR
-          } : {
-            color: "#ff8e9e",
-            title: "🦀 BẦU CUA - Hụt mất rồi!",
-            description: `Bàn lắc ra: ${roll.join("  ")}\nCậu đặt **🦀 Cua (50,000 VNĐ)** nhưng không con nào ra~ Mất **50,000 VNĐ**. Thử lại ván sau nhé! 🥺`,
-            image: "https://media.tenor.com/Jz4bNe6EF-wAAAAM/the-fragrant-flower-blooms-with-dignity-kaoru-hana-wa-rin-to-saku.gif",
-            footerText: `🌸 Waguri • ${quote}`,
-            footerIcon: BOT_AVATAR
-          }
-        };
+        const win = hits > 0;
+        response = mk(win ? "#8de0a6" : "#ff8e9e", M.baucua(win, roll.join("  "), hits, fmt(hits * 50000)), win ? WIN_GIF : LOSE_GIF);
       } else if (command === "/heo") {
         const age = Math.floor(Math.random() * 20) + 5;
         const weight = (age * 1.3 + 2).toFixed(1);
         const value = Math.floor(age * 1500) + 10000;
-        response = {
-          id: nextId(),
-          author: { name: "Waguri", avatar: BOT_AVATAR, isBot: true },
-          time: timeStr,
-          embed: {
-            color: "#ffb7c5",
-            title: "🐷 CHUỒNG HEO CỦA CẬU",
-            description: "Chú heo đất của cậu đang lớn nhanh lắm! Nhớ cho ăn đều và canh chừng kẻo bị hàng xóm rình trộm nhé~ 🌸",
-            fields: [
-              { name: "🐷 Tuổi heo", value: `${age} ngày`, inline: true },
-              { name: "⚖️ Cân nặng", value: `${weight} kg`, inline: true },
-              { name: "💰 Giá bán", value: `${value.toLocaleString()} VNĐ`, inline: true },
-            ],
-            image: "https://media.tenor.com/saOAfF_zx6UAAAAM/kaoruko-waguri-the-fragrant-flower-blooms-with-dignity.gif",
-            footerText: `🌸 Waguri • ${quote}`,
-            footerIcon: BOT_AVATAR
-          }
-        };
+        response = mk("#ffb7c5", M.heo(age, weight, fmt(value)), "https://media.tenor.com/saOAfF_zx6UAAAAM/kaoruko-waguri-the-fragrant-flower-blooms-with-dignity.gif");
       } else if (command === "/amlich") {
-        response = {
-          id: nextId(),
-          author: { name: "Waguri", avatar: BOT_AVATAR, isBot: true },
-          time: timeStr,
-          embed: {
-            color: "#d8b4fe",
-            title: "🗓️ LỊCH ÂM HÔM NAY",
-            description: "Tra cứu âm lịch, can-chi và giờ hoàng đạo để chọn ngày lành tháng tốt nhé! 🌙🌸",
-            fields: [
-              { name: "📅 Dương lịch", value: now.toLocaleDateString("vi-VN"), inline: true },
-              { name: "🐉 Can chi", value: "Giáp Thìn", inline: true },
-              { name: "⏰ Giờ hoàng đạo", value: "Tý, Sửu, Mão, Ngọ", inline: true },
-            ],
-            image: "https://media.tenor.com/WMRHrfBlNmEAAAAM/kaoruko-waguri-waguri-kaoruko.gif",
-            footerText: `🌸 Waguri • ${quote}`,
-            footerIcon: BOT_AVATAR
-          }
-        };
+        response = mk("#d8b4fe", M.amlich(now.toLocaleDateString(locale === "en" ? "en-US" : "vi-VN")), "https://media.tenor.com/WMRHrfBlNmEAAAAM/kaoruko-waguri-waguri-kaoruko.gif");
       } else {
-        response = {
-          id: nextId(),
-          author: { name: "Waguri", avatar: BOT_AVATAR, isBot: true },
-          time: timeStr,
-          embed: {
-            color: "#ff9eaa",
-            title: "💼 NGHỀ NGHIỆP HIỆN TẠI của Cậu",
-            fields: [
-              { name: "Nghề nghiệp", value: "🏪 Chủ tiệm trà đá vỉa hè", inline: true },
-              { name: "Cấp độ nghề", value: "Cấp 3 (EXP: 140/300)", inline: true },
-              { name: "Thu nhập tối thiểu", value: "150 VNĐ / work", inline: true },
-              { name: "Thu nhập tối đa", value: "350 VNĐ / work", inline: true },
-              { name: "Mức độ rủi ro", value: "10% (Bị đô thị dọn)", inline: true }
-            ],
-            description: "Cố gắng tích lũy thêm tiền ảo để nâng cấp lên các nghề cao cấp hơn như *Chạy Grab Công Nghệ*, *Chủ quán Gekka* hay *Đại gia Bất Động Sản* nhé! 🚀",
-            image: "https://media.tenor.com/WMRHrfBlNmEAAAAM/kaoruko-waguri-waguri-kaoruko.gif",
-            footerText: `🌸 Waguri • ${quote}`,
-            footerIcon: BOT_AVATAR
-          }
-        };
+        response = mk("#ff9eaa", M.jobs, "https://media.tenor.com/WMRHrfBlNmEAAAAM/kaoruko-waguri-waguri-kaoruko.gif");
       }
 
       setMessages(prev => [...prev, response]);
     }, 1200);
   };
 
+  const nowHm = () => {
+    const n = new Date();
+    return M.todayAt(`${String(n.getHours()).padStart(2, '0')}:${String(n.getMinutes()).padStart(2, '0')}`);
+  };
+
   const handleCommandClick = (command: string) => {
     if (isTyping) return;
-
-    const now = new Date();
-    const timeStr = `Hôm nay lúc ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
     // Add user command message
     const userMsg: Message = {
       id: nextId(),
-      author: { name: "Bạn", avatar: USER_AVATAR, isBot: false },
-      time: timeStr,
-      content: `Đã dùng lệnh: **${command}**`,
+      author: { name: M.you, avatar: USER_AVATAR, isBot: false },
+      time: nowHm(),
+      content: M.usedCommand(command),
       commandExecuted: command
     };
 
@@ -299,13 +152,11 @@ export default function DiscordMockup() {
   const handleSend = () => {
     const text = input.trim();
     if (!text || isTyping) return;
-    const now = new Date();
-    const timeStr = `Hôm nay lúc ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
     setMessages(prev => [...prev, {
       id: nextId(),
-      author: { name: "Bạn", avatar: USER_AVATAR, isBot: false },
-      time: timeStr,
+      author: { name: M.you, avatar: USER_AVATAR, isBot: false },
+      time: nowHm(),
       content: text,
     }]);
     setInput("");
@@ -313,12 +164,12 @@ export default function DiscordMockup() {
 
     setTimeout(() => {
       setIsTyping(false);
-      const t2 = new Date();
+      const reply = M.keyword(text.toLowerCase()) ?? M.replies[Math.floor(Math.random() * M.replies.length)];
       setMessages(prev => [...prev, {
         id: nextId(),
         author: { name: "Waguri", avatar: BOT_AVATAR, isBot: true },
-        time: `Hôm nay lúc ${String(t2.getHours()).padStart(2, '0')}:${String(t2.getMinutes()).padStart(2, '0')}`,
-        content: chatReplyFor(text),
+        time: nowHm(),
+        content: reply,
       }]);
     }, 1200);
   };
@@ -329,9 +180,9 @@ export default function DiscordMockup() {
       <div className="bg-[#1e1f22] px-4 py-3 flex items-center justify-between border-b border-[#111214] select-none">
         <div className="flex items-center space-x-2">
           <span className="text-[#949ba4] font-bold">#</span>
-          <span className="text-white font-semibold tracking-wide">🌸-trò-chuyện-waguri</span>
+          <span className="text-white font-semibold tracking-wide">{M.channels[0]}</span>
           <span className="text-[#949ba4] text-xs border-l border-[#4e5058] pl-2 hidden md:inline">
-            Căn phòng ngập tràn hoa anh đào và tiếng cười cùng Waguri
+            {M.headerTopic}
           </span>
         </div>
         <div className="flex items-center space-x-3 text-[#b5bac1]">
@@ -347,25 +198,22 @@ export default function DiscordMockup() {
         <div className="w-60 bg-[#2b2d31] p-3 flex-col space-y-4 hidden md:flex select-none">
           <div>
             <div className="text-[11px] font-bold text-[#949ba4] tracking-wider px-2 mb-1 uppercase">
-              Kênh Văn Bản
+              {M.channelsTitle}
             </div>
             <div className="space-y-0.5">
-              <div className="flex items-center space-x-2 px-2 py-1.5 rounded bg-[#404249] text-white cursor-pointer">
-                <span>#</span>
-                <span>🌸-trò-chuyện-waguri</span>
-              </div>
-              <div className="flex items-center space-x-2 px-2 py-1.5 rounded hover:bg-[#35373c] hover:text-[#dbdee1] text-[#949ba4] cursor-pointer transition">
-                <span>#</span>
-                <span>💼-đi-làm-kiếm-tiền</span>
-              </div>
-              <div className="flex items-center space-x-2 px-2 py-1.5 rounded hover:bg-[#35373c] hover:text-[#dbdee1] text-[#949ba4] cursor-pointer transition">
-                <span>#</span>
-                <span>🎲-thử-vận-may</span>
-              </div>
-              <div className="flex items-center space-x-2 px-2 py-1.5 rounded hover:bg-[#35373c] hover:text-[#dbdee1] text-[#949ba4] cursor-pointer transition">
-                <span>#</span>
-                <span>📢-thành-tựu</span>
-              </div>
+              {M.channels.map((ch, i) => (
+                <div
+                  key={i}
+                  className={`flex items-center space-x-2 px-2 py-1.5 rounded cursor-pointer transition ${
+                    i === 0
+                      ? "bg-[#404249] text-white"
+                      : "hover:bg-[#35373c] hover:text-[#dbdee1] text-[#949ba4]"
+                  }`}
+                >
+                  <span>#</span>
+                  <span>{ch}</span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -460,7 +308,7 @@ export default function DiscordMockup() {
                   <span className="w-1.5 h-1.5 bg-[#949ba4] rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
                   <span className="w-1.5 h-1.5 bg-[#949ba4] rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
                 </div>
-                <span>Waguri đang gõ...</span>
+                <span>{M.typing}</span>
               </div>
             )}
             
@@ -475,14 +323,14 @@ export default function DiscordMockup() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter") handleSend(); }}
-                placeholder="Nhắn cho Waguri... (vd: chào cậu, tớ buồn quá)"
-                aria-label="Nhắn cho Waguri"
+                placeholder={M.placeholder}
+                aria-label={M.inputAria}
                 className="flex-1 bg-transparent outline-none text-sm text-[#dbdee1] placeholder:text-[#6d6f78]"
               />
               <button
                 onClick={handleSend}
                 disabled={isTyping || !input.trim()}
-                aria-label="Gửi tin nhắn"
+                aria-label={M.sendAria}
                 className="text-pink-300 hover:text-pink-200 disabled:opacity-30 transition text-lg leading-none cursor-pointer"
               >
                 ➤
@@ -492,7 +340,7 @@ export default function DiscordMockup() {
 
           {/* Nút chạy thử lệnh */}
           <div className="bg-[#383a40] px-4 py-3 flex flex-wrap items-center gap-2 select-none">
-            <span className="text-xs text-[#b5bac1] font-semibold mr-1">Hoặc thử lệnh:</span>
+            <span className="text-xs text-[#b5bac1] font-semibold mr-1">{M.tryPrefix}</span>
             {["/ask", "/work", "/jobs", "/taixiu", "/daily", "/baucua", "/heo", "/amlich"].map((cmd) => (
               <button
                 key={cmd}
