@@ -10,7 +10,8 @@ module.exports = {
         .setDescription('Nhận phần quà 10,000 xu độc quyền khi gia nhập Server Support 🎁')
         .setDescriptionLocalizations({
             vi: 'Nhận phần quà 10,000 xu độc quyền khi gia nhập Server Support 🎁',
-            en: 'Claim exclusive 10,000 coins gift for joining the Support Server 🎁'
+            'en-US': 'Claim exclusive 10,000 coins gift for joining the Support Server 🎁',
+            'en-GB': 'Claim exclusive 10,000 coins gift for joining the Support Server 🎁'
         }),
     async execute(interaction) {
         await interaction.deferReply({ flags: MessageFlags.Ephemeral });
