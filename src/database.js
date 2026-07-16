@@ -2460,27 +2460,14 @@ async function getLatestWorldEvent() {
 }
 
 async function clanDepositResource(clanId, itemId, amount) {
-    // M2: sau khi áp dụng migration 0087 lên DB (prod + test), đổi thân hàm này sang
-    //     supabase.rpc('clan_deposit_resource', { p_clan_id: clanId, p_item_id: itemId, p_amount: amount })
-    //     để cộng tài nguyên nguyên tử (chống mất contribution khi 2 thành viên nạp cùng lúc).
-    //     Tạm giữ read-modify-write để không phụ thuộc RPC chưa deploy.
     try {
-        const { data: clan, error: errGet } = await supabase
-            .from('clans')
-            .select('resources')
-            .eq('id', clanId)
-            .single();
-        if (errGet) throw errGet;
-
-        const resources = clan.resources || {};
-        resources[itemId] = (resources[itemId] || 0) + amount;
-
-        const { error: errUp } = await supabase
-            .from('clans')
-            .update({ resources })
-            .eq('id', clanId);
-        if (errUp) throw errUp;
-        return resources;
+        const { data, error } = await supabase.rpc('clan_deposit_resource', {
+            p_clan_id: clanId,
+            p_item_id: itemId,
+            p_amount: amount
+        });
+        if (error) throw error;
+        return data;
     } catch (e) {
         logError('clanDepositResource', e, { clanId, itemId, amount });
         return null;
