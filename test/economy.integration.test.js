@@ -206,12 +206,19 @@ if (!hasTestDb) {
         }).eq('user_id', testUser1);
 
         // Thu hoạch: rate 20, cap 12000, cakeEvery 15000, wage 4% (0.04 - của Usami)
-        // Với 60 phút trôi qua và rate 20, gross revenue = 60 * 20 = 1200.
-        // Lương usami: 1200 * 0.04 = 48. Net = 1200 - 48 = 1152.
+        // ~60 phút x rate 20 => gross ~1200, lương usami 4%, net = gross - lương.
+        // KHÔNG ghim cứng gross=1200: `last_collect_at` ở trên đặt bằng đồng hồ MÁY CHẠY TEST
+        // còn RPC tính elapsed bằng đồng hồ DB (now()). Lệch đồng hồ dù vài ms theo hướng
+        // DB chậm hơn là floor(59.99) = 59 phút -> gross 1180 và test đỏ oan.
+        // Nên kiểm CÔNG THỨC (bất biến thật) + biên hợp lý cho elapsed.
         const collectRes = await db.bakeryCollectV2(testUser1, 20, 12000, 15000, 0.04);
         assert.strictEqual(collectRes.result, 'ok', 'Thu hoạch v2 thành công');
-        assert.strictEqual(Number(collectRes.revenue), 1152, 'Doanh thu ròng sau thuế chính xác');
-        assert.strictEqual(Number(collectRes.wage_deducted), 48, 'Thuế/lương khấu trừ chính xác');
+        const net = Number(collectRes.revenue);
+        const wage = Number(collectRes.wage_deducted);
+        const gross = net + wage;
+        assert.ok(gross >= 1160 && gross <= 1240, `Doanh thu gộp ~60 phút x rate 20 (nhận ${gross})`);
+        assert.strictEqual(wage, Math.floor(gross * 0.04), 'Lương usami = 4% doanh thu gộp');
+        assert.strictEqual(net, gross - wage, 'Doanh thu ròng = gộp - lương');
 
         // 6. Sa thái nhân viên
         res = await db.bakeryFire(testUser1, 'usami');
