@@ -42,10 +42,15 @@ export default function BattlePassClient({
 
   const numFmt = (n: number) => n.toLocaleString(locale === "en" ? "en-US" : "vi-VN");
 
-  // Đếm quà chưa nhận
+  // Đếm quà chưa nhận. currentLvl tính từ XP nên KHÔNG bị chặn trên, trong khi REWARDS
+  // chỉ định nghĩa 1..MAX_LEVEL -> phải kẹp, nếu không REWARDS[l] là undefined và r.free
+  // ném TypeError làm sập TRẮNG cả trang /dashboard/pass (mọi user có BP-XP >= 21.000).
+  // Server action đã guard tương tự (pass/actions.ts:109).
   let claimableCount = 0;
-  for (let l = 1; l <= currentLvl; l++) {
+  const cappedLvl = Math.min(currentLvl, rewardsConfig.MAX_LEVEL);
+  for (let l = 1; l <= cappedLvl; l++) {
     const r = rewardsConfig.REWARDS[l];
+    if (!r) continue;
     if (r.free && !freeClaimed.has(l)) claimableCount++;
     if (isPremium && r.premium && !premiumClaimed.has(l)) claimableCount++;
   }
