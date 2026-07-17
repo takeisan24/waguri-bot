@@ -32,16 +32,25 @@ async function chat(systemPrompt, history, userText, options = {}) {
         { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
     ];
 
+    const modelName = options.model || config.AI.GEMINI_MODEL; // tôn trọng model do tầng trên chọn (Premium / fallback)
+
+    const generationConfig = {
+        maxOutputTokens: options.maxOutputTokens || config.AI.MAX_OUTPUT_TOKENS,
+        temperature: options.temperature || 0.9,
+    };
+    // Tắt "thinking" của Gemini 2.5 (nếu không, thinking ăn hết token -> câu trả lời bị cụt).
+    // NHƯNG bản Pro KHÔNG cho tắt: thinkingBudget=0 bị trả 400 INVALID_ARGUMENT -> mọi lượt
+    // Premium văng lỗi rồi rơi về Flash qua fallback => tính năng Premium chết âm thầm.
+    // Vì vậy chỉ tắt cho model cho phép (flash/flash-lite); Pro để thinking mặc định.
+    if (!/pro/i.test(modelName)) {
+        generationConfig.thinkingConfig = { thinkingBudget: 0 };
+    }
+
     const model = ai.getGenerativeModel({
-        model: options.model || config.AI.GEMINI_MODEL, // tôn trọng model do tầng trên chọn (Premium / fallback)
+        model: modelName,
         systemInstruction: systemPrompt,
         safetySettings,
-        generationConfig: {
-            maxOutputTokens: options.maxOutputTokens || config.AI.MAX_OUTPUT_TOKENS,
-            temperature: options.temperature || 0.9,
-            // Tắt "thinking" của Gemini 2.5 (nếu không, thinking ăn hết token -> câu trả lời bị cụt)
-            thinkingConfig: { thinkingBudget: 0 },
-        },
+        generationConfig,
     });
 
     const geminiHistory = history.map(m => ({
