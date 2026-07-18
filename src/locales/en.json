@@ -1,5 +1,10 @@
 {
   "common": {
+    "empty": "(empty)",
+    "none": "None",
+    "not_for_you": "This button isn't for you~ 🌸",
+    "invalid_subcommand": "Invalid subcommand~ 🌸",
+    "game_timeout_cancelled": "The {game} game was cancelled due to timeout~ 🌸",
     "currency": "VND",
     "error_title": "❌ Error",
     "warning_title": "⚠️ Warning",

@@ -1,5 +1,10 @@
 {
   "common": {
+    "empty": "(trống)",
+    "none": "Không có",
+    "not_for_you": "Nút này không phải của cậu đâu nha~ 🌸",
+    "invalid_subcommand": "Lệnh phụ không hợp lệ~ 🌸",
+    "game_timeout_cancelled": "Ván {game} đã bị huỷ do quá thời gian chờ~ 🌸",
     "currency": "VNĐ",
     "error_title": "❌ Lỗi",
     "warning_title": "⚠️ Cảnh báo",
