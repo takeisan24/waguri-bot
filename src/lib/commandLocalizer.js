@@ -2,6 +2,18 @@
 // Định nghĩa bản dịch và hàm địa phương hóa tự động cho các Slash Commands.
 
 const COMMAND_DESCRIPTIONS = {
+    "leaderboard": {
+        vi: "Bảng xếp hạng 🏆",
+        en: "Leaderboard 🏆"
+    },
+    "clan": {
+        vi: "Bang hội 🏰 — lập bang, gia nhập, quỹ chung",
+        en: "Guild 🏰 — create, join, shared treasury"
+    },
+    "claim-support": {
+        vi: "Nhận phần quà 10.000 xu độc quyền khi gia nhập Server Support 🎁",
+        en: "Claim an exclusive 10,000-coin gift for joining the Support Server 🎁"
+    },
     // Kinh tế & Nghề
     "work": {
         vi: "Làm việc kiếm tiền (tốn năng lượng) 💼",
