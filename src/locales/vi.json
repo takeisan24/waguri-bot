@@ -65,6 +65,12 @@
     "newly_sick_note": "🤒 Ôi, cậu vừa **đổ bệnh** do làm quá sức! Thu nhập sẽ giảm cho tới khi `/hospital` chữa."
   },
   "commands": {
+    "image": {
+      "title_cat": "🐱 Mèo cho cậu nè~",
+      "title_dog": "🐶 Cún cho cậu nè~",
+      "title_waifu": "🌸 Waifu cho cậu nè~",
+      "err_fetch": "Tớ không lấy được ảnh lúc này rồi, cậu thử lại sau chút nhé~ 😥"
+    },
     "claim_support": {
       "err_not_member": "Cậu ơi, hình như cậu chưa tham gia Server Support của Waguri rồi... 🥺 Hãy tham gia tại đây để nhận quà và trò chuyện cùng mọi người nhé: {url}",
       "err_already_claimed": "Ôi, cậu đã nhận phần quà gia nhập Server Support trước đó rồi mà~ 🎁 Cảm ơn cậu đã đồng hành cùng mình nhé!",

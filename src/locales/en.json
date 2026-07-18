@@ -65,6 +65,12 @@
     "newly_sick_note": "🤒 Oh, you just **got sick** from overworking! Income is reduced until you cure it at `/hospital`."
   },
   "commands": {
+    "image": {
+      "title_cat": "🐱 A kitty for you~",
+      "title_dog": "🐶 A puppy for you~",
+      "title_waifu": "🌸 A waifu for you~",
+      "err_fetch": "I couldn't fetch an image right now, please try again in a bit~ 😥"
+    },
     "claim_support": {
       "err_not_member": "Oh dear, it seems you haven't joined the Waguri Support Server yet... 🥺 Please join here to get your reward and chat with everyone: {url}",
       "err_already_claimed": "Oops, you have already claimed the Support Server join gift before~ 🎁 Thank you for staying with me!",

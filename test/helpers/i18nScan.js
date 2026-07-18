@@ -57,9 +57,13 @@ function scanMissing() {
             if (!root || root.includes('${') || SAFE_ROOT(root)) continue;
 
             if (raw.includes('${') || raw.endsWith('.')) {
-                // key động (template ${...} HOẶC nối chuỗi 'prefix.' + var) -> namespace prefix
-                // (phần trước ${ hoặc trước dấu . cuối) phải tồn tại ở cả 2 locale.
-                const prefix = raw.split('${')[0].replace(/\.$/, '');
+                // key động -> lấy NAMESPACE cha = phần tới dấu '.' cuối TRƯỚC ${.
+                //   'commands.masoi.roles.${id}.name' -> 'commands.masoi.roles'
+                //   'lib.newbie.step_${i}'           -> 'lib.newbie'   (step_ dính liền, không phải namespace)
+                //   'commands.image.title_${cat}'    -> 'commands.image'
+                const before = raw.split('${')[0];
+                const lastDot = before.lastIndexOf('.');
+                const prefix = lastDot >= 0 ? before.slice(0, lastDot) : before;
                 if (!prefix) continue;
                 if (!hasChildren(prefix, viKeys) || !hasChildren(prefix, enKeys)) missing.add(prefix + '.*');
             } else {
