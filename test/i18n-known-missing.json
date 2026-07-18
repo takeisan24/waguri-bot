@@ -39,8 +39,6 @@
   "common.invalid_subcommand",
   "common.none",
   "common.not_for_you",
-  "jobs.*",
-  "jobs.names.*",
   "lib.newbie.step_.*",
   "pig.bath_help_cooldown",
   "pig.bath_help_failed",

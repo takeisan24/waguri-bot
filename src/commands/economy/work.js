@@ -183,7 +183,7 @@ module.exports = {
             await handleNewbieQuest(interaction, 'work', 1);
             if (earnedMoney > 0) db.questIncr(userId, 'earn', earnedMoney);
 
-            const displayJobName = t(locale, `jobs.${jobKey}.name`) || jobName;
+            const displayJobName = t(locale, `data.jobs.${jobKey}.name`) || jobName;
             const amtStr = `${fmt(Math.abs(earnedMoney), locale)} ${config.CURRENCY}`;
             let resultMessage = pickLine(jobKey, category, locale)
                 .replace(/\{amount\}/g, amtStr)

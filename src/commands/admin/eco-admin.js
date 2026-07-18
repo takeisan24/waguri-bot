@@ -198,7 +198,7 @@ module.exports = {
                 return interaction.editReply({ embeds: [embed] });
             }
             const ok = await db.setUserJob(target.id, jobId);
-            const localizedJobName = t(locale, `jobs.names.${jobId}`) || job.name;
+            const localizedJobName = t(locale, `data.jobs.${jobId}.name`) || job.name;
             const embed = buildWaguriEmbed(interaction, ok ? 'success' : 'error', {
                 description: ok
                     ? t(locale, 'commands.eco-admin.setjob_success', { user: target.id, name: localizedJobName })
