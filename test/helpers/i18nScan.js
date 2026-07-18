@@ -67,8 +67,10 @@ function scanMissing() {
                 if (!prefix) continue;
                 if (!hasChildren(prefix, viKeys) || !hasChildren(prefix, enKeys)) missing.add(prefix + '.*');
             } else {
-                // key tĩnh -> phải có ở cả vi và en
-                if (!/^[a-zA-Z0-9_.]+$/.test(raw)) continue;
+                // key tĩnh -> phải có ở cả vi và en. Cho phép '-' (namespace lệnh có gạch ngang:
+                // eco-admin, claim-support, cancel-auction, badge-buy, skill-up...) — trước đây
+                // regex bỏ '-' nên các key đó lọt lưới (vd commands.eco-admin.addmoney_sub_success).
+                if (!/^[a-zA-Z0-9_.-]+$/.test(raw)) continue;
                 if (!viKeys.has(raw) || !enKeys.has(raw)) missing.add(raw);
             }
         }
