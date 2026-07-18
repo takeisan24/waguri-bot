@@ -218,7 +218,7 @@ async function chatWithWaguri(channelId, userId, userName, userText, locale) {
     }
 
     // Hướng dẫn Waguri TỰ lưu ký ức: gắn marker ẩn khi biết điều đáng nhớ (marker sẽ bị lược trước khi gửi).
-    systemPrompt += `\n[Ghi nhớ: nếu trong lúc trò chuyện cậu biết được một điều đáng nhớ & lâu dài về ${userName} (tên thật/biệt danh, sở thích, món ăn yêu thích, tên thú cưng, dự định quan trọng, tâm trạng nổi bật...), hãy ghi lại bằng cách thêm vào CUỐI câu trả lời một dòng ẩn đúng định dạng: [[NHO: khoa | gia tri]] — khoá ngắn không dấu (vd ten, mon_an_yeu_thich, ten_pet, tam_trang). Tối đa 1 điều mỗi lần, chỉ khi thật sự đáng nhớ, KHÔNG bịa. Người dùng sẽ không nhìn thấy dòng này.]`;
+    systemPrompt += `\n[Ghi nhớ: nếu trong lúc trò chuyện cậu biết được một điều đáng nhớ & lâu dài về ${safeName} (tên thật/biệt danh, sở thích, món ăn yêu thích, tên thú cưng, dự định quan trọng, tâm trạng nổi bật...), hãy ghi lại bằng cách thêm vào CUỐI câu trả lời một dòng ẩn đúng định dạng: [[NHO: khoa | gia tri]] — khoá ngắn không dấu (vd ten, mon_an_yeu_thich, ten_pet, tam_trang). Tối đa 1 điều mỗi lần, chỉ khi thật sự đáng nhớ, KHÔNG bịa. Người dùng sẽ không nhìn thấy dòng này.]`;
 
     // Bối cảnh thời sự: sự kiện toàn cục + mùa lễ VN -> Waguri có thể nhắc khéo cho sống động.
     const nowBits = [];
