@@ -224,8 +224,8 @@ module.exports = {
                 const itemNameTrans = t(locale, `items.${itemId}.name`) || item?.name || itemId;
                 const embed = buildWaguriEmbed(interaction, 'warning', {
                     description: locale.startsWith('en')
-                        ? `You don't have **1× ${itemNameTrans}** in your inventory to give 🥺 Buy it at \`/shop\` or go farming!`
-                        : `Cậu không có sẵn **1× ${itemNameTrans}** trong túi đồ để tặng rồi 🥺 Mua ở \`/shop\` hoặc đi farm nhé!`
+                        ? `You don't have **1× ${itemNameTrans}** in your inventory to give 🥺 Buy it at \`/store\` or go farming!`
+                        : `Cậu không có sẵn **1× ${itemNameTrans}** trong túi đồ để tặng rồi 🥺 Mua ở \`/store\` hoặc đi farm nhé!`
                 });
                 return interaction.editReply({ embeds: [embed] });
             }

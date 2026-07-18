@@ -264,8 +264,8 @@ function runResourceGather(interaction, { key, title, table }) {
         errorTitle: (en) => en ? '⛏️・Gathering' : '⛏️・Khai thác',
         name: (c, en) => (RESOURCE_NAMES[c.name]?.[en ? 'en' : 'vi']) || c.name,
         toolMissing: (toolNameTrans, tl, en) => en
-            ? `You need to buy a **${toolNameTrans}** ${tl.emoji} at \`/shop\` first! 🌸`
-            : `Cậu cần mua **${toolNameTrans}** ${tl.emoji} ở \`/shop\` mới thực hiện được nhé~ 🌸`,
+            ? `You need to buy a **${toolNameTrans}** ${tl.emoji} at \`/store\` first! 🌸`
+            : `Cậu cần mua **${toolNameTrans}** ${tl.emoji} ở \`/store\` mới thực hiện được nhé~ 🌸`,
         // Gấu con: +10% payout (sau khi tính base) + ghi chú
         onPayout: (payout, userPet, en) => {
             if (userPet && userPet.species === 'gau' && petLevel(userPet.exp) >= 5) {

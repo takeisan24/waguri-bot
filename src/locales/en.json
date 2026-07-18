@@ -39,7 +39,7 @@
     "guild_create": {
       "support_link": "\n> 🛟 **Need help?** [Join Support Server]({url})!",
       "welcome_title": "🌸・Hello, I'm Waguri!",
-      "welcome_desc": "*A warm welcome to Gekka Bakery!* 🍰\n\nThank you so much for inviting me to **{guild}**! I'll be your energetic companion and \"bakery manager\"~\n\n**✨ Our Services:**\n> 🎁 **New to the shop?** Type `/start` to claim your **welcome gift** & quick guide!\n> 💬 **Chat with Waguri:** Type `/ask` or tag me to chat about my studies at Kikyo or baking with Rintaro!\n> 💼 **Work & Economy:** Earn money for sweets via `/work`, claim daily allowance via `/daily`, shop via `/shop`.\n> 🎲 **Fun with friends:** Test your luck with `/taixiu`, `/blackjack`, `/masoi` (Werewolf).\n> 📜 **Help Guide:** Type `/help` for detailed command instructions!{supportLink}\n\n*Hope we'll create sweet memories together!* 🌸",
+      "welcome_desc": "*A warm welcome to Gekka Bakery!* 🍰\n\nThank you so much for inviting me to **{guild}**! I'll be your energetic companion and \"bakery manager\"~\n\n**✨ Our Services:**\n> 🎁 **New to the shop?** Type `/start` to claim your **welcome gift** & quick guide!\n> 💬 **Chat with Waguri:** Type `/ask` or tag me to chat about my studies at Kikyo or baking with Rintaro!\n> 💼 **Work & Economy:** Earn money for sweets via `/work`, claim daily allowance via `/daily`, shop via `/store`.\n> 🎲 **Fun with friends:** Test your luck with `/taixiu`, `/blackjack`, `/masoi` (Werewolf).\n> 📜 **Help Guide:** Type `/help` for detailed command instructions!{supportLink}\n\n*Hope we'll create sweet memories together!* 🌸",
       "welcome_footer": "Prefix {prefix} is also supported (e.g. {prefix}help) • Have fun playing!",
       "game_timeout_cancelled": "The {game} game has been automatically cancelled and refunded due to inactivity in the last 10 minutes! ⏰🌸"
     },
@@ -123,7 +123,7 @@
     },
     "inventory": {
       "empty_title": "backpack・Inventory Empty",
-      "empty_desc": "Inventory of **{user}** is empty~ Try `/work` then visit `/shop` to buy items! 🌸",
+      "empty_desc": "Inventory of **{user}** is empty~ Try `/work` then visit `/store` to buy items! 🌸",
       "title": "🎒 {user}'s Inventory"
     },
     "store": {
@@ -162,7 +162,7 @@
       "info_title": "💼・Job Info: {job}",
       "already_applied": "You are already working as a **{job}**~ 😄",
       "level_low": "You need to reach **Lv.{required}** to apply for **{job}**, currently you are only Lv.{current}. Keep it up, you can do it! 🌸",
-      "missing_item": "Ah, to apply for this job you need to have a **{item}** first. Grab one at `/shop` and try again~ 🌸",
+      "missing_item": "Ah, to apply for this job you need to have a **{item}** first. Grab one at `/store` and try again~ 🌸",
       "apply_failed": "Oops, there was an error applying for the job, please try again later~",
       "apply_success_title": "🎉・Applied Successfully!",
       "apply_success_desc": "From now on you are a **{job}**. Let's do our best! Type `/work` to start working! 💪",
@@ -192,7 +192,7 @@
         },
         "3": {
           "name": "Step 3: Try Shopping",
-          "hint": "Buy any item at `/shop` or `/buy` 🛒"
+          "hint": "Buy any item at `/store` or `/buy` 🛒"
         },
         "4": {
           "name": "Step 4: Get a Job",
@@ -592,7 +592,7 @@
     },
     "tiembanh": {
       "title": "🍰・Gekka Bakery",
-      "not_open": "You haven't opened a bakery yet~ You need **Level {level}** + **Gekka Baking Kit** (purchase in `/shop`) and run `/tiembanh mo` ({cost} {currency})! 🌸",
+      "not_open": "You haven't opened a bakery yet~ You need **Level {level}** + **Gekka Baking Kit** (purchase in `/store`) and run `/tiembanh mo` ({cost} {currency})! 🌸",
       "status_no_stock": "⚠️ Out of ingredients — use `/tiembanh nhapnl` to bake more!",
       "status_capped": "📦 Cash register full — use `/tiembanh thu` to claim and continue baking!",
       "status_baking": "The bakery is baking steadily~ 🧁",
@@ -612,7 +612,7 @@
       "title_open": "🍰・Open Bakery",
       "open_low_level": "You need to reach **Level {level}** to open a bakery~ Grind with `/work`! 🌸",
       "open_has": "You already own a bakery~ Run `/tiembanh xem`.",
-      "open_no_tool": "You need a **Gekka Baking Kit** (buy in `/shop` for 8,000) to open a bakery~ 🧰",
+      "open_no_tool": "You need a **Gekka Baking Kit** (buy in `/store` for 8,000) to open a bakery~ 🧰",
       "open_poor": "You need **{cost}** {currency} to open a bakery~ Make some cash with `/work`!",
       "open_success_title": "🍰・Grand Opening of Gekka Bakery!",
       "open_success_desc": "Congratulations on opening your own bakery (−{cost} {currency})! 🎉🧁\nInput ingredients with `/tiembanh nhapnl` (using farmed fruits/flowers/meat/fish) and use `/tiembanh thu` to harvest your revenue~ 🌸",
@@ -644,7 +644,7 @@
       "sathai_success_desc": "You fired **{name}** from Gekka Bakery. Hope they find a new job soon~",
       "trangtri_title": "🍰・Decorate Bakery",
       "trangtri_invalid": "Invalid decoration item 🤔",
-      "trangtri_no_item": "You don't have **{name}** in your inventory. Buy it at `/shop` or craft it at `/craft` first~",
+      "trangtri_no_item": "You don't have **{name}** in your inventory. Buy it at `/store` or craft it at `/craft` first~",
       "trangtri_success_title": "🌸・Bakery Decorated!",
       "trangtri_success_desc": "Placed 1× **{name}** in your bakery. A better environment increases baking efficiency by **+{rate}%**!",
       "nangcap_title": "🍰・Upgrade Bakery",
@@ -1365,7 +1365,7 @@
         "This prophecy is \"diligence yields results\" — go `/work` now!",
         "I see you have a benefactor helping you, and their name is... Waguri 🌸",
         "Your future is bright, but your present... better start grinding 😅",
-        "Prophecy \"stable home, prosperous career\" — save money to buy items at `/shop`.",
+        "Prophecy \"stable home, prosperous career\" — save money to buy items at `/store`.",
         "Sage says: do not seek luck in gambling, police are watching 👮",
         "You are quite popular today, try `/ship` to see your match~",
         "Prophecy \"thrift and integrity\" — cut down on `/baucua` my friend.",
@@ -1475,7 +1475,7 @@
       "channel_reason": "Waguri /setup",
       "err_create_channel_failed": "Oops, I couldn't create the channel (lacking permissions or invalid position). Grant **Manage Channels** and try again~ 🌸",
       "intro_title": "🌸 Hello everyone, I'm Waguri!",
-      "intro_desc": "This is my playroom~ 💕\n\n**Quick Start:**\n• `/daily` — daily check-in rewards\n• `/work` `/fish` `/mine` `/chop` — earn money (costs energy)\n• `/shop` `/buy` — shopping · `/help` — see all commands\n• `/ask` or **@tag me** — let's chat 💬",
+      "intro_desc": "This is my playroom~ 💕\n\n**Quick Start:**\n• `/daily` — daily check-in rewards\n• `/work` `/fish` `/mine` `/chop` — earn money (costs energy)\n• `/store` `/buy` — shopping · `/help` — see all commands\n• `/ask` or **@tag me** — let's chat 💬",
       "intro_footer": "Have fun everyone~",
       "success_title": "⚙️ Setup Successful!",
       "success_desc": "All set! My playroom is <#{channelId}>.\n\nI have set this as the **default AI chat channel** (if you want me to respond in all channels, run `/config ai-channel` and leave the channel empty)."
@@ -1543,7 +1543,7 @@
     "eat": {
       "embed_title": "😋・Use Item",
       "err_item_not_found": "I couldn't find this item~ 🌸",
-      "err_no_have": "You don't have **{item}** in your inventory. Visit `/shop` to buy it first~",
+      "err_no_have": "You don't have **{item}** in your inventory. Visit `/store` to buy it first~",
       "err_not_consumable": "**{item}** is not a consumable food or drink, you can't use it this way~",
       "err_buff_better": "You already have a better or equal active buff than **{item}**, using it now would be wasteful~ 🌸",
       "err_system": "Oops, an error occurred, please try again later~",
@@ -1636,7 +1636,7 @@
     "repair": {
       "embed_title_warning": "🛠️・Repair Tool",
       "success_title": "🛠️・Repair Successful",
-      "err_no_tool": "You don't own a **{tool}** in your inventory to repair. Buy one at `/shop` first!",
+      "err_no_tool": "You don't own a **{tool}** in your inventory to repair. Buy one at `/store` first!",
       "err_already_healthy": "Your **{tool}** is already in brand new condition (100% durability), no need to repair~",
       "err_poor": "You don't have enough **{cost}** {currency} in your wallet to pay for the repairs.",
       "err_system": "Oops, an error occurred during tool repair, please try again later~",

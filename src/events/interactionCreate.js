@@ -12,7 +12,7 @@ const { getInteractionLanguage, t } = require('../lib/i18n');
 module.exports = {
     name: Events.InteractionCreate,
     async execute(interaction) {
-        // --- Autocomplete (vd: gợi ý tên item cho /shop, /jobs) ---
+        // --- Autocomplete (vd: gợi ý tên item cho /store, /jobs) ---
         if (interaction.isAutocomplete()) {
             const command = interaction.client.commands.get(interaction.commandName);
             if (!command || typeof command.autocomplete !== 'function') return;

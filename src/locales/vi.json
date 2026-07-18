@@ -39,7 +39,7 @@
     "guild_create": {
       "support_link": "\n> 🛟 **Cần giúp đỡ?** [Vào server hỗ trợ]({url}) nha!",
       "welcome_title": "🌸・Xin chào, mình là Waguri!",
-      "welcome_desc": "*Hân hạnh được chào đón các quý khách ghé thăm tiệm bánh Gekka!* 🍰\n\nCảm ơn cậu rất nhiều vì đã mời tớ ghé thăm **{guild}**! Tớ sẽ là người bạn đồng hành kiêm \"quản lý tiệm bánh\" siêu năng nổ của cậu đó~\n\n**✨ Các Dịch Vụ Tại Tiệm:**\n> 🎁 **Người mới bắt đầu từ đây:** Gõ `/start` để nhận **quà chào mừng** & hướng dẫn nhanh nha!\n> 💬 **Trò chuyện cùng Waguri:** Gõ `/ask` hoặc tag tớ để tớ chia sẻ chuyện học ở Kikyo hay làm bánh cùng Rintaro nha!\n> 💼 **Lao động & Kinh tế:** Kiếm tiền mua bánh ngọt qua `/work`, nhận trợ cấp `/daily`, mua sắm `/shop`.\n> 🎲 **Giải trí cùng bạn bè:** Thử sức với `/taixiu`, `/blackjack`, `/masoi` cực kỳ kịch tính.\n> 📜 **Sổ tay hướng dẫn:** Gõ `/help` để tớ chỉ dẫn chi tiết cách dùng các lệnh nhé!{supportLink}\n\n*Hy vọng chúng mình sẽ có những kỷ niệm thật ngọt ngào bên nhau!* 🌸",
+      "welcome_desc": "*Hân hạnh được chào đón các quý khách ghé thăm tiệm bánh Gekka!* 🍰\n\nCảm ơn cậu rất nhiều vì đã mời tớ ghé thăm **{guild}**! Tớ sẽ là người bạn đồng hành kiêm \"quản lý tiệm bánh\" siêu năng nổ của cậu đó~\n\n**✨ Các Dịch Vụ Tại Tiệm:**\n> 🎁 **Người mới bắt đầu từ đây:** Gõ `/start` để nhận **quà chào mừng** & hướng dẫn nhanh nha!\n> 💬 **Trò chuyện cùng Waguri:** Gõ `/ask` hoặc tag tớ để tớ chia sẻ chuyện học ở Kikyo hay làm bánh cùng Rintaro nha!\n> 💼 **Lao động & Kinh tế:** Kiếm tiền mua bánh ngọt qua `/work`, nhận trợ cấp `/daily`, mua sắm `/store`.\n> 🎲 **Giải trí cùng bạn bè:** Thử sức với `/taixiu`, `/blackjack`, `/masoi` cực kỳ kịch tính.\n> 📜 **Sổ tay hướng dẫn:** Gõ `/help` để tớ chỉ dẫn chi tiết cách dùng các lệnh nhé!{supportLink}\n\n*Hy vọng chúng mình sẽ có những kỷ niệm thật ngọt ngào bên nhau!* 🌸",
       "welcome_footer": "Hỗ trợ cả tiền tố {prefix} (ví dụ: {prefix}help) • Cùng chơi vui vẻ nha!",
       "game_timeout_cancelled": "Ván {game} đã bị tự động hủy và hoàn vé do không có hoạt động nào trong 10 phút qua! ⏰🌸"
     },
@@ -123,7 +123,7 @@
     },
     "inventory": {
       "empty_title": "backpack・Kho đồ trống",
-      "empty_desc": "Kho của **{user}** đang trống nè~ Đi `/work` rồi ghé `/shop` sắm đồ nhé! 🌸",
+      "empty_desc": "Kho của **{user}** đang trống nè~ Đi `/work` rồi ghé `/store` sắm đồ nhé! 🌸",
       "title": "🎒 Kho đồ của {user}"
     },
     "store": {
@@ -162,7 +162,7 @@
       "info_title": "💼・Thông tin nghề: {job}",
       "already_applied": "Cậu đang làm **{job}** rồi mà~ 😄",
       "level_low": "Cậu cần đạt **Lv.{required}** mới làm **{job}** được, giờ cậu mới Lv.{current} thôi. Cố thêm chút nữa nha, cậu làm được mà! 🌸",
-      "missing_item": "À, để làm nghề này cậu cần có **{item}** trước đã. Ghé `/shop` sắm một cái rồi quay lại nhé~ 🌸",
+      "missing_item": "À, để làm nghề này cậu cần có **{item}** trước đã. Ghé `/store` sắm một cái rồi quay lại nhé~ 🌸",
       "apply_failed": "Ơ, có lỗi khi nhận việc rồi, cậu thử lại sau nhé~",
       "apply_success_title": "🎉・Nhận việc thành công!",
       "apply_success_desc": "Từ giờ cậu là **{job}** rồi đó. Cùng cố gắng nhé, gõ `/work` để bắt đầu làm việc thôi! 💪",
@@ -192,7 +192,7 @@
         },
         "3": {
           "name": "Bước 3: Mua sắm trải nghiệm",
-          "hint": "Mua 1 món bất kỳ tại `/shop` hoặc `/buy` 🛒"
+          "hint": "Mua 1 món bất kỳ tại `/store` hoặc `/buy` 🛒"
         },
         "4": {
           "name": "Bước 4: Xin việc chính thức",
@@ -592,7 +592,7 @@
     },
     "tiembanh": {
       "title": "🍰・Tiệm Bánh Gekka",
-      "not_open": "Cậu chưa mở tiệm~ Cần **Level {level}** + **Bộ Dụng Cụ Làm Bánh Gekka** (mua ở `/shop`) rồi gõ `/tiembanh mo` ({cost} {currency}) nhé! 🌸",
+      "not_open": "Cậu chưa mở tiệm~ Cần **Level {level}** + **Bộ Dụng Cụ Làm Bánh Gekka** (mua ở `/store`) rồi gõ `/tiembanh mo` ({cost} {currency}) nhé! 🌸",
       "status_no_stock": "⚠️ Hết nguyên liệu — `/tiembanh nhapnl` để nướng tiếp!",
       "status_capped": "📦 Két đầy rồi — `/tiembanh thu` để nướng tiếp!",
       "status_baking": "Tiệm đang nướng đều đều~ 🧁",
@@ -612,7 +612,7 @@
       "title_open": "🍰・Mở tiệm",
       "open_low_level": "Cần đạt **Level {level}** mới mở tiệm được nha~ Cày thêm `/work` nhé! 🌸",
       "open_has": "Cậu đã có tiệm rồi mà~ Gõ `/tiembanh xem` nhé.",
-      "open_no_tool": "Cậu cần **Bộ Dụng Cụ Làm Bánh Gekka** (mua ở `/shop`, 8.000) để mở tiệm nhé~ 🧰",
+      "open_no_tool": "Cậu cần **Bộ Dụng Cụ Làm Bánh Gekka** (mua ở `/store`, 8.000) để mở tiệm nhé~ 🧰",
       "open_poor": "Cần **{cost}** {currency} để mở tiệm~ Làm thêm với `/work` nhé!",
       "open_success_title": "🍰・Khai trương Tiệm Bánh Gekka!",
       "open_success_desc": "Chúc mừng cậu đã mở tiệm bánh của riêng mình (−{cost} {currency})! 🎉🧁\nNhập nguyên liệu bằng `/tiembanh nhapnl` (trái/hoa/thịt/cá đã farm) rồi `/tiembanh thu` gom doanh thu nha~ 🌸",
@@ -644,7 +644,7 @@
       "sathai_success_desc": "Cậu đã sa thải **{name}** khỏi tiệm bánh Gekka. Mong là cậu ấy sớm tìm được việc mới~",
       "trangtri_title": "🍰・Trang trí tiệm",
       "trangtri_invalid": "Đồ trang trí không hợp lệ 🤔",
-      "trangtri_no_item": "Cậu không có sẵn **{name}** trong kho đồ. Hãy mua ở `/shop` hoặc chế tạo ở `/craft` trước nhé~",
+      "trangtri_no_item": "Cậu không có sẵn **{name}** trong kho đồ. Hãy mua ở `/store` hoặc chế tạo ở `/craft` trước nhé~",
       "trangtri_success_title": "🌸・Đã trang trí tiệm bánh!",
       "trangtri_success_desc": "Đã đưa 1× **{name}** vào tiệm bánh của cậu. Cảnh quan đẹp hơn giúp tiệm nướng bánh hiệu quả thêm **+{rate}%**!",
       "nangcap_title": "🍰・Nâng cấp",
@@ -1365,7 +1365,7 @@
         "Quẻ này là quẻ \"chăm chỉ ắt có ngày nên\" — đi `/work` đi con!",
         "Thầy thấy con có quý nhân phù trợ, mà quý nhân tên... Waguri 🌸",
         "Hậu vận của con xán lạn, nhưng tiền vận thì... ráng đi cày 😅",
-        "Quẻ \"an cư lạc nghiệp\" — để dành tiền sắm đồ xịn ở `/shop` đi con.",
+        "Quẻ \"an cư lạc nghiệp\" — để dành tiền sắm đồ xịn ở `/store` đi con.",
         "Thầy phán: chớ ham trò may rủi, công an đang rình đó nha 👮",
         "Số con đào hoa lắm, thử `/ship` xem hợp với ai nào~",
         "Quẻ \"cần kiệm liêm chính\" — bớt `/baucua` lại con ơi.",
@@ -1475,7 +1475,7 @@
       "channel_reason": "Waguri /setup",
       "err_create_channel_failed": "Ơ, mình tạo kênh không được (thiếu quyền hoặc vị trí kênh). Cấp quyền **Manage Channels** rồi chạy lại nhé~ 🌸",
       "intro_title": "🌸 Chào cả nhà, mình là Waguri!",
-      "intro_desc": "Đây là phòng để chơi cùng mình nè~ 💕\n\n**Bắt đầu nhanh:**\n• `/daily` — điểm danh nhận thưởng mỗi ngày\n• `/work` `/fish` `/mine` `/chop` — kiếm tiền (tốn năng lượng)\n• `/shop` `/buy` — mua sắm · `/help` — xem tất cả lệnh\n• `/ask` hoặc **@tag mình** — trò chuyện nhé 💬",
+      "intro_desc": "Đây là phòng để chơi cùng mình nè~ 💕\n\n**Bắt đầu nhanh:**\n• `/daily` — điểm danh nhận thưởng mỗi ngày\n• `/work` `/fish` `/mine` `/chop` — kiếm tiền (tốn năng lượng)\n• `/store` `/buy` — mua sắm · `/help` — xem tất cả lệnh\n• `/ask` hoặc **@tag mình** — trò chuyện nhé 💬",
       "intro_footer": "Chúc cả nhà chơi vui~",
       "success_title": "⚙️ Thiết lập thành công!",
       "success_desc": "Thiết lập xong! Phòng của mình: <#{channelId}>.\n\nMình đã đặt đây làm **kênh trả lời AI mặc định** (muốn mình trả lời ở mọi kênh thì chạy `/config ai-channel` và bỏ trống kênh nhé)."
@@ -1543,7 +1543,7 @@
     "eat": {
       "embed_title": "😋・Sử dụng vật phẩm",
       "err_item_not_found": "Mình không tìm thấy món này~ 🌸",
-      "err_no_have": "Cậu chưa có **{item}** trong kho. Ghé `/shop` mua trước nhé~",
+      "err_no_have": "Cậu chưa có **{item}** trong kho. Ghé `/store` mua trước nhé~",
       "err_not_consumable": "**{item}** không phải đồ ăn/uống, không dùng kiểu này được đâu~",
       "err_buff_better": "Cậu đang có hiệu ứng buff xịn hơn/bằng **{item}** rồi, dùng tiếp sẽ bị lãng phí đấy~ 🌸",
       "err_system": "Ơ, có lỗi rồi, cậu thử lại sau nhé~",
@@ -1636,7 +1636,7 @@
     "repair": {
       "embed_title_warning": "🛠️・Sửa công cụ",
       "success_title": "🛠️・Sửa chữa công cụ thành công",
-      "err_no_tool": "Cậu chưa sở hữu **{tool}** trong kho đồ để sửa. Hãy ghé `/shop` mua nhé!",
+      "err_no_tool": "Cậu chưa sở hữu **{tool}** trong kho đồ để sửa. Hãy ghé `/store` mua nhé!",
       "err_already_healthy": "**{tool}** vẫn còn rất mới, độ bền 100% rồi không cần sửa đâu~",
       "err_poor": "Cậu không đủ **{cost}** {currency} trong ví để thanh toán chi phí sửa chữa.",
       "err_system": "Ơ, có lỗi khi sửa công cụ rồi, thử lại sau nhé~",

@@ -116,8 +116,8 @@ module.exports = {
         title: (en) => en ? '🎣・Go Fishing' : '🎣・Đi câu cá',
         name: (c, en) => (FISH_NAMES[c.name]?.[en ? 'en' : 'vi']) || c.name,
         toolMissing: (_toolNameTrans, _tool, en) => en
-            ? 'You need to buy a **Fishing Rod** 🎣 at `/shop` first! 🌸'
-            : 'Cậu cần mua **Cần câu cá** 🎣 ở `/shop` mới đi câu được nhé~ 🌸',
+            ? 'You need to buy a **Fishing Rod** 🎣 at `/store` first! 🌸'
+            : 'Cậu cần mua **Cần câu cá** 🎣 ở `/store` mới đi câu được nhé~ 🌸',
         // Gấu 🐻 Lv.5+: +10% tỉ lệ nâng mẻ thường lên "Cá hiếm" (TRƯỚC khi tính tiền)
         onPick: (c, userPet, _en) => {
             if (userPet && userPet.species === 'gau' && petLevel(userPet.exp) >= 5 && c.name !== 'Cá hiếm' && c.name !== 'Rương kho báu') {

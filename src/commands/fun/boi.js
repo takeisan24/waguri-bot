@@ -51,7 +51,7 @@ const THAYDO = [
     'Quẻ này là quẻ "chăm chỉ ắt có ngày nên" — đi `/work` đi con!',
     'Thầy thấy con có quý nhân phù trợ, mà quý nhân tên... Waguri 🌸',
     'Hậu vận của con xán lạn, nhưng tiền vận thì... ráng đi cày 😅',
-    'Quẻ "an cư lạc nghiệp" — để dành tiền sắm đồ xịn ở `/shop` đi con.',
+    'Quẻ "an cư lạc nghiệp" — để dành tiền sắm đồ xịn ở `/store` đi con.',
     'Thầy phán: chớ ham trò may rủi, công an đang rình đó nha 👮',
     'Số con đào hoa lắm, thử `/ship` xem hợp với ai nào~',
     'Quẻ "cần kiệm liêm chính" — bớt `/baucua` lại con ơi.',
