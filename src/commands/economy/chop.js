@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { runGather } = require('../../lib/gather');
+const { runResourceGather } = require('../../lib/gather');
 
 const TABLE = [
     { name: 'Củi khô', emoji: '🪵', weight: 35, min: 10, max: 40 },
@@ -12,5 +12,5 @@ const TABLE = [
 
 module.exports = {
     data: new SlashCommandBuilder().setName('chop').setDescription('Đi chặt gỗ kiếm tiền (tốn năng lượng) 🪓'),
-    execute: (interaction) => runGather(interaction, { title: '🪓 Đi chặt gỗ', table: TABLE, key: 'chop' }),
+    execute: (interaction) => runResourceGather(interaction, { title: '🪓 Đi chặt gỗ', table: TABLE, key: 'chop' }),
 };
