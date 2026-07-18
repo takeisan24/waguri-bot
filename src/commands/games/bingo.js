@@ -43,6 +43,7 @@ module.exports = {
             cmd = 'end';
         }
 
+        let firstReplyDone = false;
         const messageShim = {
             channelId: interaction.channelId,
             author: interaction.user,
@@ -50,12 +51,15 @@ module.exports = {
             guild: interaction.guild,
             client: interaction.client,
             reply: async (payload) => {
-                if (interaction.deferred || interaction.replied) {
-                    return interaction.followUp(payload);
-                } else {
+                // Lần reply ĐẦU TIÊN phải lấp tin nhắn "Waguri đang nghĩ..." đã deferReply ở trên
+                // bằng editReply — nếu followUp ngay, tin nhắn defer sẽ treo "đang tải" vĩnh viễn.
+                if (!firstReplyDone) {
+                    firstReplyDone = true;
+                    if (interaction.deferred || interaction.replied) return interaction.editReply(payload);
                     await interaction.reply(payload);
                     return interaction.fetchReply();
                 }
+                return interaction.followUp(payload);
             },
             channel: {
                 send: async (payload) => {
