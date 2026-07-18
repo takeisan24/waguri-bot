@@ -102,6 +102,7 @@ function buildUsage(json) {
 }
 
 module.exports = {
+    CATEGORIES,
     data: new SlashCommandBuilder()
         .setName('help')
         .setDescription('Danh sách lệnh, hoặc chi tiết một lệnh')

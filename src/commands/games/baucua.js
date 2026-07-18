@@ -19,6 +19,7 @@ const SYMBOLS = [
 ];
 
 module.exports = {
+    SYMBOLS,
     data: new SlashCommandBuilder()
         .setName('baucua')
         .setDescription('Bầu Cua Tôm Cá: đặt 1 con, đổ 3 xúc xắc')

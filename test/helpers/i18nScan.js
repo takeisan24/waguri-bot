@@ -24,7 +24,7 @@ const hasChildren = (prefix, set) => {
     for (const k of set) if (k === prefix || k.startsWith(prefix + '.')) return true;
     return false;
 };
-const SAFE_ROOT = (root) => root === 'data' || root === 'items'; // trả undefined -> fallback
+const SAFE_ROOT = (root) => root === 'data' || root === 'items' || root === 'titles'; // trả undefined -> fallback id/DB
 
 function walk(dir, acc) {
     for (const f of fs.readdirSync(dir)) {

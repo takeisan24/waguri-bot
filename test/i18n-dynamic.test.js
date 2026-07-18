@@ -18,17 +18,35 @@ const path = require('path');
 const { viKeys, enKeys } = require('./helpers/i18nScan');
 const { SPECIES } = require('../src/data/pets');
 const { ROLES } = require('../src/lib/masoi/engine');
+const { SYMBOLS } = require('../src/commands/games/baucua');
+const { LINES } = require('../src/commands/fun/action');
+const { CATEGORIES } = require('../src/commands/utility/help');
 const config = require('../src/config');
 const { localizeCommandJSON } = require('../src/lib/commandLocalizer');
 
-// ---- (A) Value-level coverage cho các enum import được ----
-test('i18n: mọi value enum (pet species / masoi roles / premium plans) có key locale (vi+en)', () => {
+// ---- (A) Value-level coverage cho MỌI key động có domain enumerable ----
+// Domain lấy TRỰC TIẾP từ code (import) nên tự cập nhật khi thêm value; vài hằng game cố định
+// (thứ trong tuần, bước tân thủ, mùa vụ) không có enum code -> liệt kê tường minh kèm nguồn.
+// Bỏ qua (đã an toàn ở nơi khác): titles.* + data.*/items.* (trả undefined -> fallback),
+// commands.thoitiet.wmo.* (tự guard bằng startsWith -> "unknown"), commands.clan.* (key dựng
+// động từ status RPC -> không enumerable tĩnh; đã có guard tồn-tại-namespace).
+test('i18n: mọi value key động (species/roles/plans/action/baucua/staff/help/days/newbie/seasons) có key vi+en', () => {
     const required = [];
     for (const s of SPECIES) required.push(`species.${s.id}`);
-    for (const id of Object.keys(ROLES)) { required.push(`commands.masoi.roles.${id}.name`); required.push(`commands.masoi.roles.${id}.desc`); }
+    for (const id of Object.keys(ROLES)) required.push(`commands.masoi.roles.${id}.name`, `commands.masoi.roles.${id}.desc`);
     for (const k of Object.keys(config.PREMIUM.PLANS)) required.push(`commands.premium.plans.${k}`);
+    for (const t of Object.keys(LINES)) required.push(`commands.action.${t}`);
+    for (const s of SYMBOLS) required.push(`commands.baucua.symbols.${s.id}`);
+    for (const id of Object.keys(config.BAKERY.STAFF)) required.push(`commands.tiembanh.staff.${id}.name`, `commands.tiembanh.staff.${id}.desc`);
+    CATEGORIES.forEach((cat, idx) => {
+        required.push(`commands.help.categories.${idx}.name`);
+        for (const [cmd] of cat.cmds) required.push(`commands.help.commands.${cmd}`);
+    });
+    for (let d = 0; d <= 6; d++) required.push(`common.days.${d}`);                 // getDay() 0..6 (amlich)
+    for (let s = 1; s <= 5; s++) required.push(`commands.quest.newbie_steps.${s}.name`, `commands.quest.newbie_steps.${s}.hint`); // lib/newbie NEWBIE_STEPS 1..5
+    for (const s of ['xuan', 'ha', 'thu', 'dong', 'tet', 'trung_thu']) required.push(`commands.store.seasons.${s}`); // item.season (hằng game)
 
-    const missing = required.filter(k => !viKeys.has(k) || !enKeys.has(k));
+    const missing = [...new Set(required)].filter(k => !viKeys.has(k) || !enKeys.has(k));
     assert.ok(
         missing.length === 0,
         `\n❌ ${missing.length} value động thiếu key locale (thêm vào src/locales/{vi,en}.json):\n` +

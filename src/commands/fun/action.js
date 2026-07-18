@@ -53,6 +53,7 @@ const LINES = {
 const { getInteractionLanguage, t } = require('../../lib/i18n');
 
 module.exports = {
+    LINES,
     data: new SlashCommandBuilder()
         .setName('action')
         .setDescription('Tương tác với bạn bè hoặc người ấy 💞')

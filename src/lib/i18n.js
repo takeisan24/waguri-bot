@@ -37,11 +37,12 @@ function t(locale, key, params = {}) {
                 return substitute(fallbackValue, params);
             }
         }
-        // Namespace DỮ LIỆU/TÊN THỰC THỂ ('items.*' và mọi 'data.*': tên vật phẩm, nghề,
-        // cây trồng, bộ sưu tập...) đều lấy tên gốc từ DB. vi chưa có các key này -> trả
-        // undefined để call-site dùng fallback `|| tênDB` thay vì lộ raw key
-        // (vd người Việt thấy 'data.jobs.shipper.name'). Key khác vẫn trả key để lộ chỗ thiếu dịch.
-        if (key.startsWith('items.') || key.startsWith('data.')) return undefined;
+        // Namespace DỮ LIỆU/TÊN THỰC THỂ ('items.*', mọi 'data.*', và 'titles.*' — danh hiệu
+        // dùng CHÍNH id (chuỗi tiếng Việt) làm khoá, chỉ dịch nếu có) đều lấy tên gốc từ id/DB.
+        // vi chưa có các key này -> trả undefined để call-site dùng fallback `|| id/tênDB` thay
+        // vì lộ raw key (vd 'data.jobs.shipper.name' hay 'titles.Tân Thủ Ngọt Ngào'). Key khác
+        // vẫn trả key để lộ chỗ thiếu dịch.
+        if (key.startsWith('items.') || key.startsWith('data.') || key.startsWith('titles.')) return undefined;
         return key;
     }
     
