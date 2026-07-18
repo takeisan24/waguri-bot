@@ -45,6 +45,8 @@ test('i18n: mọi value key động (species/roles/plans/action/baucua/staff/hel
     for (let d = 0; d <= 6; d++) required.push(`common.days.${d}`);                 // getDay() 0..6 (amlich)
     for (let s = 1; s <= 5; s++) required.push(`commands.quest.newbie_steps.${s}.name`, `commands.quest.newbie_steps.${s}.hint`); // lib/newbie NEWBIE_STEPS 1..5
     for (const s of ['xuan', 'ha', 'thu', 'dong', 'tet', 'trung_thu']) required.push(`commands.store.seasons.${s}`); // item.season (hằng game)
+    // Key truyền qua BIẾN (ternary literal) nên scanner tĩnh không thấy — chốt tường minh ở đây.
+    required.push('commands.masoi.seer_result_yes', 'commands.masoi.seer_result_no'); // masoi.js:173 resKey
 
     const missing = [...new Set(required)].filter(k => !viKeys.has(k) || !enKeys.has(k));
     assert.ok(
