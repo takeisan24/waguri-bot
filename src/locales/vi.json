@@ -117,7 +117,9 @@
         "progress": "📊 Tiến trình EXP ({current}/{total})",
         "partner": "💞 Người thương",
         "web_profile": "🔗 Hồ sơ web"
-      }
+      },
+      "public_hide": "🙈 Đã **ẨN** hồ sơ web của cậu rồi~ Người khác sẽ không xem được nữa nhé.",
+      "public_show": "👁️ Đã **HIỆN** hồ sơ web của cậu nha~ Mọi người xem được tại waguri-bot.vercel.app/u/{id} 🌸"
     },
     "inventory": {
       "empty_title": "backpack・Kho đồ trống",
@@ -273,7 +275,8 @@
       "fatigue_warning": "\n⚠️ Cậu đang mệt (năng lượng < 50) nên làm việc kém hiệu quả hơn đó.",
       "health_lost": "\n💔 Sức khỏe: **{health}/100** (-{loss} ❤️)",
       "vehicle_used": "\n🚗 Sử dụng **{name}** di chuyển (Năng lượng tiêu hao: {cost} ⚡, độ bền còn: {durability}%)",
-      "vehicle_broken": "\n💥 Xe **{name}** của cậu đã bị hỏng do hết độ bền! Cậu cần dùng `/repair` để sửa xe trước khi sử dụng lại nhé~ 😟"
+      "vehicle_broken": "\n💥 Xe **{name}** của cậu đã bị hỏng do hết độ bền! Cậu cần dùng `/repair` để sửa xe trước khi sử dụng lại nhé~ 😟",
+      "err_not_owner": "Nút này của người khác nha~ Gõ `/work` để tự đi làm nhé! 🌸"
     },
     "fish": {
       "success_title": "🎣・Câu cá thành công",
@@ -798,7 +801,10 @@
       "title_success": "💝・Cảm ơn cậu đã vote!",
       "desc_success": "Waguri tặng cậu **{coins}** {currency} + **{exp} EXP** nè! 🎁\n🔥 Chuỗi vote: **{streak} ngày**{bonus}\nNhớ ghé vote tiếp sau 12 tiếng để giữ chuỗi nha~ Cảm ơn cậu đã luôn ủng hộ mình 🌸",
       "bonus_streak": " (+{amount} {currency} thưởng chuỗi)",
-      "title_main": "💝・Vote cho Waguri"
+      "title_main": "💝・Vote cho Waguri",
+      "btn_remind_off": "🔕 Tắt nhắc",
+      "remind_content": "🌸 Cậu có thể vote cho Waguri lần nữa rồi nè! Vote tiếp để **giữ chuỗi** 🔥 và nhận thưởng nha~\n[**🗳️ Vote tại đây**]({url})",
+      "remind_off_success": "🔕 Mình đã tắt nhắc vote cho cậu rồi nha~ Cảm ơn cậu vẫn luôn ủng hộ Waguri 🌸"
     },
     "loto": {
       "err_voice_required": "Cậu cần vào một phòng voice để mở game Loto nha~ 🌸",
@@ -1074,7 +1080,9 @@
       "closed_msg": "🔒 Ticket đã được đóng bởi <@{user}>. Cảm ơn cậu đã liên hệ~ 🌸",
       "closed_reason": "Ticket đã đóng",
       "success_reply": "✅ Tớ đã mở phòng hỗ trợ cho cậu tại {thread}~ Vào đó mô tả vấn đề nhé! 🌸",
-      "error_desc": "Đã có lỗi xảy ra khi tạo phòng hỗ trợ~ 😥 Cậu thử lại sau hoặc liên hệ trực tiếp với staff nhé!"
+      "error_desc": "Đã có lỗi xảy ra khi tạo phòng hỗ trợ~ 😥 Cậu thử lại sau hoặc liên hệ trực tiếp với staff nhé!",
+      "closed_by": "🔒 Ticket đã được đóng bởi <@{user}>. Cảm ơn cậu đã liên hệ~ 🌸",
+      "err_not_thread": "Lệnh này chỉ dùng được trong luồng hỗ trợ (ticket)~"
     },
     "start": {
       "title": "🌸・Chào mừng cậu đến với Waguri!",
@@ -1756,7 +1764,15 @@
       "fail_find": "Không tìm thấy server nào khớp với `{id}`~ 🌸",
       "fail_no_text": "Server này không có kênh văn bản nào để tạo link mời~ 🌸",
       "success": "Đã gửi link mời của server **{name}** qua DM của cậu rồi nhé~ 💕",
-      "dm_success": "Đây là link mời của server **{name}**:\n{link}"
+      "dm_success": "Đây là link mời của server **{name}**:\n{link}",
+      "dm_err_no_guild": "Cậu gõ lệnh trong DM thì phải chọn `server` cụ thể nhé~",
+      "dm_failed_desc": "DM của cậu đang tắt nên mình gửi thẳng đây nhé:\n{url}\n\n⏳ hết hạn sau 24h · 🎫 dùng 1 lần · kênh #{channel}.",
+      "dm_failed_title": "📩 Không gửi được DM",
+      "dm_success_desc": "Mình đã DM link mời vào **{name}** cho cậu rồi nha~ 💌\n⏳ hết hạn sau 24h · 🎫 dùng 1 lần.",
+      "dm_success_title": "✅ Đã gửi link mời qua DM",
+      "guild_not_found": "Bot không ở trong server `{server}` (hoặc ID sai)~",
+      "invite_fail": "Tạo invite thất bại ở **{name}**: {msg}",
+      "invite_no_perm": "Bot không có quyền **Create Invite** ở kênh nào trong **{name}**.\nNhờ admin server cấp quyền *Tạo lời mời* cho bot, hoặc xin họ link trực tiếp nhé~"
     },
     "serverinfo": {
       "only_guild": "Lệnh này chỉ dùng trong server nhé~ 🌸",
@@ -1800,6 +1816,27 @@
       "cooldown_desc": "Cậu vừa ngủ dậy mà~ 😴 Ngủ tiếp được sau <t:{time}:R> nhé.",
       "success_title": "😴 Ngủ một giấc thật ngon",
       "success_desc": "Cậu đã nghỉ ngơi, hồi đầy **{energy}** ⚡ năng lượng, phục hồi **100 ❤️ sức khỏe** và **hết mệt mỏi** hẳn! Sẵn sàng làm việc cùng tớ tiếp nào~ 🌸"
+    },
+    "achievements": {
+      "embed_title": "🏅・Thành tựu",
+      "err_user": "Hơ, mình chưa lấy được dữ liệu của cậu~ 🌸",
+      "footer_note": "Đã mở khóa {unlocked}/{total}",
+      "newly_unlocked": "🎉 **Vừa mở khóa {count} thành tựu mới! Nhận +{reward} {currency}**"
+    },
+    "cosmetic": {
+      "color_err_format": "Mã màu chưa đúng~ Nhập 6 ký tự hex, vd `F1C40F` hoặc `#5865F2`.",
+      "color_err_poor": "Cần **{cost}** {currency} để đổi màu mà ví chưa đủ (hoặc có lỗi xảy ra)~ 😟",
+      "color_success_desc": "Màu hồ sơ mới: **#{hex}** — xem ở `/profile` nhé 🎨",
+      "color_success_title": "🎨・Đổi Màu Hồ Sơ",
+      "title_err_len": "Danh hiệu tối đa **{max}** ký tự nhé~",
+      "title_err_poor": "Cần **{cost}** {currency} để đổi danh hiệu mà ví chưa đủ (hoặc có lỗi xảy ra)~ 😟",
+      "title_success_desc": "Danh hiệu mới của cậu: **{text}** — xem ở `/profile` nhé 🏷️",
+      "title_success_title": "🎨・Đổi Danh Hiệu",
+      "val_default": "*(mặc định)*",
+      "val_none": "*(chưa có)*",
+      "view_desc": "🏷️ Danh hiệu: {title}\n🎨 Màu hồ sơ: {color}",
+      "view_footer": "Đặt: /cosmetic title · /cosmetic color",
+      "view_title": "🎨・Cosmetic của cậu"
     }
   },
   "lib": {

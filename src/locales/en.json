@@ -117,7 +117,9 @@
         "progress": "📊 EXP Progress ({current}/{total})",
         "partner": "💞 Partner",
         "web_profile": "🔗 Web Profile"
-      }
+      },
+      "public_hide": "🙈 Your web profile is now **HIDDEN**~ Others won't be able to see it anymore.",
+      "public_show": "👁️ Your web profile is now **VISIBLE**~ Anyone can view it at waguri-bot.vercel.app/u/{id} 🌸"
     },
     "inventory": {
       "empty_title": "backpack・Inventory Empty",
@@ -273,7 +275,8 @@
       "fatigue_warning": "\n⚠️ You are tired (energy < 50) so you work less efficiently.",
       "health_lost": "\n💔 Health: **{health}/100** (-{loss} ❤️)",
       "vehicle_used": "\n🚗 Used **{name}** to travel (Energy cost: {cost} ⚡, durability left: {durability}%)",
-      "vehicle_broken": "\n💥 Your **{name}** broke due to zero durability! You need to `/repair` it before using again~ 😟"
+      "vehicle_broken": "\n💥 Your **{name}** broke due to zero durability! You need to `/repair` it before using again~ 😟",
+      "err_not_owner": "This button belongs to someone else~ Type `/work` to head off to work yourself! 🌸"
     },
     "fish": {
       "success_title": "🎣・Fishing Success",
@@ -798,7 +801,10 @@
       "title_main": "💝・Vote for Waguri",
       "title_success": "💝・Thank you for voting!",
       "desc_success": "Waguri presents you **{coins}** {currency} + **{exp} EXP**! 🎁\n🔥 Vote streak: **{streak} days**{bonus}\nRemember to vote again in 12 hours to maintain your streak~ Thank you for your support 🌸",
-      "bonus_streak": " (+{amount} {currency} streak bonus)"
+      "bonus_streak": " (+{amount} {currency} streak bonus)",
+      "btn_remind_off": "🔕 Turn Off Reminders",
+      "remind_content": "🌸 You can vote for Waguri again! Keep voting to **hold your streak** 🔥 and grab your rewards~\n[**🗳️ Vote here**]({url})",
+      "remind_off_success": "🔕 I've turned off vote reminders for you~ Thank you for always supporting Waguri 🌸"
     },
     "loto": {
       "err_voice_required": "You need to join a voice channel to open a Loto game~ 🌸",
@@ -1074,7 +1080,9 @@
       "closed_msg": "🔒 Ticket has been closed by <@{user}>. Thank you for contacting us~ 🌸",
       "closed_reason": "Ticket closed",
       "success_reply": "✅ I have opened a support room for you at {thread}~ Go there to describe your issue! 🌸",
-      "error_desc": "An error occurred while creating the support room~ 😥 Please try again later or contact staff directly!"
+      "error_desc": "An error occurred while creating the support room~ 😥 Please try again later or contact staff directly!",
+      "closed_by": "🔒 This ticket was closed by <@{user}>. Thanks so much for reaching out~ 🌸",
+      "err_not_thread": "This can only be used inside a support thread (ticket)~"
     },
     "start": {
       "title": "🌸・Welcome to Waguri!",
@@ -1756,7 +1764,15 @@
       "fail_find": "No server found matching `{id}`~ 🌸",
       "fail_no_text": "This server does not have any text channels to create an invite link~ 🌸",
       "success": "Sent the invite link for server **{name}** to your DMs~ 💕",
-      "dm_success": "Here is the invite link for server **{name}**:\n{link}"
+      "dm_success": "Here is the invite link for server **{name}**:\n{link}",
+      "dm_err_no_guild": "If you use this in DMs, you'll need to pick a specific `server`~",
+      "dm_failed_desc": "Your DMs are turned off, so here's the link right here~\n{url}\n\n⏳ expires in 24h · 🎫 1-use only · channel #{channel}.",
+      "dm_failed_title": "📩 Couldn't Send DM",
+      "dm_success_desc": "I've DM'd you the invite link to **{name}**~ 💌\n⏳ expires in 24h · 🎫 1-use only.",
+      "dm_success_title": "✅ Invite Link Sent via DM",
+      "guild_not_found": "I'm not in the server `{server}` (or the ID is wrong)~",
+      "invite_fail": "Failed to create an invite for **{name}**: {msg}",
+      "invite_no_perm": "I don't have the **Create Invite** permission in any channel of **{name}**.\nAsk that server's admin to grant me the *Create Invite* permission, or ask them for a link directly~"
     },
     "serverinfo": {
       "only_guild": "This command can only be used in a server~ 🌸",
@@ -1800,6 +1816,27 @@
       "cooldown_desc": "You just woke up~ 😴 You can sleep again <t:{time}:R>.",
       "success_title": "😴 Sweet Dreams",
       "success_desc": "You rested and restored full **{energy}** ⚡ energy, recovered **100 ❤️ health**, and cleared your fatigue! Ready to work with me again~ 🌸"
+    },
+    "achievements": {
+      "embed_title": "🏅・Achievements",
+      "err_user": "Hmm, I couldn't find your data yet~ 🌸",
+      "footer_note": "Unlocked {unlocked}/{total}",
+      "newly_unlocked": "🎉 **You just unlocked {count} new achievement(s)! Here's +{reward} {currency}**"
+    },
+    "cosmetic": {
+      "color_err_format": "That color code isn't quite right~ Enter 6 hex characters, e.g. `F1C40F` or `#5865F2`.",
+      "color_err_poor": "You need **{cost}** {currency} to change your color, but your wallet's a little short (or something went wrong)~ 😟",
+      "color_success_desc": "Your new profile color: **#{hex}** — check it out on `/profile` 🎨",
+      "color_success_title": "🎨・Change Profile Color",
+      "title_err_len": "Titles can be at most **{max}** characters~",
+      "title_err_poor": "You need **{cost}** {currency} to change your title, but your wallet's a little short (or something went wrong)~ 😟",
+      "title_success_desc": "Your new title: **{text}** — check it out on `/profile` 🏷️",
+      "title_success_title": "🎨・Change Title",
+      "val_default": "*(default)*",
+      "val_none": "*(none yet)*",
+      "view_desc": "🏷️ Title: {title}\n🎨 Profile color: {color}",
+      "view_footer": "Set with: /cosmetic title · /cosmetic color",
+      "view_title": "🎨・Your Cosmetics"
     }
   },
   "data": {
