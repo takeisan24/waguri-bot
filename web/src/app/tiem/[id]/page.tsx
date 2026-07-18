@@ -80,10 +80,17 @@ export default async function BakeryPage({ params }: { params: Promise<{ id: str
     notFound();
   }
 
+  // Phòng thủ: API bot có thể trả row thiếu field (row cũ/khuyết) -> mặc định an toàn để
+  // .filter/.slice không ném và làm sập cả trang (route này chỉ notFound() khi null/404,
+  // không chặn shape hỏng).
+  const decor: string[] = Array.isArray(b.decor) ? b.decor : [];
+  const staff: string[] = Array.isArray(b.staff) ? b.staff : [];
+  const shopName: string = b.username || "?";
+
   // Phân loại decor
-  const wallDecors = b.decor.filter((d) => d === "trang_suc");
-  const floorDecors = b.decor.filter((d) => d === "noi_that");
-  const otherDecors = b.decor.filter((d) => d !== "trang_suc" && d !== "noi_that");
+  const wallDecors = decor.filter((d) => d === "trang_suc");
+  const floorDecors = decor.filter((d) => d === "noi_that");
+  const otherDecors = decor.filter((d) => d !== "trang_suc" && d !== "noi_that");
 
   // Điền vào các slot (tối đa 3 slot tường, 3 slot sàn)
   const wallSlots = [
@@ -99,8 +106,8 @@ export default async function BakeryPage({ params }: { params: Promise<{ id: str
   ];
 
   const staffSlots = [
-    b.staff[0] || null,
-    b.staff[1] || null,
+    staff[0] || null,
+    staff[1] || null,
   ];
 
   // Map ID -> Tên hiển thị & Emoji cho staff
@@ -134,16 +141,16 @@ export default async function BakeryPage({ params }: { params: Promise<{ id: str
             <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-rose-400/30">
               {b.avatar ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={b.avatar} alt={b.username} className="w-full h-full object-cover" />
+                <img src={b.avatar} alt={shopName} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full bg-[#1c1224] flex items-center justify-center font-bold text-rose-400">
-                  {b.username.slice(0, 2).toUpperCase()}
+                  {shopName.slice(0, 2).toUpperCase()}
                 </div>
               )}
             </div>
             <div>
               <h1 className="text-xl md:text-2xl font-black text-white">
-                {t("bakery.default_title", locale, { name: b.username })}
+                {t("bakery.default_title", locale, { name: shopName })}
               </h1>
               <div className="flex items-center gap-3 mt-1">
                 <span className="px-3 py-1 rounded-full text-xs font-extrabold bg-rose-500/20 text-rose-300 border border-rose-400/20">
@@ -281,22 +288,22 @@ export default async function BakeryPage({ params }: { params: Promise<{ id: str
         </div>
 
         {/* Nút Like (Client Component) */}
-        <LikeButton ownerId={id} initialLikes={b.likes} locale={locale} ownerName={b.username} />
+        <LikeButton ownerId={id} initialLikes={b.likes} locale={locale} ownerName={shopName} />
 
         {/* Thống kê chi tiết */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Cấu hình nhân sự */}
           <div className="glass-panel rounded-3xl p-6 border border-rose-500/10 space-y-4">
             <h3 className="text-lg font-bold text-white flex items-center gap-2">
-              <span>🧑‍🍳</span> {locale === "en" ? "Hired Staff" : "Nhân sự của tiệm"} ({b.staff.length})
+              <span>🧑‍🍳</span> {locale === "en" ? "Hired Staff" : "Nhân sự của tiệm"} ({staff.length})
             </h3>
-            {b.staff.length === 0 ? (
+            {staff.length === 0 ? (
               <p className="text-sm text-slate-400 italic">
                 {locale === "en" ? "No staff hired yet." : "Tiệm chưa thuê nhân sự nào."}
               </p>
             ) : (
               <div className="space-y-3">
-                {b.staff.map((sid) => {
+                {staff.map((sid) => {
                   const s = staffConfig[sid];
                   return (
                     <div key={`list-staff-${sid}`} className="flex items-center justify-between p-3 rounded-xl bg-[#1c1224]/50 border border-rose-500/5">
@@ -317,17 +324,17 @@ export default async function BakeryPage({ params }: { params: Promise<{ id: str
           {/* Đồ trang trí nội thất */}
           <div className="glass-panel rounded-3xl p-6 border border-rose-500/10 space-y-4">
             <h3 className="text-lg font-bold text-white flex items-center gap-2">
-              <span>🪑</span> {locale === "en" ? "Bakery Decors" : "Nội thất sắp xếp"} ({b.decor.length})
+              <span>🪑</span> {locale === "en" ? "Bakery Decors" : "Nội thất sắp xếp"} ({decor.length})
             </h3>
-            {b.decor.length === 0 ? (
+            {decor.length === 0 ? (
               <p className="text-sm text-slate-400 italic">
                 {locale === "en" ? "No decorations placed yet." : "Tiệm chưa sắp xếp đồ nội thất nào."}
               </p>
             ) : (
               <div className="space-y-3">
-                {Array.from(new Set(b.decor)).map((iid) => {
+                {Array.from(new Set(decor)).map((iid) => {
                   const d = decorConfig[iid];
-                  const count = b.decor.filter((x) => x === iid).length;
+                  const count = decor.filter((x) => x === iid).length;
                   return (
                     <div key={`list-decor-${iid}`} className="flex items-center justify-between p-3 rounded-xl bg-[#1c1224]/50 border border-rose-500/5">
                       <div className="flex items-center gap-3">
