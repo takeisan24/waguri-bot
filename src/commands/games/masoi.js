@@ -117,7 +117,10 @@ module.exports = {
                 if (!p || !p.alive) continue;
                 p.alive = false;
                 announced.push(`${ROLES[p.role].emoji} <@${id}> — **${getRoleName(p.role)}**`);
-                if (p.role === 'hunter' && cause !== 'vote') {
+                // Thợ săn được bắn theo 1 người KHI CHẾT — bất kể chết đêm hay bị treo cổ
+                // (đúng mô tả vai). Trước đây loại trừ 'vote' khiến kỹ năng im lặng ở kiểu
+                // chết phổ biến nhất, đọc như vai bị hỏng.
+                if (p.role === 'hunter') {
                     const shot = await hunterShot(id);
                     if (shot && state.players[shot]?.alive) queue.push(shot);
                 }
