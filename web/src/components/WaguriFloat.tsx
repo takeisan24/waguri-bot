@@ -78,17 +78,22 @@ export default function WaguriFloat() {
         </button>
 
         {/* Tròn Avatar Waguri */}
-        <div 
+        <div
           onClick={() => setShowBubble(!showBubble)}
-          className="relative w-12 h-12 cursor-pointer hover:scale-105 active:scale-95 transition-all duration-300"
+          role="button"
+          tabIndex={0}
+          aria-label={t("home.float_chat")}
+          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setShowBubble((v) => !v); } }}
+          className="relative w-12 h-12 cursor-pointer hover:scale-105 active:scale-95 transition-all duration-300 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400"
           title={t("home.float_chat")}
         >
-          <div className="w-full h-full rounded-full border border-pink-300/30 overflow-hidden bg-[#120c1a]">
+          <div className="w-full h-full rounded-full border border-pink-300/30 overflow-hidden bg-[#120c1a] flex items-center justify-center text-lg">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="https://media.tenor.com/saOAfF_zx6UAAAAM/kaoruko-waguri-the-fragrant-flower-blooms-with-dignity.gif"
               alt="Waguri Kaoruko"
               className="w-full h-full object-cover"
+              onError={(e) => { e.currentTarget.style.display = "none"; e.currentTarget.parentElement!.textContent = "🌸"; }}
             />
           </div>
           {/* Online Indicator Green Dot (Nằm ngoài khung overflow-hidden để không bị cắt) */}

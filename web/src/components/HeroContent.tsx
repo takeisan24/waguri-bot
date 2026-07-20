@@ -19,6 +19,7 @@ export default function HeroContent() {
         height={128}
         loading="lazy"
         className="mx-auto w-28 h-28 rounded-full border-2 border-pink-300/40 object-cover shadow-[0_0_45px_rgba(255,183,197,0.35)]"
+        onError={(e) => { e.currentTarget.style.display = "none"; }}
       />
       <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full border border-pink-300/20 bg-pink-500/5 text-pink-300 text-xs font-semibold tracking-wide backdrop-blur-md">
         <span>{t("home.hero.badge")}</span>

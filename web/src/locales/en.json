@@ -38,7 +38,9 @@
     "invite": "Invite Waguri 🌸",
     "login": "Login",
     "dashboard": "Dashboard",
-    "logout": "Logout"
+    "logout": "Logout",
+    "changelog": "Changelog",
+    "status": "Status"
   },
   "footer": {
     "desc": "Vietnamese culture localized economy RPG & AI Waifu Discord Bot.",

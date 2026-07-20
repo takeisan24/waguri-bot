@@ -38,6 +38,8 @@ export default function SiteFooter() {
           </a>
           <Link href="/wiki" className="hover:text-pink-300 transition-colors">{t("nav.wiki")}</Link>
           <Link href="/leaderboard" className="hover:text-pink-300 transition-colors">{t("nav.leaderboard")}</Link>
+          <Link href="/changelog" className="hover:text-pink-300 transition-colors">{t("nav.changelog")}</Link>
+          <Link href="/status" className="hover:text-pink-300 transition-colors">{t("nav.status")}</Link>
           <Link href="/tos" className="hover:text-pink-300 transition-colors">{t("footer.tos")}</Link>
           <Link href="/privacy" className="hover:text-pink-300 transition-colors">{t("footer.privacy")}</Link>
           <a href="https://discord.gg/zbJ4SBaMhE" target="_blank" rel="noopener noreferrer" className="hover:text-pink-300 transition-colors">

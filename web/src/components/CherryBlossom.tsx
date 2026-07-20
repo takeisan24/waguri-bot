@@ -24,6 +24,10 @@ export default function CherryBlossom() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    // A11y: tôn trọng prefers-reduced-motion — không chạy vòng lặp RAF cánh hoa (tránh gây khó
+    // chịu cho người nhạy cảm với chuyển động). Canvas để trống, không tốn CPU.
+    if (typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+
     let animationFrameId: number;
     const petals: Petal[] = [];
     const maxPetals = 40;

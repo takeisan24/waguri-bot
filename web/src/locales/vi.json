@@ -38,7 +38,9 @@
     "invite": "Mời Waguri 🌸",
     "login": "Đăng nhập",
     "dashboard": "Dashboard",
-    "logout": "Đăng xuất"
+    "logout": "Đăng xuất",
+    "changelog": "Nhật ký cập nhật",
+    "status": "Trạng thái"
   },
   "footer": {
     "desc": "Bot Discord RPG kinh tế và AI Waifu bản địa hóa văn hóa Việt Nam.",

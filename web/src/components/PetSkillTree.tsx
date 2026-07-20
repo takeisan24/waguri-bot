@@ -202,6 +202,10 @@ export default function PetSkillTree({
                   key={sk.id}
                   transform={`translate(${sk.cx}, ${sk.cy})`}
                   onClick={() => setSelectedSkill(sk)}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={isEn ? sk.nameEn : sk.nameVi}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelectedSkill(sk); } }}
                   className="cursor-pointer group"
                 >
                   {/* Outer Pulsing Glow on Selection / Hover */}
