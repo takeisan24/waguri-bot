@@ -63,20 +63,15 @@ async function runGather(interaction, opts) {
             title: errTitle, description: t(locale, 'common.low_health', { current: userHealth }) })] });
     }
 
-    // Kiểm tra và sử dụng công cụ
-    const toolResult = await db.useTool(userId, tool.id);
-    if (!toolResult || toolResult.status === 'no_tool') {
-        return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'warning', {
-            title: errTitle, description: toolMissing(toolNameTrans, tool, en) })] });
-    }
-
+    // Cooldown chống spam click — CHẶN TRƯỚC khi tiêu hao công cụ/năng lượng (bấm liên tục
+    // không được phép đốt độ bền công cụ hay năng lượng). onCooldown vừa kiểm vừa đặt mốc mới.
     const cd = onCooldown(key, userId, config.ACTION_COOLDOWN_MS);
     if (cd) {
         return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'warning', {
             title: errTitle, description: t(locale, 'common.cooldown', { time: cd }) })] });
     }
 
-    // Kiểm tra Pet để kích hoạt buff
+    // Kiểm tra Pet để kích hoạt buff (cần TRƯỚC khi tính năng lượng vì Thỏ giảm chi phí)
     const userPet = await db.getPet(userId);
 
     // 1) Thỏ con: giảm năng lượng tiêu hao
@@ -103,6 +98,24 @@ async function runGather(interaction, opts) {
         }
     }
 
+    // Đủ năng lượng? — kiểm tra CHỈ-ĐỌC (getEnergy = spend_energy 0) TRƯỚC khi tiêu hao công cụ,
+    // tránh đốt độ bền khi người chơi kiệt sức. spendEnergy thật vẫn là cổng cuối bên dưới.
+    const curEnergy = await db.getEnergy(userId);
+    if (curEnergy < actualEnergyCost) {
+        return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'warning', {
+            title: errTitle, description: t(locale, 'common.no_energy', { current: curEnergy, max: config.ENERGY.MAX, cost: actualEnergyCost }) })] });
+    }
+
+    // Kiểm tra & tiêu hao công cụ — ĐẶT SAU mọi cổng (máu/cooldown/năng lượng) để độ bền chỉ
+    // bị trừ khi chắc chắn đào được. Trước đây useTool đứng trước cooldown+energy nên spam/kiệt
+    // sức vẫn đốt độ bền công cụ (bug B2).
+    const toolResult = await db.useTool(userId, tool.id);
+    if (!toolResult || toolResult.status === 'no_tool') {
+        return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'warning', {
+            title: errTitle, description: toolMissing(toolNameTrans, tool, en) })] });
+    }
+
+    // Trừ năng lượng THẬT (authoritative). curEnergy đã đảm bảo đủ; nhánh <0 chỉ phòng race hiếm.
     const e = await db.spendEnergy(userId, actualEnergyCost);
     if (e < 0) {
         const cur = await db.getEnergy(userId);
