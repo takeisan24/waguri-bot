@@ -15,7 +15,6 @@ async function dumpAll() {
         try {
             let rows = [], from = 0;
             const PAGE = 1000;
-            // eslint-disable-next-line no-constant-condition
             while (true) {
                 const { data, error } = await supabase.from(t).select('*').range(from, from + PAGE - 1);
                 if (error) throw error;

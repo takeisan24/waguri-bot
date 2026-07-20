@@ -202,14 +202,14 @@ async function pigBox(userId, target, locale) {
     if (cd) return warn(t(locale, 'pig.box_cooldown', { time: Math.floor(cd / 1000) }), locale);
     // Kiểm tiền TRƯỚC khi đốt lượt/ngày: tránh người thiếu tiền vẫn bị trừ 1 lượt box.
     const u = await db.getUser(userId);
-    if (!u || Number(u.wallet) < COST_PIGBOX) {
-        return warn(t(locale, 'pig.box_insufficient', { cost: fmt(COST_PIGBOX, locale), currency: C }), locale);
+    if (!u || Number(u.wallet) < COST.BOX) {
+        return warn(t(locale, 'pig.box_insufficient', { cost: fmt(COST.BOX, locale), currency: C }), locale);
     }
     if (await db.claimDailyCounter(userId, 'pigbox', 10) === -1) {
         return warn(t(locale, 'pig.box_daily_limit'), locale);
     }
-    if (!await db.addMoney(userId, -COST_PIGBOX, 'wallet')) {
-        return warn(t(locale, 'pig.box_insufficient', { cost: fmt(COST_PIGBOX, locale), currency: C }), locale);
+    if (!await db.addMoney(userId, -COST.BOX, 'wallet')) {
+        return warn(t(locale, 'pig.box_insufficient', { cost: fmt(COST.BOX, locale), currency: C }), locale);
     }
 
     const x = Math.random();

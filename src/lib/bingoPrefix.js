@@ -147,7 +147,7 @@ async function handleBingoPrefix(message, cmd, args) {
             locale,
             title: t(locale, 'commands.bingo.lobby_opened_title'),
             description: t(locale, 'commands.bingo.lobby_opened_desc', {
-                hostId,
+                hostId: userId,
                 voiceName: voiceChannel.name,
                 prefix: config.PREFIX,
                 price: DEFAULT_BET.toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN'),

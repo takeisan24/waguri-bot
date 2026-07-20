@@ -12,6 +12,8 @@
     "dev": "nodemon index.js",
     "clear": "node clear-commands.js",
     "backup": "node scripts/backup-db.js",
+    "lint": "eslint \"src/**/*.js\" index.js shard.js",
+    "pretest": "npm run lint",
     "test": "node --test",
     "prepare": "git config core.hooksPath scripts/git-hooks || exit 0"
   },
@@ -22,6 +24,8 @@
     "dotenv": "^17.3.1"
   },
   "devDependencies": {
+    "eslint": "^9.39.5",
+    "globals": "^17.7.0",
     "nodemon": "^3.1.14"
   }
 }

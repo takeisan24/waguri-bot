@@ -2227,12 +2227,7 @@ module.exports = {
     getLatestWorldEvent,
     clanDepositResource,
     addPetSkillPoints,
-    // battle pass
-    getBattlePass,
-    addPassXp,
-    addAiChatPassXp,
-    buyPremiumPass,
-    claimPassRewardsBulk,
+    // battle pass (đã export ở khối trên — bỏ 5 key trùng để no-dupe-keys sạch)
 };
 
 async function likeBakery(likerId, ownerId) {

@@ -90,7 +90,7 @@ async function handleLotoPrefix(message, cmd, args) {
             locale,
             title: t(locale, 'commands.loto.lobby_opened_title'),
             description: t(locale, 'commands.loto.lobby_opened_desc', {
-                hostId,
+                hostId: userId,
                 voiceName: voiceChannel.name,
                 prefix: config.PREFIX,
                 price: TICKET_PRICE.toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN'),

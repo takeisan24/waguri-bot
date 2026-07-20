@@ -21,7 +21,9 @@ const MEAT = {
     3500: 'thit_heo_3500', 4000: 'thit_heo_4000', 50000: 'thit_heo_holo',
 };
 
-const COST = { BUY: 1000, FEED2: 500, HEAL: 1000, STEAL: 1500 };
+// BOX: chi phí mở Pigbox. Đặt lệch âm nhẹ so với EV phần thưởng (~2238) theo đúng tỉ lệ lỗ ~21%
+// của Plantbox (cost 600 / EV ~476) -> sink nhẹ, không thành máy in tiền. Chỉnh tại đây nếu cần cân lại.
+const COST = { BUY: 1000, FEED2: 500, HEAL: 1000, STEAL: 1500, BOX: 2800 };
 
 const TIMINGS = {
     STEP_MS: 15 * 60 * 1000,      // 15' giữa các bước chăm sóc
