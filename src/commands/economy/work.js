@@ -132,7 +132,7 @@ module.exports = {
             }
 
             // 4. Kết quả: xui theo risk_rate của nghề (5–25%) · còn lại 8% jackpot · phần lớn là thành công
-            let category, earnedMoney, color, usedInsurance = false;
+            let category, earnedMoney, usedInsurance = false;
             if (Math.random() < riskRate) {
                 category = 'fail';
                 let loss = Math.floor(Math.random() * (minWage / 2)) + 1;
@@ -141,16 +141,13 @@ module.exports = {
                     loss = Math.round(loss * 0.2); // Giảm 80% thiệt hại
                 }
                 earnedMoney = -loss;
-                color = config.COLORS.WARNING;
             } else if (Math.random() < (catBuff ? (config.WORK.JACKPOT_CHANCE + 0.05) : config.WORK.JACKPOT_CHANCE)) {
                 category = 'jackpot';
                 earnedMoney = Math.round(maxWage * config.WORK.JACKPOT_MULT * buffMult);
-                color = config.COLORS.JACKPOT;
             } else {
                 category = 'success';
                 const base = Math.floor(Math.random() * (maxWage - minWage + 1)) + minWage;
                 earnedMoney = Math.round(base * buffMult);
-                color = config.COLORS.SUCCESS;
             }
             // Mệt mỏi: năng lượng/sức khỏe càng thấp (dưới 50%) thì thu nhập càng giảm
             const fatigue = conditionMultiplier(energyLeft, user.health);

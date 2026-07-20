@@ -152,7 +152,7 @@ async function runGather(interaction, opts) {
 
     let desc;
     if (payout > 0) {
-        await db.addMoney(userId, payout, 'wallet');
+        if (!await db.addMoney(userId, payout, 'wallet')) console.error(`[PAYOUT FAIL] gather user=${userId} payout=${payout}`);
         db.questIncr(userId, 'earn', payout);
 
         const grossStr = fatigue < 1 && gross > 0
@@ -191,7 +191,7 @@ async function runGather(interaction, opts) {
     }
     if (newLevel > oldLevel) {
         const bonus = levelUpReward(oldLevel, newLevel);
-        if (bonus > 0) await db.addMoney(userId, bonus, 'wallet');
+        if (bonus > 0 && !await db.addMoney(userId, bonus, 'wallet')) console.error(`[PAYOUT FAIL] gather-levelup user=${userId} bonus=${bonus}`);
         desc += en
             ? `\n🎉 Reached **Level ${newLevel}**! Bonus: **+${fmt(bonus, locale)}** ${config.CURRENCY} 🎁`
             : `\n🎉 Lên **Level ${newLevel}**! Thưởng **+${fmt(bonus, locale)}** ${config.CURRENCY} 🎁`;

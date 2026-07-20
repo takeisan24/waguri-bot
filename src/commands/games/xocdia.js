@@ -69,7 +69,7 @@ module.exports = {
                 return i.reply({ content: t(locale, 'commands.xocdia.err_insufficient_funds', { bet: fmt(bet, locale), currency: config.CURRENCY }), flags: MessageFlags.Ephemeral });
             }
             const btnName = i.customId === 'chan' ? `${t(locale, 'commands.xocdia.btn_chan')} 🔴` : `${t(locale, 'commands.xocdia.btn_le')} ⚪`;
-            await i.reply({ content: t(locale, 'commands.xocdia.bet_success', { side: btnName, bet: fmt(bet, locale), currency: config.CURRENCY }), flags: MessageFlags.Ephemeral });
+            await i.reply({ content: t(locale, 'commands.xocdia.bet_success', { side: btnName, bet: fmt(bet, locale), currency: config.CURRENCY }), flags: MessageFlags.Ephemeral }).catch(() => {});
             await interaction.editReply({ embeds: [render()], components: [row] }).catch(() => {});
         });
 
@@ -85,7 +85,7 @@ module.exports = {
 
             const wins = [], loses = [];
             for (const [id, b] of bets) {
-                if (b.side === result) { const payout = Math.round(bet * MULT); await db.addMoney(id, payout, 'wallet'); db.questIncr(id, 'gamble_win', 1); wins.push(`<@${id}> (+${fmt(payout - bet, locale)})`); }
+                if (b.side === result) { const payout = Math.round(bet * MULT); if (!await db.addMoney(id, payout, 'wallet')) console.error(`[PAYOUT FAIL] xocdia user=${id} payout=${payout}`); db.questIncr(id, 'gamble_win', 1); wins.push(`<@${id}> (+${fmt(payout - bet, locale)})`); }
                 else loses.push(`<@${id}> (-${fmt(bet, locale)})`);
             }
             await db.stakeSettle(sessionId);

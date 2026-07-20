@@ -276,7 +276,7 @@ module.exports = {
         const payees = aliveWin.length ? aliveWin : winIds;
         const prize = Math.floor(pot * (1 - config.PARTY.HOUSE_CUT));
         const share = Math.floor(prize / payees.length);
-        for (const id of payees) { await db.addMoney(id, share, 'wallet'); db.questIncr(id, 'gamble_win', 1); }
+        for (const id of payees) { if (!await db.addMoney(id, share, 'wallet')) console.error(`[PAYOUT FAIL] masoi user=${id} share=${share}`); db.questIncr(id, 'gamble_win', 1); }
         await db.stakeSettle(sessionId);
         stakesResolved = true;
 

@@ -71,7 +71,7 @@ module.exports = {
                 return i.reply({ content: t(locale, 'commands.duangua.err_insufficient_funds', { bet: fmt(bet, locale), currency: config.CURRENCY }), flags: MessageFlags.Ephemeral });
             }
             const horseChosenName = t(locale, 'commands.duangua.horse_name', { n: horse + 1 });
-            await i.reply({ content: t(locale, 'commands.duangua.bet_success', { horse: horseChosenName, emoji: HORSES[horse].c, bet: fmt(bet, locale), currency: config.CURRENCY }), flags: MessageFlags.Ephemeral });
+            await i.reply({ content: t(locale, 'commands.duangua.bet_success', { horse: horseChosenName, emoji: HORSES[horse].c, bet: fmt(bet, locale), currency: config.CURRENCY }), flags: MessageFlags.Ephemeral }).catch(() => {});
             await interaction.editReply({ embeds: [render()], components: [row] }).catch(() => {});
         });
 
@@ -105,7 +105,7 @@ module.exports = {
 
             const wins = [], loses = [];
             for (const [id, b] of bets) {
-                if (b.horse === winner) { const payout = Math.round(bet * WIN_MULT); await db.addMoney(id, payout, 'wallet'); db.questIncr(id, 'gamble_win', 1); wins.push(`<@${id}> (+${fmt(payout - bet, locale)})`); }
+                if (b.horse === winner) { const payout = Math.round(bet * WIN_MULT); if (!await db.addMoney(id, payout, 'wallet')) console.error(`[PAYOUT FAIL] duangua user=${id} payout=${payout}`); db.questIncr(id, 'gamble_win', 1); wins.push(`<@${id}> (+${fmt(payout - bet, locale)})`); }
                 else loses.push(`<@${id}>`);
             }
             await db.stakeSettle(sessionId);
