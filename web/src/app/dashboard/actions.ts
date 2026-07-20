@@ -60,7 +60,14 @@ export async function upgradePetSkill(skillId: string) {
     return { success: false, error: isEn ? "No skill points available" : "Hết điểm kỹ năng rồi cậu ơi" };
   }
 
-  const maxLevel = skillId === "double_gem" ? 2 : 3;
+  // Allow-list các kỹ năng hợp lệ + cấp tối đa (khớp SKILL_LIST trong PetSkillTree.tsx).
+  // KHÔNG suy ra maxLevel từ ternary: trước đây mọi skillId lạ bị coi là skill 3 cấp hợp lệ,
+  // client tự chế có thể tiêm key tùy ý vào JSON `skills` (DB dùng chung với bot).
+  const SKILL_MAX: Record<string, number> = { fishing_luck: 3, double_gem: 2, bakery_efficiency: 3 };
+  const maxLevel = SKILL_MAX[skillId];
+  if (!maxLevel) {
+    return { success: false, error: isEn ? "Unknown skill" : "Kỹ năng không hợp lệ" };
+  }
   const skills = (pet.skills as Record<string, number>) || {};
   const curLvl = skills[skillId] || 0;
 

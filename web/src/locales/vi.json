@@ -1,4 +1,7 @@
 {
+  "common": {
+    "currency": "VNĐ"
+  },
   "login": {
     "title": "Đăng nhập",
     "desc": "Đăng nhập bằng Discord để xem bảng điều khiển cá nhân của cậu nha~",
@@ -419,6 +422,8 @@
     "msg_label": "Nội dung CK",
     "warning_msg": "⚠️ Bắt buộc giữ đúng nội dung {code} để đối chiếu. Chuyển xong, bấm nút bên dưới để báo cho mình nhé!",
     "claimed_status": "✅ Đã ghi nhận! Mình sẽ kiểm tra & kích hoạt Premium sớm nhất (thường trong ít phút). Trang này tự cập nhật khi xong 💕",
-    "transferred_btn": "✅ Tôi đã chuyển khoản xong"
+    "transferred_btn": "✅ Tôi đã chuyển khoản xong",
+    "waiting": "Đang chờ thanh toán… tự nhận khi tiền vào",
+    "waiting_long": " (đã chờ hơi lâu — kiểm tra lại nội dung CK nhé)"
   }
 }

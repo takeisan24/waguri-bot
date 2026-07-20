@@ -213,10 +213,10 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
 
                 {/* Stats grid */}
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  <Stat label={t("profile.stat_total_wealth", locale)} value={`${fmt(prof.netWorth)} VNĐ`} />
+                  <Stat label={t("profile.stat_total_wealth", locale)} value={`${fmt(prof.netWorth)} ${t("common.currency", locale)}`} />
                   <Stat label={t("profile.stat_rank", locale)} value={`#${prof.rank}`} />
-                  <Stat label={t("profile.stat_wallet", locale)} value={`${fmt(prof.wallet)} VNĐ`} />
-                  <Stat label={t("profile.stat_bank", locale)} value={`${fmt(prof.bank)} VNĐ`} />
+                  <Stat label={t("profile.stat_wallet", locale)} value={`${fmt(prof.wallet)} ${t("common.currency", locale)}`} />
+                  <Stat label={t("profile.stat_bank", locale)} value={`${fmt(prof.bank)} ${t("common.currency", locale)}`} />
                   <Stat label={t("profile.stat_affection", locale)} value={affectionTier(prof.affection, locale)} />
                   <Stat label={t("profile.stat_achievements", locale)} value={`${prof.achievements}`} />
                   {prof.partner ? <Stat label={t("profile.stat_beloved", locale)} value={prof.partner} /> : null}

@@ -188,7 +188,7 @@ export default async function LeaderboardPage({
               {t("leaderboard.my_rank", locale, { username: myRank.username })}
             </span>
             <span className="text-sm font-bold text-white">
-              #{myRank.rank} · {fmt(myRank.netWorth)} VNĐ
+              #{myRank.rank} · {fmt(myRank.netWorth)} {t("common.currency", locale)}
             </span>
           </div>
         ) : null}
@@ -202,7 +202,7 @@ export default async function LeaderboardPage({
               t("leaderboard.board_bakery", locale)
             }
             rows={rows}
-            suffix={tab === "wealth" ? " VNĐ" : ""}
+            suffix={tab === "wealth" ? ` ${t("common.currency", locale)}` : ""}
             prefix={tab === "level" ? "Lv." : ""}
             emptyText={t("leaderboard.empty", locale)}
           />

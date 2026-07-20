@@ -2,10 +2,12 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useLanguage } from "@/components/LanguageProvider";
 
 // Hỏi trạng thái đơn mỗi 4s; khi Casso báo đã trả -> refresh để server render màn "thành công".
 export default function PayStatus({ code }: { code: string }) {
   const router = useRouter();
+  const { t } = useLanguage();
   const [waited, setWaited] = useState(0);
 
   useEffect(() => {
@@ -33,7 +35,7 @@ export default function PayStatus({ code }: { code: string }) {
   return (
     <div className="flex items-center justify-center gap-2 text-sm text-pink-200/80">
       <span className="inline-block w-4 h-4 rounded-full border-2 border-pink-300/40 border-t-pink-300 animate-spin" />
-      Đang chờ thanh toán… tự nhận khi tiền vào{waited >= 60 ? " (đã chờ hơi lâu — kiểm tra lại nội dung CK nhé)" : ""}
+      {t("premium_pay.waiting")}{waited >= 60 ? t("premium_pay.waiting_long") : ""}
     </div>
   );
 }

@@ -1,4 +1,7 @@
 {
+  "common": {
+    "currency": "coins"
+  },
   "login": {
     "title": "Sign in",
     "desc": "Sign in with Discord to view your personal dashboard~",
@@ -405,7 +408,7 @@
     "tip": "💡 Configure AI channel / confession channel using /config command in Discord (which has a convenient channel picker)."
   },
   "premium_pay": {
-    "premium_pay": "Premium Payment 💎",
+    "page_title": "Premium Payment 💎",
     "back_packages": "← Back to Packages",
     "success_title": "Payment Successful!",
     "success_desc": "Premium activated 💎 +{months} months. Waguri thanks you so much~ 🌸",
@@ -420,6 +423,8 @@
     "msg_label": "Transfer Message",
     "warning_msg": "⚠️ You MUST keep the exact message {code} for reference. Once transferred, click the button below to notify me!",
     "claimed_status": "✅ Transfer notified! I will verify & activate Premium shortly (usually within a few minutes). This page will auto-update when done 💕",
-    "transferred_btn": "✅ I have transferred the money"
+    "transferred_btn": "✅ I have transferred the money",
+    "waiting": "Waiting for payment… auto-detected once received",
+    "waiting_long": " (taking a while — please double-check your transfer message)"
   }
 }

@@ -188,9 +188,9 @@ export default async function Dashboard() {
           <>
             {/* Stats */}
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              <Stat label={t("dashboard.stat_total_wealth", locale)} value={`${fmtVND(wallet + bank)} VNĐ`} />
-              <Stat label={t("dashboard.stat_wallet", locale)} value={`${fmtVND(wallet)} VNĐ`} />
-              <Stat label={t("dashboard.stat_bank", locale)} value={`${fmtVND(bank)} VNĐ`} />
+              <Stat label={t("dashboard.stat_total_wealth", locale)} value={`${fmtVND(wallet + bank)} ${t("common.currency", locale)}`} />
+              <Stat label={t("dashboard.stat_wallet", locale)} value={`${fmtVND(wallet)} ${t("common.currency", locale)}`} />
+              <Stat label={t("dashboard.stat_bank", locale)} value={`${fmtVND(bank)} ${t("common.currency", locale)}`} />
               <Stat label={t("dashboard.stat_affection", locale)} value={affectionTier(Number(row.affection || 0), locale)} />
               <Stat label={t("dashboard.stat_achievements", locale)} value={`${achievements}`} />
               <Stat label={t("dashboard.stat_vote_streak", locale)} value={t("dashboard.days", locale, { count: voteStreak })} />
