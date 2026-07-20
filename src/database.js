@@ -1497,6 +1497,14 @@ async function clanByName(name) {
     try { const { data } = await supabase.from('clans').select('*').ilike('name', name).limit(1); return data?.[0] || null; }
     catch { return null; }
 }
+/** Đặt mốc hết cooldown tuyên chiến cho clan (DB-backed, bền qua restart + shard). */
+async function setClanWarCooldown(clanId, untilMs) {
+    try {
+        const { error } = await supabase.from('clans').update({ war_cd_until: new Date(untilMs).toISOString() }).eq('id', clanId);
+        if (error) throw error;
+        return true;
+    } catch (error) { console.error('[DATABASE ERROR] setClanWarCooldown():', error?.message || error); return false; }
+}
 async function clanMembers(clanId) {
     try { const { data } = await supabase.from('users').select('user_id').eq('clan_id', clanId); return (data || []).map(r => r.user_id); }
     catch { return []; }
@@ -1755,16 +1763,44 @@ async function giveItemAdmin(userId, itemId, qty = 1) {
     }
 }
 
-/** Xóa sạch dữ liệu một user (reset). */
+/**
+ * Xóa sạch dữ liệu một user (reset).
+ * Trước đây chỉ xóa inventory/cooldowns/users -> (1) hàng users VĂNG LỖI khi user có FK không
+ * cascade (auctions.seller_id/highest_bidder_id) -> wipe dở dang; (2) bỏ sót nhiều bảng con ->
+ * mồ côi dữ liệu. Nay xóa best-effort MỌI bảng con keyed theo user TRƯỚC (mỗi bảng độc lập, lỗi
+ * 1 bảng không chặn bảng khác), rồi mới xóa hàng users. Các bảng có ON DELETE CASCADE
+ * (user_collection_rewards, battle_pass_users, user_discoveries, police_heat) tự xóa theo users.
+ * Ghi chú: clans.leader_id KHÔNG có FK -> nếu user là chủ clan, clan sẽ mồ côi leader; việc
+ * disband/nhượng quyền là nghiệp vụ riêng, không xử lý ở đây để tránh mất dữ liệu clan chung.
+ */
 async function resetUser(userId) {
+    // (table, cột khóa user). Thứ tự: con trước, users sau. Cột đã đối chiếu với DDL migrations.
+    const CHILDREN = [
+        ['auctions', 'seller_id'], ['market_listings', 'seller_id'], ['loans', 'borrower_id'],
+        ['bakery_likes', 'liker_id'], ['bakery_likes', 'bakery_owner_id'], ['bakeries', 'user_id'],
+        ['premium_orders', 'user_id'], ['confession_logs', 'user_id'], ['lottery_tickets', 'user_id'],
+        ['daily_counters', 'user_id'], ['world_event_contributions', 'user_id'], ['user_badges', 'user_id'],
+        ['quest_progress', 'user_id'], ['achievements', 'user_id'], ['pigs', 'user_id'], ['plants', 'user_id'],
+        ['user_pets', 'user_id'], ['game_stakes', 'user_id'], ['guild_members', 'user_id'],
+        ['inventory', 'user_id'], ['cooldowns', 'user_id'],
+    ];
+    // Bỏ liên kết "người đặt giá cao nhất" (FK không cascade) trước khi xóa hàng users.
     try {
-        await supabase.from('inventory').delete().eq('user_id', userId);
-        await supabase.from('cooldowns').delete().eq('user_id', userId);
+        const { error } = await supabase.from('auctions').update({ highest_bidder_id: null }).eq('highest_bidder_id', userId);
+        if (error) throw error;
+    } catch (e) { console.error('[resetUser] auctions.highest_bidder_id:', e?.message || e); }
+
+    for (const [table, col] of CHILDREN) {
+        const { error } = await supabase.from(table).delete().eq(col, userId);
+        if (error) console.error(`[resetUser] xóa ${table}.${col}:`, error.message);
+    }
+
+    try {
         const { error } = await supabase.from('users').delete().eq('user_id', userId);
         if (error) throw error;
         return true;
     } catch (error) {
-        console.error('[DATABASE ERROR] resetUser():', error);
+        console.error('[DATABASE ERROR] resetUser() xóa users:', error);
         return false;
     }
 }
@@ -2175,6 +2211,7 @@ module.exports = {
     clanDisband,
     clanById,
     clanByName,
+    setClanWarCooldown,
     clanMembers,
     clanList,
     clanMembersExp,

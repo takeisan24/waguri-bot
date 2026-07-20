@@ -7,7 +7,8 @@ const { getInteractionLanguage, t } = require('../../lib/i18n');
 
 const fmt = (n, locale) => Number(n).toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN');
 const clanLevel = xp => Math.floor(Math.sqrt(Number(xp || 0) / 10000)) + 1;
-const warCooldown = new Map(); // clanId -> hết cooldown (ms)
+// Cooldown tuyên chiến giờ lưu trên DB (clans.war_cd_until) — bền qua restart + shard-safe.
+// (Trước đây là Map in-memory: restart là mất cooldown -> bypass; mỗi shard 1 bản.)
 const clanPower = exps => exps.reduce((s, e) => s + getLevelFromExp(e) + 1, 0);
 
 module.exports = {
@@ -174,7 +175,7 @@ module.exports = {
             if (!u?.clan_id) return replyEmbed('error', 'war_title', 'err_not_in_clan');
             const myClan = await db.clanById(u.clan_id);
             if (!myClan || myClan.leader_id !== me.id) return replyEmbed('error', 'war_title', 'err_not_leader');
-            const cdUntil = warCooldown.get(myClan.id) || 0;
+            const cdUntil = myClan.war_cd_until ? new Date(myClan.war_cd_until).getTime() : 0;
             if (Date.now() < cdUntil) return replyEmbed('warning', 'war_title', 'err_war_cooldown', { time: `<t:${Math.floor(cdUntil / 1000)}:R>` });
             const foe = await db.clanByName(interaction.options.getString('clan').trim());
             if (!foe) return replyEmbed('error', 'war_title', 'err_foe_not_found');
@@ -213,7 +214,7 @@ module.exports = {
                 const loser = pA >= pB ? foe : myClan;
                 const r = await db.clanWar(winner.id, loser.id, stake);
                 const taken = r?.taken ?? 0;
-                warCooldown.set(myClan.id, Date.now() + 10 * 60000);
+                await db.setClanWarCooldown(myClan.id, Date.now() + 10 * 60000);
                 const winEmbed = buildWaguriEmbed(interaction, 'jackpot', {
                     locale,
                     title: t(locale, 'commands.clan.war_result_title'),
