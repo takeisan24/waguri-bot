@@ -56,7 +56,7 @@ export default function SiteHeader() {
           href="/dashboard/profile"
           className={`flex items-center gap-1 ${mobile ? "px-4 py-2 w-full justify-center" : "px-3 py-1.5"} rounded-full text-xs font-bold border border-pink-500/30 text-pink-200 hover:text-white hover:border-pink-500/60 bg-pink-500/10 transition-all hover:scale-105 duration-200`}
         >
-          🌸 Hồ sơ
+          {t("nav.profile")}
         </Link>
       </div>
     ) : (
