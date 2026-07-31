@@ -2047,9 +2047,37 @@ async function bakeryDecorate(userId, itemId) {
     try { const { data, error } = await supabase.rpc('bakery_decorate', { p_user_id: userId, p_item_id: itemId }); if (error) throw error; return data; }
     catch (e) { console.error('[DATABASE ERROR] bakeryDecorate():', e); return 'error'; }
 }
+/** Ghi nhận phát hiện thành tựu/bộ sưu tập (ví dụ: hvl_album). */
+async function recordDiscovery(userId, itemId) {
+    try {
+        const { data, error } = await supabase.from('user_discoveries').insert({
+            user_id: userId,
+            item_id: itemId
+        }).select();
+        if (error && error.code !== '23505') throw error; // Ignore duplicate key constraint
+        return data || null;
+    } catch (e) {
+        console.error('[DATABASE ERROR] recordDiscovery():', e);
+        return null;
+    }
+}
+
+/** Lấy danh sách khám phá của user. */
+async function getUserDiscoveries(userId) {
+    try {
+        const { data, error } = await supabase.from('user_discoveries').select('*').eq('user_id', userId);
+        if (error) throw error;
+        return data || [];
+    } catch (e) {
+        console.error('[DATABASE ERROR] getUserDiscoveries():', e);
+        return [];
+    }
+}
 
 module.exports = {
     supabase,
+    recordDiscovery,
+    getUserDiscoveries,
     getUser,
     updateUserLocale,
     redeemPremiumOrderByCode,

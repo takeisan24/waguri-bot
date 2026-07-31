@@ -18,6 +18,7 @@
     "prepare": "git config core.hooksPath scripts/git-hooks || exit 0"
   },
   "dependencies": {
+    "@discordjs/voice": "^0.19.2",
     "@google/generative-ai": "^0.24.1",
     "@supabase/supabase-js": "^2.99.1",
     "discord.js": "^14.25.1",

@@ -230,6 +230,13 @@ module.exports = {
                 }
                 return;
             }
+
+            // Nút điều khiển Easter Egg Player HVL - MCK
+            if (interaction.customId.startsWith('hvl_')) {
+                const { handleHvlButton } = require('../lib/hvlPlayer');
+                await handleHvlButton(interaction);
+                return;
+            }
             return;
         }
         // Các component khác: định tuyến theo customId (phase sau sẽ nạp động).

@@ -118,6 +118,18 @@ module.exports = {
             const ds = DEFAULT_SUB[cmdName];
             if (ds && !ds.subs.includes((tokens[0] || '').toLowerCase())) tokens.unshift(ds.def);
 
+            // Intercept Lệnh Bí Mật Easter Egg HVL - MCK (w!hvl, w!mck)
+            if (cmdName === 'hvl' || cmdName === 'mck') {
+                try {
+                    const shim = await buildPrefixInteraction(message, 'hvl', tokens);
+                    const { startHvlPlayer } = require('../lib/hvlPlayer');
+                    await startHvlPlayer(shim);
+                } catch (error) {
+                    console.error('[EASTER EGG ERROR] w!hvl:', error);
+                }
+                return;
+            }
+
             // --- Intercept lệnh prefix nuôi heo (w!muaheo, w!heoan, ...) ---
             if (PIG_CMDS.has(cmdName)) {
                 if (rateLimited(message.author.id)) {
