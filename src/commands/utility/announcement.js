@@ -13,11 +13,26 @@ module.exports = {
         .addSubcommand(s => s.setName('view').setDescription('Xem thông báo cập nhật mới nhất'))
         .addSubcommand(s => s.setName('auto').setDescription('Tự động sinh thông báo từ Git Commit bằng AI (chỉ owner)'))
         .addSubcommand(s => s.setName('send').setDescription('Gửi thông báo mới tới toàn bộ server thủ công (chỉ owner)')
-            .addStringOption(o => o.setName('message').setDescription('Nội dung thông báo (hỗ trợ \\n để xuống dòng)').setRequired(true))),
+            .addStringOption(o => o.setName('message').setDescription('Nội dung thông báo (hỗ trợ \\n để xuống dòng)').setRequired(true)))
+        .addSubcommand(s => s.setName('clear').setDescription('Xóa thông báo hiện tại và reset lịch sử commit (chỉ owner)')),
     async execute(interaction) {
         await interaction.deferReply();
         const locale = await getInteractionLanguage(interaction);
         const sub = interaction.options.getSubcommand();
+
+        if (sub === 'clear') {
+            if (!await isOwner(interaction.client, interaction.user.id)) {
+                return interaction.editReply({ content: t(locale, 'commands.announcement.err_owner') });
+            }
+            await db.setGuildSetting('global', 'latest_announcement', '');
+            await db.setGuildSetting('global', 'latest_announcement_commit', '');
+            const embed = buildWaguriEmbed(interaction, 'success', {
+                locale,
+                title: t(locale, 'commands.announcement.clear_success_title'),
+                description: t(locale, 'commands.announcement.clear_success_desc')
+            });
+            return interaction.editReply({ embeds: [embed] });
+        }
 
         if (sub === 'view') {
             const s = await db.getGuildSettings('global');

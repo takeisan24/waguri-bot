@@ -1153,7 +1153,9 @@
       "title_main": "📢・Thông Báo Cập Nhật Từ Waguri!",
       "footer_sent": "Hệ thống thông báo Waguri · Gửi tự động bởi {user} 🌸",
       "success_title": "📢 Gửi thông báo thành công!",
-      "success_desc": "Đã phát thông báo cập nhật tới **{sent}** server/kênh và đã lưu trữ thông báo để xem qua `/announcement view`.\n❌ Thất bại: **{fail}** server."
+      "success_desc": "Đã phát thông báo cập nhật tới **{sent}** server/kênh và đã lưu trữ thông báo để xem qua `/announcement view`.\n❌ Thất bại: **{fail}** server.",
+      "clear_success_title": "🗑️ Dọn dẹp thông báo thành công!",
+      "clear_success_desc": "Đã xóa toàn bộ thông báo cũ trên hệ thống và reset lịch sử commit. Bạn có thể tự do tạo thông báo mới bằng `/announcement auto`!"
     },
     "help": {
       "err_title": "🔎・Không tìm thấy lệnh",

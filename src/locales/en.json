@@ -1153,7 +1153,9 @@
       "title_main": "📢・Update Announcement From Waguri!",
       "footer_sent": "Waguri Announcement System · Sent automatically by {user} 🌸",
       "success_title": "📢 Announcement sent successfully!",
-      "success_desc": "Broadcasted update announcement to **{sent}** servers/channels and saved the announcement to be viewed via `/announcement view`.\n❌ Failed: **{fail}** servers."
+      "success_desc": "Broadcasted update announcement to **{sent}** servers/channels and saved the announcement to be viewed via `/announcement view`.\n❌ Failed: **{fail}** servers.",
+      "clear_success_title": "🗑️ Announcement cleared successfully!",
+      "clear_success_desc": "Cleared all old announcements from system and reset commit history. You can now generate a fresh announcement using `/announcement auto`!"
     },
     "help": {
       "err_title": "🔎・Command Not Found",
