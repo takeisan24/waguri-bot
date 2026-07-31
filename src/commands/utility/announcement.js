@@ -15,11 +15,11 @@ module.exports = {
         .addSubcommand(s => s.setName('send').setDescription('Gửi thông báo mới tới toàn bộ server thủ công (chỉ owner)')
             .addStringOption(o => o.setName('message').setDescription('Nội dung thông báo (hỗ trợ \\n để xuống dòng)').setRequired(true))),
     async execute(interaction) {
+        await interaction.deferReply();
         const locale = await getInteractionLanguage(interaction);
         const sub = interaction.options.getSubcommand();
 
         if (sub === 'view') {
-            await interaction.deferReply();
             const s = await db.getGuildSettings('global');
             const message = s?.latest_announcement;
 
@@ -47,10 +47,9 @@ module.exports = {
 
         if (sub === 'send' || sub === 'auto') {
             if (!await isOwner(interaction.client, interaction.user.id)) {
-                return interaction.reply({ content: t(locale, 'commands.announcement.err_owner'), flags: MessageFlags.Ephemeral });
+                return interaction.editReply({ content: t(locale, 'commands.announcement.err_owner') });
             }
 
-            await interaction.deferReply();
             let message = '';
             let currentCommit = '';
 
