@@ -36,17 +36,21 @@ async function chat(systemPrompt, history, userText, options = {}) {
     const primaryModel = options.model || config.AI.GEMINI_MODEL;
     const candidates = [
         primaryModel,
-        'gemini-1.5-flash',
-        'gemini-1.5-pro',
-        'gemini-2.0-flash-exp'
+        'gemini-3.6-flash',
+        'gemini-3.1-pro-preview',
+        'gemini-3.5-flash',
+        'gemini-1.5-flash'
     ].filter((m, i, self) => m && self.indexOf(m) === i);
 
     let lastError = null;
 
     for (let rawModelName of candidates) {
         let modelName = rawModelName;
-        if (typeof modelName === 'string' && modelName.includes('2.5')) {
-            modelName = modelName.replace('2.5', '1.5');
+        if (typeof modelName === 'string') {
+            if (modelName === 'gemini-2.5-flash') modelName = 'gemini-3.6-flash';
+            else if (modelName === 'gemini-2.5-pro') modelName = 'gemini-3.1-pro-preview';
+            else if (modelName === 'gemini-2.5-flash-lite') modelName = 'gemini-3.5-flash-lite';
+            else if (modelName.includes('2.5')) modelName = modelName.replace('2.5', '3.6');
         }
 
         const generationConfig = {
