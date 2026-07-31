@@ -49,10 +49,18 @@ async function chat(systemPrompt, history, userText, options = {}) {
         }));
         contents.push({ role: 'user', parts: [{ text: userText }] });
 
+        const safetySettings = [
+            { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' },
+            { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_ONLY_HIGH' },
+            { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+            { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' }
+        ];
+
         const reqConfig = {
             systemInstruction: systemPrompt,
             maxOutputTokens: options.maxOutputTokens || config.AI.MAX_OUTPUT_TOKENS,
             temperature: options.temperature || 0.9,
+            safetySettings,
         };
 
         let timer;
