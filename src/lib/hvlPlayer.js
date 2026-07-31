@@ -173,7 +173,7 @@ async function startHvlPlayer(interaction) {
         });
     }
 
-    // Guard: Đã có player ở phòng Voice khác trong server
+    // Guard: Đã có player ở server này
     if (players.has(guildId)) {
         const existing = players.get(guildId);
         if (existing.channelId !== voiceChannel.id) {
@@ -181,6 +181,9 @@ async function startHvlPlayer(interaction) {
                 content: '🌸 *Waguri đang dừng chân ở một căn phòng thoại khác trong server rồi nhen~* 🍵',
                 flags: MessageFlags.Ephemeral
             });
+        } else {
+            // Nếu dùng lại ở cùng phòng -> dọn dẹp session cũ trước khi tạo mới
+            await destroyPlayer(guildId);
         }
     }
 
@@ -254,6 +257,7 @@ async function playTrackIndex(guildId, index, interaction = null) {
     if (index >= playlist.length) index = 0;
 
     session.currentIndex = index;
+    session.isPaused = false;
     const track = playlist[index];
     const source = getAudioStream(track);
 
@@ -290,8 +294,10 @@ async function playTrackIndex(guildId, index, interaction = null) {
         try {
             await session.lastMessage.edit({ embeds: [embed], components: [row] });
         } catch {
-            session.lastMessage = await session.textChannel.send({ embeds: [embed], components: [row] }).catch(() => null);
+            session.lastMessage = await session.textChannel?.send({ embeds: [embed], components: [row] }).catch(() => null);
         }
+    } else if (session.textChannel) {
+        session.lastMessage = await session.textChannel.send({ embeds: [embed], components: [row] }).catch(() => null);
     }
 }
 
