@@ -32,7 +32,10 @@ async function chat(systemPrompt, history, userText, options = {}) {
         { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
     ];
 
-    const modelName = options.model || config.AI.GEMINI_MODEL; // tôn trọng model do tầng trên chọn (Premium / fallback)
+    let modelName = options.model || config.AI.GEMINI_MODEL; // tôn trọng model do tầng trên chọn (Premium / fallback)
+    if (typeof modelName === 'string' && modelName.includes('2.5')) {
+        modelName = modelName.replace('2.5', '1.5');
+    }
 
     const generationConfig = {
         maxOutputTokens: options.maxOutputTokens || config.AI.MAX_OUTPUT_TOKENS,
