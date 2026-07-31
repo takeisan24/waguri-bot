@@ -26,9 +26,7 @@ async function chat(systemPrompt, history, userText, options = {}) {
     const candidates = [
         primaryModel,
         'gemini-3.6-flash',
-        'gemini-3.1-pro-preview',
-        'gemini-3.5-flash',
-        'gemini-1.5-flash'
+        'gemini-3.1-pro-preview'
     ].filter((m, i, self) => m && self.indexOf(m) === i);
 
     let lastError = null;
