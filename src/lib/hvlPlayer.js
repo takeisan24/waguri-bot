@@ -1,3 +1,9 @@
+/**
+ * @file hvlPlayer.js
+ * @description Trình phát nhạc đĩa bí mật Easter Egg (Album HVL - MCK) tích hợp Discord Voice Status API.
+ * @module lib/hvlPlayer
+ */
+
 const fs = require('fs');
 const path = require('path');
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, MessageFlags } = require('discord.js');
