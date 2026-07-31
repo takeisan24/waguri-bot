@@ -294,7 +294,7 @@ async function playTrackIndex(guildId, index, interaction = null) {
 
     const resource = createAudioResource(source.stream, {
         inputType: StreamType.Arbitrary,
-        inlineVolume: true
+        inlineVolume: false
     });
 
     session.player.play(resource);
