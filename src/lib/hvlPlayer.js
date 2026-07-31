@@ -200,7 +200,7 @@ async function startHvlPlayer(interaction) {
     }
 
     // Logger Telemetry
-    logger.info(`[EASTER EGG] User ${interaction.user.tag} (${interaction.user.id}) unlocked HVL Album in Guild ${guildId}`);
+    console.log(`[EASTER EGG] User ${interaction.user.tag} (${interaction.user.id}) unlocked HVL Album in Guild ${guildId}`);
 
     // Kết nối Voice
     const connection = joinVoiceChannel({
@@ -268,7 +268,7 @@ async function playTrackIndex(guildId, index, interaction = null) {
         session._skipCount = (session._skipCount || 0) + 1;
         if (session._skipCount >= playlist.length) {
             session._skipCount = 0;
-            logger.warn(`[EASTER EGG] Không tìm thấy audio nào cho Guild ${guildId}, huỷ player.`);
+            console.warn(`[EASTER EGG] Không tìm thấy audio nào cho Guild ${guildId}, huỷ player.`);
             return destroyPlayer(guildId);
         }
         return handleTrackFinish(guildId);

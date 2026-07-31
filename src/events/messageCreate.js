@@ -125,7 +125,8 @@ module.exports = {
                     // Shim nhẹ — Easter Egg không phải slash command nên không dùng buildPrefixInteraction
                     const shimState = { sent: null, deferred: false, replied: false };
                     const shimSend = async (payload) => {
-                        const body = typeof payload === 'string' ? { content: payload } : { ...payload, flags: undefined };
+                        const body = typeof payload === 'string' ? { content: payload } : { ...payload };
+                        delete body.flags;
                         if (shimState.sent) return shimState.sent.edit(body).catch(() => null);
                         shimState.sent = await message.reply(body).catch(() => null);
                         shimState.replied = true;
