@@ -81,11 +81,12 @@ async function chat(systemPrompt, history, userText, options = {}) {
                 throw err;
             }
 
-            const isModelError = err?.status === 404 ||
-                                 errMsg.includes('404') ||
+            const isModelError = err?.status === 404 || err?.status === 503 || err?.status === 429 ||
+                                 errMsg.includes('404') || errMsg.includes('503') || errMsg.includes('429') ||
+                                 errMsg.includes('UNAVAILABLE') || errMsg.includes('high demand') ||
                                  errMsg.includes('not found') || errMsg.includes('not available');
             if (isModelError) {
-                console.warn(`[GEMINI MODEL FALLBACK] Model '${modelName}' gặp lỗi (${err?.status || 'Model error'}), thử model tiếp theo...`);
+                console.warn(`[GEMINI MODEL FALLBACK] Model '${modelName}' gặp lỗi quá tải/tạm dừng (${err?.status || '503/404'}), tự động thử model dự phòng...`);
                 continue;
             }
             throw err;
