@@ -79,6 +79,7 @@ async function chat(systemPrompt, history, userText, options = {}) {
             return result.text || result.candidates?.[0]?.content?.parts?.[0]?.text || '';
         } catch (err) {
             lastError = err;
+            console.error(`[GEMINI ERROR DETAIL] Model: ${modelName}, Status: ${err?.status}, Message: ${err?.message}`, err);
             const errMsg = String(err?.message || '');
             const isModelError = err?.status === 404 || err?.status === 400 ||
                                  errMsg.includes('404') || errMsg.includes('400') ||
