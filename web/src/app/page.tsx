@@ -108,8 +108,17 @@ export default async function Home() {
                   <h3 className="text-base font-bold text-white">
                     {isEn ? "⚙️ Automated Update Channel" : "⚙️ Bản Tin Cập Nhật Tự Động"}
                   </h3>
-                  <div className="text-xs md:text-sm text-slate-300 whitespace-pre-line leading-relaxed bg-pink-500/5 border border-pink-300/5 p-4 rounded-xl shadow-inner font-sans">
-                    {latestAnnouncement}
+                  <div className="text-xs md:text-sm text-slate-300 whitespace-pre-line leading-relaxed bg-pink-500/5 border border-pink-300/5 p-4 rounded-xl shadow-inner font-sans space-y-1.5">
+                    {latestAnnouncement.split('\n').map((line, lIdx) => {
+                      const parts = line.split('**');
+                      return (
+                        <div key={lIdx} className={line.startsWith('🌸') || line.startsWith('✨') || line.startsWith('💼') || line.startsWith('🐷') || line.startsWith('🎵') ? 'font-bold text-white mt-2' : ''}>
+                          {parts.map((part, pIdx) =>
+                            pIdx % 2 === 1 ? <strong key={pIdx} className="text-white font-extrabold">{part}</strong> : part
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}

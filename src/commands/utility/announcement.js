@@ -70,9 +70,9 @@ module.exports = {
                 let commits = '';
                 try {
                     if (lastCommit) {
-                        commits = execSync(`git log ${lastCommit}..HEAD --pretty=format:"- %s"`, { encoding: 'utf8' }).trim();
+                        commits = execSync(`git log ${lastCommit}..HEAD -n 20 --pretty=format:"- %s"`, { encoding: 'utf8' }).trim();
                     } else {
-                        commits = execSync('git log -n 10 --pretty=format:"- %s"', { encoding: 'utf8' }).trim();
+                        commits = execSync('git log -n 15 --pretty=format:"- %s"', { encoding: 'utf8' }).trim();
                     }
                 } catch (err) {
                     try {
