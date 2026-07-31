@@ -238,9 +238,26 @@ async function startHvlPlayer(interaction) {
         }
     });
 
-    // Lắng nghe sự kiện phát hết bài -> Auto-Next
-    audioPlayer.on(AudioPlayerStatus.Idle, () => {
-        handleTrackFinish(guildId);
+    // Chờ kết nối VoiceConnection đi vào trạng thái Ready thực thụ trước khi phát nhạc
+    try {
+        await entersState(connection, VoiceConnectionStatus.Ready, 15_000);
+    } catch (err) {
+        console.error('[EASTER EGG ERROR] Voice connection timeout:', err);
+        destroyPlayer(guildId);
+        return interaction.reply({
+            content: '🌸 *Không thể kết nối vào phòng thoại, cậu kiểm tra lại kết nối mạng hoặc thử lại sau nhen~* 🍵'
+        });
+    }
+
+    // Lắng nghe sự kiện phát hết bài -> Auto-Next (chỉ khi bài hát đang phát thực sự kết thúc)
+    audioPlayer.on(AudioPlayerStatus.Idle, (oldState) => {
+        if (oldState && (oldState.status === AudioPlayerStatus.Playing || oldState.status === AudioPlayerStatus.Buffering)) {
+            handleTrackFinish(guildId);
+        }
+    });
+
+    audioPlayer.on('error', (err) => {
+        console.error(`[EASTER EGG AUDIO ERROR] Guild ${guildId}:`, err?.message || err);
     });
 
     // Bắt đầu phát bài đầu tiên (Elegie)
