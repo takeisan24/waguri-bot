@@ -58,11 +58,6 @@ async function chat(systemPrompt, history, userText, options = {}) {
             temperature: options.temperature || 0.9,
         };
 
-        // Chỉ đặt thinkingConfig cho các model 2.5/3.x hỗ trợ thinking và không phải bản Pro
-        if (typeof modelName === 'string' && /2\.5|3\./i.test(modelName) && !/pro/i.test(modelName)) {
-            generationConfig.thinkingConfig = { thinkingBudget: 0 };
-        }
-
         try {
             const model = ai.getGenerativeModel({
                 model: modelName,
@@ -91,8 +86,12 @@ async function chat(systemPrompt, history, userText, options = {}) {
         } catch (err) {
             lastError = err;
             const errMsg = String(err?.message || '');
-            if (err?.status === 404 || errMsg.includes('404') || errMsg.includes('not found') || errMsg.includes('not available')) {
-                console.warn(`[GEMINI MODEL FALLBACK] Model '${modelName}' gặp lỗi 404, tự động thử model dự phòng tiếp theo...`);
+            const isModelError = err?.status === 404 || err?.status === 400 || 
+                                 errMsg.includes('404') || errMsg.includes('400') ||
+                                 errMsg.includes('not found') || errMsg.includes('not available') || 
+                                 errMsg.includes('invalid argument');
+            if (isModelError) {
+                console.warn(`[GEMINI MODEL FALLBACK] Model '${modelName}' gặp lỗi (${err?.status || 'Model error'}), tự động thử model dự phòng tiếp theo...`);
                 continue;
             }
             throw err;
