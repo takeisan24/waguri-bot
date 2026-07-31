@@ -2,7 +2,8 @@ require('../src/lib/envLoader');
 const test = require('node:test');
 const assert = require('node:assert');
 
-const hasTestDb = process.env.TEST_SUPABASE_URL &&
+const hasTestDb = process.env.ENABLE_TEST_SUPABASE === 'true' &&
+                  process.env.TEST_SUPABASE_URL &&
                   process.env.TEST_SUPABASE_SERVICE_KEY &&
                   !process.env.TEST_SUPABASE_URL.includes('dummy');
 

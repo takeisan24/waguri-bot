@@ -38,7 +38,8 @@ test('syncSupportGuildRoles: bỏ qua nếu không phải Server Support hoặc 
 });
 
 // 3. Test Integration Database (nếu có DB test)
-const hasTestDb = process.env.TEST_SUPABASE_URL &&
+const hasTestDb = process.env.ENABLE_TEST_SUPABASE === 'true' &&
+                  process.env.TEST_SUPABASE_URL &&
                   process.env.TEST_SUPABASE_SERVICE_KEY &&
                   !process.env.TEST_SUPABASE_URL.includes('dummy');
 
