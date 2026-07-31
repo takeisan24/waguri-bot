@@ -25,7 +25,7 @@ const { rateLimited } = require('./ratelimit');
 // Local audio directory & Production CDN fallback
 const LOCAL_AUDIO_DIR = process.env.HVL_AUDIO_DIR || path.join(process.cwd(), 'assets', 'hvl_audio');
 const DEFAULT_REMOTE_BASE = 'https://kuvlkaxregnanhzgqrbp.supabase.co/storage/v1/object/public/hvl_audio';
-const REMOTE_AUDIO_BASE = process.env.HVL_AUDIO_URL_BASE || DEFAULT_REMOTE_BASE;
+const REMOTE_AUDIO_BASE = (process.env.HVL_AUDIO_URL_BASE || DEFAULT_REMOTE_BASE).replace('/object/authenticated/', '/object/public/');
 
 // Active players map: guildId -> PlayerSession
 const players = new Map();
