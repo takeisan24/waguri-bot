@@ -107,6 +107,7 @@ async function buildProfilePayload(client, id) {
         netWorth: Number(prof.wallet || 0) + Number(prof.bank || 0),
         job: prof.job || null,
         job_id: uObj?.job_id || null,
+        bio: uObj?.bio || null,
         affection: Number(prof.affection || 0), affectionTier: tier ? tier.name : null,
         partner, clan: prof.clan || null,
         title: prof.title || null,

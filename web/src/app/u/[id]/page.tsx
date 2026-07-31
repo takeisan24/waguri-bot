@@ -25,6 +25,7 @@ type Profile = {
   bank: number;
   netWorth: number;
   job: string | null;
+  bio?: string | null;
   affection: number;
   affectionTier: string | null;
   partner: string | null;
@@ -157,6 +158,11 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                       {prof.prestige && prof.prestige > 0 ? ` · 🌟 CS ${prof.prestige}` : ""}
                       {prof.clan ? ` · 🏰 ${prof.clan}` : ""}
                     </p>
+                    {prof.bio ? (
+                      <p className="text-xs text-slate-300 italic mt-2 bg-pink-500/5 px-3 py-1.5 rounded-lg border border-pink-500/10 inline-block max-w-full break-words">
+                        "{prof.bio}"
+                      </p>
+                    ) : null}
                     <div className="mt-3">
                       <div className="flex justify-between text-[11px] text-slate-400 mb-1">
                         <span>EXP</span>

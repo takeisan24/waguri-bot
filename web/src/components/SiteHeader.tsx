@@ -41,16 +41,24 @@ export default function SiteHeader() {
 
   const authArea = (mobile = false) =>
     !ready ? null : me ? (
-      <Link
-        href="/dashboard"
-        className={`flex items-center gap-2 ${mobile ? "px-4 py-2 w-full justify-center" : "px-3 py-1.5"} rounded-full text-xs font-bold border border-pink-300/30 text-pink-100 hover:border-pink-300/60 bg-pink-500/5 transition-all`}
-      >
-        {me.avatar ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={me.avatar} alt="" width={20} height={20} className="rounded-full" />
-        ) : null}
-        {t("nav.dashboard")}
-      </Link>
+      <div className={`flex items-center gap-2 ${mobile ? "flex-col w-full" : ""}`}>
+        <Link
+          href="/dashboard"
+          className={`flex items-center gap-2 ${mobile ? "px-4 py-2 w-full justify-center" : "px-3 py-1.5"} rounded-full text-xs font-bold border border-pink-300/30 text-pink-100 hover:border-pink-300/60 bg-pink-500/5 transition-all`}
+        >
+          {me.avatar ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={me.avatar} alt="" width={20} height={20} className="rounded-full" />
+          ) : null}
+          {t("nav.dashboard")}
+        </Link>
+        <Link
+          href="/dashboard/profile"
+          className={`flex items-center gap-1 ${mobile ? "px-4 py-2 w-full justify-center" : "px-3 py-1.5"} rounded-full text-xs font-bold border border-pink-500/30 text-pink-200 hover:text-white hover:border-pink-500/60 bg-pink-500/10 transition-all`}
+        >
+          🌸 Hồ sơ
+        </Link>
+      </div>
     ) : (
       <Link
         href="/login"

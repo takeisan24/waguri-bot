@@ -2232,5 +2232,187 @@
     "status_mature_steal_warning": " ⚠️ (đã quá 1h30, người khác có thể trộm)",
     "status_mature_ready": "🌳 **{name}** (giá trị **{tier}** {currency}) — `thuhoach` được rồi!{warning}",
     "status_growing": "🌱 **{name}** đang lớn — đã tưới **{count}/3**. Tiếp tục `tuoinuoc` (mỗi 3 tiếng) hoặc `bonphan` (200) cho nhanh nhé."
+  },
+  "items": {
+    "can_cau": {
+      "name": "Iron Fishing Rod"
+    },
+    "cuoc_sat": {
+      "name": "Iron Hoe"
+    },
+    "riu_sat": {
+      "name": "Iron Axe"
+    },
+    "bo_do_sua_xe": {
+      "name": "Gekka Baking Kit"
+    },
+    "do_trom": {
+      "name": "Lockpick"
+    },
+    "the_sinh_vien": {
+      "name": "Student ID Card"
+    },
+    "mu_noi": {
+      "name": "Beret Hat"
+    },
+    "hop_but": {
+      "name": "Pencil Case"
+    },
+    "laptop": {
+      "name": "Subaru's Laptop"
+    },
+    "may_quay": {
+      "name": "Subaru's Camera"
+    },
+    "ban_phim_co": {
+      "name": "Mechanical Keyboard"
+    },
+    "xe_dap": {
+      "name": "Bicycle"
+    },
+    "xe_wave": {
+      "name": "Wave Scooter"
+    },
+    "xe_sh": {
+      "name": "Vespa Scooter"
+    },
+    "sh": {
+      "name": "Honda SH Scooter"
+    },
+    "o_to_cu": {
+      "name": "Used Car"
+    },
+    "o_to_vinfast": {
+      "name": "VinFast EV"
+    },
+    "mercedes": {
+      "name": "Mercedes-Benz Luxury Sedan"
+    },
+    "bh_lao_dong": {
+      "name": "Labor Insurance"
+    },
+    "bh_duong_pho": {
+      "name": "School Safety Insurance"
+    },
+    "che_ba_mau": {
+      "name": "Three-Color Dessert"
+    },
+    "banh_mi": {
+      "name": "Vietnamese Banh Mi"
+    },
+    "xoi": {
+      "name": "Sticky Rice"
+    },
+    "banh_cuon": {
+      "name": "Steamed Rice Rolls"
+    },
+    "tra_sua": {
+      "name": "Milk Tea"
+    },
+    "goi_cuon": {
+      "name": "Fresh Spring Rolls"
+    },
+    "banh_xeo": {
+      "name": "Crispy Pancake"
+    },
+    "mi_quang": {
+      "name": "Quang Noodles"
+    },
+    "com_tam": {
+      "name": "Broken Rice"
+    },
+    "pho": {
+      "name": "Phở Beef Noodle Soup"
+    },
+    "bun_bo": {
+      "name": "Bún Bò Huế Spicy Beef Noodle Soup"
+    },
+    "ca_phe": {
+      "name": "Vietnamese Iced Coffee"
+    },
+    "nuoc_tang_luc": {
+      "name": "Gekka Fruit Soda"
+    },
+    "chao_ga": {
+      "name": "Chicken Rice Porridge"
+    },
+    "hop_y_te": {
+      "name": "First-Aid Kit"
+    },
+    "ca_phe_trung": {
+      "name": "Egg Coffee"
+    },
+    "com_ga": {
+      "name": "Chicken Rice"
+    },
+    "banh_trung_thu": {
+      "name": "Mooncake"
+    },
+    "banh_chung": {
+      "name": "Bánh Chưng Rice Cake"
+    },
+    "ve_vip": {
+      "name": "Strawberry Shortcake"
+    },
+    "ve_dai_gia": {
+      "name": "Cheesecake"
+    },
+    "nuoc_chanh": {
+      "name": "Lemonade"
+    },
+    "thuoc_cam_cum": {
+      "name": "Cold Medicine"
+    },
+    "ca_tuoi": {
+      "name": "Fresh Fish"
+    },
+    "ca_ngon": {
+      "name": "Tasty Fish"
+    },
+    "ca_hiem": {
+      "name": "Rare Fish"
+    },
+    "ca_rong_vang": {
+      "name": "Golden Arowana"
+    },
+    "ca_koi_nhat": {
+      "name": "Japanese Koi"
+    },
+    "streak_freeze": {
+      "name": "Streak Freeze"
+    },
+    "da": {
+      "name": "Stone"
+    },
+    "quang_sat": {
+      "name": "Iron Ore"
+    },
+    "go": {
+      "name": "Wood"
+    },
+    "vang_dong_tren": {
+      "name": "Dong Trieu Gold"
+    },
+    "ky_nam": {
+      "name": "Ky Nam Wood"
+    },
+    "tam_go": {
+      "name": "Wooden Plank"
+    },
+    "thoi_sat": {
+      "name": "Iron Ingot"
+    },
+    "noi_that": {
+      "name": "Furniture"
+    },
+    "trang_suc": {
+      "name": "Jewelry"
+    },
+    "tram_huong_vong": {
+      "name": "Agarwood Bracelet"
+    },
+    "vuong_mieng_gold": {
+      "name": "Golden Crown"
+    }
   }
 }
