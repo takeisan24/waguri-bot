@@ -57,7 +57,7 @@ async function chat(systemPrompt, history, userText, options = {}) {
         ];
 
         const reqConfig = {
-            systemInstruction: systemPrompt,
+            systemInstruction: systemPrompt ? { parts: [{ text: systemPrompt }] } : undefined,
             maxOutputTokens: options.maxOutputTokens || config.AI.MAX_OUTPUT_TOKENS,
             temperature: options.temperature || 0.9,
             safetySettings,
