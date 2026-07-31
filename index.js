@@ -15,6 +15,7 @@ const client = new Client({
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.MessageContent,
         GatewayIntentBits.GuildMembers, // cần cho event guildMemberAdd (privileged intent — phải bật trong Developer Portal)
+        GatewayIntentBits.GuildVoiceStates, // cần cho Voice Channel detection & Easter Egg Music Player
     ],
 });
 
