@@ -31,7 +31,7 @@ async function main() {
 
     if (!exists) {
         console.log(`📦 Đang tạo Private Bucket '${BUCKET_NAME}'...`);
-        const { error } = await supabase.storage.createBucket(BUCKET_NAME, { public: false });
+        const { error } = await supabase.storage.createBucket(BUCKET_NAME, { public: true });
         if (error) {
             console.error('❌ Lỗi tạo bucket:', error);
             process.exit(1);
