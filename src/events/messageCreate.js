@@ -121,9 +121,29 @@ module.exports = {
             // Intercept Lệnh Bí Mật Easter Egg HVL - MCK (w!hvl, w!mck)
             if (cmdName === 'hvl' || cmdName === 'mck') {
                 try {
-                    const shim = await buildPrefixInteraction(message, 'hvl', tokens);
                     const { startHvlPlayer } = require('../lib/hvlPlayer');
-                    await startHvlPlayer(shim);
+                    // Shim nhẹ — Easter Egg không phải slash command nên không dùng buildPrefixInteraction
+                    const shimState = { sent: null, deferred: false, replied: false };
+                    const shimSend = async (payload) => {
+                        const body = typeof payload === 'string' ? { content: payload } : { ...payload, flags: undefined };
+                        if (shimState.sent) return shimState.sent.edit(body).catch(() => null);
+                        shimState.sent = await message.reply(body).catch(() => null);
+                        shimState.replied = true;
+                        return shimState.sent;
+                    };
+                    await startHvlPlayer({
+                        user: message.author,
+                        member: message.member,
+                        guild: message.guild,
+                        guildId: message.guildId,
+                        channel: message.channel,
+                        client: message.client,
+                        get deferred() { return shimState.deferred; },
+                        get replied() { return shimState.replied; },
+                        deferReply: async () => { shimState.deferred = true; await message.channel.sendTyping().catch(() => {}); },
+                        editReply: shimSend,
+                        reply: shimSend,
+                    });
                 } catch (error) {
                     console.error('[EASTER EGG ERROR] w!hvl:', error);
                 }

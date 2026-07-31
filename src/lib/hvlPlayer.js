@@ -13,7 +13,8 @@ const {
     createAudioResource,
     AudioPlayerStatus,
     VoiceConnectionStatus,
-    StreamType
+    StreamType,
+    entersState
 } = require('@discordjs/voice');
 
 const playlist = require('../data/hvl_playlist.json');
@@ -224,9 +225,13 @@ async function startHvlPlayer(interaction) {
 
     players.set(guildId, session);
 
-    // Lắng nghe kết nối rớt -> Auto cleanup chống leak RAM
-    connection.on(VoiceConnectionStatus.Disconnected, () => {
-        destroyPlayer(guildId);
+    // Lắng nghe kết nối rớt -> Thử reconnect trước (Discord chuyển region), chỉ cleanup nếu thật sự mất
+    connection.on(VoiceConnectionStatus.Disconnected, async () => {
+        try {
+            await entersState(connection, VoiceConnectionStatus.Connecting, 5_000);
+        } catch {
+            destroyPlayer(guildId);
+        }
     });
 
     // Lắng nghe sự kiện phát hết bài -> Auto-Next
@@ -254,11 +259,19 @@ async function playTrackIndex(guildId, index, interaction = null) {
 
     if (!source) {
         // Nếu thiếu file, tự động nhảy sang bài tiếp theo
+        // Guard: đếm số bài bị skip liên tiếp để tránh vòng lặp vô hạn khi mất toàn bộ audio
+        session._skipCount = (session._skipCount || 0) + 1;
+        if (session._skipCount >= playlist.length) {
+            session._skipCount = 0;
+            logger.warn(`[EASTER EGG] Không tìm thấy audio nào cho Guild ${guildId}, huỷ player.`);
+            return destroyPlayer(guildId);
+        }
         return handleTrackFinish(guildId);
     }
+    session._skipCount = 0; // Reset khi phát thành công
 
     const resource = createAudioResource(source.stream, {
-        inputType: source.isUrl ? StreamType.Arbitrary : StreamType.OggOpus,
+        inputType: StreamType.Arbitrary,
         inlineVolume: true
     });
 
@@ -320,13 +333,14 @@ async function handleHvlButton(interaction) {
         return true;
     }
 
-    // Cooldown 1.2s chống spam button
-    if (rateLimited(`hvl:${interaction.user.id}`, 1200)) {
+    // Cooldown 1.2s chống spam button (max=1 lần trong cửa sổ 1200ms)
+    if (rateLimited(`hvl:${interaction.user.id}`, 1, 1200)) {
         await interaction.deferUpdate().catch(() => {});
         return true;
     }
 
     if (customId === 'hvl_prev') {
+        await interaction.deferUpdate().catch(() => {});
         const prevIdx = (session.currentIndex - 1 + playlist.length) % playlist.length;
         await playTrackIndex(guildId, prevIdx);
     } else if (customId === 'hvl_toggle') {
@@ -342,6 +356,7 @@ async function handleHvlButton(interaction) {
         const row = buildControlRow(session);
         await interaction.update({ embeds: [embed], components: [row] }).catch(() => {});
     } else if (customId === 'hvl_next') {
+        await interaction.deferUpdate().catch(() => {});
         const nextIdx = (session.currentIndex + 1) % playlist.length;
         await playTrackIndex(guildId, nextIdx);
     } else if (customId === 'hvl_loop') {
@@ -354,11 +369,12 @@ async function handleHvlButton(interaction) {
         const row = buildControlRow(session);
         await interaction.update({ embeds: [embed], components: [row] }).catch(() => {});
     } else if (customId === 'hvl_stop') {
-        await destroyPlayer(guildId);
+        // Reply trước, destroy sau — đảm bảo user nhận được thông báo
         await interaction.reply({
             content: '🌸 *Waguri đã cất đĩa nhạc bí mật HVL - MCK vào tủ kính tiệm Gekka rùi nhen~ Hẹn gặp lại cậu!* ✨',
             flags: MessageFlags.Ephemeral
         }).catch(() => {});
+        await destroyPlayer(guildId);
     }
 
     return true;
