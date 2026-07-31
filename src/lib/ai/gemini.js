@@ -84,9 +84,11 @@ async function chat(systemPrompt, history, userText, options = {}) {
             const isModelError = err?.status === 404 || err?.status === 503 || err?.status === 429 ||
                                  errMsg.includes('404') || errMsg.includes('503') || errMsg.includes('429') ||
                                  errMsg.includes('UNAVAILABLE') || errMsg.includes('high demand') ||
+                                 errMsg.includes('RESOURCE_EXHAUSTED') ||
                                  errMsg.includes('not found') || errMsg.includes('not available');
             if (isModelError) {
-                console.warn(`[GEMINI MODEL FALLBACK] Model '${modelName}' gặp lỗi quá tải/tạm dừng (${err?.status || '503/404'}), tự động thử model dự phòng...`);
+                console.warn(`[GEMINI MODEL FALLBACK] Model '${modelName}' gặp lỗi quá tải/tạm dừng (${err?.status || '503/404'}), tự động thử lại sau 1.5s...`);
+                await new Promise(r => setTimeout(r, 1500));
                 continue;
             }
             throw err;
