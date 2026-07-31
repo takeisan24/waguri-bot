@@ -79,12 +79,15 @@ async function chat(systemPrompt, history, userText, options = {}) {
             return result.text || result.candidates?.[0]?.content?.parts?.[0]?.text || '';
         } catch (err) {
             lastError = err;
-            console.error(`[GEMINI ERROR DETAIL] Model: ${modelName}, Status: ${err?.status}, Message: ${err?.message}`, err);
             const errMsg = String(err?.message || '');
-            const isModelError = err?.status === 404 || err?.status === 400 ||
-                                 errMsg.includes('404') || errMsg.includes('400') ||
-                                 errMsg.includes('not found') || errMsg.includes('not available') ||
-                                 errMsg.includes('invalid argument');
+            if (errMsg.includes('API_KEY_INVALID') || errMsg.includes('API key not valid')) {
+                console.error('[GEMINI FATAL ERROR] GEMINI_API_KEY không hợp lệ hoặc đã bị hết hạn/thu hồi!');
+                throw err;
+            }
+
+            const isModelError = err?.status === 404 ||
+                                 errMsg.includes('404') ||
+                                 errMsg.includes('not found') || errMsg.includes('not available');
             if (isModelError) {
                 console.warn(`[GEMINI MODEL FALLBACK] Model '${modelName}' gặp lỗi (${err?.status || 'Model error'}), thử model tiếp theo...`);
                 continue;
