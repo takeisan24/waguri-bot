@@ -3,12 +3,10 @@ const config = require('../../config');
 
 let aiClient = null;
 function getClient() {
-    if (!process.env.GEMINI_API_KEY) return null;
-    if (!aiClient) {
-        const { GoogleGenAI } = require('@google/genai');
-        aiClient = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-    }
-    return aiClient;
+    const rawKey = process.env.GEMINI_API_KEY ? process.env.GEMINI_API_KEY.trim() : '';
+    if (!rawKey) return null;
+    const { GoogleGenAI } = require('@google/genai');
+    return new GoogleGenAI({ apiKey: rawKey });
 }
 
 const REQUEST_TIMEOUT_MS = 20000;
