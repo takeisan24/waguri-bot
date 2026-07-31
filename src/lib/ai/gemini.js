@@ -15,6 +15,7 @@ function getClient() {
  * @param {string} systemPrompt
  * @param {{role:'user'|'assistant', content:string}[]} history
  * @param {string} userText
+ * @param {object} [options]
  * @returns {Promise<string>}
  */
 const REQUEST_TIMEOUT_MS = 20000; // chặn treo -> tránh interaction Discord hết hạn
@@ -32,45 +33,69 @@ async function chat(systemPrompt, history, userText, options = {}) {
         { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
     ];
 
-    let modelName = options.model || config.AI.GEMINI_MODEL; // tôn trọng model do tầng trên chọn (Premium / fallback)
-    if (typeof modelName === 'string' && modelName.includes('2.5')) {
-        modelName = modelName.replace('2.5', '1.5');
+    const primaryModel = options.model || config.AI.GEMINI_MODEL;
+    const candidates = [
+        primaryModel,
+        'gemini-1.5-flash',
+        'gemini-1.5-pro',
+        'gemini-2.0-flash-exp'
+    ].filter((m, i, self) => m && self.indexOf(m) === i);
+
+    let lastError = null;
+
+    for (let rawModelName of candidates) {
+        let modelName = rawModelName;
+        if (typeof modelName === 'string' && modelName.includes('2.5')) {
+            modelName = modelName.replace('2.5', '1.5');
+        }
+
+        const generationConfig = {
+            maxOutputTokens: options.maxOutputTokens || config.AI.MAX_OUTPUT_TOKENS,
+            temperature: options.temperature || 0.9,
+        };
+
+        // Chỉ đặt thinkingConfig cho các model 2.5/3.x hỗ trợ thinking và không phải bản Pro
+        if (typeof modelName === 'string' && /2\.5|3\./i.test(modelName) && !/pro/i.test(modelName)) {
+            generationConfig.thinkingConfig = { thinkingBudget: 0 };
+        }
+
+        try {
+            const model = ai.getGenerativeModel({
+                model: modelName,
+                systemInstruction: systemPrompt,
+                safetySettings,
+                generationConfig,
+            });
+
+            const geminiHistory = history.map(m => ({
+                role: m.role === 'assistant' ? 'model' : 'user',
+                parts: [{ text: m.content }],
+            }));
+
+            const session = model.startChat({ history: geminiHistory });
+            let timer;
+            const timeout = new Promise((_, reject) => {
+                timer = setTimeout(() => reject(new Error('Gemini timeout')), REQUEST_TIMEOUT_MS);
+            });
+
+            try {
+                const result = await Promise.race([session.sendMessage(userText), timeout]);
+                return result.response.text();
+            } finally {
+                clearTimeout(timer);
+            }
+        } catch (err) {
+            lastError = err;
+            const errMsg = String(err?.message || '');
+            if (err?.status === 404 || errMsg.includes('404') || errMsg.includes('not found') || errMsg.includes('not available')) {
+                console.warn(`[GEMINI MODEL FALLBACK] Model '${modelName}' gặp lỗi 404, tự động thử model dự phòng tiếp theo...`);
+                continue;
+            }
+            throw err;
+        }
     }
 
-    const generationConfig = {
-        maxOutputTokens: options.maxOutputTokens || config.AI.MAX_OUTPUT_TOKENS,
-        temperature: options.temperature || 0.9,
-    };
-    // Tắt "thinking" của Gemini 2.5 (nếu không, thinking ăn hết token -> câu trả lời bị cụt).
-    // NHƯNG bản Pro KHÔNG cho tắt: thinkingBudget=0 bị trả 400 INVALID_ARGUMENT -> mọi lượt
-    // Premium văng lỗi rồi rơi về Flash qua fallback => tính năng Premium chết âm thầm.
-    // Vì vậy chỉ tắt cho model cho phép (flash/flash-lite); Pro để thinking mặc định.
-    if (!/pro/i.test(modelName)) {
-        generationConfig.thinkingConfig = { thinkingBudget: 0 };
-    }
-
-    const model = ai.getGenerativeModel({
-        model: modelName,
-        systemInstruction: systemPrompt,
-        safetySettings,
-        generationConfig,
-    });
-
-    const geminiHistory = history.map(m => ({
-        role: m.role === 'assistant' ? 'model' : 'user',
-        parts: [{ text: m.content }],
-    }));
-
-    const session = model.startChat({ history: geminiHistory });
-    // Timeout: nếu Gemini treo quá lâu -> ném lỗi để tầng trên xử lý nhẹ nhàng.
-    let timer;
-    const timeout = new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('Gemini timeout')), REQUEST_TIMEOUT_MS); });
-    try {
-        const result = await Promise.race([session.sendMessage(userText), timeout]);
-        return result.response.text();
-    } finally {
-        clearTimeout(timer);
-    }
+    throw lastError || new Error('Không thể kết nối với bất kỳ Gemini model nào');
 }
 
 module.exports = { chat };
