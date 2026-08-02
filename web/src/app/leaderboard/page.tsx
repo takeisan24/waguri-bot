@@ -25,18 +25,6 @@ type Row = { id: string; username: string; avatar: string | null; value: number;
 
 async function getBoard(type: "wealth" | "level" | "bakery", guild?: string): Promise<Row[]> {
   try {
-    const url = `${API}/api/leaderboard?type=${type}&limit=10${guild ? `&guild=${encodeURIComponent(guild)}` : ""}`;
-    const res = await fetch(url, { next: { revalidate: 60 } });
-    if (res.ok) {
-      const d = await res.json();
-      if (Array.isArray(d.rows) && d.rows.length > 0) return d.rows;
-    }
-  } catch {
-    /* Bot API fetch failed */
-  }
-
-  // Fallback sang Supabase DB trực tiếp
-  try {
     const admin = createAdminClient();
     const rows: Row[] = [];
 
@@ -61,7 +49,7 @@ async function getBoard(type: "wealth" | "level" | "bakery", guild?: string): Pr
     } else if (type === "level") {
       const { data } = await admin
         .from("users")
-        .select("user_id, exp")
+        .select("user_id, exp, username, avatar")
         .order("exp", { ascending: false })
         .limit(10);
       if (data) {
@@ -70,8 +58,8 @@ async function getBoard(type: "wealth" | "level" | "bakery", guild?: string): Pr
           const lvl = Math.floor(Math.sqrt(exp / 1000)) + 1;
           rows.push({
             id: r.user_id,
-            username: `Người chơi #${r.user_id.slice(-4)}`,
-            avatar: null,
+            username: r.username || `Người chơi #${r.user_id.slice(-4)}`,
+            avatar: r.avatar || null,
             value: lvl,
           });
         }
@@ -82,33 +70,46 @@ async function getBoard(type: "wealth" | "level" | "bakery", guild?: string): Pr
         for (const r of data) {
           rows.push({
             id: r.user_id,
-            username: `Người chơi #${r.user_id.slice(-4)}`,
-            avatar: null,
+            username: r.username || `Người chơi #${r.user_id.slice(-4)}`,
+            avatar: r.avatar || null,
             value: Number(r.networth || 0),
           });
         }
       } else {
         const { data: usersData } = await admin
           .from("users")
-          .select("user_id, wallet, bank")
+          .select("user_id, wallet, bank, username, avatar")
           .order("wallet", { ascending: false })
           .limit(10);
         if (usersData) {
           for (const r of usersData) {
             rows.push({
               id: r.user_id,
-              username: `Người chơi #${r.user_id.slice(-4)}`,
-              avatar: null,
+              username: r.username || `Người chơi #${r.user_id.slice(-4)}`,
+              avatar: r.avatar || null,
               value: Number(r.wallet || 0) + Number(r.bank || 0),
             });
           }
         }
       }
     }
-    return rows;
+    if (rows.length > 0) return rows;
   } catch {
-    return [];
+    /* Fallback sang Bot API */
   }
+
+  try {
+    const url = `${API}/api/leaderboard?type=${type}&limit=10${guild ? `&guild=${encodeURIComponent(guild)}` : ""}`;
+    const res = await fetch(url, { next: { revalidate: 60 } });
+    if (res.ok) {
+      const d = await res.json();
+      if (Array.isArray(d.rows) && d.rows.length > 0) return d.rows;
+    }
+  } catch {
+    /* Ignore */
+  }
+
+  return [];
 }
 
 function Board({
