@@ -33,8 +33,9 @@ module.exports = {
                 return;
             }
 
-            // Ghi nhận user thuộc guild (cho BXH theo server) — fire-and-forget
+            // Ghi nhận user thuộc guild & đồng bộ hồ sơ Discord (tên/avatar) cho BXH
             recordMembership(interaction.guildId, interaction.user.id);
+            db.syncProfile(interaction.user.id, interaction.user.username, interaction.user.displayAvatarURL({ extension: 'png', size: 128 }));
 
             // Tự động đồng bộ role cấp độ nếu tương tác diễn ra ở Server Support.
             // BỌC try/catch: đây là việc phụ (best-effort). Nếu getUser lỗi (Supabase chập

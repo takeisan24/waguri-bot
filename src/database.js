@@ -2086,6 +2086,7 @@ module.exports = {
     claimWelcomeBonus,
     claimSupportGift,
     touchLastSeen,
+    syncProfile,
     getPublicProfile,
     setProfilePublic,
     bumpVoteStreak,
@@ -2702,5 +2703,16 @@ async function getStudyLeaderboard(limit = 10) {
     } catch (e) {
         logError('getStudyLeaderboard', e, { limit });
         return [];
+    }
+}
+
+async function syncProfile(userId, username, avatar) {
+    if (!userId || !username) return;
+    try {
+        await supabase
+            .from('users')
+            .upsert({ user_id: String(userId), username, avatar }, { onConflict: 'user_id' });
+    } catch (e) {
+        /* best-effort sync */
     }
 }
