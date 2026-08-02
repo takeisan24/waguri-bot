@@ -24,25 +24,28 @@ export default function WebStudyRoomPage() {
   // Timer Countdown Effect
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
-    if (isRunning && timeLeft > 0) {
+    if (isRunning) {
       interval = setInterval(() => {
-        setTimeLeft((prev) => prev - 1);
+        setTimeLeft((prev) => {
+          if (prev <= 1) {
+            setIsRunning(false);
+            if (!isBreak) {
+              setIsBreak(true);
+              return 5 * 60;
+            } else {
+              setIsBreak(false);
+              return duration * 60;
+            }
+          }
+          return prev - 1;
+        });
       }, 1000);
-    } else if (timeLeft === 0 && isRunning) {
-      setIsRunning(false);
-      if (!isBreak) {
-        setIsBreak(true);
-        setTimeLeft(5 * 60); // 5 min break
-      } else {
-        setIsBreak(false);
-        setTimeLeft(duration * 60);
-      }
     }
 
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isRunning, timeLeft, isBreak, duration]);
+  }, [isRunning, isBreak, duration]);
 
   // Audio Player Handling
   useEffect(() => {
@@ -127,7 +130,7 @@ export default function WebStudyRoomPage() {
             <div className="relative z-10 flex flex-col items-center">
               <span className="text-6xl mb-3 animate-bounce">📚🌸</span>
               <h2 className="text-xl font-bold text-purple-200 mb-1">Học Viện Kikyo • Thư Viện Tĩnh Lặng</h2>
-              <p className="text-xs text-purple-300/80 italic">"Waguri đang ngồi cạnh giữ im lặng để cậu tập trung nè~"</p>
+              <p className="text-xs text-purple-300/80 italic">&quot;Waguri đang ngồi cạnh giữ im lặng để cậu tập trung nè~&quot;</p>
             </div>
 
             {/* Falling Sakura Floating Emblems */}

@@ -160,7 +160,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                     </p>
                     {prof.bio ? (
                       <p className="text-xs text-slate-300 italic mt-2 bg-pink-500/5 px-3 py-1.5 rounded-lg border border-pink-500/10 inline-block max-w-full break-words">
-                        "{prof.bio}"
+                        &quot;{prof.bio}&quot;
                       </p>
                     ) : null}
                     <div className="mt-3">
