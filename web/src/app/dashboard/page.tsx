@@ -180,6 +180,26 @@ export default async function Dashboard() {
           </div>
         </Link>
 
+        {/* Lofi Study Room Banner */}
+        <Link
+          href="/study"
+          className="block glass-panel rounded-3xl p-5 border border-purple-400/30 hover:border-purple-400/60 transition-all bg-purple-950/40"
+        >
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-extrabold text-purple-200">
+                📚 Phòng Học Bài Lofi 24/7 cùng Waguri 🌸
+              </p>
+              <p className="text-xs text-purple-300/80 mt-0.5">
+                Đồng hành tập trung Pomodoro, nghe nhạc Lo-Fi HD thư giãn không tốn RAM server
+              </p>
+            </div>
+            <span className="bg-purple-600/80 text-white px-3.5 py-1.5 rounded-full text-xs font-bold flex-shrink-0 shadow-lg">
+              Vào phòng học →
+            </span>
+          </div>
+        </Link>
+
         {!row ? (
           <div className="glass-panel rounded-3xl p-8 text-center text-slate-400">
             {t("dashboard.no_data", locale)}

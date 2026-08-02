@@ -20,6 +20,7 @@ export default function SiteHeader() {
   const [open, setOpen] = useState(false);
 
   const NAV = [
+    { href: "/study", label: "📚 Phòng Học Bài" },
     { href: "/commands", label: t("nav.commands") },
     { href: "/wiki", label: t("nav.wiki") },
     { href: "/leaderboard", label: t("nav.leaderboard") },
