@@ -245,6 +245,10 @@ const COMMAND_DESCRIPTIONS = {
         vi: "Xem hoặc gửi thông báo cập nhật bot 📢",
         en: "View or send bot update announcements 📢"
     },
+    "study": {
+        vi: "Phòng học bài Pomodoro 24/7 & Lofi Study Room 📚",
+        en: "24/7 Pomodoro & Lofi Study Room 📚"
+    },
 
     // AI & Premium
     "ask": {
@@ -532,10 +536,21 @@ const SUBCOMMAND_DESCRIPTIONS = {
 
     // premium-admin
     "premium-admin.cho": { vi: "Xem các đơn Premium đang chờ duyệt", en: "View pending Premium orders" },
-    "premium-admin.duyet": { vi: "Xác nhận đã nhận tiền & kích hoạt 1 đơn", en: "Approve a Premium order & activate benefits" }
+    "premium-admin.duyet": { vi: "Xác nhận đã nhận tiền & kích hoạt 1 đơn", en: "Approve a Premium order & activate benefits" },
+
+    // study
+    "study.start": { vi: "Bắt đầu một phiên học bài Pomodoro ⏳", en: "Start a Pomodoro study session ⏳" },
+    "study.status": { vi: "Xem trạng thái phiên học hiện tại 📊", en: "View current study session status 📊" },
+    "study.stop": { vi: "Kết thúc phiên học bài sớm 🛑", en: "End study session early 🛑" },
+    "study.leaderboard": { vi: "Bảng xếp hạng Chuyên Cần 🏆", en: "Study diligence leaderboard 🏆" },
+
+    // announcement
+    "announcement.clear": { vi: "Xóa bản tin thông báo hiện tại 🗑️", en: "Clear current announcement 🗑️" }
 };
 
 const OPTION_DESCRIPTIONS = {
+    "study.start.duration": { vi: "Thời gian học (phút), mặc định 25m ⏱️", en: "Study duration (minutes), default 25m ⏱️" },
+    "study.start.title": { vi: "Tên mục tiêu học bài 📖", en: "Study goal title 📖" },
     "clan.war.clan": { vi: "Tên bang đối thủ", en: "Rival clan's name" },
     "cosmetic.badge-buy.badge": { vi: "Chọn huy hiệu", en: "Choose a badge" },
     "cosmetic.badge-equip.badge": { vi: "Chọn huy hiệu", en: "Choose a badge" },

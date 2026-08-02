@@ -5,6 +5,7 @@ import SiteHeader from "../../components/SiteHeader";
 import SiteFooter from "../../components/SiteFooter";
 import { BOT_API } from "../../lib/botApi";
 import { createClient } from "../../lib/supabase/server";
+import { createAdminClient } from "../../lib/supabase/admin";
 import { getDiscordIdentity } from "../../lib/discord";
 import { getLocaleServer, t } from "../../lib/i18n";
 
@@ -26,9 +27,85 @@ async function getBoard(type: "wealth" | "level" | "bakery", guild?: string): Pr
   try {
     const url = `${API}/api/leaderboard?type=${type}&limit=10${guild ? `&guild=${encodeURIComponent(guild)}` : ""}`;
     const res = await fetch(url, { next: { revalidate: 60 } });
-    if (!res.ok) return [];
-    const d = await res.json();
-    return d.rows || [];
+    if (res.ok) {
+      const d = await res.json();
+      if (Array.isArray(d.rows) && d.rows.length > 0) return d.rows;
+    }
+  } catch {
+    /* Bot API fetch failed */
+  }
+
+  // Fallback sang Supabase DB trực tiếp
+  try {
+    const admin = createAdminClient();
+    const rows: Row[] = [];
+
+    if (type === "bakery") {
+      const { data } = await admin
+        .from("bakeries")
+        .select("user_id, bakery_score, level, likes_count")
+        .order("bakery_score", { ascending: false })
+        .limit(10);
+      if (data) {
+        for (const r of data) {
+          rows.push({
+            id: r.user_id,
+            username: `Chủ tiệm #${r.user_id.slice(-4)}`,
+            avatar: null,
+            value: Number(r.bakery_score || 0),
+            level: r.level || 1,
+            likes: r.likes_count || 0,
+          });
+        }
+      }
+    } else if (type === "level") {
+      const { data } = await admin
+        .from("users")
+        .select("user_id, exp")
+        .order("exp", { ascending: false })
+        .limit(10);
+      if (data) {
+        for (const r of data) {
+          const exp = Number(r.exp || 0);
+          const lvl = Math.floor(Math.sqrt(exp / 1000)) + 1;
+          rows.push({
+            id: r.user_id,
+            username: `Người chơi #${r.user_id.slice(-4)}`,
+            avatar: null,
+            value: lvl,
+          });
+        }
+      }
+    } else {
+      const { data, error } = await admin.rpc("leaderboard_rows", { p_sort: "wealth", p_limit: 10 });
+      if (!error && Array.isArray(data) && data.length > 0) {
+        for (const r of data) {
+          rows.push({
+            id: r.user_id,
+            username: `Người chơi #${r.user_id.slice(-4)}`,
+            avatar: null,
+            value: Number(r.networth || 0),
+          });
+        }
+      } else {
+        const { data: usersData } = await admin
+          .from("users")
+          .select("user_id, wallet, bank")
+          .order("wallet", { ascending: false })
+          .limit(10);
+        if (usersData) {
+          for (const r of usersData) {
+            rows.push({
+              id: r.user_id,
+              username: `Người chơi #${r.user_id.slice(-4)}`,
+              avatar: null,
+              value: Number(r.wallet || 0) + Number(r.bank || 0),
+            });
+          }
+        }
+      }
+    }
+    return rows;
   } catch {
     return [];
   }

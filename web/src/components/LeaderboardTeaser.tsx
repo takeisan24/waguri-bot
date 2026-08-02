@@ -19,7 +19,7 @@ export default function LeaderboardTeaser() {
   useEffect(() => {
     const ctrl = new AbortController();
     const t = setTimeout(() => ctrl.abort(), 4000);
-    fetch(`${API}/api/leaderboard?type=wealth&limit=5`, { signal: ctrl.signal })
+    fetch("/api/leaderboard?type=wealth&limit=5", { signal: ctrl.signal })
       .then((r) => (r.ok ? r.json() : Promise.reject()))
       .then((d) => setRows(Array.isArray(d?.rows) ? d.rows.slice(0, 5) : []))
       .catch(() => setRows([]))
