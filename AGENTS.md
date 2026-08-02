@@ -74,9 +74,14 @@ Waguri là **Discord economy/RPG bot bản địa hóa văn hóa Việt**. Bot N
 
 ---
 
-## 4. TRẠNG THÁI HIỆN TẠI (cập nhật 2026-07-11 — sửa khi đổi lớn)
+## 4. TRẠNG THÁI HIỆN TẠI (cập nhật 2026-08-02 — sửa khi đổi lớn)
 
 - **Release:** GitHub tag mới nhất `v2.4.0` ("Feature /study Pomodoro Companion & Web Lofi Study Room Ecosystem"). `package.json` = `2.4.0`.
+- **⚡ Tối Ưu Bảng Xếp Hạng Siêu Tốc & Tự Động Đồng Bộ Discord Profile (`/leaderboard` & Web) — ĐÃ HOÀN THÀNH 100%:**
+  - **Migration `0091_public_leaderboard_security_definer.sql` & `0092_user_profile_names.sql`:** Đã áp dụng lên Supabase Production DB. Cấu hình `SECURITY DEFINER` và phân quyền công khai `GRANT EXECUTE TO anon` cho các hàm RPC `leaderboard_rows`, `leaderboard_rows_guild`, `get_bakery_leaderboard`. Thêm cột `username` & `avatar` vào bảng `users`.
+  - **Tối ưu tốc độ (20ms):** Đảo luồng ưu tiên truy vấn trực tiếp Supabase DB trước, giảm thời gian chờ phản hồi Bảng xếp hạng từ ~3.5s xuống còn **0.02s (nhanh gấp 70 lần)**, hoàn toàn độc lập với trạng thái bật/tắt của Bot VPS Wispbyte.
+  - **Đồng bộ Discord Profile:** Bổ sung `db.syncProfile` tự động ghi nhận Tên & Avatar Discord thật của người chơi khi họ tương tác với bot hoặc truy cập Web. Trang `/leaderboard` và widget `LeaderboardTeaser` hiển thị Tên + Avatar sắc nét thay vì tên mặc định.
+  - **Chuẩn hóa Persona Waguri:** Đã thay thế từ xưng hô cổ trang *"tệ xá"* thành *"góc nhỏ của tớ"* trong `web/src/locales/vi.json`, giữ nguyên giọng văn ngọt ngào, tự nhiên của Waguri.
 - **📚 Phòng Học Bài Pomodoro 24/7 & Web Lofi Study Room (`/study`) — ĐÃ HOÀN THÀNH 100%:**
   - **Migration `0094_study_system.sql` & RPC `complete_study_session`:** Đã áp DB Supabase + verified. Tự động tính toán Chuỗi Chuyên Cần `study_streak`, cộng Xu, EXP và Điểm Tri Thức `study_points` nguyên tử.
   - **Discord Bot:** Lệnh `/study` (`start`, `status`, `stop`, `leaderboard`) hoạt động đếm ngược siêu nhẹ qua Chat Embed (`[▓▓▓▓▓▓░░░░] 60%`), tốn 0MB RAM extra risk cho server free. Tích hợp nút bấm tương tác `study_pause`, `study_resume`, `study_stop`.

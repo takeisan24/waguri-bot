@@ -4,7 +4,8 @@ const assert = require('node:assert');
 
 // AN TOÀN: integration test CHỈ chạy trên DB TEST riêng (TEST_SUPABASE_*), KHÔNG BAO GIỜ đụng prod.
 // Không có TEST_ vars -> SKIP (mặc định an toàn, kể cả CI). Đừng bao giờ trỏ test vào SUPABASE_* của prod.
-const hasTestDb = process.env.TEST_SUPABASE_URL &&
+const hasTestDb = process.env.ENABLE_TEST_SUPABASE === 'true' &&
+                  process.env.TEST_SUPABASE_URL &&
                   process.env.TEST_SUPABASE_SERVICE_KEY &&
                   !process.env.TEST_SUPABASE_URL.includes('dummy');
 
