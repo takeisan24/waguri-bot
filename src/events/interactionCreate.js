@@ -231,6 +231,13 @@ module.exports = {
                 return;
             }
 
+            // Nút điều khiển Pomodoro Study
+            if (interaction.customId.startsWith('study_')) {
+                const { handleStudyButton } = require('../lib/study');
+                await handleStudyButton(interaction);
+                return;
+            }
+
             // Nút điều khiển Easter Egg Player HVL - MCK
             if (interaction.customId.startsWith('hvl_')) {
                 const { handleHvlButton } = require('../lib/hvlPlayer');

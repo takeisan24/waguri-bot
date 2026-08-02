@@ -2257,7 +2257,12 @@ module.exports = {
     cancelAuction,
     getActiveAuctions,
     getMyAuctions,
-    resolveExpiredAuctions,
+    // study system
+    startStudySession,
+    completeStudySession,
+    cancelStudySession,
+    getStudyStatus,
+    getStudyLeaderboard,
     // admin
     setBalance,
     setExp,
@@ -2602,5 +2607,100 @@ async function addPetSkillPoints(userId, points) {
     } catch (e) {
         logError('addPetSkillPoints', e, { userId, points });
         return null;
+    }
+}
+
+// ============================================================
+//  HỌC TẬP & POMODORO (Study System)
+// ============================================================
+async function startStudySession(userId, guildId, sessionName, durationMinutes) {
+    try {
+        const endsAt = new Date(Date.now() + durationMinutes * 60 * 1000).toISOString();
+        const { data, error } = await supabase
+            .from('user_study_sessions')
+            .insert({
+                user_id: userId,
+                guild_id: guildId,
+                session_name: sessionName || 'Pomodoro Study',
+                duration_minutes: durationMinutes,
+                ends_at: endsAt,
+                status: 'ACTIVE'
+            })
+            .select()
+            .single();
+        if (error) throw error;
+        return data;
+    } catch (e) {
+        logError('startStudySession', e, { userId, guildId, durationMinutes });
+        return null;
+    }
+}
+
+async function completeStudySession(sessionId, userId, earnedCoins, earnedExp, studyPoints) {
+    try {
+        const { data, error } = await supabase.rpc('complete_study_session', {
+            p_session_id: sessionId,
+            p_user_id: userId,
+            p_earned_coins: earnedCoins,
+            p_earned_exp: earnedExp,
+            p_study_points: studyPoints
+        });
+        if (error) throw error;
+        return data;
+    } catch (e) {
+        logError('completeStudySession', e, { sessionId, userId, earnedCoins, earnedExp, studyPoints });
+        return null;
+    }
+}
+
+async function cancelStudySession(sessionId, userId) {
+    try {
+        const { data, error } = await supabase
+            .from('user_study_sessions')
+            .update({ status: 'EARLY_EXIT' })
+            .eq('id', sessionId)
+            .eq('user_id', userId)
+            .eq('status', 'ACTIVE')
+            .select()
+            .maybeSingle();
+        if (error) throw error;
+        return data;
+    } catch (e) {
+        logError('cancelStudySession', e, { sessionId, userId });
+        return null;
+    }
+}
+
+async function getStudyStatus(userId) {
+    try {
+        const { data, error } = await supabase
+            .from('user_study_sessions')
+            .select('*')
+            .eq('user_id', userId)
+            .eq('status', 'ACTIVE')
+            .order('id', { ascending: false })
+            .maybeSingle();
+        if (error) throw error;
+        return data;
+    } catch (e) {
+        logError('getStudyStatus', e, { userId });
+        return null;
+    }
+}
+
+async function getStudyLeaderboard(limit = 10) {
+    try {
+        const { data, error } = await supabase
+            .from('users')
+            .select('user_id, study_streak, total_study_minutes, study_points')
+            .gt('total_study_minutes', 0)
+            .order('study_streak', { ascending: false })
+            .order('total_study_minutes', { ascending: false })
+            .limit(limit);
+        if (error) throw error;
+        return data || [];
+    } catch (e) {
+        logError('getStudyLeaderboard', e, { limit });
+        return [];
     }
 }
