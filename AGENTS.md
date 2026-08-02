@@ -76,7 +76,11 @@ Waguri là **Discord economy/RPG bot bản địa hóa văn hóa Việt**. Bot N
 
 ## 4. TRẠNG THÁI HIỆN TẠI (cập nhật 2026-07-11 — sửa khi đổi lớn)
 
-- **Release:** GitHub tag mới nhất `v2.2.0` ("Đợt 3: Bản địa hóa toàn diện & Bảo mật Admin"). `package.json` = `2.2.0`.
+- **Release:** GitHub tag mới nhất `v2.4.0` ("Feature /study Pomodoro Companion & Web Lofi Study Room Ecosystem"). `package.json` = `2.4.0`.
+- **📚 Phòng Học Bài Pomodoro 24/7 & Web Lofi Study Room (`/study`) — ĐÃ HOÀN THÀNH 100%:**
+  - **Migration `0094_study_system.sql` & RPC `complete_study_session`:** Đã áp DB Supabase + verified. Tự động tính toán Chuỗi Chuyên Cần `study_streak`, cộng Xu, EXP và Điểm Tri Thức `study_points` nguyên tử.
+  - **Discord Bot:** Lệnh `/study` (`start`, `status`, `stop`, `leaderboard`) hoạt động đếm ngược siêu nhẹ qua Chat Embed (`[▓▓▓▓▓▓░░░░] 60%`), tốn 0MB RAM extra risk cho server free. Tích hợp nút bấm tương tác `study_pause`, `study_resume`, `study_stop`.
+  - **Web Next.js:** Trang Web Lofi Study Room riêng tại `web/src/app/study` phát nhạc Lo-Fi HD qua HTML5 Audio API (0MB server load), giao diện Visual Waguri ngồi học bài ấm áp, đồng bộ DB-Centric mượt mà. Đã đồng bộ 79/79 lệnh trên `CommandsExplorer.tsx` và test suite `test/study.test.js` pass 100%.
 - **Hardening Đa ngôn ngữ (i18n) — ĐÃ HOÀN THÀNH 100% end-to-end:**
   - **Discord Bot:** Bản dịch song ngữ Anh & Việt đã phủ 100% tất cả các nhóm lệnh (bao gồm Economy, Games, Fun, Utility, Admin), hỗ trợ đầy đủ localization cho slash command definitions, choices và autocomplete.
   - **Web Next.js:** Dịch toàn bộ trang Landing, cá nhân, Sổ sứ mệnh, Premium, Leaderboard, `/u/[id]`, lỗi. Trang Wiki được tách song ngữ tĩnh, đổi tên hiển thị tiếng Việt thành "Cẩm nang". Các components được hoàn thiện i18n 100%.
