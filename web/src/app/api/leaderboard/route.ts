@@ -4,13 +4,36 @@ import { createAdminClient } from "../../../lib/supabase/admin";
 
 export const revalidate = 30; // Cache 30 seconds
 
+// Tự động nạp Tên & Avatar thật từ Discord API nếu DB chưa kịp sync (0 cần chạy script)
+async function hydrateDiscordProfiles(rows: Array<{ id: string; username: string; avatar: string | null; value: number }>) {
+  const missing = rows.filter(r => !r.avatar || !r.username || r.username.startsWith("Người chơi #"));
+  if (missing.length === 0) return;
+
+  await Promise.all(missing.map(async (r) => {
+    try {
+      const res = await fetch(`https://discord.com/api/v10/users/${r.id}`, {
+        next: { revalidate: 86400 } // Cache 24h
+      });
+      if (res.ok) {
+        const u = await res.json();
+        r.username = u.global_name || u.username || r.username;
+        r.avatar = u.avatar
+          ? `https://cdn.discordapp.com/avatars/${r.id}/${u.avatar}.png?size=128`
+          : `https://cdn.discordapp.com/embed/avatars/${Number((BigInt(r.id) >> BigInt(22)) % BigInt(5))}.png`;
+      }
+    } catch {
+      /* ignore */
+    }
+  }));
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const type = searchParams.get("type") === "level" ? "level" : (searchParams.get("type") === "bakery" ? "bakery" : "wealth");
   const limit = Math.min(Math.max(Number(searchParams.get("limit")) || 10, 1), 25);
   const guild = searchParams.get("guild") && /^\d{5,25}$/.test(searchParams.get("guild")!) ? searchParams.get("guild") : null;
 
-  // 1. UƯ TIÊN TRUY VẤN SUPABASE DB TRỰC TIẾP (Siêu tốc: ~20ms, không chờ VPS timeout)
+  // 1. UƯ TIÊN TRUY VẤN SUPABASE DB TRỰC TIẾP (Siêu tốc: ~20ms)
   try {
     const admin = createAdminClient();
     const rows: Array<{ id: string; username: string; avatar: string | null; value: number; level?: number; likes?: number }> = [];
@@ -86,6 +109,8 @@ export async function GET(request: Request) {
     }
 
     if (rows.length > 0) {
+      // Tự động nạp Tên & Avatar từ Discord API nếu bất kỳ dòng nào bị thiếu (0 cần chạy script tay)
+      await hydrateDiscordProfiles(rows);
       return NextResponse.json({ type, rows });
     }
   } catch (err) {

@@ -23,6 +23,28 @@ const MEDALS = ["🥇", "🥈", "🥉"];
 
 type Row = { id: string; username: string; avatar: string | null; value: number; level?: number; likes?: number };
 
+async function hydrateDiscordProfiles(rows: Row[]) {
+  const missing = rows.filter(r => !r.avatar || !r.username || r.username.startsWith("Người chơi #"));
+  if (missing.length === 0) return;
+
+  await Promise.all(missing.map(async (r) => {
+    try {
+      const res = await fetch(`https://discord.com/api/v10/users/${r.id}`, {
+        next: { revalidate: 86400 }
+      });
+      if (res.ok) {
+        const u = await res.json();
+        r.username = u.global_name || u.username || r.username;
+        r.avatar = u.avatar
+          ? `https://cdn.discordapp.com/avatars/${r.id}/${u.avatar}.png?size=128`
+          : `https://cdn.discordapp.com/embed/avatars/${Number((BigInt(r.id) >> BigInt(22)) % BigInt(5))}.png`;
+      }
+    } catch {
+      /* ignore */
+    }
+  }));
+}
+
 async function getBoard(type: "wealth" | "level" | "bakery", guild?: string): Promise<Row[]> {
   try {
     const admin = createAdminClient();
@@ -93,7 +115,10 @@ async function getBoard(type: "wealth" | "level" | "bakery", guild?: string): Pr
         }
       }
     }
-    if (rows.length > 0) return rows;
+    if (rows.length > 0) {
+      await hydrateDiscordProfiles(rows);
+      return rows;
+    }
   } catch {
     /* Fallback sang Bot API */
   }
