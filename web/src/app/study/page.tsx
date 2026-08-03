@@ -4,9 +4,24 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 
 const LOFI_STREAMS = [
-  { id: "kikyo", name: "🌸 Kikyo Study Chill", url: "https://kuvlkaxregnanhzgqrbp.supabase.co/storage/v1/object/public/hvl_audio/01.mp3" },
-  { id: "rainy", name: "🍵 Rainy Gekka Tea Shop", url: "https://kuvlkaxregnanhzgqrbp.supabase.co/storage/v1/object/public/hvl_audio/05.mp3" },
-  { id: "midnight", name: "🌙 Midnight Academy", url: "https://kuvlkaxregnanhzgqrbp.supabase.co/storage/v1/object/public/hvl_audio/10.mp3" },
+  {
+    id: "kikyo",
+    name: "🌸 Kikyo Lofi Chill",
+    url: "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3",
+    fallbackUrl: "https://kuvlkaxregnanhzgqrbp.supabase.co/storage/v1/object/public/hvl_audio/01.mp3"
+  },
+  {
+    id: "rainy",
+    name: "🍵 Rainy Gekka Tea Shop",
+    url: "https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3",
+    fallbackUrl: "https://kuvlkaxregnanhzgqrbp.supabase.co/storage/v1/object/public/hvl_audio/05.mp3"
+  },
+  {
+    id: "midnight",
+    name: "🌙 Midnight Academy",
+    url: "https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3",
+    fallbackUrl: "https://kuvlkaxregnanhzgqrbp.supabase.co/storage/v1/object/public/hvl_audio/10.mp3"
+  },
 ];
 
 export default function WebStudyRoomPage() {
@@ -18,6 +33,7 @@ export default function WebStudyRoomPage() {
   const [currentStream, setCurrentStream] = useState(LOFI_STREAMS[0]);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [volume, setVolume] = useState(0.5);
+  const [audioStatus, setAudioStatus] = useState<string | null>(null);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -56,20 +72,49 @@ export default function WebStudyRoomPage() {
 
   const toggleAudio = () => {
     if (!audioRef.current) return;
+    setAudioStatus(null);
     if (isPlayingAudio) {
       audioRef.current.pause();
       setIsPlayingAudio(false);
     } else {
-      audioRef.current.play().then(() => setIsPlayingAudio(true)).catch(() => {});
+      audioRef.current.play()
+        .then(() => {
+          setIsPlayingAudio(true);
+          setAudioStatus("🟢 Đang phát nhạc");
+        })
+        .catch(() => {
+          if (audioRef.current && currentStream.fallbackUrl && audioRef.current.src !== currentStream.fallbackUrl) {
+            audioRef.current.src = currentStream.fallbackUrl;
+            audioRef.current.play()
+              .then(() => {
+                setIsPlayingAudio(true);
+                setAudioStatus("🟢 Đang phát (Fallback)");
+              })
+              .catch(() => {
+                setIsPlayingAudio(false);
+                setAudioStatus("⚠️ Vui lòng nhấp nút Phát Nhạc lần nữa để trình duyệt cấp quyền");
+              });
+          } else {
+            setIsPlayingAudio(false);
+            setAudioStatus("⚠️ Vui lòng nhấp nút Phát Nhạc lần nữa để trình duyệt cấp quyền");
+          }
+        });
     }
   };
 
   const handleSelectStream = (stream: typeof LOFI_STREAMS[0]) => {
     setCurrentStream(stream);
+    setAudioStatus(null);
     if (audioRef.current) {
       audioRef.current.src = stream.url;
       if (isPlayingAudio) {
-        audioRef.current.play().catch(() => {});
+        audioRef.current.play()
+          .catch(() => {
+            if (audioRef.current && stream.fallbackUrl) {
+              audioRef.current.src = stream.fallbackUrl;
+              audioRef.current.play().catch(() => setIsPlayingAudio(false));
+            }
+          });
       }
     }
   };
@@ -181,6 +226,10 @@ export default function WebStudyRoomPage() {
                 </button>
               ))}
             </div>
+
+            {audioStatus ? (
+              <p className="text-[11px] text-purple-300/90 italic mt-0.5">{audioStatus}</p>
+            ) : null}
 
             <audio ref={audioRef} src={currentStream.url} loop />
           </div>

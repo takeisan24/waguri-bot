@@ -6,6 +6,7 @@ import SiteFooter from "../../../components/SiteFooter";
 import { BOT_API } from "../../../lib/botApi";
 import { affectionTier } from "../../../lib/game";
 import { getLocaleServer, t } from "../../../lib/i18n";
+import { createAdminClient } from "../../../lib/supabase/admin";
 
 const API = BOT_API;
 const INVITE_URL =
@@ -49,6 +50,89 @@ const BADGES: Record<string, { emoji: string; name_vi: string; name_en: string }
 };
 
 async function getProfile(id: string): Promise<Profile | { hidden: true } | "notfound" | null> {
+  // 1. UƯ TIÊN TRUY VẤN SUPABASE DB TRỰC TIẾP (Tốc độ ~20ms, độc lập hoàn toàn với Bot VPS)
+  try {
+    const admin = createAdminClient();
+    const { data: userRow } = await admin
+      .from("users")
+      .select("*")
+      .eq("user_id", id)
+      .maybeSingle();
+
+    if (userRow) {
+      if (userRow.profile_public === false) {
+        return { hidden: true };
+      }
+
+      let jobName: string | null = null;
+      let clanName: string | null = null;
+      let partnerName: string | null = null;
+      let achievementsCount = 0;
+
+      if (userRow.job_id) {
+        const { data: jobData } = await admin.from("jobs").select("name").eq("id", userRow.job_id).maybeSingle();
+        jobName = jobData?.name ?? null;
+      }
+      if (userRow.clan_id) {
+        const { data: clanData } = await admin.from("clans").select("name").eq("id", userRow.clan_id).maybeSingle();
+        clanName = clanData?.name ?? null;
+      }
+      if (userRow.partner_id) {
+        const { data: partnerData } = await admin.from("users").select("username").eq("user_id", userRow.partner_id).maybeSingle();
+        partnerName = partnerData?.username ?? `Người chơi #${String(userRow.partner_id).slice(-4)}`;
+      }
+
+      const { count } = await admin
+        .from("achievements")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", id);
+      achievementsCount = count ?? 0;
+
+      const { data: badgesData } = await admin
+        .from("user_badges")
+        .select("badge_id, is_equipped, slot_index")
+        .eq("user_id", id);
+
+      const exp = Number(userRow.exp || 0);
+      const level = Math.floor(Math.sqrt(exp / 1000)) + 1;
+      const currentLevelMinExp = Math.pow(level - 1, 2) * 1000;
+      const nextLevelMinExp = Math.pow(level, 2) * 1000;
+      const expInto = Math.max(0, exp - currentLevelMinExp);
+      const expForNext = Math.max(1, nextLevelMinExp - currentLevelMinExp);
+
+      const wallet = Number(userRow.wallet || 0);
+      const bank = Number(userRow.bank || 0);
+
+      return {
+        id,
+        username: userRow.username || `Người chơi #${id.slice(-4)}`,
+        avatar: userRow.avatar || null,
+        hidden: false,
+        level,
+        expInto,
+        expForNext,
+        wallet,
+        bank,
+        netWorth: wallet + bank,
+        job: jobName,
+        bio: userRow.bio || null,
+        affection: Number(userRow.affection || 0),
+        affectionTier: affectionTier(Number(userRow.affection || 0)),
+        partner: partnerName,
+        clan: clanName,
+        title: userRow.title || null,
+        color: userRow.color ? (userRow.color.startsWith("#") ? userRow.color : `#${userRow.color}`) : null,
+        achievements: achievementsCount,
+        rank: 0,
+        prestige: Number(userRow.prestige || 0),
+        badges: (badgesData as Array<{ badge_id: string; is_equipped: boolean; slot_index: number }>) || [],
+      };
+    }
+  } catch {
+    /* Fallback sang Bot API nếu DB rỗng hoặc lỗi */
+  }
+
+  // 2. FALLBACK: Fetch từ Bot API
   try {
     const res = await fetch(`${API}/api/profile/${id}`, { next: { revalidate: 60 } });
     if (res.status === 404) return "notfound";
