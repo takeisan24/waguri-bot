@@ -119,6 +119,34 @@ async function finishSession(userId, isEarlyExit = false) {
 }
 
 /**
+ * Helper to schedule session finish timer
+ */
+function scheduleFinishTimer(session, delayMs) {
+    if (session.timer) clearTimeout(session.timer);
+    session.timer = setTimeout(async () => {
+        const result = await finishSession(session.userId, false);
+        if (result && session.message) {
+            const finishEmbed = new EmbedBuilder()
+                .setColor('#10B981')
+                .setTitle(`🎉 HOÀN THÀNH PHIÊN HỌC — ${session.sessionName}!`)
+                .setDescription(
+                    `*Waguri khẽ vỗ tay chúc mừng cậu nè!* 🌸🍵\n\n` +
+                    `Cậu đã chăm chỉ hoàn thành **${session.durationMinutes} phút** tập trung tuyệt vời!\n` +
+                    `**Phần thưởng:**\n` +
+                    `• **+${result.earnedCoins} Xu** 🪙\n` +
+                    `• **+${result.earnedExp} EXP** ✨\n` +
+                    `• **+${result.studyPoints} Hạt Hoa Kikyo 🌸**\n` +
+                    `• **Chuỗi Chuyên Cần 📚:** \`${result.newStreak} ngày\`\n\n` +
+                    `*Nghỉ tay 5-10 phút uống chút trà cùng Waguri rùi tiếp tục nhen!* ☕`
+                )
+                .setTimestamp();
+
+            await session.message.edit({ embeds: [finishEmbed], components: [] }).catch(() => {});
+        }
+    }, delayMs);
+}
+
+/**
  * Start a new Study Session
  */
 async function startStudySession(userId, guildId, sessionName, durationMinutes, interaction) {
@@ -152,37 +180,17 @@ async function startStudySession(userId, guildId, sessionName, durationMinutes, 
     activeSessions.set(userId, session);
 
     // Setup timer finish
-    session.timer = setTimeout(async () => {
-        const result = await finishSession(userId, false);
-        if (result && session.message) {
-            const finishEmbed = new EmbedBuilder()
-                .setColor('#10B981')
-                .setTitle(`🎉 HOÀN THÀNH PHIÊN HỌC — ${session.sessionName}!`)
-                .setDescription(
-                    `*Waguri khẽ vỗ tay chúc mừng cậu nè!* 🌸🍵\n\n` +
-                    `Cậu đã chăm chỉ hoàn thành **${session.durationMinutes} phút** tập trung tuyệt vời!\n` +
-                    `**Phần thưởng:**\n` +
-                    `• **+${result.earnedCoins} Xu** 🪙\n` +
-                    `• **+${result.earnedExp} EXP** ✨\n` +
-                    `• **+${result.studyPoints} Hạt Hoa Kikyo 🌸**\n` +
-                    `• **Chuỗi Chuyên Cần 📚:** \`${result.newStreak} ngày\`\n\n` +
-                    `*Nghỉ tay 5-10 phút uống chút trà cùng Waguri rùi tiếp tục nhen!* ☕`
-                )
-                .setTimestamp();
-
-            await session.message.edit({ embeds: [finishEmbed], components: [] }).catch(() => {});
-        }
-    }, totalMs);
+    scheduleFinishTimer(session, totalMs);
 
     // Setup interval for progress bar embed updates every 30s
     session.updateInterval = setInterval(async () => {
         if (session.isPaused) return;
 
         const remaining = session.endsAt - Date.now();
-        session.remainingMs = remaining;
+        session.remainingMs = Math.max(0, remaining);
 
         if (remaining > 0 && session.message) {
-            const embed = buildStudyEmbed(session, remaining);
+            const embed = buildStudyEmbed(session, session.remainingMs);
             const row = buildControlRow(session.isPaused);
             await session.message.edit({ embeds: [embed], components: [row] }).catch(() => {});
         }
@@ -195,7 +203,7 @@ async function startStudySession(userId, guildId, sessionName, durationMinutes, 
  * Handle Study Control Buttons
  */
 async function handleStudyButton(interaction) {
-    const { customId, user } = interaction;
+    const { customId, user, message } = interaction;
     const session = activeSessions.get(user.id);
 
     if (!session) {
@@ -205,18 +213,31 @@ async function handleStudyButton(interaction) {
         }).catch(() => {});
     }
 
+    if (session.message && message && session.message.id !== message.id) {
+        return interaction.reply({
+            content: '🌸 *Đây không phải góc học tập của cậu nhen~ Cậu hãy dùng `/study start` để tạo phiên học cho riêng mình nha!* 🍵',
+            ephemeral: true
+        }).catch(() => {});
+    }
+
     if (customId === 'study_pause') {
+        if (session.isPaused) return interaction.deferUpdate().catch(() => {});
         session.isPaused = true;
+        if (session.timer) {
+            clearTimeout(session.timer);
+            session.timer = null;
+        }
         const remaining = session.endsAt - Date.now();
-        session.remainingMs = remaining;
-        const embed = buildStudyEmbed(session, remaining);
+        session.remainingMs = Math.max(0, remaining);
+        const embed = buildStudyEmbed(session, session.remainingMs);
         const row = buildControlRow(true);
         await interaction.update({ embeds: [embed], components: [row] }).catch(() => {});
     } else if (customId === 'study_resume') {
+        if (!session.isPaused) return interaction.deferUpdate().catch(() => {});
         session.isPaused = false;
         session.endsAt = Date.now() + session.remainingMs;
-        const remaining = session.remainingMs;
-        const embed = buildStudyEmbed(session, remaining);
+        scheduleFinishTimer(session, session.remainingMs);
+        const embed = buildStudyEmbed(session, session.remainingMs);
         const row = buildControlRow(false);
         await interaction.update({ embeds: [embed], components: [row] }).catch(() => {});
     } else if (customId === 'study_stop') {

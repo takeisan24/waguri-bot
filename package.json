@@ -14,7 +14,8 @@
     "backup": "node scripts/backup-db.js",
     "lint": "eslint \"src/**/*.js\" index.js shard.js",
     "pretest": "npm run lint",
-    "test": "node --test",
+    "check-i18n": "node scripts/check-i18n-coverage.js",
+    "test": "node scripts/check-i18n-coverage.js && node --test",
     "prepare": "git config core.hooksPath scripts/git-hooks || exit 0"
   },
   "dependencies": {

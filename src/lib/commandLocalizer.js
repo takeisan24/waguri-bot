@@ -784,4 +784,9 @@ function localizeOption(parentName, opt) {
     }
 }
 
-module.exports = { localizeCommandJSON };
+module.exports = {
+    localizeCommandJSON,
+    COMMAND_DESCRIPTIONS,
+    SUBCOMMAND_DESCRIPTIONS,
+    OPTION_DESCRIPTIONS
+};

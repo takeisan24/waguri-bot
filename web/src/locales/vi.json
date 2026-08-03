@@ -384,7 +384,8 @@
     "title": "Có lỗi rồi~",
     "desc": "Waguri xin lỗi, có gì đó trục trặc. Cậu thử lại giúp mình nhé!",
     "retry": "Thử lại",
-    "back_home": "Về trang chủ"
+    "back_home": "Về trang chủ",
+    "back_home_btn": "Về trang chủ"
   },
   "notfound": {
     "title": "404",
