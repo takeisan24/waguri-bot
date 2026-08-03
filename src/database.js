@@ -18,6 +18,9 @@ const isConnectPhaseError = (err) => {
         || code === 'ENOTFOUND' || code === 'EAI_AGAIN';
 };
 const resilientFetch = async (url, options = {}) => {
+    if (supabaseUrl?.includes('dummy')) {
+        throw new Error('Dummy CI Supabase URL provided');
+    }
     const runOnce = async () => {
         const ac = new AbortController();
         const timer = setTimeout(() => ac.abort(), SUPABASE_TIMEOUT_MS);
@@ -57,6 +60,7 @@ const supabase = new Proxy({}, {
 });
 
 function logError(method, err, extra = {}) {
+    if (supabaseUrl?.includes('dummy')) return;
     console.error(`[DATABASE ERROR] in ${method}:`, err, extra);
 }
 
