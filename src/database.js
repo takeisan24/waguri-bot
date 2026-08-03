@@ -2642,8 +2642,8 @@ async function completeStudySession(sessionId, userId, earnedCoins, earnedExp, s
         const { data, error } = await supabase.rpc('complete_study_session', {
             p_session_id: sessionId,
             p_user_id: userId,
-            p_earned_coins: earnedCoins,
-            p_earned_exp: earnedExp,
+            p_earned_coins: Number(earnedCoins),
+            p_earned_exp: Number(earnedExp),
             p_study_points: studyPoints
         });
         if (error) throw error;
