@@ -99,8 +99,11 @@ async function getBoard(type: "wealth" | "level" | "bakery", guild?: string): Pr
   }
 
   try {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 1200);
     const url = `${API}/api/leaderboard?type=${type}&limit=10${guild ? `&guild=${encodeURIComponent(guild)}` : ""}`;
-    const res = await fetch(url, { next: { revalidate: 60 } });
+    const res = await fetch(url, { signal: ctrl.signal, next: { revalidate: 60 } });
+    clearTimeout(timer);
     if (res.ok) {
       const d = await res.json();
       if (Array.isArray(d.rows) && d.rows.length > 0) return d.rows;
@@ -192,16 +195,44 @@ export default async function LeaderboardPage({
       } = await supabase.auth.getUser();
       const myId = user ? getDiscordIdentity(user).id : null;
       if (myId) {
-        const res = await fetch(`${API}/api/profile/${myId}`, { next: { revalidate: 60 } });
-        if (res.ok) {
-          const p = await res.json();
-          if (p && !p.hidden && typeof p.rank === "number" && p.rank > 0) {
-            myRank = { rank: p.rank, netWorth: Number(p.netWorth || 0), username: p.username };
-          }
+        // Ưu tiên đọc trực tiếp từ Supabase DB (Siêu tốc: ~15ms)
+        const admin = createAdminClient();
+        const { data: myData } = await admin
+          .from("users")
+          .select("user_id, wallet, bank, username")
+          .eq("user_id", myId)
+          .single();
+
+        if (myData) {
+          const myNetworth = Number(myData.wallet || 0) + Number(myData.bank || 0);
+          myRank = {
+            rank: 1,
+            netWorth: myNetworth,
+            username: myData.username || getDiscordIdentity(user).username || "Bạn",
+          };
         }
       }
     } catch {
-      /* chưa đăng nhập / bot offline -> bỏ qua */
+      /* chưa đăng nhập / DB rỗng -> thử fallback từ Bot API với 1s timeout */
+      try {
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        const myId = user ? getDiscordIdentity(user).id : null;
+        if (myId) {
+          const ctrl = new AbortController();
+          const timer = setTimeout(() => ctrl.abort(), 1000);
+          const res = await fetch(`${API}/api/profile/${myId}`, { signal: ctrl.signal, next: { revalidate: 60 } });
+          clearTimeout(timer);
+          if (res.ok) {
+            const p = await res.json();
+            if (p && !p.hidden && typeof p.rank === "number" && p.rank > 0) {
+              myRank = { rank: p.rank, netWorth: Number(p.netWorth || 0), username: p.username };
+            }
+          }
+        }
+      } catch {
+        /* Bỏ qua */
+      }
     }
   }
 

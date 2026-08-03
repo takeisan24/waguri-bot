@@ -132,9 +132,12 @@ async function getProfile(id: string): Promise<Profile | { hidden: true } | "not
     /* Fallback sang Bot API nếu DB rỗng hoặc lỗi */
   }
 
-  // 2. FALLBACK: Fetch từ Bot API
+  // 2. FALLBACK: Fetch từ Bot API (khống chế timeout 1.2s)
   try {
-    const res = await fetch(`${API}/api/profile/${id}`, { next: { revalidate: 60 } });
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 1200);
+    const res = await fetch(`${API}/api/profile/${id}`, { signal: ctrl.signal, next: { revalidate: 60 } });
+    clearTimeout(timer);
     if (res.status === 404) return "notfound";
     if (!res.ok) return null;
     return res.json();
