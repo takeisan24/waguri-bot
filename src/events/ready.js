@@ -79,10 +79,14 @@ function startStatsAutopost(client) {
                     headers: { 'Content-Type': 'application/json', Authorization: t.token },
                     body: JSON.stringify(t.body(servers, shards)),
                 });
-                if (res.ok) console.log(`[STATS] ${t.name}: server_count = ${servers}`);
-                else console.error(`[STATS] ${t.name} lỗi HTTP ${res.status}`);
+                if (res.ok) {
+                    console.log(`[STATS] ${t.name}: server_count = ${servers}`);
+                } else {
+                    const bodyText = await res.text().catch(() => '');
+                    console.warn(`[STATS] ${t.name} autopost thất bại (HTTP ${res.status}): ${bodyText.slice(0, 120) || 'Dịch vụ Top.gg tạm thời chập chờn / Token không hợp lệ'}`);
+                }
             } catch (e) {
-                console.error(`[STATS] ${t.name} lỗi:`, e?.message || e);
+                console.warn(`[STATS] ${t.name} kết nối thất bại:`, e?.message || e);
             }
         }
     };
