@@ -23,27 +23,8 @@ const MEDALS = ["🥇", "🥈", "🥉"];
 
 type Row = { id: string; username: string; avatar: string | null; value: number; level?: number; likes?: number };
 
-async function hydrateDiscordProfiles(rows: Row[]) {
-  const missing = rows.filter(r => !r.avatar || !r.username || r.username.startsWith("Người chơi #"));
-  if (missing.length === 0) return;
-
-  await Promise.all(missing.map(async (r) => {
-    try {
-      const res = await fetch(`https://discord.com/api/v10/users/${r.id}`, {
-        next: { revalidate: 86400 }
-      });
-      if (res.ok) {
-        const u = await res.json();
-        r.username = u.global_name || u.username || r.username;
-        r.avatar = u.avatar
-          ? `https://cdn.discordapp.com/avatars/${r.id}/${u.avatar}.png?size=128`
-          : `https://cdn.discordapp.com/embed/avatars/${Number((BigInt(r.id) >> BigInt(22)) % BigInt(5))}.png`;
-      }
-    } catch {
-      /* ignore */
-    }
-  }));
-}
+// GHI CHÚ: Đã BỎ "hydrate Discord profile" (fetch users/{id} không kèm bot token -> luôn 401) — nó là
+// no-op, lại nằm NGOÀI timeout guard nên treo SSR theo độ trễ Discord. Tên/avatar đã có sẵn trong DB.
 
 async function getBoard(type: "wealth" | "level" | "bakery", guild?: string): Promise<Row[]> {
   try {
@@ -72,6 +53,7 @@ async function getBoard(type: "wealth" | "level" | "bakery", guild?: string): Pr
       const { data } = await admin
         .from("users")
         .select("user_id, exp, username, avatar")
+        .not("profile_public", "is", false) // tôn trọng hồ sơ ẩn
         .order("exp", { ascending: false })
         .limit(10);
       if (data) {
@@ -101,6 +83,7 @@ async function getBoard(type: "wealth" | "level" | "bakery", guild?: string): Pr
         const { data: usersData } = await admin
           .from("users")
           .select("user_id, wallet, bank, username, avatar")
+          .not("profile_public", "is", false) // tôn trọng hồ sơ ẩn
           .order("wallet", { ascending: false })
           .limit(10);
         if (usersData) {
@@ -116,7 +99,6 @@ async function getBoard(type: "wealth" | "level" | "bakery", guild?: string): Pr
       }
     }
     if (rows.length > 0) {
-      await hydrateDiscordProfiles(rows);
       return rows;
     }
   } catch {
@@ -222,16 +204,17 @@ export default async function LeaderboardPage({
       if (myId) {
         // Ưu tiên đọc trực tiếp từ Supabase DB (Siêu tốc: ~15ms)
         const admin = createAdminClient();
-        const { data: myData } = await admin
-          .from("users")
-          .select("user_id, wallet, bank, username")
-          .eq("user_id", myId)
-          .single();
+        // Đọc hồ sơ + HẠNG thật song song (trước đây rank hardcode = 1 -> ai cũng thấy "#1").
+        const [myRes, rankRes] = await Promise.all([
+          admin.from("users").select("user_id, wallet, bank, username").eq("user_id", myId).single(),
+          admin.rpc("user_wealth_rank", { p_user: myId }),
+        ]);
+        const myData = myRes.data;
 
         if (myData) {
           const myNetworth = Number(myData.wallet || 0) + Number(myData.bank || 0);
           myRank = {
-            rank: 1,
+            rank: Number(rankRes.data) || 1,
             netWorth: myNetworth,
             username: myData.username || getDiscordIdentity(user).username || "Bạn",
           };

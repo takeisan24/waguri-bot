@@ -1,4 +1,4 @@
-import React from "react";
+import React, { cache } from "react";
 import { notFound } from "next/navigation";
 import CherryBlossom from "../../../components/CherryBlossom";
 import SiteHeader from "../../../components/SiteHeader";
@@ -49,7 +49,9 @@ const BADGES: Record<string, { emoji: string; name_vi: string; name_en: string }
   prestige_3: { emoji: '✨', name_vi: 'Chuyển Sinh III', name_en: 'Prestige III' }
 };
 
-async function getProfile(id: string): Promise<Profile | { hidden: true } | "notfound" | null> {
+// cache(): dedupe trong CÙNG 1 request — trước đây getProfile chạy 2 lần/lượt xem (generateMetadata
+// + ProfilePage), mỗi lần ~6 query = ~12 round-trip. cache() cho 2 call-site dùng chung 1 kết quả.
+const getProfile = cache(async (id: string): Promise<Profile | { hidden: true } | "notfound" | null> => {
   // 1. UƯ TIÊN TRUY VẤN SUPABASE DB TRỰC TIẾP (Tốc độ ~20ms, độc lập hoàn toàn với Bot VPS)
   try {
     const admin = createAdminClient();
@@ -64,34 +66,31 @@ async function getProfile(id: string): Promise<Profile | { hidden: true } | "not
         return { hidden: true };
       }
 
-      let jobName: string | null = null;
-      let clanName: string | null = null;
-      let partnerName: string | null = null;
-      let achievementsCount = 0;
+      // Các truy vấn phụ độc lập nhau -> chạy SONG SONG (Promise.all) thay vì nối tiếp (waterfall).
+      const [jobRes, clanRes, partnerRes, achRes, badgesRes, rankRes] = await Promise.all([
+        userRow.job_id
+          ? admin.from("jobs").select("name").eq("id", userRow.job_id).maybeSingle()
+          : Promise.resolve({ data: null as { name?: string } | null }),
+        userRow.clan_id
+          ? admin.from("clans").select("name").eq("id", userRow.clan_id).maybeSingle()
+          : Promise.resolve({ data: null as { name?: string } | null }),
+        userRow.partner_id
+          ? admin.from("users").select("username").eq("user_id", userRow.partner_id).maybeSingle()
+          : Promise.resolve({ data: null as { username?: string } | null }),
+        admin.from("achievements").select("*", { count: "exact", head: true }).eq("user_id", id),
+        admin.from("user_badges").select("badge_id, is_equipped, slot_index").eq("user_id", id),
+        // HẠNG tài sản thật (trước đây hardcode rank:0). RPC user_wealth_rank = số người giàu hơn + 1.
+        admin.rpc("user_wealth_rank", { p_user: id }),
+      ]);
 
-      if (userRow.job_id) {
-        const { data: jobData } = await admin.from("jobs").select("name").eq("id", userRow.job_id).maybeSingle();
-        jobName = jobData?.name ?? null;
-      }
-      if (userRow.clan_id) {
-        const { data: clanData } = await admin.from("clans").select("name").eq("id", userRow.clan_id).maybeSingle();
-        clanName = clanData?.name ?? null;
-      }
-      if (userRow.partner_id) {
-        const { data: partnerData } = await admin.from("users").select("username").eq("user_id", userRow.partner_id).maybeSingle();
-        partnerName = partnerData?.username ?? `Người chơi #${String(userRow.partner_id).slice(-4)}`;
-      }
-
-      const { count } = await admin
-        .from("achievements")
-        .select("*", { count: "exact", head: true })
-        .eq("user_id", id);
-      achievementsCount = count ?? 0;
-
-      const { data: badgesData } = await admin
-        .from("user_badges")
-        .select("badge_id, is_equipped, slot_index")
-        .eq("user_id", id);
+      const jobName: string | null = jobRes.data?.name ?? null;
+      const clanName: string | null = clanRes.data?.name ?? null;
+      const partnerName: string | null = userRow.partner_id
+        ? (partnerRes.data?.username ?? `Người chơi #${String(userRow.partner_id).slice(-4)}`)
+        : null;
+      const achievementsCount = achRes.count ?? 0;
+      const badgesData = badgesRes.data;
+      const wealthRank = Number(rankRes.data ?? 0);
 
       const exp = Number(userRow.exp || 0);
       const level = Math.floor(Math.sqrt(exp / 1000)) + 1;
@@ -121,9 +120,9 @@ async function getProfile(id: string): Promise<Profile | { hidden: true } | "not
         partner: partnerName,
         clan: clanName,
         title: userRow.title || null,
-        color: userRow.color ? (userRow.color.startsWith("#") ? userRow.color : `#${userRow.color}`) : null,
+        color: userRow.profile_color ? (userRow.profile_color.startsWith("#") ? userRow.profile_color : `#${userRow.profile_color}`) : null,
         achievements: achievementsCount,
-        rank: 0,
+        rank: wealthRank,
         prestige: Number(userRow.prestige || 0),
         badges: (badgesData as Array<{ badge_id: string; is_equipped: boolean; slot_index: number }>) || [],
       };
@@ -144,7 +143,7 @@ async function getProfile(id: string): Promise<Profile | { hidden: true } | "not
   } catch {
     return null;
   }
-}
+});
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

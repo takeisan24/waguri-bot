@@ -4,28 +4,9 @@ import { createAdminClient } from "../../../lib/supabase/admin";
 
 export const revalidate = 30; // Cache 30 seconds
 
-// Tự động nạp Tên & Avatar thật từ Discord API nếu DB chưa kịp sync (0 cần chạy script)
-async function hydrateDiscordProfiles(rows: Array<{ id: string; username: string; avatar: string | null; value: number }>) {
-  const missing = rows.filter(r => !r.avatar || !r.username || r.username.startsWith("Người chơi #"));
-  if (missing.length === 0) return;
-
-  await Promise.all(missing.map(async (r) => {
-    try {
-      const res = await fetch(`https://discord.com/api/v10/users/${r.id}`, {
-        next: { revalidate: 86400 } // Cache 24h
-      });
-      if (res.ok) {
-        const u = await res.json();
-        r.username = u.global_name || u.username || r.username;
-        r.avatar = u.avatar
-          ? `https://cdn.discordapp.com/avatars/${r.id}/${u.avatar}.png?size=128`
-          : `https://cdn.discordapp.com/embed/avatars/${Number((BigInt(r.id) >> BigInt(22)) % BigInt(5))}.png`;
-      }
-    } catch {
-      /* ignore */
-    }
-  }));
-}
+// GHI CHÚ: Đã BỎ "hydrate Discord profile" (fetch discord.com/api/v10/users/{id} không kèm bot token
+// -> luôn 401, không điền được gì) — nó là no-op mà vẫn tốn round-trip & có rủi ro treo SSR. Tên/avatar
+// thật đã được bot đồng bộ sẵn vào cột users.username/avatar (migration 0092) và RPC trả về.
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -61,6 +42,7 @@ export async function GET(request: Request) {
       const { data } = await admin
         .from("users")
         .select("user_id, exp, username, avatar")
+        .not("profile_public", "is", false) // tôn trọng hồ sơ ẩn (true/null = hiện, false = ẩn)
         .order("exp", { ascending: false })
         .limit(limit);
 
@@ -92,6 +74,7 @@ export async function GET(request: Request) {
         const { data: usersData } = await admin
           .from("users")
           .select("user_id, wallet, bank, username, avatar")
+          .not("profile_public", "is", false) // tôn trọng hồ sơ ẩn
           .order("wallet", { ascending: false })
           .limit(limit);
 
@@ -109,11 +92,9 @@ export async function GET(request: Request) {
     }
 
     if (rows.length > 0) {
-      // Tự động nạp Tên & Avatar từ Discord API nếu bất kỳ dòng nào bị thiếu (0 cần chạy script tay)
-      await hydrateDiscordProfiles(rows);
       return NextResponse.json({ type, rows });
     }
-  } catch (err) {
+  } catch {
     /* Fallback sang Bot API nếu DB rỗng hoặc lỗi */
   }
 

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { cache } from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import CherryBlossom from "../../../components/CherryBlossom";
@@ -20,16 +20,25 @@ type BakeryData = {
   likes: number;
 };
 
-async function getBakery(id: string): Promise<BakeryData | "notfound" | null> {
+// cache(): generateMetadata + page cùng gọi getBakery -> dedupe về 1 fetch/1 timeout trong 1 request
+// (tránh 2×1.2s stall khi bot API chậm, do signal per-call làm mất fetch-memoization mặc định của Next).
+const getBakery = cache(async (id: string): Promise<BakeryData | "notfound" | null> => {
   try {
-    const res = await fetch(`${API}/api/bakery/${id}`, { next: { revalidate: 15 } });
+    // Timeout guard 1.2s: bot API chậm/sập không được treo SSR (giống /u/[id] & /leaderboard).
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 1200);
+    const res = await fetch(`${API}/api/bakery/${id}`, { signal: ctrl.signal, next: { revalidate: 15 } });
+    clearTimeout(timer);
     if (res.status === 404) return "notfound";
     if (!res.ok) return null;
-    return res.json();
+    const data = await res.json();
+    // Hồ sơ ẩn (profile_public=false) -> API trả {hidden:true}; coi như không công khai (không render tiệm).
+    if (data?.hidden) return "notfound";
+    return data;
   } catch {
     return null;
   }
-}
+});
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
