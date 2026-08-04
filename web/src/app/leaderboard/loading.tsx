@@ -1,5 +1,7 @@
-// Skeleton hiển thị ngay khi điều hướng tới /leaderboard (Next streaming).
-export default function LoadingLeaderboard() {
+import { getLocaleServer, t } from "../../lib/i18n";
+
+export default async function LoadingLeaderboard() {
+  const locale = await getLocaleServer();
   return (
     <div className="min-h-screen bg-[#0d0812] text-slate-200 flex flex-col items-center px-6 py-10">
       <div className="h-8 w-56 rounded-lg bg-pink-300/10 animate-pulse mb-6" />
@@ -18,7 +20,7 @@ export default function LoadingLeaderboard() {
           </div>
         ))}
       </div>
-      <p className="mt-6 text-sm text-slate-500">Đang tải bảng xếp hạng~ 🌸</p>
+      <p className="mt-6 text-sm text-slate-500">{t("common.loading_leaderboard", locale)}</p>
     </div>
   );
 }

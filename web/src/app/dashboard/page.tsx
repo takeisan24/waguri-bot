@@ -8,6 +8,7 @@ import { getLevelProgress, affectionTier, fmtVND, getCurrentSeasonId, getSeasonL
 import { toggleProfilePublic, toggleVoteReminder } from "./actions";
 import ShareProfileButton from "../../components/ShareProfileButton";
 import EventBanner from "../../components/EventBanner";
+import SiteHeader from "../../components/SiteHeader";
 import { getLocaleServer, t } from "../../lib/i18n";
 
 export const dynamic = "force-dynamic";
@@ -119,16 +120,14 @@ export default async function Dashboard() {
 
   return (
     <div className="relative min-h-screen flex flex-col bg-[#0d0812] text-slate-200">
-      <header className="relative w-full max-w-4xl mx-auto px-6 py-5 flex items-center justify-between z-20">
-        <Link href="/" className="text-xl font-black text-glow tracking-wider text-pink-300">
-          WAGURI <span className="text-pink-400">🌸</span>
-        </Link>
+      <SiteHeader />
+      <div className="w-full max-w-4xl mx-auto px-6 pt-3 flex justify-end">
         <form action="/auth/signout" method="post">
-          <button className="text-xs font-bold text-slate-400 hover:text-pink-300">{t("dashboard.logout", locale)}</button>
+          <button className="text-xs text-slate-500 hover:text-pink-300 transition-colors">{t("dashboard.logout", locale)}</button>
         </form>
-      </header>
+      </div>
 
-      <main className="relative flex-1 w-full max-w-4xl mx-auto px-6 py-6 z-10 space-y-6">
+      <main className="relative flex-1 w-full max-w-4xl mx-auto px-6 py-4 z-10 space-y-6">
         <EventBanner />
         {/* Header user */}
         <div className="glass-panel rounded-3xl p-7 flex flex-col sm:flex-row items-center gap-5 border border-pink-300/20">
@@ -188,21 +187,34 @@ export default async function Dashboard() {
           <div className="flex items-center justify-between gap-4">
             <div>
               <p className="text-sm font-extrabold text-purple-200">
-                📚 Phòng Học Bài Lofi 24/7 cùng Waguri 🌸
+                {t("dashboard.study_banner.title", locale)}
               </p>
               <p className="text-xs text-purple-300/80 mt-0.5">
-                Đồng hành tập trung Pomodoro, nghe nhạc Lo-Fi HD thư giãn không tốn RAM server
+                {t("dashboard.study_banner.subtitle", locale)}
               </p>
             </div>
             <span className="bg-purple-600/80 text-white px-3.5 py-1.5 rounded-full text-xs font-bold flex-shrink-0 shadow-lg">
-              Vào phòng học →
+              {t("dashboard.study_banner.btn", locale)}
             </span>
           </div>
         </Link>
 
         {!row ? (
-          <div className="glass-panel rounded-3xl p-8 text-center text-slate-400">
-            {t("dashboard.no_data", locale)}
+          <div className="glass-panel rounded-3xl p-10 text-center space-y-4 border border-pink-300/20">
+            <div className="text-5xl">🌸</div>
+            <p className="text-slate-300 text-sm leading-relaxed max-w-sm mx-auto">
+              {t("dashboard.empty_desc", locale)}
+            </p>
+            <div className="pt-2">
+              <a
+                href="https://discord.com/oauth2/authorize?client_id=1482620714690543738&permissions=1099512007760&integration_type=0&scope=bot+applications.commands"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block px-7 py-3 rounded-full font-bold bg-pink-300 text-[#0d0812] hover:bg-pink-400 transition-all"
+              >
+                {t("dashboard.empty_invite_btn", locale)}
+              </a>
+            </div>
           </div>
         ) : (
           <>

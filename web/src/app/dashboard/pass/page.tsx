@@ -56,7 +56,7 @@ export default async function BattlePassPage() {
   }
 
   return (
-    <div className="container py-8 px-4">
+    <div className="container mx-auto py-8 px-4">
       <BattlePassClient
         userId={id}
         username={username}

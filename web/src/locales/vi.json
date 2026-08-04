@@ -1,13 +1,17 @@
 {
   "common": {
-    "currency": "VNĐ"
+    "currency": "VNĐ",
+    "loading": "Đang tải...",
+    "loading_leaderboard": "Đang tải bảng xếp hạng~ 🌸",
+    "loading_profile": "Đang tải hồ sơ~ 🌸"
   },
   "login": {
     "title": "Đăng nhập",
     "desc": "Đăng nhập bằng Discord để xem bảng điều khiển cá nhân của cậu nha~",
     "btn": "Đăng nhập bằng Discord",
     "loading": "Đang chuyển...",
-    "back": "← Về trang chủ"
+    "back": "← Về trang chủ",
+    "error_auth": "Đăng nhập không thành công rồi~ Cậu thử lại nhen? Nếu vẫn lỗi hãy vào server hỗ trợ nhé!"
   },
   "livestats": {
     "serving": "Đang phục vụ",
@@ -200,6 +204,46 @@
     "benefit_badge_desc": "Huy hiệu Premium nổi bật trong hồ sơ web & Discord.",
     "benefit_early_access_desc": "Trải nghiệm sớm trước khi ra mắt rộng rãi."
   },
+  "study": {
+    "back_home": "← Trang chủ",
+    "room_label": "Góc Học Bài Lofi Waguri 🌸",
+    "scene_title": "Học Viện Kikyo • Thư Viện Tĩnh Lặng",
+    "scene_quote": "Waguri đang ngồi cạnh giữ im lặng để cậu tập trung nè~",
+    "session_focus": "🟢 Đang trong phiên tập trung",
+    "session_break": "☕ Thời gian nghỉ giải lao",
+    "channel_label": "🎧 Kênh Lofi",
+    "audio_pause": "Tạm dừng ⏸️",
+    "audio_play": "Phát nhạc 🎵",
+    "volume_label": "Âm lượng",
+    "tab_25": "25 Phút (Pomodoro)",
+    "tab_50": "50 Phút (Deep Work)",
+    "percent_done": "{percent}% hoàn thành",
+    "btn_start": "Bắt đầu học 🚀",
+    "btn_pause": "Tạm dừng ⏸️",
+    "btn_reset": "Đặt lại 🔄",
+    "audio_playing": "🟢 Đang phát nhạc",
+    "audio_playing_fallback": "🟢 Đang phát (Fallback)",
+    "audio_permission": "⚠️ Vui lòng nhấp nút Phát Nhạc lần nữa để trình duyệt cấp quyền",
+    "footer": "Waguri Bot Ecosystem • Pomodoro 24/7 Lofi Study Room"
+  },
+  "profile_edit": {
+    "meta_title": "Hồ sơ cá nhân 🌸 — Waguri",
+    "heading": "Hồ Sơ Cá Nhân",
+    "greeting": "Xin chào {username}! Hãy trang trí hồ sơ của cậu để mọi người hiểu hơn về cậu nhé~",
+    "bio_label": "🌸 Tiểu sử cá nhân",
+    "bio_placeholder": "Hãy viết vài dòng giới thiệu ngọt ngào về bản thân cậu nhé...",
+    "saving": "Waguri đang ghi nhớ thông tin của bạn...",
+    "save_btn": "✨ Lưu thay đổi",
+    "success": "Yay! Tớ đã ghi nhớ được thông tin từ cậu rồi! ✨",
+    "error_generic": "Hình như là mình bị ốm rồi, cần đi bệnh viện kiểm tra xem sao >.<",
+    "error_no_user": "Mình không biết bạn là ai đâu trời... Hãy đăng nhập nhen >.<",
+    "error_no_discord": "Mình không tìm thấy tài khoản Discord của bạn rùi >.<",
+    "error_db": "Tớ không thể ghi nhớ thông tin của cậu >.<",
+    "error_bio_too_long": "Tiểu sử không được vượt quá 150 ký tự đâu nhen >.<",
+    "error_too_many_badges": "Chỉ được chọn tối đa 6 huy hiệu thôi nhé >.<",
+    "error_invalid": "Thông tin không hợp lệ rồi!",
+    "back_dashboard": "← Dashboard"
+  },
   "dashboard": {
     "meta_title": "Bảng điều khiển — Waguri 🌸",
     "logout": "Đăng xuất →",
@@ -210,7 +254,14 @@
     "premium_upgrade_desc": "150 chat AI/ngày · +10% thu nhập · badge 💎 — chỉ từ 25k 🌸",
     "premium_renew_btn": "Gia hạn →",
     "premium_view_btn": "Xem gói →",
+    "study_banner": {
+      "title": "📚 Phòng Học Bài Lofi 24/7 cùng Waguri 🌸",
+      "subtitle": "Đồng hành tập trung Pomodoro, nghe nhạc Lo-Fi HD thư giãn không tốn RAM server",
+      "btn": "Vào phòng học →"
+    },
     "no_data": "Cậu chưa có dữ liệu game~ Vào Discord chơi vài lệnh (/start, /daily) rồi quay lại nhé! 🌸",
+    "empty_desc": "Cậu chưa có dữ liệu game~ Gõ /start trong Discord để bắt đầu nhé!",
+    "empty_invite_btn": "Mời Waguri 🌸",
     "stat_total_wealth": "💎 Tổng tài sản",
     "stat_wallet": "💵 Ví tiền",
     "stat_bank": "🏦 Ngân hàng",

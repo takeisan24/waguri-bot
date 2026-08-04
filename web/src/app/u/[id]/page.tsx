@@ -12,7 +12,8 @@ const API = BOT_API;
 const INVITE_URL =
   "https://discord.com/oauth2/authorize?client_id=1482620714690543738&permissions=1099512007760&integration_type=0&scope=bot+applications.commands";
 
-const fmt = (n: number) => Number(n || 0).toLocaleString("vi-VN");
+const fmt = (n: number, loc: string = "vi") =>
+  Number(n || 0).toLocaleString(loc.startsWith("en") ? "en-US" : "vi-VN");
 
 type Profile = {
   id: string;
@@ -253,7 +254,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                       <div className="flex justify-between text-[11px] text-slate-400 mb-1">
                         <span>EXP</span>
                         <span>
-                          {fmt(prof.expInto)}/{fmt(prof.expForNext)}
+                          {fmt(prof.expInto, locale)}/{fmt(prof.expForNext, locale)}
                         </span>
                       </div>
                       <div className="h-2.5 rounded-full bg-[#1c1424] overflow-hidden">
@@ -305,10 +306,10 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
 
                 {/* Stats grid */}
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  <Stat label={t("profile.stat_total_wealth", locale)} value={`${fmt(prof.netWorth)} ${t("common.currency", locale)}`} />
+                  <Stat label={t("profile.stat_total_wealth", locale)} value={`${fmt(prof.netWorth, locale)} ${t("common.currency", locale)}`} />
                   <Stat label={t("profile.stat_rank", locale)} value={`#${prof.rank}`} />
-                  <Stat label={t("profile.stat_wallet", locale)} value={`${fmt(prof.wallet)} ${t("common.currency", locale)}`} />
-                  <Stat label={t("profile.stat_bank", locale)} value={`${fmt(prof.bank)} ${t("common.currency", locale)}`} />
+                  <Stat label={t("profile.stat_wallet", locale)} value={`${fmt(prof.wallet, locale)} ${t("common.currency", locale)}`} />
+                  <Stat label={t("profile.stat_bank", locale)} value={`${fmt(prof.bank, locale)} ${t("common.currency", locale)}`} />
                   <Stat label={t("profile.stat_affection", locale)} value={affectionTier(prof.affection, locale)} />
                   <Stat label={t("profile.stat_achievements", locale)} value={`${prof.achievements}`} />
                   {prof.partner ? <Stat label={t("profile.stat_beloved", locale)} value={prof.partner} /> : null}

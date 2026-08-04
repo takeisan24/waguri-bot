@@ -1,18 +1,23 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "../../../lib/supabase/server";
 import { createAdminClient } from "../../../lib/supabase/admin";
 import { getDiscordIdentity } from "../../../lib/discord";
+import { getLocaleServer, t } from "../../../lib/i18n";
 import ProfileForm from "./ProfileForm";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
-    title: "Hồ sơ cá nhân 🌸 — Waguri",
-    description: "Tùy chỉnh tiểu sử cá nhân và huy hiệu hiển thị của bạn.",
-};
+export async function generateMetadata() {
+    const locale = await getLocaleServer();
+    return {
+        title: t("profile_edit.meta_title", locale),
+        description: t("profile_edit.greeting", locale, { username: "you" }),
+    };
+}
 
 export default async function ProfilePage() {
-    // 1. Auth Check: Đảm bảo User đã đăng nhập
+    const locale = await getLocaleServer();
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -21,7 +26,6 @@ export default async function ProfilePage() {
     const { id, username } = getDiscordIdentity(user);
     if (!id) redirect("/login");
 
-    // 2. Fetch dữ liệu Bio hiện tại từ PostgreSQL
     const admin = createAdminClient();
     const { data: userData } = await admin
         .from("users")
@@ -32,19 +36,26 @@ export default async function ProfilePage() {
     const currentBio = userData?.bio || "";
 
     return (
-        <div className="container max-w-4xl py-8 px-4 space-y-8">
-            {/* Header tiêu đề trang */}
-            <div className="space-y-2">
-                <h1 className="text-3xl font-extrabold text-white flex items-center gap-3">
-                    <span>🌸</span> Hồ Sơ Cá Nhân
-                </h1>
-                <p className="text-slate-400 text-sm">
-                    Xin chào <span className="text-pink-300 font-semibold">@{username}</span>! Hãy trang trí hồ sơ của cậu để mọi người hiểu hơn về cậu nhé~
-                </p>
-            </div>
+        <div className="min-h-screen bg-[#0d0812] text-slate-200">
+            <div className="container mx-auto max-w-4xl py-8 px-4 space-y-8">
+                <Link
+                    href="/dashboard"
+                    className="inline-flex items-center gap-1 text-sm text-pink-300 hover:underline"
+                >
+                    {t("profile_edit.back_dashboard", locale)}
+                </Link>
 
-            {/* Ráp Client Component Form vào đây */}
-            <ProfileForm initialBio={currentBio} />
+                <div className="space-y-2">
+                    <h1 className="text-3xl font-extrabold text-white flex items-center gap-3">
+                        <span>🌸</span> {t("profile_edit.heading", locale)}
+                    </h1>
+                    <p className="text-slate-400 text-sm">
+                        {t("profile_edit.greeting", locale, { username })}
+                    </p>
+                </div>
+
+                <ProfileForm initialBio={currentBio} />
+            </div>
         </div>
     );
 }

@@ -11,16 +11,16 @@ export async function updateProfile(values: ProfileFormValues) {
         const supabase = await createClient();
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
-            return { success: false, error: "Mình không biết bạn là ai đâu trời... Hãy đăng nhập để mình biết bạn là ai nhen >.<" }
-        };
+            return { success: false, error: "profile_edit.error_no_user" };
+        }
         const { id } = getDiscordIdentity(user);
         if (!id) {
-            return { success: false, error: "Mình không tìm thấy tài khoản Discord của bạn rùi >.<" }
+            return { success: false, error: "profile_edit.error_no_discord" };
         }
 
         const parsed = profileSchema.safeParse(values);
         if (!parsed.success) {
-            const firstError = parsed.error.issues[0]?.message || "Thông tin tớ biết về cậu không hợp lệ thì phải!";
+            const firstError = parsed.error.issues[0]?.message || "profile_edit.error_invalid";
             return { success: false, error: firstError };
         }
 
@@ -34,15 +34,15 @@ export async function updateProfile(values: ProfileFormValues) {
 
         if (dbError) {
             console.error("[SERVER ACTION ERROR] Update profile failed:", dbError);
-            return { success: false, error: "Tớ không thể nhớ được thông tin của cậu >.<" };
+            return { success: false, error: "profile_edit.error_db" };
         }
 
         revalidatePath(`/u/${id}`);
         revalidatePath("/dashboard/profile");
 
-        return { success: true, message: "Yay! Tớ đã ghi nhớ được thông tin từ cậu rồi! ✨" }
+        return { success: true, message: "profile_edit.success" };
     } catch (err) {
         console.error("[SERVER ACTION ERROR]:", err);
-        return { success: false, error: "Hình như là mình bị ốm rồi, cần đi bệnh viện kiểm tra xem sao >.<!" };
+        return { success: false, error: "profile_edit.error_generic" };
     }
 }

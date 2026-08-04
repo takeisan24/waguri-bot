@@ -1,13 +1,17 @@
 {
   "common": {
-    "currency": "coins"
+    "currency": "coins",
+    "loading": "Loading...",
+    "loading_leaderboard": "Loading leaderboard~ 🌸",
+    "loading_profile": "Loading profile~ 🌸"
   },
   "login": {
     "title": "Sign in",
     "desc": "Sign in with Discord to view your personal dashboard~",
     "btn": "Sign in with Discord",
     "loading": "Redirecting...",
-    "back": "← Back to home"
+    "back": "← Back to home",
+    "error_auth": "Login failed~ Please try again! If the issue persists, hop into our support server."
   },
   "livestats": {
     "serving": "Serving",
@@ -200,6 +204,46 @@
     "benefit_badge_desc": "Standout Premium badge displayed on your web profile & Discord.",
     "benefit_early_access_desc": "Test new features early before public release."
   },
+  "study": {
+    "back_home": "← Home",
+    "room_label": "Waguri Lofi Study Room 🌸",
+    "scene_title": "Kikyo Academy • Silent Library",
+    "scene_quote": "Waguri is sitting beside you quietly so you can focus~",
+    "session_focus": "🟢 In focus session",
+    "session_break": "☕ Break time",
+    "channel_label": "🎧 Lofi Channel",
+    "audio_pause": "Pause ⏸️",
+    "audio_play": "Play Music 🎵",
+    "volume_label": "Volume",
+    "tab_25": "25 Min (Pomodoro)",
+    "tab_50": "50 Min (Deep Work)",
+    "percent_done": "{percent}% complete",
+    "btn_start": "Start Studying 🚀",
+    "btn_pause": "Pause ⏸️",
+    "btn_reset": "Reset 🔄",
+    "audio_playing": "🟢 Now playing",
+    "audio_playing_fallback": "🟢 Playing (Fallback)",
+    "audio_permission": "⚠️ Please click Play Music again to grant browser permission",
+    "footer": "Waguri Bot Ecosystem • Pomodoro 24/7 Lofi Study Room"
+  },
+  "profile_edit": {
+    "meta_title": "Personal Profile 🌸 — Waguri",
+    "heading": "Personal Profile",
+    "greeting": "Hello {username}! Decorate your profile so everyone gets to know you better~",
+    "bio_label": "🌸 Personal Bio",
+    "bio_placeholder": "Write a sweet little intro about yourself...",
+    "saving": "Waguri is saving your info...",
+    "save_btn": "✨ Save Changes",
+    "success": "Yay! I've saved your new info~ ✨",
+    "error_generic": "Hmm, something went wrong — please try again!",
+    "error_no_user": "I don't know who you are! Please log in first~",
+    "error_no_discord": "I couldn't find your Discord account~",
+    "error_db": "I couldn't save your info — please try again!",
+    "error_bio_too_long": "Bio must not exceed 150 characters~",
+    "error_too_many_badges": "You can only showcase up to 6 badges~",
+    "error_invalid": "The information doesn't seem valid!",
+    "back_dashboard": "← Dashboard"
+  },
   "dashboard": {
     "meta_title": "Dashboard — Waguri 🌸",
     "logout": "Logout →",
@@ -210,7 +254,14 @@
     "premium_upgrade_desc": "150 AI chats/day · +10% earnings · 💎 badge — from 25k 🌸",
     "premium_renew_btn": "Renew →",
     "premium_view_btn": "View plans →",
+    "study_banner": {
+      "title": "📚 Waguri 24/7 Lofi Study Room 🌸",
+      "subtitle": "Pomodoro focus companion, relax with HD Lo-Fi music — no server RAM needed",
+      "btn": "Enter study room →"
+    },
     "no_data": "You don't have game data yet~ Play some commands on Discord (/start, /daily) and check back! 🌸",
+    "empty_desc": "No game data yet~ Type /start in Discord to get started!",
+    "empty_invite_btn": "Invite Waguri 🌸",
     "stat_total_wealth": "💎 Net Worth",
     "stat_wallet": "💵 Wallet",
     "stat_bank": "🏦 Bank",

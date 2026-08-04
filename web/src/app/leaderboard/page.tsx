@@ -18,7 +18,8 @@ export async function generateMetadata() {
 }
 
 const API = BOT_API;
-const fmt = (n: number) => Number(n || 0).toLocaleString("vi-VN");
+const fmt = (n: number, loc: string = "vi") =>
+  Number(n || 0).toLocaleString(loc.startsWith("en") ? "en-US" : "vi-VN");
 const MEDALS = ["🥇", "🥈", "🥉"];
 
 type Row = { id: string; username: string; avatar: string | null; value: number; level?: number; likes?: number };
@@ -128,7 +129,8 @@ function Board({
   suffix = "",
   prefix = "",
   emptyText = "",
-  type = "wealth"
+  type = "wealth",
+  locale = "vi"
 }: {
   title: string;
   rows: Row[];
@@ -136,6 +138,7 @@ function Board({
   prefix?: string;
   emptyText: string;
   type?: "wealth" | "level" | "bakery";
+  locale?: string;
 }) {
   return (
     <div className="glass-panel rounded-3xl p-6 border border-pink-300/15 space-y-3">
@@ -161,12 +164,12 @@ function Board({
                 <span className="font-bold text-white">
                   {type === "bakery" ? (
                     <span className="text-xs text-pink-300 font-medium">
-                      Lv.{r.level || 1} · {r.likes || 0} ❤️ ({fmt(r.value)} pts)
+                      Lv.{r.level || 1} · {r.likes || 0} ❤️ ({fmt(r.value, locale)} pts)
                     </span>
                   ) : (
                     <>
                       {prefix}
-                      {fmt(r.value)}
+                      {fmt(r.value, locale)}
                       {suffix}
                     </>
                   )}
@@ -305,7 +308,7 @@ export default async function LeaderboardPage({
               {t("leaderboard.my_rank", locale, { username: myRank.username })}
             </span>
             <span className="text-sm font-bold text-white">
-              #{myRank.rank} · {fmt(myRank.netWorth)} {t("common.currency", locale)}
+              #{myRank.rank} · {fmt(myRank.netWorth, locale)} {t("common.currency", locale)}
             </span>
           </div>
         ) : null}
@@ -322,6 +325,7 @@ export default async function LeaderboardPage({
             suffix={tab === "wealth" ? ` ${t("common.currency", locale)}` : ""}
             prefix={tab === "level" ? "Lv." : ""}
             emptyText={t("leaderboard.empty", locale)}
+            locale={locale}
           />
         </div>
       </main>

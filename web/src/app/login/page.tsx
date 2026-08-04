@@ -1,13 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "../../lib/supabase/client";
 import { useLanguage } from "../../components/LanguageProvider";
 
-export default function LoginPage() {
+function LoginContent() {
   const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
+  const searchParams = useSearchParams();
+  const hasError = searchParams.get("error") === "auth";
 
   const signIn = async () => {
     setLoading(true);
@@ -39,6 +42,11 @@ export default function LoginPage() {
             {t("login.desc")}
           </p>
         </div>
+        {hasError ? (
+          <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-sm">
+            {t("login.error_auth")}
+          </div>
+        ) : null}
         <button
           onClick={signIn}
           disabled={loading}
@@ -51,5 +59,13 @@ export default function LoginPage() {
         </Link>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#0d0812]" />}>
+      <LoginContent />
+    </Suspense>
   );
 }

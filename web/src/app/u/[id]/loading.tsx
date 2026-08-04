@@ -1,5 +1,7 @@
-// Skeleton hiển thị ngay khi điều hướng tới hồ sơ công khai /u/[id].
-export default function LoadingProfile() {
+import { getLocaleServer, t } from "../../../lib/i18n";
+
+export default async function LoadingProfile() {
+  const locale = await getLocaleServer();
   return (
     <div className="min-h-screen bg-[#0d0812] text-slate-200 flex flex-col items-center px-6 py-12">
       <div className="w-full max-w-md glass-panel rounded-3xl p-7 border border-pink-300/10 flex flex-col items-center">
@@ -12,7 +14,7 @@ export default function LoadingProfile() {
           ))}
         </div>
       </div>
-      <p className="mt-6 text-sm text-slate-500">Đang tải hồ sơ~ 🌸</p>
+      <p className="mt-6 text-sm text-slate-500">{t("common.loading_profile", locale)}</p>
     </div>
   );
 }

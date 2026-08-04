@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { useLanguage } from "../../components/LanguageProvider";
 
 const LOFI_STREAMS = [
   {
@@ -25,6 +26,7 @@ const LOFI_STREAMS = [
 ];
 
 export default function WebStudyRoomPage() {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<"25" | "50" | "custom">("25");
   const [duration, setDuration] = useState(25);
   const [timeLeft, setTimeLeft] = useState(25 * 60);
@@ -80,7 +82,7 @@ export default function WebStudyRoomPage() {
       audioRef.current.play()
         .then(() => {
           setIsPlayingAudio(true);
-          setAudioStatus("🟢 Đang phát nhạc");
+          setAudioStatus(t("study.audio_playing"));
         })
         .catch(() => {
           if (audioRef.current && currentStream.fallbackUrl && audioRef.current.src !== currentStream.fallbackUrl) {
@@ -88,15 +90,15 @@ export default function WebStudyRoomPage() {
             audioRef.current.play()
               .then(() => {
                 setIsPlayingAudio(true);
-                setAudioStatus("🟢 Đang phát (Fallback)");
+                setAudioStatus(t("study.audio_playing_fallback"));
               })
               .catch(() => {
                 setIsPlayingAudio(false);
-                setAudioStatus("⚠️ Vui lòng nhấp nút Phát Nhạc lần nữa để trình duyệt cấp quyền");
+                setAudioStatus(t("study.audio_permission"));
               });
           } else {
             setIsPlayingAudio(false);
-            setAudioStatus("⚠️ Vui lòng nhấp nút Phát Nhạc lần nữa để trình duyệt cấp quyền");
+            setAudioStatus(t("study.audio_permission"));
           }
         });
     }
@@ -157,10 +159,10 @@ export default function WebStudyRoomPage() {
       {/* Header */}
       <header className="w-full max-w-5xl flex items-center justify-between z-10 py-4 border-b border-purple-900/30">
         <Link href="/" className="flex items-center gap-2 text-purple-400 hover:text-purple-300 transition-colors">
-          <span>← Trang chủ</span>
+          <span>{t("study.back_home")}</span>
         </Link>
         <div className="flex items-center gap-2 bg-purple-950/60 border border-purple-800/40 px-4 py-1.5 rounded-full backdrop-blur-md">
-          <span className="text-sm font-medium text-purple-200">Góc Học Bài Lofi Waguri 🌸</span>
+          <span className="text-sm font-medium text-purple-200">{t("study.room_label")}</span>
         </div>
       </header>
 
@@ -170,17 +172,17 @@ export default function WebStudyRoomPage() {
         <div className="w-full md:w-1/2 flex flex-col items-center justify-center bg-purple-950/40 border border-purple-800/30 backdrop-blur-xl rounded-3xl p-6 shadow-2xl relative">
           <div className="w-full aspect-video rounded-2xl bg-slate-900 overflow-hidden relative border border-purple-800/40 flex flex-col items-center justify-center text-center p-6">
             <div className="absolute inset-0 bg-gradient-to-t from-purple-950/90 via-slate-950/40 to-transparent" />
-            
+
             {/* Visual Icon & Anime Study Atmosphere */}
             <div className="relative z-10 flex flex-col items-center">
               <span className="text-6xl mb-3 animate-bounce">📚🌸</span>
-              <h2 className="text-xl font-bold text-purple-200 mb-1">Học Viện Kikyo • Thư Viện Tĩnh Lặng</h2>
-              <p className="text-xs text-purple-300/80 italic">&quot;Waguri đang ngồi cạnh giữ im lặng để cậu tập trung nè~&quot;</p>
+              <h2 className="text-xl font-bold text-purple-200 mb-1">{t("study.scene_title")}</h2>
+              <p className="text-xs text-purple-300/80 italic">&quot;{t("study.scene_quote")}&quot;</p>
             </div>
 
             {/* Falling Sakura Floating Emblems */}
             <div className="absolute top-4 left-4 text-xs bg-purple-900/60 border border-purple-700/40 text-purple-200 px-3 py-1 rounded-full">
-              {isBreak ? "☕ Thời gian nghỉ giải lao" : "🟢 Đang trong phiên tập trung"}
+              {isBreak ? t("study.session_break") : t("study.session_focus")}
             </div>
           </div>
 
@@ -188,18 +190,18 @@ export default function WebStudyRoomPage() {
           <div className="w-full mt-6 bg-slate-900/80 border border-purple-800/30 rounded-2xl p-4 flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <span className="text-sm font-semibold text-purple-300 flex items-center gap-2">
-                🎧 Kênh Lofi: <span className="text-purple-100">{currentStream.name}</span>
+                {t("study.channel_label")}: <span className="text-purple-100">{currentStream.name}</span>
               </span>
               <button
                 onClick={toggleAudio}
                 className="bg-purple-600 hover:bg-purple-500 text-white text-xs px-3 py-1.5 rounded-lg font-medium transition-all shadow-lg"
               >
-                {isPlayingAudio ? "Tạm dừng ⏸️" : "Phát nhạc 🎵"}
+                {isPlayingAudio ? t("study.audio_pause") : t("study.audio_play")}
               </button>
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-xs text-purple-400">Âm lượng:</span>
+              <span className="text-xs text-purple-400">{t("study.volume_label")}:</span>
               <input
                 type="range"
                 min="0"
@@ -245,7 +247,7 @@ export default function WebStudyRoomPage() {
                 activeTab === "25" ? "bg-purple-600 text-white shadow-md" : "text-purple-300 hover:text-white"
               }`}
             >
-              25 Phút (Pomodoro)
+              {t("study.tab_25")}
             </button>
             <button
               onClick={() => handleSelectDuration(50, "50")}
@@ -253,7 +255,7 @@ export default function WebStudyRoomPage() {
                 activeTab === "50" ? "bg-purple-600 text-white shadow-md" : "text-purple-300 hover:text-white"
               }`}
             >
-              50 Phút (Deep Work)
+              {t("study.tab_50")}
             </button>
           </div>
 
@@ -269,7 +271,7 @@ export default function WebStudyRoomPage() {
               style={{ width: `${percent}%` }}
             />
           </div>
-          <span className="text-xs text-purple-300 font-mono mb-6">{percent}% hoàn thành</span>
+          <span className="text-xs text-purple-300 font-mono mb-6">{t("study.percent_done", { percent })}</span>
 
           {/* Action Buttons */}
           <div className="flex items-center gap-4 w-full">
@@ -278,21 +280,21 @@ export default function WebStudyRoomPage() {
                 onClick={handleStart}
                 className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98]"
               >
-                Bắt đầu học 🚀
+                {t("study.btn_start")}
               </button>
             ) : (
               <button
                 onClick={handlePause}
                 className="flex-1 bg-amber-600 hover:bg-amber-500 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg transition-all"
               >
-                Tạm dừng ⏸️
+                {t("study.btn_pause")}
               </button>
             )}
             <button
               onClick={handleReset}
               className="bg-slate-800 hover:bg-slate-700 text-purple-300 font-medium py-3.5 px-5 rounded-xl border border-purple-800/40 transition-all"
             >
-              Đặt lại 🔄
+              {t("study.btn_reset")}
             </button>
           </div>
         </div>
@@ -300,7 +302,7 @@ export default function WebStudyRoomPage() {
 
       {/* Footer Info */}
       <footer className="w-full max-w-5xl z-10 py-4 text-center text-xs text-purple-400/60 border-t border-purple-900/30">
-        Waguri Bot Ecosystem • Pomodoro 24/7 Lofi Study Room
+        {t("study.footer")}
       </footer>
     </div>
   );
