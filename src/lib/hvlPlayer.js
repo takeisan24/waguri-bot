@@ -244,9 +244,11 @@ async function startHvlPlayer(interaction) {
     } catch (err) {
         console.error('[EASTER EGG ERROR] Voice connection timeout:', err);
         destroyPlayer(guildId);
-        return interaction.reply({
+        // Đã deferReply() ở trên -> phải editReply (reply() sau defer sẽ reject InteractionAlreadyReplied,
+        // và trước đây không .catch() -> unhandledRejection, user không thấy thông báo lỗi).
+        return interaction.editReply({
             content: '🌸 *Không thể kết nối vào phòng thoại, cậu kiểm tra lại kết nối mạng hoặc thử lại sau nhen~* 🍵'
-        });
+        }).catch(() => {});
     }
 
     // Lắng nghe sự kiện phát hết bài -> Auto-Next (chỉ khi bài hát đang phát thực sự kết thúc)

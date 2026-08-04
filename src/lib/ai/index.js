@@ -95,7 +95,9 @@ function parseMemoryMarkers(rawReply) {
         let m;
         while ((m = re.exec(rawReply)) !== null) {
             const key = sanitizeMemoryKey(m[1]);
-            const value = String(m[2]).trim().slice(0, MEMORY_VALUE_MAX);
+            // Lọc xuống dòng & ngoặc vuông khỏi VALUE: value được tiêm lại vào system prompt ở lượt sau
+            // dạng `key: value`, nên một value chứa "\n[chỉ thị giả...]" có thể chèn dòng hệ thống giả.
+            const value = String(m[2]).replace(/[\r\n[\]]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, MEMORY_VALUE_MAX);
             if (key && value) facts.push({ key, value });
         }
     }

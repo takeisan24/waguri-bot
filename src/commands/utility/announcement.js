@@ -114,6 +114,9 @@ module.exports = {
                 message = rawMessage.replace(/\\n/g, '\n');
             }
 
+            // Cắt cho vừa giới hạn description của embed (4096) — AI (maxOutputTokens 4000) có thể vượt.
+            if (message && message.length > 4000) message = message.slice(0, 4000) + '…';
+
             // 1. Lưu thông báo vào cấu hình global để người dùng và website có thể đọc được
             await db.setGuildSetting('global', 'latest_announcement', message);
             if (currentCommit) {

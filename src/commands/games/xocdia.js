@@ -59,9 +59,20 @@ module.exports = {
         const msg = await interaction.fetchReply();
         const collector = msg.createMessageComponentCollector({ componentType: ComponentType.Button, time: WINDOW_MS });
 
+        // GỘP repaint lobby: repaint tối đa 1 lần/2.5s thay vì editReply mỗi lượt cược (chống burst rate-limit).
+        let ended = false;
+        let paintTimer = null;
+        const repaintLobby = () => { if (!ended) interaction.editReply({ embeds: [render()], components: [row] }).catch(() => {}); };
+        const schedulePaint = () => {
+            if (paintTimer || ended) return;
+            paintTimer = setTimeout(() => { paintTimer = null; repaintLobby(); }, 2500);
+        };
+
         collector.on('collect', async (i) => {
-            const choiceName = bets.get(i.user.id)?.side === 'chan' ? t(locale, 'commands.xocdia.btn_chan') : t(locale, 'commands.xocdia.btn_le');
-            if (bets.has(i.user.id)) return i.reply({ content: t(locale, 'commands.xocdia.already_bet', { side: choiceName }), flags: MessageFlags.Ephemeral });
+            if (bets.has(i.user.id)) {
+                const choiceName = bets.get(i.user.id).side === 'chan' ? t(locale, 'commands.xocdia.btn_chan') : t(locale, 'commands.xocdia.btn_le');
+                return i.reply({ content: t(locale, 'commands.xocdia.already_bet', { side: choiceName }), flags: MessageFlags.Ephemeral });
+            }
             // GIỮ CHỖ đồng bộ TRƯỚC await -> chặn double-click thu cược 2 lần (race). Nhả chỗ nếu thu tiền lỗi.
             bets.set(i.user.id, { side: i.customId, username: i.user.username });
             if (!await db.stakeCollect(sessionId, 'xocdia', interaction.channelId, i.user.id, bet)) {
@@ -70,10 +81,12 @@ module.exports = {
             }
             const btnName = i.customId === 'chan' ? `${t(locale, 'commands.xocdia.btn_chan')} 🔴` : `${t(locale, 'commands.xocdia.btn_le')} ⚪`;
             await i.reply({ content: t(locale, 'commands.xocdia.bet_success', { side: btnName, bet: fmt(bet, locale), currency: config.CURRENCY }), flags: MessageFlags.Ephemeral }).catch(() => {});
-            await interaction.editReply({ embeds: [render()], components: [row] }).catch(() => {});
+            schedulePaint();
         });
 
         collector.on('end', async () => {
+            ended = true;
+            if (paintTimer) { clearTimeout(paintTimer); paintTimer = null; }
             if (bets.size === 0) {
                 await db.stakeSettle(sessionId);
                 return interaction.editReply({ embeds: [render().setColor(config.COLORS.WARNING).setTitle(t(locale, 'commands.xocdia.err_no_bets_title'))], components: [] }).catch(() => {});

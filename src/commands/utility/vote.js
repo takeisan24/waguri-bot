@@ -70,7 +70,11 @@ module.exports = {
         db.questIncr(interaction.user.id, 'vote', 1); // nhiệm vụ: vote Top.gg (đếm 1 lần/chu kỳ nhờ guard cooldown ở trên)
         const streak = await db.bumpVoteStreak(interaction.user.id, config.VOTE.STREAK_GRACE_HOURS * 3600);
         const { coins, exp, bonus } = computeVoteReward(streak, false);
-        await db.addMoney(interaction.user.id, coins, 'wallet');
+        // Cooldown đã set trước (chống nhận trùng). Nếu addMoney lỗi -> log [PAYOUT FAIL] để cứu thủ công
+        // (không grant-first vì sẽ mở lại race nhận đúp; cooldown-first là cổng dedup).
+        if (!await db.addMoney(interaction.user.id, coins, 'wallet')) {
+            console.error(`[PAYOUT FAIL] vote user=${interaction.user.id} coins=${coins}`);
+        }
         await db.updateExp(interaction.user.id, exp);
         const bonusText = bonus > 0 ? t(locale, 'commands.vote.bonus_streak', { amount: fmt(bonus, locale), currency: C }) : '';
         const embed = buildWaguriEmbed(interaction, 'success', {

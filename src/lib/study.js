@@ -10,6 +10,20 @@ const { t } = require('../lib/i18n');
 // Active sessions map: userId -> SessionObject
 const activeSessions = new Map();
 
+// Dọn session bỏ hoang: user pause rồi bỏ đi -> session kẹt trong activeSessions MÃI (khóa /study start
+// tới khi restart) + interval 30s leak. Phiên tối đa 120 phút; phiên "sống" quá 3h chắc chắn là rác ->
+// huỷ (early-exit, không thưởng) — finishSession dọn timer/interval + xoá khỏi map. .unref() để không giữ
+// event-loop khi tắt bot. (finishSession là function declaration nên đã hoisted, gọi được ở đây.)
+const MAX_SESSION_AGE_MS = 3 * 60 * 60 * 1000;
+setInterval(() => {
+    const now = Date.now();
+    for (const [userId, s] of activeSessions) {
+        if (now - (s.startedAt || 0) > MAX_SESSION_AGE_MS) {
+            finishSession(userId, true).catch(() => {});
+        }
+    }
+}, 10 * 60 * 1000).unref();
+
 /**
  * Render visual progress bar [▓▓▓▓▓▓░░░░] 60%
  */
@@ -108,13 +122,18 @@ async function finishSession(userId, isEarlyExit = false) {
         res = await db.completeStudySession(session.dbSessionId, userId, earnedCoins, earnedExp, studyPoints);
     }
 
+    // CHỈ coi là đã trao thưởng khi RPC trả success=true. Nếu RPC lỗi/null (vd cột sai, DB treo)
+    // -> awarded=false để KHÔNG hiển thị "thành công giả" (đã cộng Xu/EXP) khi thật ra chưa cộng.
+    const awarded = !!(res && res.success);
+
     return {
         status: 'COMPLETED',
         session,
+        awarded,
         earnedCoins,
         earnedExp,
         studyPoints,
-        newStreak: res?.new_streak || 1
+        newStreak: (res && res.new_streak) || 1
     };
 }
 
@@ -126,20 +145,34 @@ function scheduleFinishTimer(session, delayMs) {
     session.timer = setTimeout(async () => {
         const result = await finishSession(session.userId, false);
         if (result && session.message) {
-            const finishEmbed = new EmbedBuilder()
-                .setColor('#10B981')
-                .setTitle(`🎉 HOÀN THÀNH PHIÊN HỌC — ${session.sessionName}!`)
-                .setDescription(
-                    `*Waguri khẽ vỗ tay chúc mừng cậu nè!* 🌸🍵\n\n` +
-                    `Cậu đã chăm chỉ hoàn thành **${session.durationMinutes} phút** tập trung tuyệt vời!\n` +
-                    `**Phần thưởng:**\n` +
-                    `• **+${result.earnedCoins} Xu** 🪙\n` +
-                    `• **+${result.earnedExp} EXP** ✨\n` +
-                    `• **+${result.studyPoints} Hạt Hoa Kikyo 🌸**\n` +
-                    `• **Chuỗi Chuyên Cần 📚:** \`${result.newStreak} ngày\`\n\n` +
-                    `*Nghỉ tay 5-10 phút uống chút trà cùng Waguri rùi tiếp tục nhen!* ☕`
-                )
-                .setTimestamp();
+            let finishEmbed;
+            if (result.awarded) {
+                finishEmbed = new EmbedBuilder()
+                    .setColor('#10B981')
+                    .setTitle(`🎉 HOÀN THÀNH PHIÊN HỌC — ${session.sessionName}!`)
+                    .setDescription(
+                        `*Waguri khẽ vỗ tay chúc mừng cậu nè!* 🌸🍵\n\n` +
+                        `Cậu đã chăm chỉ hoàn thành **${session.durationMinutes} phút** tập trung tuyệt vời!\n` +
+                        `**Phần thưởng:**\n` +
+                        `• **+${result.earnedCoins} Xu** 🪙\n` +
+                        `• **+${result.earnedExp} EXP** ✨\n` +
+                        `• **+${result.studyPoints} Hạt Hoa Kikyo 🌸**\n` +
+                        `• **Chuỗi Chuyên Cần 📚:** \`${result.newStreak} ngày\`\n\n` +
+                        `*Nghỉ tay 5-10 phút uống chút trà cùng Waguri rùi tiếp tục nhen!* ☕`
+                    )
+                    .setTimestamp();
+            } else {
+                // RPC cộng thưởng thất bại -> KHÔNG báo đã nhận thưởng (tránh lừa người dùng).
+                finishEmbed = new EmbedBuilder()
+                    .setColor('#F59E0B')
+                    .setTitle(`✅ ĐÃ HOÀN THÀNH PHIÊN HỌC — ${session.sessionName}`)
+                    .setDescription(
+                        `*Waguri ghi nhận cậu đã học xong **${session.durationMinutes} phút** rồi nhen!* 🌸\n\n` +
+                        `⚠️ Hệ thống đang bận nên **chưa cộng được phần thưởng** vào lúc này. ` +
+                        `Cậu thử lại sau một chút hoặc báo admin nếu tình trạng lặp lại nhé~ 🍵`
+                    )
+                    .setTimestamp();
+            }
 
             await session.message.edit({ embeds: [finishEmbed], components: [] }).catch(() => {});
         }
@@ -194,7 +227,7 @@ async function startStudySession(userId, guildId, sessionName, durationMinutes, 
             const row = buildControlRow(session.isPaused);
             await session.message.edit({ embeds: [embed], components: [row] }).catch(() => {});
         }
-    }, 30_000);
+    }, 30_000).unref();
 
     return { success: true, session };
 }

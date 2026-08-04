@@ -9,6 +9,22 @@ const db = require('../database.js');
 const config = require('../config');
 const { getInteractionLanguage, t } = require('../lib/i18n');
 
+// Ack lỗi cho handler nút: cố gắng phản hồi ephemeral để interaction không chết im lặng
+// ("This interaction failed"). Nuốt 10062 (hết hạn) / 40060 (đã ack) — không thể phản hồi thêm.
+async function ackButtonError(interaction, locale) {
+    try {
+        const payload = { content: t(locale, 'common.generic_error'), flags: MessageFlags.Ephemeral };
+        if (interaction.replied || interaction.deferred) {
+            await interaction.followUp(payload);
+        } else {
+            await interaction.reply(payload);
+        }
+    } catch (e) {
+        if (e?.code === 10062 || e?.code === 40060) return;
+        console.error('[interactionCreate] ackButtonError không gửi được:', e?.message || e);
+    }
+}
+
 module.exports = {
     name: Events.InteractionCreate,
     async execute(interaction) {
@@ -234,15 +250,25 @@ module.exports = {
 
             // Nút điều khiển Pomodoro Study
             if (interaction.customId.startsWith('study_')) {
-                const { handleStudyButton } = require('../lib/study');
-                await handleStudyButton(interaction);
+                try {
+                    const { handleStudyButton } = require('../lib/study');
+                    await handleStudyButton(interaction);
+                } catch (error) {
+                    logError('study_button', error, { customId: interaction.customId });
+                    await ackButtonError(interaction, locale);
+                }
                 return;
             }
 
             // Nút điều khiển Easter Egg Player HVL - MCK
             if (interaction.customId.startsWith('hvl_')) {
-                const { handleHvlButton } = require('../lib/hvlPlayer');
-                await handleHvlButton(interaction);
+                try {
+                    const { handleHvlButton } = require('../lib/hvlPlayer');
+                    await handleHvlButton(interaction);
+                } catch (error) {
+                    logError('hvl_button', error, { customId: interaction.customId });
+                    await ackButtonError(interaction, locale);
+                }
                 return;
             }
             return;

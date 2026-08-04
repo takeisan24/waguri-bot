@@ -121,6 +121,10 @@ async function buildProfilePayload(client, id) {
 }
 
 async function buildBakeryPayload(client, id) {
+    // Tôn trọng hồ sơ ẩn: user đặt profile_public=false -> không lộ tên/avatar/tiệm (khớp buildProfilePayload).
+    const prof = await db.getPublicProfile(id);
+    if (prof && prof.public === false) return { id, hidden: true };
+
     const bakery = await db.getBakeryWithLikes(id);
     if (!bakery) return null;
 

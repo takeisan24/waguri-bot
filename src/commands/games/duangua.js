@@ -60,9 +60,21 @@ module.exports = {
         const msg = await interaction.fetchReply();
         const collector = msg.createMessageComponentCollector({ componentType: ComponentType.Button, time: WINDOW_MS });
 
+        // GỘP repaint lobby: thay vì editReply mỗi lượt cược (10 người bấm/3s = 10 webhook edit ->
+        // đụng rate-limit ~5/5s, counter lag), đánh dấu "cần vẽ lại" và repaint tối đa 1 lần/2.5s.
+        let ended = false;
+        let paintTimer = null;
+        const repaintLobby = () => { if (!ended) interaction.editReply({ embeds: [render()], components: [row] }).catch(() => {}); };
+        const schedulePaint = () => {
+            if (paintTimer || ended) return;
+            paintTimer = setTimeout(() => { paintTimer = null; repaintLobby(); }, 2500);
+        };
+
         collector.on('collect', async (i) => {
-            const hName = t(locale, 'commands.duangua.horse_name', { n: bets.get(i.user.id)?.horse + 1 });
-            if (bets.has(i.user.id)) return i.reply({ content: t(locale, 'commands.duangua.already_bet', { horse: hName }), flags: MessageFlags.Ephemeral });
+            if (bets.has(i.user.id)) {
+                const hName = t(locale, 'commands.duangua.horse_name', { n: bets.get(i.user.id).horse + 1 });
+                return i.reply({ content: t(locale, 'commands.duangua.already_bet', { horse: hName }), flags: MessageFlags.Ephemeral });
+            }
             const horse = Number(i.customId.slice(1)) - 1;
             // GIỮ CHỖ đồng bộ TRƯỚC await -> chặn double-click thu cược 2 lần (race). Nhả chỗ nếu thu tiền lỗi.
             bets.set(i.user.id, { horse, username: i.user.username });
@@ -72,10 +84,12 @@ module.exports = {
             }
             const horseChosenName = t(locale, 'commands.duangua.horse_name', { n: horse + 1 });
             await i.reply({ content: t(locale, 'commands.duangua.bet_success', { horse: horseChosenName, emoji: HORSES[horse].c, bet: fmt(bet, locale), currency: config.CURRENCY }), flags: MessageFlags.Ephemeral }).catch(() => {});
-            await interaction.editReply({ embeds: [render()], components: [row] }).catch(() => {});
+            schedulePaint();
         });
 
         collector.on('end', async () => {
+            ended = true;
+            if (paintTimer) { clearTimeout(paintTimer); paintTimer = null; }
             if (bets.size === 0) {
                 await db.stakeSettle(sessionId);
                 return interaction.editReply({ embeds: [render().setColor(config.COLORS.WARNING).setTitle(t(locale, 'commands.duangua.err_no_bets_title'))], components: [] }).catch(() => {});

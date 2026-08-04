@@ -30,8 +30,8 @@ async function runBackup(client) {
 
 function scheduleAutoBackup(client) {
     if (!process.env.BACKUP_CHANNEL_ID) return;
-    setTimeout(() => runBackup(client), 10 * 60 * 1000); // lần đầu sau 10 phút (đỡ spam khi restart liên tục)
-    setInterval(() => runBackup(client), DAY_MS);        // sau đó mỗi 24h
+    setTimeout(() => runBackup(client), 10 * 60 * 1000).unref(); // lần đầu sau 10 phút (đỡ spam khi restart liên tục)
+    setInterval(() => runBackup(client), DAY_MS).unref();        // sau đó mỗi 24h
     console.log('[BACKUP] Đã bật auto-backup (mỗi 24h).');
 }
 

@@ -206,6 +206,6 @@ module.exports = {
             i++;
         };
         rotate();
-        setInterval(rotate, ROTATE_MS);
+        setInterval(rotate, ROTATE_MS).unref(); // .unref() để không giữ event-loop khi tắt bot
     },
 };

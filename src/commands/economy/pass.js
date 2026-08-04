@@ -32,6 +32,13 @@ module.exports = {
                 await bpLib.addXp(userId, 0); // Kích hoạt bản ghi
                 bp = await db.getBattlePass(userId, seasonId);
             }
+            // Nếu vẫn null (DB lỗi) -> báo lỗi nhẹ thay vì crash ở bp.xp phía dưới.
+            if (!bp) {
+                return interaction.editReply({ content: t(locale, 'common.generic_error') });
+            }
+            // Chống crash nếu cột mảng bị null (mặc định DB là '{}' nhưng phòng thủ vẫn tốt).
+            bp.claimed_free = bp.claimed_free || [];
+            bp.claimed_premium = bp.claimed_premium || [];
 
             const currentLvl = Math.floor(bp.xp / rewardsConfig.XP_PER_LEVEL);
             const xpIntoLevel = bp.xp % rewardsConfig.XP_PER_LEVEL;
@@ -306,6 +313,8 @@ function formatRewardDetails(reward, locale = 'vi') {
 async function updateViewEmbed(interaction, userId, seasonId, seasonLabel, locale = 'vi') {
     const bp = await db.getBattlePass(userId, seasonId);
     if (!bp) return;
+    bp.claimed_free = bp.claimed_free || [];
+    bp.claimed_premium = bp.claimed_premium || [];
 
     const currentLvl = Math.floor(bp.xp / rewardsConfig.XP_PER_LEVEL);
     const xpIntoLevel = bp.xp % rewardsConfig.XP_PER_LEVEL;

@@ -1997,6 +1997,8 @@ async function updateUserLocale(userId, locale) {
             .update({ locale: lang })
             .eq('user_id', userId);
         if (error) throw error;
+        // Xoá cache locale để lần tương tác kế tiếp phản ánh ngôn ngữ mới ngay (không chờ TTL 60s).
+        try { require('./lib/i18n').invalidateLocaleCache(userId); } catch { /* ignore */ }
         return true;
     } catch (error) {
         console.error(`[DATABASE ERROR] Lỗi updateUserLocale(${userId}, ${locale}):`, error);
@@ -2596,19 +2598,14 @@ async function clanDepositResource(clanId, itemId, amount) {
 
 async function addPetSkillPoints(userId, points) {
     try {
-        const { data, error } = await supabase
-            .from('user_pets')
-            .select('skill_points')
-            .eq('user_id', userId)
-            .single();
+        // NGUYÊN TỬ: cộng thẳng trong DB (RPC increment_pet_skill_points) thay cho read-modify-write
+        // (SELECT rồi UPDATE = giá trị) vốn mất cập nhật khi cấp điểm đồng thời. Trả null nếu chưa có pet.
+        const { data, error } = await supabase.rpc('increment_pet_skill_points', {
+            p_user: userId,
+            p_points: points
+        });
         if (error) throw error;
-        
-        const newPoints = (data.skill_points || 0) + points;
-        await supabase
-            .from('user_pets')
-            .update({ skill_points: newPoints })
-            .eq('user_id', userId);
-        return newPoints;
+        return data; // skill_points mới (int) hoặc null nếu user chưa có pet
     } catch (e) {
         logError('addPetSkillPoints', e, { userId, points });
         return null;

@@ -197,7 +197,11 @@ async function runEconomySnapshot() {
         setTimeout(runEconomySnapshot, 12 * 60 * 60_000).unref();
     }
 }
-setTimeout(runEconomySnapshot, 30_000).unref();            // chụp lần đầu sau khi khởi động ổn định
+// CHỈ chạy trên shard 0 (hoặc khi không bật sharding) — telemetry là việc TOÀN CỤC, chạy 1 lần.
+// Tránh mỗi shard chụp/kết-đấu-giá trùng lặp khi sau này bật shard.js (giống guard ở ready.js).
+if (!client.shard || client.shard.ids.includes(0)) {
+    setTimeout(runEconomySnapshot, 30_000).unref();        // chụp lần đầu sau khi khởi động ổn định
+}
 
 // Trình phân giải các phiên đấu giá đã kết thúc tự động mỗi phút
 async function runAuctionResolution() {
@@ -257,7 +261,11 @@ async function runAuctionResolution() {
         }
     }
 }
-setTimeout(runAuctionResolution, 60_000).unref();
+// CHỈ chạy trên shard 0 (hoặc khi không bật sharding). auction_resolve_expired là RPC nguyên tử nên
+// DB an toàn, nhưng thông báo kết thúc phiên chỉ nên phát 1 lần & tránh N× RPC/phút khi bật sharding.
+if (!client.shard || client.shard.ids.includes(0)) {
+    setTimeout(runAuctionResolution, 60_000).unref();
+}
 
 // Đăng nhập có retry/backoff (5s, 10s, ... tối đa 60s) — không bỏ cuộc khi bắt tay timeout lúc khởi động.
 (async function startBot() {

@@ -57,7 +57,9 @@ module.exports = {
             await interaction.editReply({ embeds: [embedQ] });
 
             const channel = interaction.channel;
-            const collector = channel.createMessageCollector({ filter: m => !m.author.bot, time: config.QUIZ.TIME_MS });
+            // Loại chính người ra đề khỏi việc trả lời: đáp án thuộc bộ CỐ ĐỊNH nên người tạo biết trước
+            // -> tự trả lời câu của mình để farm (~300 xu/60s). Chỉ người KHÁC mới được thắng.
+            const collector = channel.createMessageCollector({ filter: m => !m.author.bot && m.author.id !== interaction.user.id, time: config.QUIZ.TIME_MS });
             let won = false;
 
             collector.on('collect', async (m) => {
