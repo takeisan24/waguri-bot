@@ -123,3 +123,8 @@ Waguri là **Discord economy/RPG bot bản địa hóa văn hóa Việt**. Bot N
 - **Đổi tính năng → nhớ ripple:** helper (database.js) · `/help` · web CommandsExplorer · test · `docs/roadmap-mo-rong.md` (đánh dấu trạng thái).
 - **Không nhồi nhiều tính năng vào 1 commit.** 1 tính năng = 1 commit đã verify.
 - **Cập nhật §4 (Trạng thái hiện tại) của file này** khi hoàn thành một mảng lớn, để phiên sau không bị mơ hồ.
+
+### Quy ước commit (Git)
+- **KHÔNG thêm trailer `Co-Authored-By` / dòng ghi công AI** (Claude, Codex, Gemini…) vào message commit. Chủ repo không muốn git track attribution AI — commit đứng tên tác giả người dùng thôi.
+- **KHÔNG thêm dòng "Generated with…" / link công cụ AI** vào message commit hay body PR.
+- Dùng Conventional Commits (`feat(scope):`, `fix(scope):`, `docs:`, `chore:`…), tiếng Việt hoặc Anh đều được; message mô tả *cái gì + tại sao*.
