@@ -2264,6 +2264,7 @@ module.exports = {
     cancelAuction,
     getActiveAuctions,
     getMyAuctions,
+    resolveExpiredAuctions,
     // study system
     startStudySession,
     completeStudySession,
