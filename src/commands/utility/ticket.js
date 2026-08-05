@@ -1,115 +1,109 @@
 const {
-    SlashCommandBuilder, ChannelType, EmbedBuilder,
-    ButtonBuilder, ButtonStyle, ActionRowBuilder,
-    PermissionsBitField, MessageFlags,
+    SlashCommandBuilder, EmbedBuilder, ButtonBuilder, ButtonStyle,
+    ActionRowBuilder, StringSelectMenuBuilder, PermissionsBitField, MessageFlags,
 } = require('discord.js');
 const { buildWaguriEmbed } = require('../../lib/embed');
 const { logError } = require('../../lib/logger');
 const { getInteractionLanguage, t } = require('../../lib/i18n');
+const db = require('../../database');
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('ticket')
-        .setDescription('Mở phòng hỗ trợ riêng tư với staff 🌸'),
+        .setDescription('Hệ thống hỗ trợ riêng tư với Staff Waguri 🌸')
+        .addSubcommand(sub =>
+            sub.setName('create')
+                .setDescription('Mở ticket hỗ trợ riêng tư 🌸')
+                .addStringOption(opt =>
+                    opt.setName('category')
+                        .setDescription('Loại vấn đề cần hỗ trợ')
+                        .setRequired(false)
+                        .addChoices(
+                            { name: 'Thắc mắc chung (General)', value: 'general' },
+                            { name: 'Báo lỗi (Bug Report)', value: 'bug' },
+                            { name: 'Hỗ trợ Premium / Giao dịch', value: 'premium' }
+                        )
+                )
+        )
+        .addSubcommand(sub =>
+            sub.setName('panel')
+                .setDescription('Gửi bảng điều khiển Ticket cố định vào kênh (Dành cho Admin)')
+        )
+        .addSubcommand(sub =>
+            sub.setName('close')
+                .setDescription('Đóng ticket hỗ trợ hiện tại')
+        ),
 
     async execute(interaction) {
         const locale = await getInteractionLanguage(interaction);
+        const subcommand = interaction.options.getSubcommand();
         const { user, channel, guild } = interaction;
 
-        // Kiểm tra bot có đủ quyền tạo thread không
-        const me = guild.members.me;
-        const needed = [PermissionsBitField.Flags.CreatePrivateThreads, PermissionsBitField.Flags.ManageThreads];
-        const hasPerms = needed.some(p => channel.permissionsFor(me)?.has(p));
-        if (!hasPerms) {
-            const errEmbed = buildWaguriEmbed(interaction, 'error', {
-                locale,
-                description: t(locale, 'commands.ticket.no_perm')
-            });
-            return interaction.reply({ embeds: [errEmbed], flags: MessageFlags.Ephemeral });
+        if (subcommand === 'panel') {
+            if (!interaction.member.permissions.has(PermissionsBitField.Flags.ManageChannels)) {
+                const errEmbed = buildWaguriEmbed(interaction, 'error', {
+                    locale,
+                    description: t(locale, 'commands.ticket.no_admin_perm')
+                });
+                return interaction.reply({ embeds: [errEmbed], flags: MessageFlags.Ephemeral });
+            }
+
+            const panelEmbed = new EmbedBuilder()
+                .setColor('#f472b6')
+                .setTitle('🌸 Bảng Hỗ Trợ Kỹ Thuật Waguri Kaoruko')
+                .setDescription(
+                    'Nếu cậu cần hỗ trợ về tài khoản, báo lỗi hoặc thắc mắc dịch vụ Premium, hãy chọn loại ticket bên dưới để mở kênh riêng tư với Staff nhen!'
+                )
+                .addFields(
+                    { name: '💬 Thắc mắc chung', value: 'Giải đáp câu hỏi trò chơi, sự kiện, clan', inline: true },
+                    { name: '🐛 Báo lỗi (Bug)', value: 'Báo lỗi lệnh, mất vật phẩm, exploit', inline: true },
+                    { name: '💎 Premium / Nạp', value: 'Hỗ trợ giao dịch, nâng cấp gói Waguri Premium', inline: true }
+                )
+                .setFooter({ text: 'Waguri Kaoruko Support Panel • 24/7' });
+
+            const selectMenu = new StringSelectMenuBuilder()
+                .setCustomId('tkt:open_select')
+                .setPlaceholder('🌸 Chọn loại hỗ trợ cậu cần...')
+                .addOptions([
+                    { label: 'Thắc mắc chung', value: 'general', emoji: '💬', description: 'Giải đáp câu hỏi trò chơi, clan' },
+                    { label: 'Báo lỗi (Bug Report)', value: 'bug', emoji: '🐛', description: 'Báo lỗi lệnh hoặc vật phẩm' },
+                    { label: 'Hỗ trợ Premium / Giao dịch', value: 'premium', emoji: '💎', description: 'Hỗ trợ nâng cấp Waguri Premium' },
+                ]);
+
+            const row = new ActionRowBuilder().addComponents(selectMenu);
+            await channel.send({ embeds: [panelEmbed], components: [row] });
+            return interaction.reply({ content: '✅ Đã tạo Panel Ticket thành công!', flags: MessageFlags.Ephemeral });
         }
 
-        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
-
-        let thread;
-        try {
-            // Thử tạo private thread trước; fallback sang public thread nếu kênh không hỗ trợ
-            try {
-                thread = await channel.threads.create({
-                    name: `ticket-${user.username}`,
-                    type: ChannelType.PrivateThread,
-                    reason: t(locale, 'commands.ticket.reason', { user: user.tag }),
+        if (subcommand === 'close') {
+            const ticket = await db.getTicketByChannel(channel.id);
+            if (!ticket || ticket.status === 'CLOSED') {
+                const errEmbed = buildWaguriEmbed(interaction, 'error', {
+                    locale,
+                    description: t(locale, 'commands.ticket.not_in_ticket')
                 });
-            } catch {
-                thread = await channel.threads.create({
-                    name: `ticket-${user.username}`,
-                    type: ChannelType.PublicThread,
-                    reason: t(locale, 'commands.ticket.reason', { user: user.tag }),
-                });
+                return interaction.reply({ embeds: [errEmbed], flags: MessageFlags.Ephemeral });
             }
 
-            // Thêm người dùng vào thread
-            await thread.members.add(user.id);
-
-            // Nút đóng ticket
-            const closeBtn = new ButtonBuilder()
-                .setCustomId('ticket_close')
-                .setLabel(t(locale, 'commands.ticket.close_btn'))
-                .setStyle(ButtonStyle.Danger)
-                .setEmoji('🔒');
-            const row = new ActionRowBuilder().addComponents(closeBtn);
-
-            // Embed hướng dẫn trong thread
-            const guideEmbed = buildWaguriEmbed(interaction, 'info', {
+            const confirmEmbed = buildWaguriEmbed(interaction, 'warning', {
                 locale,
-                title: t(locale, 'commands.ticket.guide_title'),
-                description: t(locale, 'commands.ticket.guide_desc', { user: user.id }),
+                title: t(locale, 'commands.ticket.confirm_close_title'),
+                description: t(locale, 'commands.ticket.confirm_close_desc'),
             });
 
-            const threadMsg = await thread.send({ embeds: [guideEmbed], components: [row] });
+            const confirmBtn = new ButtonBuilder().setCustomId('tkt:confirm_close').setLabel(t(locale, 'commands.ticket.confirm_btn')).setStyle(ButtonStyle.Danger);
+            const cancelBtn = new ButtonBuilder().setCustomId('tkt:cancel_close').setLabel(t(locale, 'commands.ticket.cancel_btn')).setStyle(ButtonStyle.Secondary);
+            const row = new ActionRowBuilder().addComponents(confirmBtn, cancelBtn);
 
-            // Xử lý nút đóng ticket bằng collector (an toàn, không đụng interactionCreate.js)
-            const collector = threadMsg.createMessageComponentCollector({
-                filter: i => i.customId === 'ticket_close',
-                time: 24 * 60 * 60 * 1000, // 24 giờ
-            });
+            return interaction.reply({ embeds: [confirmEmbed], components: [row] });
+        }
 
-            collector.on('collect', async (btnInteraction) => {
-                const btnLocale = await getInteractionLanguage(btnInteraction);
-                try {
-                    await btnInteraction.reply({
-                        content: t(btnLocale, 'commands.ticket.closed_msg', { user: btnInteraction.user.id }),
-                    });
-                    await thread.setLocked(true, t(btnLocale, 'commands.ticket.closed_reason'));
-                    await thread.setArchived(true, t(btnLocale, 'commands.ticket.closed_reason'));
-                    collector.stop('closed');
-                } catch (err) {
-                    logError('ticket_close', err, { user: `<@${btnInteraction.user.id}>`, guild: guild.id });
-                }
-            });
-
-            collector.on('end', (_, reason) => {
-                if (reason === 'time') {
-                    // Tự động đóng sau 24h nếu không ai đóng thủ công
-                    thread.setLocked(true).catch(() => {});
-                    thread.setArchived(true).catch(() => {});
-                }
-            });
-
-            // Reply ephemeral cho người dùng link thread
-            await interaction.editReply({
-                content: t(locale, 'commands.ticket.success_reply', { thread: `${thread}` }),
-            });
-        } catch (error) {
-            logError('ticket', error, { user: `<@${user.id}>`, guild: guild.id });
-            const errEmbed = buildWaguriEmbed(interaction, 'error', {
-                locale,
-                description: t(locale, 'commands.ticket.error_desc'),
-            });
-            try {
-                await interaction.editReply({ embeds: [errEmbed] });
-            } catch {
-                await interaction.followUp({ embeds: [errEmbed], flags: MessageFlags.Ephemeral }).catch(() => {});
-            }
+        // Subcommand 'create'
+        const category = interaction.options.getString('category') || 'general';
+        // Trigger button open logic
+        const interactionCreate = require('../../events/interactionCreate');
+        if (interactionCreate.handleTicketOpen) {
+            return interactionCreate.handleTicketOpen(interaction, category);
         }
     },
 };

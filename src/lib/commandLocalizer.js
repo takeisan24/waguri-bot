@@ -328,8 +328,8 @@ const COMMAND_DESCRIPTIONS = {
         en: "Claim your welcome gift and start your journey 🎁"
     },
     "ticket": {
-        vi: "Tạo vé hỗ trợ liên hệ với Ban quản trị 🎫",
-        en: "Create support tickets to contact admins 🎫"
+        vi: "Hệ thống hỗ trợ riêng tư với Staff Waguri 🌸",
+        en: "Private support ticket system with Waguri Staff 🌸"
     },
     "user": {
         vi: "Xem thông tin chi tiết của một người dùng 👤",
@@ -434,7 +434,10 @@ const SUBCOMMAND_DESCRIPTIONS = {
     "heo.trom": { vi: "Trộm heo trưởng thành của người khác", en: "Steal adult pig from another player" },
     "heo.box": { vi: "Mở Pigbox may mắn", en: "Open a lucky Pigbox" },
 
-    // trongcay
+    // ticket
+    "ticket.create": { vi: "Mở ticket hỗ trợ riêng tư", en: "Create a private support ticket" },
+    "ticket.panel": { vi: "Gửi bảng điều khiển Ticket cố định (Admin)", en: "Send static ticket panel (Admin)" },
+    "ticket.close": { vi: "Đóng ticket hỗ trợ hiện tại", en: "Close current support ticket" },
     "trongcay.info": { vi: "Xem tình trạng cây của cậu", en: "View your crop status" },
     "trongcay.muagiong": { vi: "Mua giống & trồng cây", en: "Buy seed & plant crop" },
     "trongcay.tuoi": { vi: "Tưới nước cho cây", en: "Water crop" },

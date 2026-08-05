@@ -248,6 +248,17 @@ module.exports = {
                 return;
             }
 
+            // Nút & Menu điều khiển Ticket System Vĩnh Cửu (tkt:)
+            if (interaction.customId.startsWith('tkt:')) {
+                try {
+                    await handleTicketComponent(interaction, locale);
+                } catch (error) {
+                    logError('tkt_component', error, { customId: interaction.customId });
+                    await ackButtonError(interaction, locale);
+                }
+                return;
+            }
+
             // Nút điều khiển Pomodoro Study
             if (interaction.customId.startsWith('study_')) {
                 try {
@@ -273,6 +284,249 @@ module.exports = {
             }
             return;
         }
+        // Handle Select Menu cho Ticket
+        if (interaction.isStringSelectMenu() && interaction.customId === 'tkt:open_select') {
+            const locale = await getInteractionLanguage(interaction);
+            try {
+                const category = interaction.values[0] || 'general';
+                await handleTicketOpen(interaction, category);
+            } catch (error) {
+                logError('tkt_select_menu', error);
+                await ackButtonError(interaction, locale);
+            }
+            return;
+        }
         // Các component khác: định tuyến theo customId (phase sau sẽ nạp động).
     },
+    handleTicketOpen,
 };
+
+function escapeHtml(str) {
+    return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
+async function handleTicketOpen(interaction, category = 'general') {
+    const locale = await getInteractionLanguage(interaction);
+    const { user, guild } = interaction;
+    const { ChannelType, PermissionsBitField, EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder } = require('discord.js');
+
+    if (!interaction.deferred && !interaction.replied) {
+        await interaction.deferReply({ flags: MessageFlags.Ephemeral }).catch(() => {});
+    }
+
+    const active = await db.getActiveTicket(guild.id, user.id);
+    if (active) {
+        return interaction.editReply({
+            content: `❌ Cậu đang có 1 Ticket đang hoạt động tại kênh <#${active.channel_id}> rồi nhen! Vui lòng hoàn tất hoặc đóng ticket cũ trước.`,
+        });
+    }
+
+    let categoryChannel = guild.channels.cache.find(
+        c => c.type === ChannelType.GuildCategory && c.name.includes('ticket-waguri')
+    );
+    if (!categoryChannel) {
+        try {
+            categoryChannel = await guild.channels.create({
+                name: '🌸-tiem-ticket-waguri',
+                type: ChannelType.GuildCategory,
+            });
+        } catch (e) {
+            /* best-effort */
+        }
+    }
+
+    const safeName = user.username.toLowerCase().replace(/[^a-z0-9_-]/g, '').slice(0, 15) || 'user';
+    const overwrites = [
+        { id: guild.id, deny: [PermissionsBitField.Flags.ViewChannel] },
+        {
+            id: user.id,
+            allow: [
+                PermissionsBitField.Flags.ViewChannel,
+                PermissionsBitField.Flags.SendMessages,
+                PermissionsBitField.Flags.ReadMessageHistory,
+                PermissionsBitField.Flags.AttachFiles,
+            ],
+        },
+        {
+            id: guild.members.me.id,
+            allow: [
+                PermissionsBitField.Flags.ViewChannel,
+                PermissionsBitField.Flags.SendMessages,
+                PermissionsBitField.Flags.ManageChannels,
+                PermissionsBitField.Flags.AttachFiles,
+            ],
+        },
+    ];
+
+    const staffRole = guild.roles.cache.find(r => /staff|support|mod|admin/i.test(r.name));
+    if (staffRole) {
+        overwrites.push({
+            id: staffRole.id,
+            allow: [
+                PermissionsBitField.Flags.ViewChannel,
+                PermissionsBitField.Flags.SendMessages,
+                PermissionsBitField.Flags.ReadMessageHistory,
+            ],
+        });
+    }
+
+    let ticketChannel;
+    try {
+        ticketChannel = await guild.channels.create({
+            name: `ticket-${safeName}`,
+            type: ChannelType.GuildText,
+            parent: categoryChannel ? categoryChannel.id : undefined,
+            permissionOverwrites: overwrites,
+            reason: `Mở ticket cho ${user.tag}`,
+        });
+    } catch (err) {
+        logError('create_ticket_channel', err, { user: user.id, guild: guild.id });
+        return interaction.editReply({
+            content: '⚠️ Bot thiếu quyền `Manage Channels` (Quản lý kênh) để mở Ticket. Cậu báo Admin cấp thêm quyền cho Waguri nhen!',
+        });
+    }
+
+    await db.createTicket(guild.id, ticketChannel.id, user.id, category);
+
+    const catLabels = { general: '💬 Thắc mắc chung', bug: '🐛 Báo lỗi (Bug Report)', premium: '💎 Hỗ trợ Premium' };
+    const guideEmbed = new EmbedBuilder()
+        .setColor('#f472b6')
+        .setTitle(`🌸 Kênh Hỗ Trợ Private • ${catLabels[category] || 'General'}`)
+        .setDescription(
+            `Chào <@${user.id}>! Kênh ticket hỗ trợ riêng tư của cậu đã được khởi tạo.\n\nVui lòng mô tả chi tiết vấn đề hoặc kèm ảnh bằng chứng bên dưới. Đội ngũ Staff sẽ phản hồi cậu sớm nhất có thể nhen!`
+        )
+        .addFields(
+            { name: '👤 Người mở', value: `<@${user.id}>`, inline: true },
+            { name: '📂 Phân loại', value: catLabels[category] || category, inline: true },
+            { name: '🛡️ Trạng thái', value: '🟢 `ĐANG MỞ (OPEN)`', inline: true }
+        )
+        .setFooter({ text: 'Waguri Support Ticket System' });
+
+    const claimBtn = new ButtonBuilder().setCustomId('tkt:claim').setLabel('🙋‍♂️ Nhận Ticket').setStyle(ButtonStyle.Success);
+    const lockBtn = new ButtonBuilder().setCustomId('tkt:lock').setLabel('🔒 Khóa Chat').setStyle(ButtonStyle.Secondary);
+    const closeBtn = new ButtonBuilder().setCustomId('tkt:close').setLabel('🛑 Đóng Ticket').setStyle(ButtonStyle.Danger);
+    const row = new ActionRowBuilder().addComponents(claimBtn, lockBtn, closeBtn);
+
+    await ticketChannel.send({ content: `<@${user.id}> | ${staffRole ? `<@&${staffRole.id}>` : ''}`, embeds: [guideEmbed], components: [row] });
+
+    await interaction.editReply({
+        content: `✅ Ticket hỗ trợ của cậu đã được tạo tại kênh <#${ticketChannel.id}>!`,
+    });
+}
+
+async function handleTicketComponent(interaction, locale) {
+    const { customId, channel, user, member } = interaction;
+    const { PermissionsBitField, EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder, AttachmentBuilder } = require('discord.js');
+
+    const ticket = await db.getTicketByChannel(channel.id);
+
+    if (customId === 'tkt:claim') {
+        const isStaff = member.permissions.has(PermissionsBitField.Flags.ManageChannels) ||
+            member.roles.cache.some(r => /staff|support|mod|admin/i.test(r.name));
+        if (!isStaff) {
+            return interaction.reply({ content: '❌ Cậu không có quyền nhận ticket hỗ trợ này nhen!', flags: MessageFlags.Ephemeral });
+        }
+
+        const claimed = await db.claimTicket(channel.id, user.id);
+        if (!claimed) {
+            return interaction.reply({ content: '❌ Ticket này đã có người nhận hỗ trợ hoặc đã đóng trước đó rồi!', flags: MessageFlags.Ephemeral });
+        }
+
+        await channel.setName(`claimed-${channel.name.replace('ticket-', '')}`).catch(() => {});
+        const claimEmbed = new EmbedBuilder()
+            .setColor('#22c55e')
+            .setDescription(`🙋‍♂️ Staff <@${user.id}> đã nhận chịu trách nhiệm hỗ trợ cho ticket này!`);
+        return interaction.reply({ embeds: [claimEmbed] });
+    }
+
+    if (customId === 'tkt:lock') {
+        const isStaff = member.permissions.has(PermissionsBitField.Flags.ManageChannels) ||
+            member.roles.cache.some(r => /staff|support|mod|admin/i.test(r.name));
+        if (!isStaff) {
+            return interaction.reply({ content: '❌ Cậu không có quyền khóa ticket này!', flags: MessageFlags.Ephemeral });
+        }
+
+        if (ticket) {
+            await channel.permissionOverwrites.edit(ticket.user_id, { SendMessages: false }).catch(() => {});
+        }
+        return interaction.reply({ content: '🔒 Kênh ticket đã được khóa quyền chat tạm thời!' });
+    }
+
+    if (customId === 'tkt:close') {
+        const confirmEmbed = buildWaguriEmbed(interaction, 'warning', {
+            locale,
+            title: t(locale, 'commands.ticket.confirm_close_title'),
+            description: t(locale, 'commands.ticket.confirm_close_desc'),
+        });
+
+        const confirmBtn = new ButtonBuilder().setCustomId('tkt:confirm_close').setLabel(t(locale, 'commands.ticket.confirm_btn')).setStyle(ButtonStyle.Danger);
+        const cancelBtn = new ButtonBuilder().setCustomId('tkt:cancel_close').setLabel(t(locale, 'commands.ticket.cancel_btn')).setStyle(ButtonStyle.Secondary);
+        const row = new ActionRowBuilder().addComponents(confirmBtn, cancelBtn);
+
+        return interaction.reply({ embeds: [confirmEmbed], components: [row] });
+    }
+
+    if (customId === 'tkt:cancel_close') {
+        return interaction.update({ content: '❌ Đã hủy thao tác đóng ticket!', embeds: [], components: [] });
+    }
+
+    if (customId === 'tkt:confirm_close') {
+        await interaction.update({ content: '🔒 Đang xuất Transcript và thu dọn ticket...', embeds: [], components: [] });
+
+        // 1. Khóa chat
+        if (ticket) {
+            await channel.permissionOverwrites.edit(ticket.user_id, { SendMessages: false }).catch(() => {});
+        }
+
+        // 2. Fetch messages & Build HTML Transcript (Zero Disk Garbage)
+        let messagesText = '';
+        try {
+            const fetched = await channel.messages.fetch({ limit: 100 });
+            const sorted = Array.from(fetched.values()).reverse();
+
+            const htmlHeader = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Transcript ${channel.name}</title><style>body{background:#0d0812;color:#f1f5f9;font-family:sans-serif;padding:20px;}.msg{margin-bottom:12px;padding:8px;border-radius:8px;background:rgba(255,255,255,0.05);}.user{font-weight:bold;color:#f472b6;}.time{font-size:12px;color:#94a3b8;margin-left:8px;}.att{color:#38bdf8;margin-top:4px;display:block;}</style></head><body><h2>Transcript Ticket: ${escapeHtml(channel.name)}</h2><hr/>`;
+
+            const htmlBody = sorted.map(m => {
+                const atts = Array.from(m.attachments.values())
+                    .map(a => `<a class="att" href="${escapeHtml(a.url)}" target="_blank">📎 Attachment: ${escapeHtml(a.name)}</a>`)
+                    .join('');
+                return `<div class="msg"><span class="user">${escapeHtml(m.author.tag)}</span><span class="time">${new Date(m.createdTimestamp).toLocaleString()}</span><div>${escapeHtml(m.content)}</div>${atts}</div>`;
+            }).join('');
+
+            const htmlFooter = `</body></html>`;
+            messagesText = htmlHeader + htmlBody + htmlFooter;
+        } catch (e) {
+            messagesText = `Transcript Ticket ${channel.name}\n${new Date().toISOString()}`;
+        }
+
+        const buffer = Buffer.from(messagesText, 'utf-8');
+        const attachment = new AttachmentBuilder(buffer, { name: `transcript-${channel.name}.html` });
+
+        // 3. Gửi DM cho User (Safe try/catch)
+        if (ticket) {
+            try {
+                const targetUser = await interaction.client.users.fetch(ticket.user_id);
+                if (targetUser) {
+                    await targetUser.send({
+                        content: `🌸 Ticket hỗ trợ của cậu tại kênh \`${channel.name}\` đã được đóng. Dưới đây là bản Transcript lưu vết cuộc trò chuyện:`,
+                        files: [attachment]
+                    });
+                }
+            } catch (e) {
+                /* User DM disabled -> Ignore safely */
+            }
+        }
+
+        // 4. Cập nhật DB & Đếm ngược 5s trước khi xóa channel
+        await db.closeTicket(channel.id);
+        await channel.send({ content: '🔒 Ticket đã được đóng an toàn. Kênh sẽ tự động xóa trong 5 giây...' });
+
+        setTimeout(async () => {
+            await channel.delete('Đóng ticket').catch(() => {});
+        }, 5000);
+    }
+}

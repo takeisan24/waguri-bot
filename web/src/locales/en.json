@@ -429,7 +429,15 @@
     "no_results": "No matching commands found~ 🌸",
     "usage": "Usage:",
     "or_prefix": "or",
-    "help_tip": "Type {cmd} in Discord to view parameters & sub-commands details."
+    "help_tip": "Type {cmd} in Discord to view subcommand details.",
+    "ticket": {
+      "cancel_btn": "❌ Cancel",
+      "confirm_btn": "🛑 Confirm Close",
+      "confirm_close_desc": "This action will generate a transcript, lock chat permissions, and delete the ticket channel in 5 seconds.",
+      "confirm_close_title": "🛑 Confirm Close Ticket",
+      "no_admin_perm": "❌ You need `Manage Channels` permission to use this command!",
+      "not_in_ticket": "❌ You must run this command inside an active support ticket channel!"
+    }
   },
   "error": {
     "title": "An error occurred~",

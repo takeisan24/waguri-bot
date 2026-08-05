@@ -2093,6 +2093,11 @@ module.exports = {
     claimSupportGift,
     touchLastSeen,
     syncProfile,
+    createTicket,
+    getActiveTicket,
+    getTicketByChannel,
+    claimTicket,
+    closeTicket,
     getPublicProfile,
     setProfilePublic,
     bumpVoteStreak,
@@ -2716,5 +2721,79 @@ async function syncProfile(userId, username, avatar) {
             .upsert({ user_id: String(userId), username, avatar }, { onConflict: 'user_id' });
     } catch (e) {
         /* best-effort sync */
+    }
+}
+
+async function createTicket(guildId, channelId, userId, category = 'general') {
+    try {
+        const { data, error } = await supabase
+            .from('tickets')
+            .insert({ guild_id: String(guildId), channel_id: String(channelId), user_id: String(userId), category, status: 'OPEN' })
+            .select()
+            .single();
+        if (error) throw error;
+        return data;
+    } catch (e) {
+        logError('createTicket', e, { guildId, channelId, userId });
+        return null;
+    }
+}
+
+async function getActiveTicket(guildId, userId) {
+    try {
+        const { data, error } = await supabase
+            .from('tickets')
+            .select('*')
+            .eq('guild_id', String(guildId))
+            .eq('user_id', String(userId))
+            .in('status', ['OPEN', 'CLAIMED'])
+            .maybeSingle();
+        if (error) throw error;
+        return data;
+    } catch (e) {
+        logError('getActiveTicket', e, { guildId, userId });
+        return null;
+    }
+}
+
+async function getTicketByChannel(channelId) {
+    try {
+        const { data, error } = await supabase
+            .from('tickets')
+            .select('*')
+            .eq('channel_id', String(channelId))
+            .single();
+        if (error) throw error;
+        return data;
+    } catch (e) {
+        return null;
+    }
+}
+
+async function claimTicket(channelId, staffId) {
+    try {
+        const { data, error } = await supabase.rpc('claim_ticket_atomic', {
+            p_channel_id: String(channelId),
+            p_staff_id: String(staffId)
+        });
+        if (error) throw error;
+        return Boolean(data);
+    } catch (e) {
+        logError('claimTicket', e, { channelId, staffId });
+        return false;
+    }
+}
+
+async function closeTicket(channelId) {
+    try {
+        const { error } = await supabase
+            .from('tickets')
+            .update({ status: 'CLOSED', closed_at: new Date().toISOString() })
+            .eq('channel_id', String(channelId));
+        if (error) throw error;
+        return true;
+    } catch (e) {
+        logError('closeTicket', e, { channelId });
+        return false;
     }
 }

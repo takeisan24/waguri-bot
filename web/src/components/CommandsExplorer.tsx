@@ -117,7 +117,7 @@ const CATEGORIES_VI: Cat[] = [
       ["event", "xem sự kiện x2 đang diễn ra 🎉"],
       ["vote", "vote trên Top.gg nhận thưởng 💝"],
       ["bot", "thông tin, trạng thái, hỗ trợ, mời bot (ping · about · support · invite) 🤖"],
-      ["ticket", "mở phòng hỗ trợ riêng tư với staff 🎫"],
+      ["ticket", "mở phòng hỗ trợ riêng tư với staff 🌸 (create · panel · close)"],
       ["server", "thông tin server"],
       ["user", "thông tin người dùng"],
       ["deletedata", "xoá toàn bộ dữ liệu cá nhân của bạn (không hoàn tác) 🗑️"],
