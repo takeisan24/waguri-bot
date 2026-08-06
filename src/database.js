@@ -2098,6 +2098,7 @@ module.exports = {
     getTicketByChannel,
     claimTicket,
     closeTicket,
+    sellItemMarket,
     getPublicProfile,
     setProfilePublic,
     bumpVoteStreak,
@@ -2795,5 +2796,20 @@ async function closeTicket(channelId) {
     } catch (e) {
         logError('closeTicket', e, { channelId });
         return false;
+    }
+}
+
+async function sellItemMarket(userId, itemId, amount) {
+    try {
+        const { data, error } = await supabase.rpc('sell_item_market', {
+            p_user_id: String(userId),
+            p_item_id: String(itemId),
+            p_amount: Number(amount)
+        });
+        if (error) throw error;
+        return data;
+    } catch (e) {
+        logError('sellItemMarket', e, { userId, itemId, amount });
+        return { success: false, error: 'DB_ERROR' };
     }
 }

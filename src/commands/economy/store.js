@@ -139,6 +139,21 @@ module.exports = {
                 return interaction.editReply({ embeds: [embed] });
             }
 
+            const { BASE_MARKET_ITEMS } = require('../../lib/market');
+            if (BASE_MARKET_ITEMS[itemId]) {
+                const marketRes = await db.sellItemMarket(interaction.user.id, itemId, qty);
+                if (marketRes && marketRes.success) {
+                    const embedSuccess = buildWaguriEmbed(interaction, 'success', {
+                        locale,
+                        title: t(locale, 'commands.store.sell_title'),
+                        description: locale === 'en'
+                            ? `Sold **${qty}x** **${name}** at Market Rate (**${fmt(marketRes.unit_price, locale)}** ${config.CURRENCY}/unit)!\n💰 Earned: **+${fmt(marketRes.earned, locale)}** ${config.CURRENCY}\n💳 New Balance: **${fmt(marketRes.new_wallet, locale)}** ${config.CURRENCY}`
+                            : `Đã bán **${qty}x** **${name}** theo giá chợ biến động (**${fmt(marketRes.unit_price, locale)}** ${config.CURRENCY}/sp)!\n💰 Thu về: **+${fmt(marketRes.earned, locale)}** ${config.CURRENCY}\n💳 Số dư mới: **${fmt(marketRes.new_wallet, locale)}** ${config.CURRENCY}`
+                    });
+                    return interaction.editReply({ embeds: [embedSuccess] });
+                }
+            }
+
             const r = await db.sellItem(interaction.user.id, itemId, qty);
             if (!r) {
                 const embed = buildWaguriEmbed(interaction, 'error', { locale, title: t(locale, 'commands.store.sell_title'), description: t(locale, 'commands.store.sell_error_generic') });

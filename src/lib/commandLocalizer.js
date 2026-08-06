@@ -70,8 +70,8 @@ const COMMAND_DESCRIPTIONS = {
         en: "Item store and trading 🏪"
     },
     "market": {
-        vi: "Chợ mua bán vật phẩm giữa người chơi 🛒",
-        en: "Player-to-player trade market 🛒"
+        vi: "Thị trường & Chợ Nông Thủy Sản Biến Động Waguri 📈",
+        en: "Waguri Commodity Market & Price Fluctuations 📈"
     },
     "inventory": {
         vi: "Xem kho đồ hiện tại của cậu 📦",
@@ -343,6 +343,7 @@ const COMMAND_DESCRIPTIONS = {
 
 const SUBCOMMAND_DESCRIPTIONS = {
     "market.view": { vi: "Xem các món đang bán", en: "Browse items on sale" },
+    "market.prices": { vi: "Xem biến động giá chợ hiện tại & thời gian biến động tiếp theo 📊", en: "View live market prices & next shift countdown 📊" },
     "market.mine": { vi: "Xem các món cậu đang bán", en: "View the items you're selling" },
     "market.sell": { vi: "Đăng bán một món trong kho", en: "List an item from your inventory for sale" },
     "market.buy": { vi: "Mua một món theo mã", en: "Buy an item by its ID" },

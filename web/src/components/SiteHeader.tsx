@@ -21,6 +21,7 @@ export default function SiteHeader() {
 
   const NAV = [
     { href: "/study", label: t("nav.study") },
+    { href: "/market", label: "📈 Chợ Nông Sản" },
     { href: "/commands", label: t("nav.commands") },
     { href: "/wiki", label: t("nav.wiki") },
     { href: "/leaderboard", label: t("nav.leaderboard") },

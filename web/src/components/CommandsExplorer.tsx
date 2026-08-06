@@ -30,7 +30,7 @@ const CATEGORIES_VI: Cat[] = [
     name: "🏪 Cửa hàng & Kho",
     cmds: [
       ["store", "cửa hàng: xem danh sách, mua bán vật phẩm (list · buy · sell) 🏪"],
-      ["market", "chợ mua bán & đấu giá đồ giữa người chơi 🛒 (view · mine · sell · buy · cancel · auctions · auction · bid · cancel-auction)"],
+      ["market", "thị trường & chợ nông thủy sản biến động 📈 (prices · sell · view · mine · buy · cancel · auctions · auction · bid · cancel-auction)"],
       ["inventory", "xem kho đồ"],
       ["album", "xem sổ tay sưu tầm vật phẩm và nhận thưởng bộ sưu tập 📖"],
       ["pass", "xem và nhận thưởng Sổ Sứ Mệnh (Battle Pass) 📖"],

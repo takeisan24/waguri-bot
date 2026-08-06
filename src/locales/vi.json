@@ -1072,6 +1072,12 @@
       }
     },
     "ticket": {
+      "cancel_btn": "❌ Hủy thao tác",
+      "confirm_btn": "🛑 Xác nhận đóng",
+      "confirm_close_desc": "Thao tác này sẽ xuất bản lưu vết (Transcript), khóa quyền chat và xóa kênh ticket sau 5 giây.",
+      "confirm_close_title": "🛑 Xác nhận đóng Ticket",
+      "no_admin_perm": "❌ Cậu cần có quyền `Quản lý kênh` (Manage Channels) để dùng lệnh này!",
+      "not_in_ticket": "❌ Cậu cần sử dụng lệnh này bên trong kênh Ticket hỗ trợ đang hoạt động!",
       "no_perm": "Tớ không có quyền tạo luồng hỗ trợ ở kênh này~ 😥\nCậu vui lòng nhờ Admin cấp quyền **Create Private Threads** và **Manage Threads** cho tớ nhé!",
       "reason": "Ticket hỗ trợ cho {user}",
       "close_btn": "Đóng ticket",

@@ -1072,6 +1072,12 @@
       }
     },
     "ticket": {
+      "cancel_btn": "❌ Cancel",
+      "confirm_btn": "🛑 Confirm Close",
+      "confirm_close_desc": "This action will generate a transcript, lock chat permissions, and delete the ticket channel in 5 seconds.",
+      "confirm_close_title": "🛑 Confirm Close Ticket",
+      "no_admin_perm": "❌ You need `Manage Channels` permission to use this command!",
+      "not_in_ticket": "❌ You must run this command inside an active support ticket channel!",
       "no_perm": "I don't have permission to create support threads in this channel~ 😥\nPlease ask an Admin to grant me **Create Private Threads** and **Manage Threads** permissions!",
       "reason": "Support ticket for {user}",
       "close_btn": "Close ticket",
