@@ -1,4 +1,4 @@
--- Migration 0095: Thị Trường & Chợ Nông Sản Biến Động Hàng Giờ
+-- Migration 0095: Thị Trường & Chợ Nông Thủy Sản Biến Động Hàng Giờ
 CREATE TABLE IF NOT EXISTS public.market_prices (
     item_id TEXT PRIMARY KEY,
     base_price BIGINT NOT NULL,
@@ -64,8 +64,8 @@ BEGIN
     END IF;
 
     -- 1. Kiểm tra số lượng trong inventory
-    SELECT amount INTO v_inv_amount
-    FROM public.user_inventory
+    SELECT quantity INTO v_inv_amount
+    FROM public.inventory
     WHERE user_id = p_user_id AND item_id = p_item_id;
 
     IF v_inv_amount IS NULL OR v_inv_amount < p_amount THEN
@@ -85,9 +85,9 @@ BEGIN
 
     -- 3. Trừ vật phẩm
     IF v_inv_amount = p_amount THEN
-        DELETE FROM public.user_inventory WHERE user_id = p_user_id AND item_id = p_item_id;
+        DELETE FROM public.inventory WHERE user_id = p_user_id AND item_id = p_item_id;
     ELSE
-        UPDATE public.user_inventory SET amount = amount - p_amount WHERE user_id = p_user_id AND item_id = p_item_id;
+        UPDATE public.inventory SET quantity = quantity - p_amount WHERE user_id = p_user_id AND item_id = p_item_id;
     END IF;
 
     -- 4. Cộng tiền vào ví nguyên tử

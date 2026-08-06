@@ -1,6 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert');
 const { computeMarketMultiplier, BASE_MARKET_ITEMS, getLiveMarketPrices } = require('../src/lib/market');
+const db = require('../src/database');
 
 test('Market Engine: Multipliers remain within bounds [0.70, 1.50]', () => {
     const items = Object.keys(BASE_MARKET_ITEMS);
@@ -30,4 +31,9 @@ test('Market Engine: getLiveMarketPrices returns valid structure for all base it
         assert.ok(p.multiplier >= 0.70 && p.multiplier <= 1.50);
         assert.ok(['UP', 'DOWN', 'STABLE'].includes(p.trend));
     }
+});
+
+test('Market DB: sellItemMarket helper gracefully handles invalid inputs without crashing', async () => {
+    const res = await db.sellItemMarket('non_existent_user_999999', 'lua_nuoc', 0);
+    assert.ok(res);
 });
