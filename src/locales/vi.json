@@ -2242,6 +2242,21 @@
     "status_growing": "🌱 **{name}** đang lớn — đã tưới **{count}/3**. Tiếp tục `tuoinuoc` (mỗi 3 tiếng) hoặc `bonphan` (200) cho nhanh nhé."
   },
   "items": {
+    "trai_1500": {
+      "name": "Lúa Nước"
+    },
+    "trai_2500": {
+      "name": "Khoai Tây"
+    },
+    "hoa_2000": {
+      "name": "Cà Chua"
+    },
+    "hoa_3500": {
+      "name": "Dưa Hấu"
+    },
+    "thit_heo_2500": {
+      "name": "Thịt Heo"
+    },
     "can_cau": {
       "name": "Iron Fishing Rod"
     },

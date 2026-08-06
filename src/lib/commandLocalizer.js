@@ -345,7 +345,7 @@ const SUBCOMMAND_DESCRIPTIONS = {
     "market.view": { vi: "Xem các món đang bán", en: "Browse items on sale" },
     "market.prices": { vi: "Xem biến động giá chợ hiện tại & thời gian biến động tiếp theo 📊", en: "View live market prices & next shift countdown 📊" },
     "market.mine": { vi: "Xem các món cậu đang bán", en: "View the items you're selling" },
-    "market.sell": { vi: "Đăng bán một món trong kho", en: "List an item from your inventory for sale" },
+    "market.sell": { vi: "Bán nông/thủy/khoáng sản theo giá chợ biến động 💸", en: "Sell commodities at live market fluctuation prices 💸" },
     "market.buy": { vi: "Mua một món theo mã", en: "Buy an item by its ID" },
     "market.cancel": { vi: "Gỡ món cậu đang bán (trả về kho)", en: "Remove your listing (returns it to inventory)" },
     "market.auctions": { vi: "Xem các phiên đấu giá đang hoạt động 🔨", en: "View active auctions 🔨" },

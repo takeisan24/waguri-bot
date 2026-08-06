@@ -1879,6 +1879,21 @@
   },
   "data": {
     "items": {
+      "trai_1500": {
+        "name": "Wet Rice"
+      },
+      "trai_2500": {
+        "name": "Potato"
+      },
+      "hoa_2000": {
+        "name": "Tomato"
+      },
+      "hoa_3500": {
+        "name": "Watermelon"
+      },
+      "thit_heo_2500": {
+        "name": "Pork"
+      },
       "can_cau": {
         "name": "Iron Fishing Rod"
       },
@@ -2386,6 +2401,21 @@
     "Vương Giả Sổ Sứ Mệnh 👑": "Lunar Pass Monarch 👑"
   },
   "items": {
+    "trai_1500": {
+      "name": "Wet Rice"
+    },
+    "trai_2500": {
+      "name": "Potato"
+    },
+    "hoa_2000": {
+      "name": "Tomato"
+    },
+    "hoa_3500": {
+      "name": "Watermelon"
+    },
+    "thit_heo_2500": {
+      "name": "Pork"
+    },
     "can_cau": {
       "name": "Iron Fishing Rod"
     },

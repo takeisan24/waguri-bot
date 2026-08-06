@@ -16,8 +16,8 @@ test('Market Engine: Multipliers remain within bounds [0.70, 1.50]', () => {
 });
 
 test('Market Engine: Deterministic hash outputs identical value for same block', () => {
-    const mult1 = computeMarketMultiplier('lua_nuoc', '2026-100-2');
-    const mult2 = computeMarketMultiplier('lua_nuoc', '2026-100-2');
+    const mult1 = computeMarketMultiplier('trai_1500', '2026-100-2');
+    const mult2 = computeMarketMultiplier('trai_1500', '2026-100-2');
     assert.strictEqual(mult1, mult2);
 });
 
@@ -34,6 +34,6 @@ test('Market Engine: getLiveMarketPrices returns valid structure for all base it
 });
 
 test('Market DB: sellItemMarket helper gracefully handles invalid inputs without crashing', async () => {
-    const res = await db.sellItemMarket('non_existent_user_999999', 'lua_nuoc', 0);
+    const res = await db.sellItemMarket('non_existent_user_999999', 'trai_1500', 0);
     assert.ok(res);
 });

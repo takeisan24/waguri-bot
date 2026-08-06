@@ -1,16 +1,16 @@
 export const BASE_MARKET_ITEMS = {
-  lua_nuoc: { basePrice: 500, category: "crop", emoji: "🌾", nameVi: "Lúa Nước", nameEn: "Wet Rice" },
-  ca_chua: { basePrice: 800, category: "crop", emoji: "🍅", nameVi: "Cà Chua", nameEn: "Tomato" },
-  khoai_tay: { basePrice: 1200, category: "crop", emoji: "🥔", nameVi: "Khoai Tây", nameEn: "Potato" },
-  dua_hau: { basePrice: 2500, category: "crop", emoji: "🍉", nameVi: "Dưa Hấu", nameEn: "Watermelon" },
-  thit_heo_2500: { basePrice: 2500, category: "pig", emoji: "🥓", nameVi: "Thịt Heo", nameEn: "Pork" },
-  ca_tuoi: { basePrice: 600, category: "fish", emoji: "🐟", nameVi: "Cá Tươi", nameEn: "Fresh Fish" },
-  ca_koi: { basePrice: 5000, category: "fish", emoji: "🐠", nameVi: "Cá Koi", nameEn: "Koi Fish" },
-  ca_rong: { basePrice: 15000, category: "fish", emoji: "🐉", nameVi: "Cá Rồng Vàng", nameEn: "Golden Dragon Fish" },
-  sieu_cap_gem: { basePrice: 8000, category: "ore", emoji: "💎", nameVi: "Đá Siêu Cấp", nameEn: "Super Gem" },
-  vang_dong_trieu: { basePrice: 20000, category: "ore", emoji: "🥇", nameVi: "Vàng Đông Triều", nameEn: "Dong Trieu Gold" },
-  go_ram: { basePrice: 400, category: "wood", emoji: "🪵", nameVi: "Gỗ Rắn", nameEn: "Solid Wood" },
-  ky_nam: { basePrice: 25000, category: "wood", emoji: "🪵", nameVi: "Kỳ Nam", nameEn: "Ky Nam Agarwood" },
+  trai_1500:      { basePrice: 1500,  category: "crop", emoji: "🌾", nameVi: "Lúa Nước",          nameEn: "Wet Rice" },
+  trai_2500:      { basePrice: 2500,  category: "crop", emoji: "🥔", nameVi: "Khoai Tây",         nameEn: "Potato" },
+  hoa_2000:       { basePrice: 2000,  category: "crop", emoji: "🍅", nameVi: "Cà Chua",           nameEn: "Tomato" },
+  hoa_3500:       { basePrice: 3500,  category: "crop", emoji: "🍉", nameVi: "Dưa Hấu",           nameEn: "Watermelon" },
+  thit_heo_2500:  { basePrice: 2500,  category: "pig",  emoji: "🥓", nameVi: "Thịt Heo",          nameEn: "Pork" },
+  ca_tuoi:        { basePrice: 600,   category: "fish", emoji: "🐟", nameVi: "Cá Tươi",           nameEn: "Fresh Fish" },
+  ca_koi_nhat:    { basePrice: 5000,  category: "fish", emoji: "🐠", nameVi: "Cá Koi",            nameEn: "Koi Fish" },
+  ca_rong_vang:   { basePrice: 15000, category: "fish", emoji: "🐉", nameVi: "Cá Rồng Vàng",      nameEn: "Golden Dragon Fish" },
+  quang_sat:      { basePrice: 800,   category: "ore",  emoji: "💎", nameVi: "Đá Siêu Cấp",       nameEn: "Super Gem" },
+  vang_dong_tren: { basePrice: 20000, category: "ore",  emoji: "🥇", nameVi: "Vàng Đông Triều",    nameEn: "Dong Trieu Gold" },
+  go:             { basePrice: 400,   category: "wood", emoji: "🪵", nameVi: "Gỗ Rắn",            nameEn: "Solid Wood" },
+  ky_nam:         { basePrice: 25000, category: "wood", emoji: "🪵", nameVi: "Kỳ Nam",            nameEn: "Ky Nam Agarwood" },
 };
 
 export function computeMarketMultiplier(itemId: string, timeBlock: string): number {
@@ -27,7 +27,7 @@ export function computeMarketMultiplier(itemId: string, timeBlock: string): numb
 export function get4HourBlock(): string {
   const now = new Date();
   const year = now.getUTCFullYear();
-  const day = Math.floor((now.getTime() - new Date(year, 0, 0).getTime()) / (1000 * 60 * 60 * 24));
+  const day = Math.floor((now.getTime() - Date.UTC(year, 0, 0)) / (1000 * 60 * 60 * 24));
   const block = Math.floor(now.getUTCHours() / 4);
   return `${year}-${day}-${block}`;
 }
@@ -47,7 +47,7 @@ export async function getLiveMarketPrices() {
   const prevBlock = (() => {
     const now = new Date(Date.now() - 4 * 60 * 60 * 1000);
     const year = now.getUTCFullYear();
-    const day = Math.floor((now.getTime() - new Date(year, 0, 0).getTime()) / (1000 * 60 * 60 * 24));
+    const day = Math.floor((now.getTime() - Date.UTC(year, 0, 0)) / (1000 * 60 * 60 * 24));
     const block = Math.floor(now.getUTCHours() / 4);
     return `${year}-${day}-${block}`;
   })();

@@ -1,9 +1,9 @@
 const {
-    SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags,
+    SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle,
 } = require('discord.js');
 const { buildWaguriEmbed } = require('../../lib/embed');
 const { getInteractionLanguage, t } = require('../../lib/i18n');
-const { logError } = require('../../lib/logger');
+
 const { getLiveMarketPrices, getNextShiftCountdown, BASE_MARKET_ITEMS } = require('../../lib/market');
 const db = require('../../database');
 const config = require('../../config');
@@ -24,17 +24,17 @@ module.exports = {
                         .setDescription('Loại nông/thủy sản cần bán')
                         .setRequired(true)
                         .addChoices(
-                            { name: '🌾 Lúa Nước', value: 'lua_nuoc' },
-                            { name: '🍅 Cà Chua', value: 'ca_chua' },
-                            { name: '🥔 Khoai Tây', value: 'khoai_tay' },
-                            { name: '🍉 Dưa Hấu', value: 'dua_hau' },
+                            { name: '🌾 Lúa Nước', value: 'trai_1500' },
+                            { name: '🥔 Khoai Tây', value: 'trai_2500' },
+                            { name: '🍅 Cà Chua', value: 'hoa_2000' },
+                            { name: '🍉 Dưa Hấu', value: 'hoa_3500' },
                             { name: '🥓 Thịt Heo', value: 'thit_heo_2500' },
                             { name: '🐟 Cá Tươi', value: 'ca_tuoi' },
-                            { name: '🐠 Cá Koi', value: 'ca_koi' },
-                            { name: '🐉 Cá Rồng Vàng', value: 'ca_rong' },
-                            { name: '💎 Đá Siêu Cấp', value: 'sieu_cap_gem' },
-                            { name: '🥇 Vàng Đông Triều', value: 'vang_dong_trieu' },
-                            { name: '🪵 Gỗ Rắn', value: 'go_ram' },
+                            { name: '🐠 Cá Koi', value: 'ca_koi_nhat' },
+                            { name: '🐉 Cá Rồng Vàng', value: 'ca_rong_vang' },
+                            { name: '💎 Đá Siêu Cấp', value: 'quang_sat' },
+                            { name: '🥇 Vàng Đông Triều', value: 'vang_dong_tren' },
+                            { name: '🪵 Gỗ Rắn', value: 'go' },
                             { name: '🪵 Kỳ Nam', value: 'ky_nam' }
                         )
                 )

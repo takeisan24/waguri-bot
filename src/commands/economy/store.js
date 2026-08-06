@@ -139,6 +139,7 @@ module.exports = {
                 return interaction.editReply({ embeds: [embed] });
             }
 
+            const name = t(locale, `data.items.${item.id}.name`) || item.name;
             const { BASE_MARKET_ITEMS } = require('../../lib/market');
             if (BASE_MARKET_ITEMS[itemId]) {
                 const marketRes = await db.sellItemMarket(interaction.user.id, itemId, qty);
@@ -177,7 +178,6 @@ module.exports = {
                 const embed = buildWaguriEmbed(interaction, 'error', { locale, title: t(locale, 'commands.store.sell_title'), description: t(locale, 'commands.store.sell_error_generic') });
                 return interaction.editReply({ embeds: [embed] });
             }
-            const name = t(locale, `data.items.${item.id}.name`) || item.name;
             if (r.status !== 'ok') {
                 const msg = {
                     no_have: t(locale, 'commands.store.sell_error_no_have', { name }),
