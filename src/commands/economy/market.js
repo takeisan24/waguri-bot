@@ -134,7 +134,7 @@ module.exports = {
                 locale,
                 title: locale === 'en' ? '💸 Market Sale Successful!' : '💸 Bán Nông Sản Thành Công!',
                 description: locale === 'en'
-                    ? `Cậu đã bán **${fmt(amount)}x** ${itemInfo.emoji} **${itemName}** theo giá chợ **${fmt(res.unit_price)}** ${config.CURRENCY}/sp!\n\n💰 Thu về: **+${fmt(res.earned)}** ${config.CURRENCY}\n💳 Số dư mới: **${fmt(res.new_wallet)}** ${config.CURRENCY}`
+                    ? `You sold **${fmt(amount)}x** ${itemInfo.emoji} **${itemName}** at market rate **${fmt(res.unit_price)}** ${config.CURRENCY}/unit!\n\n💰 Earned: **+${fmt(res.earned)}** ${config.CURRENCY}\n💳 New Balance: **${fmt(res.new_wallet)}** ${config.CURRENCY}`
                     : `Cậu đã bán **${fmt(amount)}x** ${itemInfo.emoji} **${itemName}** theo giá chợ **${fmt(res.unit_price)}** ${config.CURRENCY}/sp!\n\n💰 Thu về: **+${fmt(res.earned)}** ${config.CURRENCY}\n💳 Số dư mới: **${fmt(res.new_wallet)}** ${config.CURRENCY}`
             });
 
