@@ -262,6 +262,14 @@ module.exports = {
             if (r.status === 'poor_item') {
                 return failWith(t(locale, 'commands.market.title_list'), t(locale, 'commands.market.err_poor_item', { qty, name: nameOf(itemId) }));
             }
+            // `bad_qty` do migration 0095_audit thêm khi siết market_list (FOR UPDATE + guard).
+            // Bản lệnh gốc viết TRƯỚC 0095 nên không biết status này -> rơi thẳng xuống embed
+            // THÀNH CÔNG với `id: undefined` dù không có gì được đăng bán. Slash chặn được nhờ
+            // setMinValue(1), nhưng đường PREFIX (`w!market list go 500 0`) không qua kiểm tra
+            // của Discord — parseOptions chỉ làm Number(raw).
+            if (r.status === 'bad_qty') {
+                return failWith(t(locale, 'commands.market.title_list'), t(locale, 'commands.store.sell_error_bad_qty'));
+            }
             return interaction.editReply({
                 embeds: [buildWaguriEmbed(interaction, 'success', {
                     locale,
@@ -434,9 +442,9 @@ module.exports = {
 
         // Không khớp subcommand nào -> KHÔNG được im lặng (đó chính là lỗi
         // "The application did not respond" mà người chơi gặp khi định nghĩa lệnh
-        // trên Discord lệch với code).
+        // trên Discord lệch với code, hoặc khi gõ `w!market xyz` qua prefix).
         return interaction.editReply({
-            embeds: [buildWaguriEmbed(interaction, 'error', { locale, description: t(locale, 'common.generic_error') })],
+            embeds: [buildWaguriEmbed(interaction, 'error', { locale, description: t(locale, 'common.invalid_subcommand') })],
         });
     },
 };
