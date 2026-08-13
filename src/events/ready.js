@@ -149,6 +149,12 @@ module.exports = {
             require('../database.js').stakeRefundOrphans()
                 .then(r => { if (r && r.count > 0) console.log(`[STAKES] Đã hoàn ${r.total} cho ${r.count} cược treo sau restart.`); })
                 .catch(e => console.error('[STAKES] Lỗi hoàn cược treo:', e?.message || e));
+
+            // Đánh cờ tài khoản vận hành (owner) để telemetry & BXH chỉ thấy người chơi THẬT.
+            // Xem migration 0099 — tiền test của owner từng nuốt 99% tín hiệu cung tiền.
+            require('../database.js').syncAdminExclusions(require('../config').OWNER_IDS)
+                .then(n => { if (n > 0) console.log(`[ECONOMY] Đã loại ${n} tài khoản vận hành khỏi thống kê kinh tế.`); })
+                .catch(() => {});
         }
 
         // Tự động dọn dẹp và hoàn vé cho các ván Loto/Bingo bị bỏ hoang (không hoạt động > 10 phút)

@@ -43,6 +43,7 @@ export async function GET(request: Request) {
         .from("users")
         .select("user_id, exp, username, avatar")
         .not("profile_public", "is", false) // tôn trọng hồ sơ ẩn (true/null = hiện, false = ẩn)
+        .not("exclude_from_economy", "is", true) // ẩn tài khoản vận hành (0099)
         .order("exp", { ascending: false })
         .limit(limit);
 
@@ -75,6 +76,7 @@ export async function GET(request: Request) {
           .from("users")
           .select("user_id, wallet, bank, username, avatar")
           .not("profile_public", "is", false) // tôn trọng hồ sơ ẩn
+          .not("exclude_from_economy", "is", true) // ẩn tài khoản vận hành (0099)
           .order("wallet", { ascending: false })
           .limit(limit);
 

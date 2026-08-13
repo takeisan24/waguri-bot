@@ -55,6 +55,7 @@ async function getBoard(type: "wealth" | "level" | "bakery", guild?: string): Pr
         .from("users")
         .select("user_id, exp, username, avatar")
         .not("profile_public", "is", false) // tôn trọng hồ sơ ẩn
+        .not("exclude_from_economy", "is", true) // ẩn tài khoản vận hành (0099)
         .order("exp", { ascending: false })
         .limit(10);
       if (data) {
@@ -85,6 +86,7 @@ async function getBoard(type: "wealth" | "level" | "bakery", guild?: string): Pr
           .from("users")
           .select("user_id, wallet, bank, username, avatar")
           .not("profile_public", "is", false) // tôn trọng hồ sơ ẩn
+          .not("exclude_from_economy", "is", true) // ẩn tài khoản vận hành (0099)
           .order("wallet", { ascending: false })
           .limit(10);
         if (usersData) {

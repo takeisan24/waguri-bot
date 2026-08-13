@@ -1146,6 +1146,36 @@ async function snapshotEconomy() {
     }
 }
 
+/**
+ * Đánh cờ `exclude_from_economy` cho các tài khoản VẬN HÀNH (owner) từ config.OWNER_IDS.
+ * Gọi 1 lần lúc bot khởi động (ready.js).
+ *
+ * VÌ SAO CẦN: owner dùng `/eco-admin addmoney` để test -> một tài khoản giữ ~99 tỷ xu trong khi
+ * toàn bộ người chơi thật cộng lại chỉ ~293k. `economy_snapshots.total_supply` bị một dòng nuốt
+ * mất 99% tín hiệu -> `/eco-admin report` mù hoàn toàn với lạm phát/exploit, và BXH công khai
+ * hiện tài khoản test ở hạng #1. Migration 0099 thêm cột + lọc trong RPC; hàm này đặt cờ.
+ *
+ * Đọc từ env thay vì hardcode ID trong migration: repo PUBLIC, và thêm owner mới thì tự áp dụng.
+ */
+async function syncAdminExclusions(ownerIds = []) {
+    const ids = (ownerIds || []).map(String).filter(Boolean);
+    if (!ids.length) return 0;
+    try {
+        const { data, error } = await supabase
+            .from('users')
+            .update({ exclude_from_economy: true })
+            .in('user_id', ids)
+            .neq('exclude_from_economy', true)   // chỉ ghi khi thực sự đổi -> chạy lại = no-op
+            .select('user_id');
+        if (error) throw error;
+        return data?.length || 0;
+    } catch (error) {
+        // Cột chưa tồn tại (migration 0099 chưa áp) -> bỏ qua êm, không chặn khởi động.
+        console.warn('[DATABASE] syncAdminExclusions() bỏ qua:', error?.message || error);
+        return 0;
+    }
+}
+
 /** Lấy N ảnh chụp kinh tế gần nhất (mới -> cũ) để dựng xu hướng. Trả mảng (có thể rỗng). */
 async function getEconomySnapshots(days = 14) {
     try {
@@ -2178,6 +2208,7 @@ module.exports = {
     deleteUserData,
     // telemetry kinh tế
     snapshotEconomy,
+    syncAdminExclusions,
     getEconomySnapshots,
     grantPremium,
     // ============================================================
