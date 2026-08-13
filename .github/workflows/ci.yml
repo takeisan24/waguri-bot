@@ -19,7 +19,7 @@ jobs:
       - run: npm ci
       # DB TEST (waguri-test) — KHÔNG BAO GIỜ trỏ vào prod.
       # Thiếu secret -> integration test tự SKIP (mặc định an toàn), CI vẫn chạy.
-      # Có secret -> 22 integration test + 5 test race condition được ĐÁNH THỨC.
+      # Có secret -> ĐÁNH THỨC 24 test tích hợp/race (đo thật 2026-08-13: 114 -> 138 test).
       # Chúng đã được viết sẵn từ lâu nhưng chưa từng chạy trong CI, vì CI dùng URL dummy —
       # đó là lý do tầng DB (nơi chứa 100% lỗi nghiêm trọng của sự cố chợ 2026-08) không có
       # một gate tự động nào.
