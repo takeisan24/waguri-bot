@@ -32,6 +32,9 @@ Waguri là **Discord economy/RPG bot bản địa hóa văn hóa Việt**. Bot N
 6. **Fail-safe:** command/handler không được `throw` ra ngoài làm hỏng interaction hoặc sập bot. Dịch vụ ngoài lỗi (Gemini/Open-Meteo) → fallback nhẹ nhàng (xem Ma trận fail-safe §5 dưới).
 7. **Đồng bộ lệnh:** thêm/sửa lệnh bot → cập nhật `web/src/components/CommandsExplorer.tsx` (CI `scripts/check-command-sync.js` sẽ chặn nếu lệch) + cập nhật `/help`.
 8. **Số liệu → `src/config/`, nội dung → `src/data/`.** Đừng hardcode rải rác trong command.
+9. **Web CŨNG là tầng ghi game state.** `web/` dùng service-role (bypass RLS) và chạm cả tiền thật (Premium). Mọi Server Action đụng `wallet`/`inventory`/`skill_points`/state quan trọng **phải gọi ĐÚNG RPC mà bot dùng** — cấm read-modify-write trong TS y hệt cấm trong JS. Luật 1 & 2 áp cho CẢ HAI tầng.
+10. **MỘT con số = MỘT nguồn.** Đừng tạo bảng giá thứ hai. Giá bán phải neo vào giá mua (`items.price`); nếu không, mua ở tiệm rồi bán chỗ khác = in tiền. Đây là nguyên nhân gốc của sự cố chợ 2026-08.
+11. **Luật phải là `exit 1`, không phải văn xuôi.** Trước khi commit thứ đụng DB/kinh tế: `npm run check-sql` + `npm run check-economy`. Luật nào đã bị vi phạm 2 lần → biến nó thành script, đừng viết đoạn văn dài hơn.
 
 ---
 

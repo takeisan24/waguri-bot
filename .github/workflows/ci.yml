@@ -17,11 +17,22 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
-      # Env dummy: database.js process.exit(1) nếu thiếu — test chỉ kiểm logic thuần, không gọi DB.
+      # DB TEST (waguri-test) — KHÔNG BAO GIỜ trỏ vào prod.
+      # Thiếu secret -> integration test tự SKIP (mặc định an toàn), CI vẫn chạy.
+      # Có secret -> 22 integration test + 5 test race condition được ĐÁNH THỨC.
+      # Chúng đã được viết sẵn từ lâu nhưng chưa từng chạy trong CI, vì CI dùng URL dummy —
+      # đó là lý do tầng DB (nơi chứa 100% lỗi nghiêm trọng của sự cố chợ 2026-08) không có
+      # một gate tự động nào.
       - run: npm test
         env:
           SUPABASE_URL: https://dummy.supabase.co
           SUPABASE_SERVICE_KEY: dummy_key_for_ci
+          ENABLE_TEST_SUPABASE: ${{ secrets.TEST_SUPABASE_URL != '' && 'true' || '' }}
+          TEST_SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
+          TEST_SUPABASE_SERVICE_KEY: ${{ secrets.TEST_SUPABASE_SERVICE_KEY }}
+      # Gate tầng DB: nguyên tử (FOR UPDATE), least-privilege (không GRANT cho anon),
+      # idempotent, số migration không trùng. Ratchet qua scripts/sql-policy-allowlist.json.
+      - run: npm run check-sql
       # Chặn drift: mọi lệnh slash của bot phải có trên trang commands của web.
       - run: node scripts/check-command-sync.js
 

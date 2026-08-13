@@ -15,6 +15,8 @@
     "lint": "eslint \"src/**/*.js\" index.js shard.js",
     "pretest": "npm run lint",
     "check-i18n": "node scripts/check-i18n-coverage.js",
+    "check-sql": "node scripts/check-sql-policy.js",
+    "check-economy": "node --test test/economy.invariants.test.js",
     "test": "node scripts/check-i18n-coverage.js && node --test",
     "prepare": "git config core.hooksPath scripts/git-hooks || exit 0"
   },

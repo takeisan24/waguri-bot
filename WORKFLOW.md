@@ -25,15 +25,36 @@ Tài liệu này mô tả cách làm việc trên Waguri: nên theo gì, tránh 
 5. **Hook** nếu cần (vd cộng tiến độ quest từ /work).
 6. **Số liệu → `config/`, nội dung → `data/`.** Đừng hardcode trong lệnh.
 7. **Cập nhật `/help`.**
-8. **Verify đầy đủ → commit → push.**
+8. **Web (nếu tính năng có mặt trên web):** trang/Server Action trong `web/src/app/`, + cập nhật `web/src/components/CommandsExplorer.tsx`, + i18n qua `LanguageProvider` (đừng hardcode tiếng Việt), + đơn vị tiền lấy từ `config.CURRENCY` để bot và web không gọi khác nhau. Ghi state game → gọi ĐÚNG RPC bot dùng (Luật 9), không read-modify-write.
+9. **Verify đầy đủ → commit → push.**
 
 ## 3. Cổng chất lượng TRƯỚC khi commit
 - [ ] `node --check` mọi file đổi.
-- [ ] `npm test` (unit cho logic thuần như leveling/amount).
+- [ ] `npm test` (lint + i18n + toàn bộ test).
+- [ ] `npm run check-sql` — gate tĩnh cho migration (nguyên tử, quyền, idempotent, số thứ tự).
 - [ ] Build thử: require mọi command + `data.toJSON()` không lỗi.
 - [ ] Test tích hợp DB: gọi helper thật rồi **dọn dữ liệu test**.
 - [ ] Lệnh có nút/collector (blackjack, lixi, marry, pagination) → **playtest trong Discord thật**.
+- [ ] Đổi gì ở `web/` → `cd web && npm run build && npm run lint`.
 - [ ] Không lộ secret; `.env` vẫn bị gitignore.
+
+### 3b. Definition of Done — RIÊNG cho thứ đụng ví / kho / EXP
+
+Sáu dòng này, nếu tồn tại trước tháng 8/2026, đã chặn được toàn bộ sự cố chợ
+(máy in tiền +567%/vòng, dupe do thiếu khoá hàng, RPC tiền lộ cho `anon`).
+Chúng **không thay thế** §3 — chúng cộng thêm.
+
+- [ ] RPC có `FOR UPDATE` trên hàng đọc-để-quyết-định **và** guard row-count sau khi ghi.
+- [ ] RPC có `SET search_path = pg_catalog, public`; **KHÔNG** `GRANT` cho `anon`/`authenticated`/`public`.
+- [ ] Giá bán neo vào giá mua (`items.price`) — không tạo bảng giá thứ hai (Luật 10).
+- [ ] `npm run check-economy` xanh (bất biến: không có cặp mua<bán sinh lãi).
+- [ ] Có integration test chạy trên `waguri-test`, **gồm ít nhất 1 test gọi song song** (Promise.all) để lộ race.
+- [ ] Nguồn thu/chi mới hiển thị được qua `/eco-admin report` — faucet vô hình là faucet không kiểm soát được.
+
+> ⚠️ **Tự kiểm feature mình vừa viết cho hiệu suất rất thấp.** Lượt "audit" ngay sau khi
+> viết chợ hỏi *"ID có khớp không?"* và bỏ lọt cả 3 lỗi CRITICAL, vì nó đi theo ý định của
+> người viết. Với thứ đụng tiền, cần một lượt đọc riêng đặt câu hỏi ngược:
+> ***"khai thác nó kiểu gì?"*** chứ không phải *"nó có chạy không?"*.
 
 ---
 
@@ -65,7 +86,7 @@ Tài liệu này mô tả cách làm việc trên Waguri: nên theo gì, tránh 
 5. **Git**: commit nhỏ atomic, message rõ, nhánh khi cần.
 6. **Bảo mật cơ bản**: quản lý secret, không lộ service key ra client, nguyên tắc least-privilege.
 7. **Prompt engineering**: viết system prompt persona cho AI (đã dùng cho Waguri).
-8. **Kỷ luật testing/verify**: viết test cho logic thuần; nghĩ edge case; luôn dọn dữ liệu test.
+8. **Kỷ luật testing/verify**: **mọi RPC đụng tiền/kho PHẢI có integration test trước khi commit** (chạy trên `waguri-test`, có 1 ca gọi song song). Test logic thuần là mức sàn, không phải mức đủ — `npm test` từng xanh 105/105 trong khi tồn tại máy in tiền, vì suite chỉ kiểm hàm hash chứ không kiểm đường tiền. Luôn dọn dữ liệu test.
 
 ---
 
