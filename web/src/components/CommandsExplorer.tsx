@@ -30,7 +30,7 @@ const CATEGORIES_VI: Cat[] = [
     name: "🏪 Cửa hàng & Kho",
     cmds: [
       ["store", "cửa hàng: xem danh sách, mua bán vật phẩm (list · buy · sell) 🏪"],
-      ["market", "thị trường & chợ nông thủy sản biến động 📈 (prices · sell · view · mine · buy · cancel · auctions · auction · bid · cancel-auction)"],
+      ["market", "chợ nông sản biến động, chợ giữa người chơi & đấu giá 🛒📈 (prices · sell · view · mine · list · buy · cancel · auctions · auction · bid · cancel-auction)"],
       ["inventory", "xem kho đồ"],
       ["album", "xem sổ tay sưu tầm vật phẩm và nhận thưởng bộ sưu tập 📖"],
       ["pass", "xem và nhận thưởng Sổ Sứ Mệnh (Battle Pass) 📖"],
@@ -161,7 +161,7 @@ const CATEGORIES_EN: Cat[] = [
     name: "🏪 Store & Inventory",
     cmds: [
       ["store", "store: list, buy, or sell items 🏪"],
-      ["market", "player market & auctions 🛒 (view · mine · sell · buy · cancel · auctions · auction · bid · cancel-auction)"],
+      ["market", "commodity market, player market & auctions 🛒📈 (prices · sell · view · mine · list · buy · cancel · auctions · auction · bid · cancel-auction)"],
       ["inventory", "view inventory"],
       ["album", "view collector handbook & claim collection rewards 📖"],
       ["pass", "view and claim Battle Pass rewards 📖"],

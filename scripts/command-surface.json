@@ -1,0 +1,252 @@
+{
+  "config": [
+    "ai",
+    "ai-channel",
+    "announcement-channel",
+    "confession-channel",
+    "gambling",
+    "language",
+    "police-jail",
+    "pvp",
+    "view",
+    "welcome-channel",
+    "welcome-role"
+  ],
+  "eco-admin": [
+    "addmoney",
+    "ban",
+    "giveitem",
+    "premium",
+    "report",
+    "resetuser",
+    "setenergy",
+    "setexp",
+    "setjob",
+    "setmoney",
+    "unban"
+  ],
+  "getinvite": [],
+  "premium-admin": [
+    "cho",
+    "duyet"
+  ],
+  "serverinfo": [],
+  "setup": [],
+  "achievements": [],
+  "album": [],
+  "bank": [
+    "balance",
+    "gui",
+    "rut"
+  ],
+  "chop": [],
+  "clan": [
+    "create",
+    "deposit",
+    "disband",
+    "info",
+    "join",
+    "kick",
+    "leave",
+    "list",
+    "shrine",
+    "war",
+    "withdraw"
+  ],
+  "cosmetic": [
+    "badge-buy",
+    "badge-equip",
+    "color",
+    "title",
+    "view"
+  ],
+  "craft": [
+    "list",
+    "make"
+  ],
+  "cuutro": [],
+  "daily": [],
+  "henho": [
+    "di-choi",
+    "tang-qua",
+    "view"
+  ],
+  "eat": [],
+  "fish": [],
+  "give": [],
+  "hospital": [],
+  "inventory": [],
+  "jobs": [
+    "apply",
+    "info",
+    "list"
+  ],
+  "leaderboard": [],
+  "market": [
+    "auction",
+    "auctions",
+    "bid",
+    "buy",
+    "cancel",
+    "cancel-auction",
+    "list",
+    "mine",
+    "prices",
+    "sell",
+    "view"
+  ],
+  "mine": [],
+  "nghingoi": [],
+  "pass": [
+    "buy",
+    "view"
+  ],
+  "pet": [
+    "adopt",
+    "feed",
+    "rename",
+    "skill-up",
+    "view"
+  ],
+  "prestige": [],
+  "profile": [],
+  "quest": [],
+  "repair": [],
+  "rob": [],
+  "store": [
+    "buy",
+    "list",
+    "sell"
+  ],
+  "tangdo": [],
+  "tiembanh": [
+    "mo",
+    "nangcap",
+    "nhapnl",
+    "sathai",
+    "thu",
+    "thue",
+    "trangtri",
+    "xem"
+  ],
+  "vay": [
+    "doi",
+    "muon",
+    "so",
+    "tra"
+  ],
+  "work": [],
+  "worldevent": [
+    "claim",
+    "contribute",
+    "view"
+  ],
+  "action": [],
+  "amlich": [],
+  "boi": [
+    "cunghoangdao",
+    "hangngay",
+    "thaydo"
+  ],
+  "confession": [],
+  "couple": [
+    "divorce",
+    "marry",
+    "status"
+  ],
+  "date": [],
+  "dovui": [],
+  "image": [],
+  "lixi": [],
+  "noitu": [
+    "start",
+    "status",
+    "stop"
+  ],
+  "ship": [],
+  "study": [
+    "leaderboard",
+    "start",
+    "status",
+    "stop"
+  ],
+  "bacay": [],
+  "baucua": [],
+  "bingo": [
+    "buy",
+    "check",
+    "end",
+    "open",
+    "start"
+  ],
+  "blackjack": [],
+  "coinflip": [],
+  "crate": [],
+  "duangua": [],
+  "heo": [
+    "an",
+    "ban",
+    "box",
+    "chuabenh",
+    "info",
+    "mua",
+    "ngu",
+    "tam",
+    "trom"
+  ],
+  "loto": [
+    "end",
+    "join",
+    "list",
+    "open",
+    "start"
+  ],
+  "masoi": [],
+  "taixiu": [],
+  "trongcay": [
+    "bonphan",
+    "box",
+    "hoisinh",
+    "info",
+    "muagiong",
+    "phacay",
+    "thuhoach",
+    "trom",
+    "tuoi"
+  ],
+  "xocdia": [],
+  "announcement": [
+    "auto",
+    "clear",
+    "send",
+    "view"
+  ],
+  "ask": [],
+  "bot": [
+    "about",
+    "invite",
+    "ping",
+    "support"
+  ],
+  "claim-support": [],
+  "deletedata": [],
+  "event": [
+    "start",
+    "status",
+    "stop"
+  ],
+  "help": [],
+  "premium": [],
+  "Xem hồ sơ Waguri": [],
+  "server": [],
+  "start": [],
+  "status": [],
+  "thoitiet": [],
+  "ticket": [
+    "close",
+    "create",
+    "panel"
+  ],
+  "user": [],
+  "vote": []
+}

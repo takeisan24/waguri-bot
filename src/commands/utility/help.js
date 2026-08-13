@@ -20,7 +20,7 @@ const CATEGORIES = [
     ] },
     { name: '🏪 Cửa hàng & Kho', cmds: [
         ['store', 'cửa hàng: xem/mua/bán vật phẩm (list / buy / sell)'],
-        ['market', 'chợ mua bán & đấu giá đồ giữa người chơi 🛒 (view·mine·sell·buy·cancel·auctions·auction·bid·cancel-auction)'],
+        ['market', 'chợ nông sản biến động, chợ giữa người chơi & đấu giá 🛒📈 (prices·sell·view·mine·list·buy·cancel·auctions·auction·bid·cancel-auction)'],
         ['inventory', 'xem kho đồ'],
         ['album', 'xem sổ tay sưu tầm vật phẩm và nhận thưởng bộ sưu tập 📖'],
         ['pass', 'xem và nhận thưởng Sổ Sứ Mệnh (Battle Pass) 📖'],
