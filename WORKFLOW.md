@@ -32,6 +32,7 @@ Tài liệu này mô tả cách làm việc trên Waguri: nên theo gì, tránh 
 - [ ] `node --check` mọi file đổi.
 - [ ] `npm test` (lint + i18n + toàn bộ test).
 - [ ] `npm run check-sql` — gate tĩnh cho migration (nguyên tử, quyền, idempotent, số thứ tự).
+- [ ] `npm run check-rpc` — RPC thêm status trả về mới thì tầng lệnh phải biết (chống rơi xuống nhánh "thành công" hoặc kết thúc không ack).
 - [ ] Build thử: require mọi command + `data.toJSON()` không lỗi.
 - [ ] Test tích hợp DB: gọi helper thật rồi **dọn dữ liệu test**.
 - [ ] Lệnh có nút/collector (blackjack, lixi, marry, pagination) → **playtest trong Discord thật**.

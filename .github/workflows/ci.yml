@@ -33,6 +33,9 @@ jobs:
       # Gate tầng DB: nguyên tử (FOR UPDATE), least-privilege (không GRANT cho anon),
       # idempotent, số migration không trùng. Ratchet qua scripts/sql-policy-allowlist.json.
       - run: npm run check-sql
+      # Chặn khoảng hở RPC↔lệnh: migration thêm status trả về mới mà lệnh chưa biết
+      # -> lệnh rơi xuống nhánh thành công hoặc kết thúc không ack (lỗi bad_qty / no_user).
+      - run: npm run check-rpc
       # Chặn drift: mọi lệnh slash của bot phải có trên trang commands của web.
       - run: node scripts/check-command-sync.js
 

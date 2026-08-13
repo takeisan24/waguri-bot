@@ -1,0 +1,19 @@
+{
+  "note": "BASELINE — cặp (file, rpc) có status KHÔNG xuất hiện tường minh trong CODE (comment đã bị loại bỏ trước khi quét). Đây KHÔNG phải danh sách lỗi: có mẫu xử lý hợp lệ mà kiểm tra tĩnh không thấy được — kiểm phủ định (vay.js: status !== 'ok' gom hết; prestige.js: nhánh fallback cuối ack mọi status lạ), cố ý bỏ qua (couple.js: chỉ hành động khi ok), hoặc luồng dựa trên field khác (newbie.js: res.claimed). Gate chỉ chặn khi có status MỚI xuất hiện — đúng kịch bản 0095_audit thêm bad_qty vào market_list mà không lệnh nào biết.",
+  "known": {
+    "src/commands/economy/prestige.js::prestige_user": [
+      "no_user"
+    ],
+    "src/commands/economy/vay.js::loan_create": [
+      "bad"
+    ],
+    "src/lib/couple.js::couple_love": [
+      "single"
+    ],
+    "src/lib/newbie.js::newbie_quest_incr": [
+      "already_completed",
+      "no_match",
+      "updated"
+    ]
+  }
+}

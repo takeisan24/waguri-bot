@@ -17,6 +17,7 @@
     "check-i18n": "node scripts/check-i18n-coverage.js",
     "check-sql": "node scripts/check-sql-policy.js",
     "check-economy": "node --test test/economy.invariants.test.js",
+    "check-rpc": "node scripts/check-rpc-status.js",
     "test": "node scripts/check-i18n-coverage.js && node --test",
     "prepare": "git config core.hooksPath scripts/git-hooks || exit 0"
   },

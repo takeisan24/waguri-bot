@@ -137,6 +137,16 @@ module.exports = {
                 });
                 return i.update({ embeds: [successEmbed], components: [] });
             }
+
+            // Mọi status khác (vd `no_user` từ RPC prestige_user) PHẢI được ack.
+            // Trước đây rơi khỏi cả 3 nhánh mà không gọi i.update() -> nút không được
+            // phản hồi -> người chơi thấy "This interaction failed", đúng lớp lỗi im
+            // lặng của /market view.
+            const unknownEmbed = buildWaguriEmbed(interaction, 'error', {
+                locale,
+                description: t(locale, 'common.generic_error')
+            });
+            return i.update({ embeds: [unknownEmbed], components: [] });
         });
     }
 };

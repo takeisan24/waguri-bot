@@ -16,6 +16,9 @@ npm test || { echo "[pre-push] ❌ Test ĐỎ — huỷ push. Sửa rồi push l
 echo "[pre-push] Kiểm tra luật migration SQL..."
 node scripts/check-sql-policy.js || { echo "[pre-push] ❌ Migration vi phạm luật DB — huỷ push. Xem gợi ý sửa ở trên."; exit 1; }
 
+echo "[pre-push] Kiểm tra status RPC ↔ tầng lệnh..."
+node scripts/check-rpc-status.js || { echo "[pre-push] ❌ RPC có status MỚI chưa được xử lý — huỷ push."; exit 1; }
+
 echo "[pre-push] Kiểm tra đồng bộ lệnh bot ↔ web..."
 node scripts/check-command-sync.js || { echo "[pre-push] ❌ Lệnh bot/web LỆCH — huỷ push. Cập nhật web/CommandsExplorer.tsx."; exit 1; }
 
