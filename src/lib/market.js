@@ -1,16 +1,23 @@
+// ⚠️ `basePrice` KHÔNG phải con số tự do — nó PHẢI bằng `items.price × 0.5` của catalog DB.
+// Đây là bản sao CHỈ-ĐỂ-HIỂN-THỊ; nguồn sự thật khi BÁN là RPC `market_unit_price()`
+// (migration 0098), tính cùng công thức. Test `economy.invariants` chặn lệch giữa hai nơi.
+//
+// Vì sao 0.5: đó là tỉ lệ bán lại của `sell_item` (0006) mà toàn bộ nghề/craft/sink đang
+// cân bằng quanh. Kết hợp hệ số 0.70–1.50 -> bán đỉnh = giá mua × 0.75 < giá mua,
+// nên KHÔNG THỂ mua ở /store rồi bán kiếm lời (sự cố máy in tiền 2026-08).
 const BASE_MARKET_ITEMS = {
     'trai_1500':      { basePrice: 1500,  category: 'crop', emoji: '🌾', nameVi: 'Lúa Nước',          nameEn: 'Wet Rice' },
     'trai_2500':      { basePrice: 2500,  category: 'crop', emoji: '🥔', nameVi: 'Khoai Tây',         nameEn: 'Potato' },
     'hoa_2000':       { basePrice: 2000,  category: 'crop', emoji: '🍅', nameVi: 'Cà Chua',           nameEn: 'Tomato' },
     'hoa_3500':       { basePrice: 3500,  category: 'crop', emoji: '🍉', nameVi: 'Dưa Hấu',           nameEn: 'Watermelon' },
     'thit_heo_2500':  { basePrice: 2500,  category: 'pig',  emoji: '🥓', nameVi: 'Thịt Heo',          nameEn: 'Pork' },
-    'ca_tuoi':        { basePrice: 600,   category: 'fish', emoji: '🐟', nameVi: 'Cá Tươi',           nameEn: 'Fresh Fish' },
-    'ca_koi_nhat':    { basePrice: 5000,  category: 'fish', emoji: '🐠', nameVi: 'Cá Koi',            nameEn: 'Koi Fish' },
-    'ca_rong_vang':   { basePrice: 15000, category: 'fish', emoji: '🐉', nameVi: 'Cá Rồng Vàng',      nameEn: 'Golden Dragon Fish' },
-    'quang_sat':      { basePrice: 800,   category: 'ore',  emoji: '💎', nameVi: 'Đá Siêu Cấp',       nameEn: 'Super Gem' },
-    'vang_dong_tren': { basePrice: 20000, category: 'ore',  emoji: '🥇', nameVi: 'Vàng Đông Triều',      nameEn: 'Dong Trieu Gold' },
-    'go':             { basePrice: 400,   category: 'wood', emoji: '🪵', nameVi: 'Gỗ Rắn',            nameEn: 'Solid Wood' },
-    'ky_nam':         { basePrice: 25000, category: 'wood', emoji: '🪵', nameVi: 'Kỳ Nam',            nameEn: 'Ky Nam Agarwood' },
+    'ca_tuoi':        { basePrice: 150,   category: 'fish', emoji: '🐟', nameVi: 'Cá Tươi',           nameEn: 'Fresh Fish' },
+    'ca_koi_nhat':    { basePrice: 40000, category: 'fish', emoji: '🐠', nameVi: 'Cá Koi',            nameEn: 'Koi Fish' },
+    'ca_rong_vang':   { basePrice: 10000, category: 'fish', emoji: '🐉', nameVi: 'Cá Rồng Vàng',      nameEn: 'Golden Dragon Fish' },
+    'quang_sat':      { basePrice: 50,    category: 'ore',  emoji: '💎', nameVi: 'Đá Siêu Cấp',       nameEn: 'Super Gem' },
+    'vang_dong_tren': { basePrice: 2500,  category: 'ore',  emoji: '🥇', nameVi: 'Vàng Đông Triều',      nameEn: 'Dong Trieu Gold' },
+    'go':             { basePrice: 30,    category: 'wood', emoji: '🪵', nameVi: 'Gỗ Rắn',            nameEn: 'Solid Wood' },
+    'ky_nam':         { basePrice: 7500,  category: 'wood', emoji: '🪵', nameVi: 'Kỳ Nam',            nameEn: 'Ky Nam Agarwood' },
 };
 
 /**
