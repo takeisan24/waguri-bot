@@ -184,13 +184,16 @@ module.exports = {
         }
 
         // ============================================================
-        // 2) + 3) CHỢ P2P & ĐẤU GIÁ — cần bảng items để tra tên
+        // 2) + 3) CHỢ P2P & ĐẤU GIÁ
         // ============================================================
+        // ACK TRƯỚC, truy vấn SAU. Bản cũ gọi db.getItems() rồi mới deferReply() —
+        // một lần Supabase chậm (log prod có EAI_AGAIN) là quá 3 giây và interaction
+        // chết với 10062. Mọi nhánh dưới đây đều defer nên gom lên một chỗ.
+        await interaction.deferReply();
         const items = await db.getItems();
         const nameOf = id => t(locale, `items.${id}.name`) || items.find(i => i.id === id)?.name || id;
 
         if (sub === 'auctions') {
-            await interaction.deferReply();
             const rows = await db.getActiveAuctions(50);
             if (!rows.length) {
                 return interaction.editReply({
@@ -217,7 +220,6 @@ module.exports = {
         }
 
         if (sub === 'view' || sub === 'mine') {
-            await interaction.deferReply();
             const rows = sub === 'mine' ? await db.marketMine(interaction.user.id) : await db.marketActive(50);
             if (!rows.length) {
                 return interaction.editReply({
@@ -242,8 +244,6 @@ module.exports = {
                 footerNote: t(locale, 'commands.market.paginated_footer'),
             });
         }
-
-        await interaction.deferReply();
 
         // Lỗi hệ thống dùng chung cho mọi nhánh còn lại (helper trả null khi DB lỗi).
         const systemError = () => interaction.editReply({
@@ -280,6 +280,7 @@ module.exports = {
             const r = await db.marketBuy(interaction.user.id, id);
             if (!r) return systemError();
             const msg = {
+                __proto__: null,
                 notfound: t(locale, 'commands.market.err_not_found'),
                 gone: t(locale, 'commands.market.err_gone'),
                 own: t(locale, 'commands.market.err_own'),
@@ -303,6 +304,7 @@ module.exports = {
             const r = await db.marketCancel(interaction.user.id, id);
             if (!r) return systemError();
             const msg = {
+                __proto__: null,
                 notfound: t(locale, 'commands.market.err_not_found'),
                 notyours: t(locale, 'commands.market.err_not_yours'),
                 gone: t(locale, 'commands.market.err_gone'),
@@ -371,6 +373,7 @@ module.exports = {
             const r = await db.placeBid(interaction.user.id, id, amount);
             if (!r) return systemError();
             const msg = {
+                __proto__: null,
                 notfound: t(locale, 'commands.market.err_not_found'),
                 not_active: t(locale, 'commands.market.err_auction_not_active'),
                 ended: t(locale, 'commands.market.err_auction_ended'),
@@ -413,6 +416,7 @@ module.exports = {
             const r = await db.cancelAuction(interaction.user.id, id);
             if (!r) return systemError();
             const msg = {
+                __proto__: null,
                 notfound: t(locale, 'commands.market.err_not_found'),
                 notyours: t(locale, 'commands.market.err_not_yours'),
                 not_active: t(locale, 'commands.market.err_auction_not_active'),
