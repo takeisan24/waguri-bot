@@ -14,7 +14,7 @@ chơi minigame nhiều người, kết đôi, buôn bán… — tất cả bằn
 
 ---
 
-## ✨ Tính năng (71 lệnh)
+## ✨ Tính năng (79 lệnh)
 
 | Nhóm | Lệnh tiêu biểu |
 |---|---|
