@@ -102,6 +102,7 @@ Chúng **không thay thế** §3 — chúng cộng thêm.
 ## 6. An toàn DB & Test (KHÔNG chạy test trên prod)
 
 - **DB test riêng:** integration test chỉ chạy khi có `TEST_SUPABASE_URL` + `TEST_SUPABASE_SERVICE_KEY` trong `.env`, trỏ vào project Supabase **test** (`waguri-test`) — KHÔNG bao giờ dùng URL/key prod. Thiếu 2 biến này → test tự **SKIP** (mặc định an toàn, gồm cả CI).
+- ⚠️ **DB test TRÔI khỏi prod là chuyện có thật.** Tháng 8/2026 phát hiện `waguri-test` thiếu `market_prices`, `tickets`, `users.username` — tức `0092`, `0093`, `0095`, `0096` chưa từng được áp lên test. Hệ quả: "áp test trước" mất tác dụng đúng lúc cần nhất, và nó chặn giữa chừng 3 lần trong một phiên. **Áp migration thì áp CẢ HAI DB**; nếu chỉ áp prod, hãy ghi rõ ra để lần sau biết test không còn là bản sao.
 - **Migration:** áp lên **DB test trước** (`waguri-test`), chạy `npm test` xanh, RỒI mới áp prod. Đừng prod-first.
 - **Tự động hoá (solo dev):** hook `scripts/git-hooks/pre-push` tự chạy `npm test` + `check-command-sync` trước mỗi `git push` (tự bật qua `npm install` nhờ script `prepare`). Push chỉ đi khi xanh. Khẩn cấp mới `git push --no-verify`.
 
