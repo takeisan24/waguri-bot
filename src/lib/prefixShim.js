@@ -109,7 +109,12 @@ async function buildPrefixInteraction(message, command, tokens) {
 
     const db = require('../database');
     const userProfile = await db.getUser(message.author.id);
-    const userLocale = userProfile?.locale || 'vi';
+    // `null` chứ KHÔNG phải 'vi': tin nhắn prefix không mang tín hiệu ngôn ngữ nào từ
+    // Discord, nên "chưa biết" phải giữ nguyên là chưa biết. Nếu điền sẵn 'vi', tầng i18n
+    // sẽ tưởng đó là ngôn ngữ thật của người dùng và HỌC nó vào DB — khoá cứng người dùng
+    // tiếng Anh vào tiếng Việt vĩnh viễn. Để null thì chuỗi ưu tiên tự rơi xuống cấu hình
+    // server rồi mới tới mặc định 'vi', mà không bịa ra dữ liệu.
+    const userLocale = userProfile?.locale || null;
 
     const send = async (payload) => {
         const body = typeof payload === 'string' ? { content: payload } : { ...payload };

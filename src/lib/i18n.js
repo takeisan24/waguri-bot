@@ -123,21 +123,20 @@ async function getInteractionLanguage(interaction) {
     return resolved;
 }
 
+// Thứ tự ưu tiên: CHỦ ĐỘNG thắng NGẦM ĐỊNH; trong nhóm ngầm định, CÁ NHÂN thắng MÔI TRƯỜNG.
+//   1. gs.language        — admin chủ động chạy `/config language` cho server này
+//   2. u.locale           — ngôn ngữ đã học được của người dùng, lưu trong DB
+//   3. interaction.locale — ngôn ngữ Discord của chính người dùng
+//   4. guildLocale        — ngôn ngữ Discord của server (tín hiệu môi trường, yếu nhất)
+//   5. 'vi'
+//
+// Bậc 3 và 4 trước đây ĐẢO NGƯỢC: `guildLocale` được xét trước nên người Việt trong server
+// đặt tiếng Anh luôn bị bot nói tiếng Anh. Tệ hơn, bậc 3 là NƠI DUY NHẤT gọi
+// `updateUserLocale()`; vì bậc 4 cũ luôn khớp trong server và `return` trước, bậc học ngôn
+// ngữ KHÔNG BAO GIỜ chạy => `users.locale` vĩnh viễn rỗng. Hai lỗi khoá nhau, phải sửa cùng
+// lúc với migration 0110 (cột `users.locale` chưa từng tồn tại trên DB).
 async function resolveInteractionLanguage(interaction, userId) {
-    // 1. Kiểm tra cấu hình ngôn ngữ của user trong DB (bọc timeout để không kẹt đường ack)
-    if (userId) {
-        try {
-            const db = require('../database');
-            const u = await withTimeout(db.getUser(userId), DB_LOOKUP_TIMEOUT);
-            if (u?.locale) {
-                return getLanguage(u.locale);
-            }
-        } catch (e) {
-            console.error('[i18n] Lỗi getUser locale:', e);
-        }
-    }
-
-    // 2. Kiểm tra cấu hình ngôn ngữ của server trong DB (nếu có guildId)
+    // 1. Cấu hình ngôn ngữ của server do admin đặt (bọc timeout để không kẹt đường ack)
     const guildId = interaction.guildId;
     if (guildId) {
         try {
@@ -151,14 +150,24 @@ async function resolveInteractionLanguage(interaction, userId) {
         }
     }
 
-    // 3. Kiểm tra locale của guild từ Discord (ngôn ngữ hiển thị của máy chủ)
-    if (interaction.guildLocale) {
-        return getLanguage(interaction.guildLocale);
+    // 2. Ngôn ngữ của người dùng đã ghi nhớ trong DB.
+    //    Đây là nguồn DUY NHẤT cho đường prefix (`w!`): interaction giả do prefixShim dựng
+    //    không có `locale` lẫn `guildLocale` từ Discord.
+    if (userId) {
+        try {
+            const db = require('../database');
+            const u = await withTimeout(db.getUser(userId), DB_LOOKUP_TIMEOUT);
+            if (u?.locale) {
+                return getLanguage(u.locale);
+            }
+        } catch (e) {
+            console.error('[i18n] Lỗi getUser locale:', e);
+        }
     }
 
-    // 4. Kiểm tra locale của user client từ Discord
+    // 3. Ngôn ngữ Discord của chính người dùng — và HỌC lại vào DB để lần sau
+    //    (nhất là để lệnh prefix biết được, vì đường đó không có tín hiệu nào từ Discord).
     if (interaction.locale) {
-        // Lưu lại locale của user client vào DB bất đồng bộ (fire-and-forget)
         if (userId) {
             try {
                 const db = require('../database');
@@ -166,6 +175,12 @@ async function resolveInteractionLanguage(interaction, userId) {
             } catch { /* ignore */ }
         }
         return getLanguage(interaction.locale);
+    }
+
+    // 4. Ngôn ngữ Discord của server — tín hiệu môi trường, chỉ dùng khi không biết gì về
+    //    cá nhân người dùng.
+    if (interaction.guildLocale) {
+        return getLanguage(interaction.guildLocale);
     }
 
     // 5. Mặc định là tiếng Việt

@@ -2073,7 +2073,11 @@ async function redeemPremiumOrderByCode(code, amount, ref) {
  */
 async function updateUserLocale(userId, locale) {
     try {
-        const lang = locale === 'en' ? 'en' : 'vi';
+        // Dùng CHUNG bộ chuẩn hoá với tầng i18n thay vì tự so sánh: Discord gửi mã có vùng
+        // (`en-US`, `en-GB`), nên phép so `locale === 'en'` cũ đẩy MỌI người dùng tiếng Anh
+        // xuống 'vi' — ghi sai vĩnh viễn vào DB. `getLanguage` cắt vùng rồi đối chiếu danh
+        // sách ngôn ngữ có thật. Require trong hàm để tránh vòng lặp require với i18n.
+        const lang = require('./lib/i18n').getLanguage(locale);
         const { error } = await supabase
             .from('users')
             .update({ locale: lang })
