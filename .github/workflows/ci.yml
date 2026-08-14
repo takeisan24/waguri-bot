@@ -42,6 +42,19 @@ jobs:
       # đã trôi mất 11 lệnh (gồm /start, /study, /prestige) — /study và /ticket có 0 lượt
       # dùng trên prod vì người chơi không có đường nào khám phá ra chúng.
       - run: node scripts/check-help-sync.js
+      # "Viết migration" KHÁC "DB đã có" — đã xảy ra BA lần: 0096 (chợ bán mọi thứ 500 xu),
+      # 0080 (ghi nhớ ngôn ngữ chết), 0091 (tuyên chiến clan mất cooldown). Cả ba đều do
+      # TRÙNG SỐ HIỆU nên file không bao giờ được áp.
+      # Chạy OFFLINE: đối chiếu file .sql với supabase/schema-snapshot.json đã commit.
+      # KHÔNG cần khoá DB nào — khoá service-role của prod không bao giờ rời máy local, vì
+      # `npm ci` cài 231 package và bất kỳ package nào cũng đọc được biến môi trường của job.
+      - run: node scripts/check-db-applied.js
+      # So DB test với ảnh chụp prod. Chỉ cần khoá TEST (đã có sẵn ở bước npm test phía trên);
+      # thiếu secret thì tự bỏ qua, mặc định an toàn.
+      - run: node scripts/check-db-drift.js
+        env:
+          TEST_SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
+          TEST_SUPABASE_SERVICE_KEY: ${{ secrets.TEST_SUPABASE_SERVICE_KEY }}
 
   web-build:
     name: Web — build

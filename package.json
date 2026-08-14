@@ -19,6 +19,8 @@
     "check-economy": "node --test test/economy.invariants.test.js",
     "check-rpc": "node scripts/check-rpc-status.js",
     "check-help": "node scripts/check-help-sync.js",
+    "db:snapshot": "node scripts/db-snapshot.js",
+    "check-db": "node scripts/check-db-applied.js && node scripts/check-db-drift.js && node scripts/db-snapshot.js --check",
     "test": "node scripts/check-i18n-coverage.js && node --test",
     "prepare": "git config core.hooksPath scripts/git-hooks || exit 0"
   },
