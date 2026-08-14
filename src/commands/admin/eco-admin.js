@@ -43,7 +43,10 @@ module.exports = {
             .addUserOption(o => o.setName('user').setDescription('Người chơi').setRequired(true)))
         .addSubcommand(s => s.setName('resetuser').setDescription('Xóa sạch dữ liệu một người chơi')
             .addUserOption(o => o.setName('user').setDescription('Người chơi').setRequired(true)))
-        .addSubcommand(s => s.setName('report').setDescription('📊 Báo cáo telemetry kinh tế (cung tiền, phân bố, xu hướng)')),
+        .addSubcommand(s => s.setName('report').setDescription('📊 Báo cáo telemetry kinh tế (cung tiền, hoạt động, dòng tiền, top nhận)'))
+        .addSubcommand(s => s.setName('trace').setDescription('🔎 Xem nhật ký giao dịch của một người chơi')
+            .addUserOption(o => o.setName('user').setDescription('Người chơi cần truy vết').setRequired(true))
+            .addIntegerOption(o => o.setName('limit').setDescription('Số dòng (mặc định 20, tối đa 50)').setMinValue(1).setMaxValue(50))),
 
     async autocomplete(interaction) {
         const focused = interaction.options.getFocused().toLowerCase();
@@ -97,6 +100,60 @@ module.exports = {
                 const d = Number(a) - Number(b);
                 return ` (${d >= 0 ? '+' : ''}${fmt(d, locale)})`;
             };
+            // Dữ liệu từ nhật ký giao dịch (migration 0104). Ledger mới bật nên có thể
+            // rỗng trong ~24h đầu — hiển thị ghi chú thay vì bảng trống khó hiểu.
+            const [flow, gainers, activity] = await Promise.all([
+                db.getLedgerFlow(24, 8),
+                db.getLedgerTopGainers(24, 5),
+                db.getActivityByDay(7),
+            ]);
+
+            const fields = [{
+                name: t(locale, 'commands.eco-admin.trend_title'),
+                value: snaps.slice(0, 7).map(s => `\`${s.taken_on}\` ${fmt(s.total_supply, locale)} ${C}`).join('\n')
+            }];
+
+            if (activity.length) {
+                fields.push({
+                    name: isEn ? '👥 Active players per day' : '👥 Người hoạt động mỗi ngày',
+                    value: activity.slice(0, 7).map(a => `\`${a.ngay}\` ${fmt(a.nguoi_hoat_dong, locale)}`).join('\n'),
+                    inline: true,
+                });
+            }
+
+            if (flow.length) {
+                // Dòng tiền theo NGUỒN: nguồn nào ròng dương nhiều = vòi bơm tiền.
+                fields.push({
+                    name: isEn ? '💧 Money flow by source (24h)' : '💧 Dòng tiền theo nguồn (24h)',
+                    value: flow.map(f => {
+                        const net = Number(f.rong);
+                        return `${net >= 0 ? '🟢' : '🔴'} \`${f.source}\` ${net >= 0 ? '+' : ''}${fmt(net, locale)} _(${fmt(f.so_lan, locale)}×)_`;
+                    }).join('\n').slice(0, 1000),
+                    inline: false,
+                });
+            }
+
+            if (gainers.length) {
+                fields.push({
+                    name: isEn ? '📈 Top net gainers (24h)' : '📈 Nhận ròng nhiều nhất (24h)',
+                    value: gainers.map(g =>
+                        `**${g.username}** ${Number(g.rong) >= 0 ? '+' : ''}${fmt(g.rong, locale)} ${C} ` +
+                        `_(vào ${fmt(g.thu_vao, locale)} / ra ${fmt(g.chi_ra, locale)}, ${fmt(g.so_giao_dich, locale)} gd)_`
+                    ).join('\n').slice(0, 1000),
+                    inline: false,
+                });
+            }
+
+            if (!flow.length && !gainers.length) {
+                fields.push({
+                    name: isEn ? '📒 Transaction ledger' : '📒 Nhật ký giao dịch',
+                    value: isEn
+                        ? 'Ledger is empty — it starts recording from migration 0104 onward. Data will appear as players transact.'
+                        : 'Nhật ký còn rỗng — chỉ ghi từ migration 0104 trở đi. Dữ liệu sẽ hiện dần khi người chơi giao dịch.',
+                    inline: false,
+                });
+            }
+
             const embed = buildWaguriEmbed(interaction, 'info', {
                 title: isEn ? `📊・Economy Telemetry — ${cur.taken_on}` : `📊・Telemetry Kinh Tế — ${cur.taken_on}`,
                 description: isEn
@@ -110,12 +167,53 @@ module.exports = {
                       `**Ví:** ${fmt(cur.total_wallet, locale)} · **Ngân hàng:** ${fmt(cur.total_bank, locale)}\n` +
                       `**Người chơi:** ${fmt(cur.user_count, locale)} (hoạt động 7d: ${fmt(cur.active_7d, locale)} · Premium: ${fmt(cur.premium_count, locale)})\n` +
                       `**Giàu nhất:** ${fmt(cur.richest, locale)} · **Trung bình:** ${fmt(cur.avg_supply, locale)}`,
-                fields: [{
-                    name: t(locale, 'commands.eco-admin.trend_title'),
-                    value: snaps.slice(0, 10).map(s => `\`${s.taken_on}\` ${fmt(s.total_supply, locale)} ${C}`).join('\n')
-                }]
+                fields,
             });
             return interaction.editReply({ embeds: [embed] });
+        }
+
+        // --- Truy vết giao dịch của một người chơi ---
+        if (sub === 'trace') {
+            const who = interaction.options.getUser('user');
+            const limit = interaction.options.getInteger('limit') || 20;
+            console.log(`[ECO-ADMIN AUDIT] owner=${interaction.user.id} action=trace target=${who.id}`);
+
+            const rows = await db.getLedgerUser(who.id, limit);
+            if (!rows.length) {
+                return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'warning', {
+                    description: isEn
+                        ? `No ledger entries for <@${who.id}>. The ledger only records from migration 0104 onward — older activity was never logged.`
+                        : `Chưa có dòng nhật ký nào của <@${who.id}>. Nhật ký chỉ ghi từ migration 0104 trở đi — hoạt động trước đó không được lưu lại.`
+                })] });
+            }
+
+            const items = await db.getItems();
+            const nameOf = id => t(locale, `data.items.${id}.name`) || items.find(i => i.id === id)?.name || id;
+
+            const lines = rows.map(r => {
+                const d = Number(r.delta);
+                const sign = d >= 0 ? '+' : '';
+                const when = `<t:${Math.floor(new Date(r.at).getTime() / 1000)}:R>`;
+                const what = r.kind === 'item'
+                    ? `${sign}${fmt(d, locale)}× ${nameOf(r.item_id)}`
+                    : `${sign}${fmt(d, locale)} ${C} _(${r.kind})_`;
+                const after = r.balance_after != null ? ` → \`${fmt(r.balance_after, locale)}\`` : '';
+                return `${d >= 0 ? '🟢' : '🔴'} ${what}${after} · \`${r.source || '?'}\` · ${when}`;
+            });
+
+            // Tổng hợp nhanh để thấy ngay bức tranh, không phải tự cộng tay.
+            const money = rows.filter(r => r.kind !== 'item');
+            const netMoney = money.reduce((s, r) => s + Number(r.delta), 0);
+
+            return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'info', {
+                title: isEn ? `🔎・Ledger — ${who.username}` : `🔎・Nhật ký giao dịch — ${who.username}`,
+                description:
+                    (isEn
+                        ? `Last **${rows.length}** entries · money net: **${netMoney >= 0 ? '+' : ''}${fmt(netMoney, locale)}** ${C}\n\n`
+                        : `**${rows.length}** dòng gần nhất · tiền ròng: **${netMoney >= 0 ? '+' : ''}${fmt(netMoney, locale)}** ${C}\n\n`)
+                    + lines.join('\n').slice(0, 3500),
+                footer: isEn ? 'Source = the DB function that made the change' : 'Nguồn = hàm DB đã thực hiện thay đổi',
+            })] });
         }
 
         const target = interaction.options.getUser('user');

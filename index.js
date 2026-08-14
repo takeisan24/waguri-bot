@@ -192,6 +192,10 @@ async function runEconomySnapshot() {
     try {
         const snap = await db.snapshotEconomy();
         if (snap) console.log(`[TELEMETRY] Kinh tế ${snap.taken_on}: cung tiền ${snap.total_supply}, ${snap.user_count} user (${snap.active_7d} hoạt động 7d).`);
+        // Dọn nhật ký giao dịch cũ (migration 0104) — giữ 30 ngày là đủ để xử lý
+        // tranh chấp/điều tra exploit mà không phình DB free-tier.
+        const pruned = await db.pruneEconomyLedger(30);
+        if (pruned > 0) console.log(`[TELEMETRY] Đã dọn ${pruned} dòng nhật ký giao dịch cũ hơn 30 ngày.`);
     } catch (e) { logError('economy_snapshot', e); }
     if (!shuttingDown) {
         setTimeout(runEconomySnapshot, 12 * 60 * 60_000).unref();

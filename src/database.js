@@ -1189,6 +1189,58 @@ async function getEconomySnapshots(days = 14) {
     }
 }
 
+// ============================================================
+//  NHẬT KÝ GIAO DỊCH (migration 0104)
+//  Ghi tự động bằng trigger trên `users`/`inventory` — không RPC nào phải sửa.
+//  Sinh ra vì trước đây bot KHÔNG có nhật ký nào: câu hỏi "tôi vừa bán 1 cuốc sắt,
+//  có đúng không?" chỉ trả lời được bằng suy luận từ chênh lệch số dư.
+// ============================================================
+
+/** Lịch sử giao dịch gần nhất của 1 người (mới -> cũ). Trả mảng (có thể rỗng). */
+async function getLedgerUser(userId, limit = 20) {
+    try {
+        const { data, error } = await supabase.rpc('ledger_user', { p_user: String(userId), p_limit: Number(limit) });
+        if (error) throw error;
+        return data || [];
+    } catch (error) { console.error('[DATABASE ERROR] getLedgerUser():', error); return []; }
+}
+
+/** Ai nhận nhiều tiền ròng nhất trong N giờ — dùng để soi exploit. */
+async function getLedgerTopGainers(hours = 24, limit = 10) {
+    try {
+        const { data, error } = await supabase.rpc('ledger_top_gainers', { p_hours: Number(hours), p_limit: Number(limit) });
+        if (error) throw error;
+        return data || [];
+    } catch (error) { console.error('[DATABASE ERROR] getLedgerTopGainers():', error); return []; }
+}
+
+/** Dòng tiền vào/ra theo NGUỒN (tên RPC) — thấy ngay nguồn nào đang bơm tiền. */
+async function getLedgerFlow(hours = 24, limit = 12) {
+    try {
+        const { data, error } = await supabase.rpc('ledger_flow', { p_hours: Number(hours), p_limit: Number(limit) });
+        if (error) throw error;
+        return data || [];
+    } catch (error) { console.error('[DATABASE ERROR] getLedgerFlow():', error); return []; }
+}
+
+/** Số người hoạt động theo từng ngày (thay `last_seen` — cột đó CHỈ /daily ghi). */
+async function getActivityByDay(days = 7) {
+    try {
+        const { data, error } = await supabase.rpc('activity_by_day', { p_days: Number(days) });
+        if (error) throw error;
+        return data || [];
+    } catch (error) { console.error('[DATABASE ERROR] getActivityByDay():', error); return []; }
+}
+
+/** Dọn nhật ký cũ hơn N ngày — giữ DB free-tier gọn. Trả số dòng đã xoá. */
+async function pruneEconomyLedger(days = 30) {
+    try {
+        const { data, error } = await supabase.rpc('prune_economy_ledger', { p_days: Number(days) });
+        if (error) throw error;
+        return Number(data) || 0;
+    } catch (error) { console.error('[DATABASE ERROR] pruneEconomyLedger():', error); return 0; }
+}
+
 /** Cấp/gia hạn Premium thêm số ngày. Trả mốc hết hạn mới (ISO) hoặc null. */
 async function grantPremium(userId, days) {
     try {
@@ -2210,6 +2262,11 @@ module.exports = {
     snapshotEconomy,
     syncAdminExclusions,
     getEconomySnapshots,
+    getLedgerUser,
+    getLedgerTopGainers,
+    getLedgerFlow,
+    getActivityByDay,
+    pruneEconomyLedger,
     grantPremium,
     // ============================================================
     //  BATTLE PASS / SỔ SỨ MỆNH

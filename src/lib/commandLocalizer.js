@@ -537,7 +537,8 @@ const SUBCOMMAND_DESCRIPTIONS = {
     "eco-admin.ban": { vi: "Chặn user dùng bot", en: "Ban a user from using the bot" },
     "eco-admin.unban": { vi: "Bỏ chặn user", en: "Unban a user" },
     "eco-admin.resetuser": { vi: "Xóa sạch dữ liệu một người chơi", en: "Wipe all data of a player" },
-    "eco-admin.report": { vi: "📊 Báo cáo telemetry kinh tế (cung tiền, phân bố, xu hướng)", en: "📊 View economic telemetry report (money supply, distribution, trends)" },
+    "eco-admin.report": { vi: "📊 Báo cáo telemetry kinh tế (cung tiền, hoạt động, dòng tiền, top nhận)", en: "📊 Economy telemetry (supply, activity, money flow, top gainers)" },
+    "eco-admin.trace": { vi: "🔎 Xem nhật ký giao dịch của một người chơi", en: "🔎 View a player's transaction ledger" },
 
     // premium-admin
     "premium-admin.cho": { vi: "Xem các đơn Premium đang chờ duyệt", en: "View pending Premium orders" },
@@ -562,6 +563,7 @@ const OPTION_DESCRIPTIONS = {
     "cosmetic.badge-equip.slot": { vi: "Vị trí trưng bày (1..6)", en: "Display slot (1..6)" },
     "craft.make.recipe": { vi: "Món muốn chế", en: "Item to craft" },
     "leaderboard.phamvi": { vi: "Trong server này hay toàn cầu", en: "This server or global" },
+    "eco-admin.trace.limit": { vi: "Số dòng (mặc định 20, tối đa 50)", en: "Number of entries (default 20, max 50)" },
     "market.list.price": { vi: "Giá bán (cả lô)", en: "Sale price (whole lot)" },
     "market.auction.starting_bid": { vi: "Giá khởi điểm", en: "Starting bid" },
     "market.auction.min_increment": { vi: "Bước giá tối thiểu", en: "Minimum bid increment" },

@@ -23,6 +23,7 @@
     "setexp",
     "setjob",
     "setmoney",
+    "trace",
     "unban"
   ],
   "getinvite": [],
