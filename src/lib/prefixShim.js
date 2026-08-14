@@ -34,9 +34,29 @@ async function parseOptions(message, commandData, tokens) {
                 break;
             }
             case ApplicationCommandOptionType.Integer:
-            case ApplicationCommandOptionType.Number:
-                integers[def.name] = Number(raw);
+            case ApplicationCommandOptionType.Number: {
+                // CẦU CHÌ: ép giá trị vào ĐÚNG hợp đồng mà slash command đã khai báo.
+                //
+                // Trước đây chỉ `Number(raw)`, nên mọi .setMinValue()/.setMaxValue() là
+                // VÔ NGHĨA trên đường prefix — Discord chặn ở client, prefix thì không đi
+                // qua Discord. Đó là nguyên nhân gốc của HAI lỗ hổng đã tìm ra:
+                //   · `w!market list go 500 0`        -> qty 0  -> báo thành công giả
+                //   · `w!market list go -1000000 1`   -> giá ÂM -> `wallet - (-1000000)`
+                //     thành phép CỘNG: +50.000 xu sinh ra từ không khí mỗi lần, vô hạn.
+                // Vá từng RPC là dò ngọn; chỗ này là gốc, và nó bao TẤT CẢ lệnh.
+                let v = Number(raw);
+                if (!Number.isFinite(v)) break;   // 'abc'/Infinity -> coi như KHÔNG nhập
+                                                  // (getInteger trả null) thay vì đẩy NaN
+                                                  // xuống tận RPC.
+                if (def.type === ApplicationCommandOptionType.Integer) v = Math.trunc(v);
+                // Kẹp về biên thay vì từ chối: giữ đúng kiểu dữ liệu mà lệnh mong đợi,
+                // không thể tạo giá trị nằm ngoài hợp đồng, và không làm hỏng lệnh nào
+                // đang giả định "option bắt buộc thì luôn có".
+                if (typeof def.min_value === 'number' && v < def.min_value) v = def.min_value;
+                if (typeof def.max_value === 'number' && v > def.max_value) v = def.max_value;
+                integers[def.name] = v;
                 break;
+            }
             case ApplicationCommandOptionType.Boolean:
                 booleans[def.name] = /^(true|1|có|yes|y)$/i.test(raw);
                 break;
