@@ -20,6 +20,21 @@ async function parseOptions(message, commandData, tokens) {
     }
 
     const strings = {}, integers = {}, booleans = {}, users = {}, members = {}, channels = {};
+
+    // Hợp đồng slash có HAI ràng buộc, không phải một: biên số (min/max) VÀ danh sách
+    // `choices`. Discord ép cả hai ở phía client; prefix không đi qua Discord nên phải
+    // tự ép, nếu không lệnh nhận giá trị mà nó không bao giờ ngờ tới.
+    // Ví dụ thật: `/market sell` khai báo 12 món, nhưng `w!market sell cuoc_sat 1` lọt
+    // xuống RPC -> bán ở giá chợ (0,5 × 0,70..1,50) thay vì mức 50% cố định, tức tới
+    // +50% cho MỌI vật phẩm nếu canh đúng block giá đỉnh.
+    // Giá trị ngoài danh sách -> coi như KHÔNG nhập (getString/getInteger trả null).
+    // An toàn vì parseOptions VỐN ĐÃ để trống option khi người dùng gõ thiếu token,
+    // nên mọi lệnh đã phải chịu được trường hợp null.
+    const inChoices = (def, value) => {
+        if (!def.choices?.length) return true;
+        return def.choices.some(c => String(c.value) === String(value));
+    };
+
     for (let i = 0; i < optionDefs.length; i++) {
         const def = optionDefs[i];
         if (tokens[i] === undefined) continue;
@@ -54,6 +69,7 @@ async function parseOptions(message, commandData, tokens) {
                 // đang giả định "option bắt buộc thì luôn có".
                 if (typeof def.min_value === 'number' && v < def.min_value) v = def.min_value;
                 if (typeof def.max_value === 'number' && v > def.max_value) v = def.max_value;
+                if (!inChoices(def, v)) break;   // ngoài danh sách -> coi như không nhập
                 integers[def.name] = v;
                 break;
             }
@@ -66,8 +82,16 @@ async function parseOptions(message, commandData, tokens) {
                 break;
             }
             default: // String
-                // Option string cuối cùng gom hết phần còn lại (cho chuỗi có dấu cách)
-                if (i === optionDefs.length - 1) raw = tokens.slice(i).join(' ');
+                // Option string cuối cùng gom hết phần còn lại (cho chuỗi có dấu cách).
+                // KHÔNG gom khi option có `choices` — giá trị trong danh sách không bao
+                // giờ chứa dấu cách, gom vào sẽ làm mọi giá trị hợp lệ bị coi là sai.
+                if (i === optionDefs.length - 1 && !def.choices?.length) raw = tokens.slice(i).join(' ');
+                if (!inChoices(def, raw)) break;   // ngoài danh sách -> coi như không nhập
+                // Ràng buộc độ dài (/clan create name max 30, /study start title max 50).
+                // Discord cắt ở client; prefix thì không -> tên clan/tiêu đề dài vô hạn
+                // lọt vào DB và vỡ hiển thị embed.
+                if (typeof def.max_length === 'number') raw = raw.slice(0, def.max_length);
+                if (typeof def.min_length === 'number' && raw.length < def.min_length) break;
                 strings[def.name] = raw;
         }
     }

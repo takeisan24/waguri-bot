@@ -84,6 +84,56 @@ test('prefix: số thực bị cắt về nguyên (Integer đúng kiểu)', asyn
     assert.strictEqual((await parse(['ban', 'go', '500.9', '2.7'])).sl, 2);
 });
 
+test('prefix: giá trị NGOÀI danh sách choices bị loại (chặn bán món ngoài 12 món chợ)', async () => {
+    // `/market sell` khai báo 12 món. Qua prefix, `cuoc_sat` từng lọt xuống RPC và được
+    // bán ở giá chợ (0,5 × 0,70..1,50) thay vì mức 50% cố định — tới +50% cho MỌI món
+    // nếu canh đúng block giá đỉnh.
+    const c = {
+        data: new SlashCommandBuilder().setName('t3').setDescription('x')
+            .addStringOption(o => o.setName('item').setDescription('m').setRequired(true)
+                .addChoices({ name: 'Gỗ', value: 'go' }, { name: 'Quặng', value: 'quang_sat' }))
+            .addIntegerOption(o => o.setName('amount').setDescription('a').setRequired(true).setMinValue(1)),
+    };
+    const run = async (tk) => {
+        const it = await buildPrefixInteraction(fakeMessage, c, tk);
+        return { item: it.options.getString('item'), amount: it.options.getInteger('amount') };
+    };
+    assert.strictEqual((await run(['go', '5'])).item, 'go', 'giá trị hợp lệ phải đi qua');
+    assert.strictEqual((await run(['cuoc_sat', '5'])).item, null, 'món ngoài danh sách phải bị loại');
+    assert.strictEqual((await run(['cuoc_sat', '5'])).amount, 5, 'option khác không bị ảnh hưởng');
+});
+
+test('prefix: choices dạng SỐ cũng bị ép', async () => {
+    const c = {
+        data: new SlashCommandBuilder().setName('t4').setDescription('x')
+            .addIntegerOption(o => o.setName('slot').setDescription('s').setRequired(true)
+                .addChoices({ name: 'Một', value: 1 }, { name: 'Hai', value: 2 })),
+    };
+    const get = async (tk) => (await buildPrefixInteraction(fakeMessage, c, tk)).options.getInteger('slot');
+    assert.strictEqual(await get(['2']), 2);
+    assert.strictEqual(await get(['99']), null, 'số ngoài danh sách phải bị loại');
+});
+
+test('prefix: option string KHÔNG có choices vẫn gom được chuỗi nhiều từ', async () => {
+    // Không được để việc ép choices phá tính năng "option cuối gom hết phần còn lại".
+    const c = {
+        data: new SlashCommandBuilder().setName('t5').setDescription('x')
+            .addStringOption(o => o.setName('noi_dung').setDescription('n').setRequired(true)),
+    };
+    const it = await buildPrefixInteraction(fakeMessage, c, ['xin', 'chào', 'cậu']);
+    assert.strictEqual(it.options.getString('noi_dung'), 'xin chào cậu');
+});
+
+test('prefix: chuỗi quá dài bị cắt theo maxLength (/clan create name, /study start title)', async () => {
+    const c = {
+        data: new SlashCommandBuilder().setName('t6').setDescription('x')
+            .addStringOption(o => o.setName('ten').setDescription('t').setRequired(true).setMaxLength(30)),
+    };
+    const it = await buildPrefixInteraction(fakeMessage, c, ['A'.repeat(500)]);
+    assert.strictEqual(it.options.getString('ten').length, 30,
+        'tên dài vô hạn lọt vào DB sẽ làm vỡ hiển thị embed');
+});
+
 test('prefix: option KHÔNG khai báo biên thì giữ nguyên giá trị (kể cả âm)', async () => {
     // /eco-admin addmoney cố ý cho số âm (trừ tiền) — cầu chì không được phá việc đó.
     const c2 = {
