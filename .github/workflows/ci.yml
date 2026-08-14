@@ -38,6 +38,10 @@ jobs:
       - run: npm run check-rpc
       # Chặn drift: mọi lệnh slash của bot phải có trên trang commands của web.
       - run: node scripts/check-command-sync.js
+      # Nửa còn lại của Luật 7: gate trên chỉ soi bot↔web. /help dùng danh sách gõ tay nên
+      # đã trôi mất 11 lệnh (gồm /start, /study, /prestige) — /study và /ticket có 0 lượt
+      # dùng trên prod vì người chơi không có đường nào khám phá ra chúng.
+      - run: node scripts/check-help-sync.js
 
   web-build:
     name: Web — build

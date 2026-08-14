@@ -6,7 +6,10 @@ const globals = require('globals');
 
 module.exports = [
     {
-        files: ['src/**/*.js', 'index.js', 'shard.js'],
+        // Phủ CẢ `scripts/` và `test/`: chúng vốn không được lint, mà `scripts/` chính là
+        // các GATE — cổng gác cho dự án mà không ai gác lại. Bật lúc toàn repo đã 0 vi phạm
+        // (đo 2026-08-14 trên 202 file) nên không sinh nợ.
+        files: ['src/**/*.js', 'scripts/**/*.js', 'test/**/*.js', 'index.js', 'shard.js'],
         languageOptions: {
             ecmaVersion: 2023,
             sourceType: 'commonjs',

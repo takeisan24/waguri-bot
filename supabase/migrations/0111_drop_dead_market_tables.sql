@@ -1,0 +1,57 @@
+-- ============================================================
+-- 0111_drop_dead_market_tables.sql — Gỡ hai bảng chết của hệ thống chợ cũ
+--
+-- Tìm ra ở lượt quét lỗ hổng quy trình (spec: docs/spec-dot-2-help-testdb-lint.md §7).
+--
+-- BỐI CẢNH: `market_prices` (12 dòng) và `market_history` (0 dòng) là di sản của
+-- `0095_market_fluctuations.sql`. Migration `0098_market_derived_pricing.sql` đã thay
+-- toàn bộ cơ chế bằng CÔNG THỨC TẤT ĐỊNH `items.price × 0.5 × hệ_số(khối 4 giờ)`,
+-- khiến hai bảng này mồ côi từ đó.
+--
+-- BẰNG CHỨNG ĐÃ THU THẬP TRƯỚC KHI XOÁ (2026-08-14) — không xoá theo cảm tính:
+--   · tham chiếu trong `src/` và `web/src/` ................. 0
+--   · hàm/thủ tục trong DB (quét toàn bộ thân hàm) .......... 0
+--   · view · khoá ngoại · trigger · RLS policy .............. 0
+--   · tác vụ định kỳ: extension `pg_cron` CHƯA CÀI .......... không có gì ghi vào
+--   · `market_prices.updated_at` mới nhất ................... 2026-08-06 (đóng băng)
+--   · `market_history` ...................................... 0 dòng
+--
+-- LÝ DO XOÁ THAY VÌ GIỮ:
+-- 1. Dữ liệu HỎNG: 9/12 dòng trỏ tới vật phẩm KHÔNG tồn tại trong `items`
+--    (`ca_chua`, `ca_koi`, `ca_rong`, `go_ram`, `lua_nuoc`, `vang_dong_trieu`,
+--    `sieu_cap_gem`, `dua_hau`, `khoai_tay`) — chính là bộ ID cũ mà
+--    `0096_fix_market_item_ids.sql` sinh ra để sửa, và 0096 là một trong hai file
+--    TRÙNG SỐ HIỆU nên chưa bao giờ được áp. Đây là mảnh vỡ còn sót của sự cố chợ.
+--    Giữ lại = để quả mìn nằm chờ ai đó nối vào.
+-- 2. Bảng chết KHÔNG phải phương án dự phòng, nó là CÁI BẪY: người sau nhìn thấy
+--    `market_prices` sẽ tưởng đó là nguồn giá thật.
+-- 3. Giữ trên prod mà không tạo trên test sẽ phá nguyên tắc "DB test là gương 1:1 của
+--    prod". Allowlist cho độ lệch schema là lỗ rò chậm — ngoại lệ tích tụ rồi có ngày
+--    một độ lệch THẬT lọt vào mà không ai nhận ra.
+-- 4. Nếu sau này cần lưu lịch sử giá thật (khi giá thôi tất định), bảng cũ CŨNG KHÔNG
+--    dùng lại được: nó khoá theo `recorded_at` tuỳ ý thay vì theo KHỐI. Sẽ thiết kế mới.
+--
+-- KHÔNG mất khả năng làm biểu đồ giá: giá là hàm thuần `f(itemId, khối)` nên lịch sử
+-- TÍNH LẠI ĐƯỢC — đo thật: 504 điểm dữ liệu (12 vật phẩm × 42 khối) trong 1,05 ms,
+-- 0 truy vấn DB. Xem `docs/roadmap-mo-rong.md` §2.3.
+--
+-- ẢNH CHỤP 12 DÒNG TRƯỚC KHI XOÁ (khôi phục tay được nếu cần; `0095` vẫn còn trong repo):
+--   ca_chua=800, ca_koi=5000, ca_rong=15000, ca_tuoi=600, dua_hau=2500, go_ram=400,
+--   khoai_tay=1200, ky_nam=25000, lua_nuoc=500, sieu_cap_gem=8000, thit_heo_2500=2500,
+--   vang_dong_trieu=20000
+--   (schema cũ: market_prices(item_id, base_price, current_price, multiplier, trend,
+--                              updated_at)
+--                market_history(id, item_id, price, multiplier, recorded_at))
+--
+-- Idempotent — chạy trên DB test (vốn không có 2 bảng này) là no-op.
+-- ============================================================
+
+DROP TABLE IF EXISTS public.market_history;
+DROP TABLE IF EXISTS public.market_prices;
+
+-- ============================================================
+-- VERIFY:
+--   SELECT to_regclass('public.market_prices'), to_regclass('public.market_history');
+--   -> cả hai NULL
+--   Và `/market prices` vẫn chạy bình thường vì giá suy ra từ công thức, không đọc bảng.
+-- ============================================================

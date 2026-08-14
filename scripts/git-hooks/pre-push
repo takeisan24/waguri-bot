@@ -22,4 +22,9 @@ node scripts/check-rpc-status.js || { echo "[pre-push] ❌ RPC có status MỚI 
 echo "[pre-push] Kiểm tra đồng bộ lệnh bot ↔ web..."
 node scripts/check-command-sync.js || { echo "[pre-push] ❌ Lệnh bot/web LỆCH — huỷ push. Cập nhật web/CommandsExplorer.tsx."; exit 1; }
 
+# Nửa còn lại của Luật 7: gate trên chỉ soi bot↔web, nên /help trôi mất 11 lệnh mà không
+# ai biết — gồm cả /start và /study, hai lệnh có 0 lượt dùng vì không ai khám phá ra.
+echo "[pre-push] Kiểm tra đồng bộ lệnh bot ↔ /help..."
+node scripts/check-help-sync.js || { echo "[pre-push] ❌ /help LỆCH danh sách lệnh — huỷ push. Cập nhật CATEGORIES + vi.json/en.json."; exit 1; }
+
 echo "[pre-push] ✅ Qua cổng an toàn — cho push."

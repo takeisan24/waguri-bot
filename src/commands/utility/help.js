@@ -17,6 +17,10 @@ const CATEGORIES = [
         ['jobs', 'xem & xin nghề (list / info / apply)'],
         ['pet', 'thú cưng: nhận nuôi / cho ăn / xem 🐾'],
         ['tiembanh', 'tiệm bánh Gekka 🍰 (kinh doanh thụ động: xem·mo·nhapnl·thu·nangcap)'],
+        ['study', 'học bài Pomodoro cùng Waguri 📚 (start·status·stop·leaderboard)'],
+        ['heo', 'nuôi heo 🐷 (info·mua·an·tam·ngu·ban·chuabenh·trom·box)'],
+        ['trongcay', 'trồng cây 🌱 (info·muagiong·tuoi·bonphan·thuhoach·hoisinh·phacay·trom·box)'],
+        ['prestige', 'chuyển sinh — làm lại từ đầu để nhận đặc quyền vĩnh viễn 🌟'],
     ] },
     { name: '🏪 Cửa hàng & Kho', cmds: [
         ['store', 'cửa hàng: xem/mua/bán vật phẩm (list / buy / sell)'],
@@ -28,12 +32,16 @@ const CATEGORIES = [
         ['nghingoi', 'đi ngủ hồi đầy năng lượng (6 tiếng/lần) 😴 (w!ngu)'],
         ['cosmetic', 'trang trí hồ sơ: danh hiệu & màu 🎨'],
         ['craft', 'chế tạo đồ từ gỗ/quặng/đá 🔨'],
+        ['repair', 'sửa công cụ khai thác đã mòn (tốn 15% giá mua) 🔧'],
+        ['hospital', 'nhập viện hồi phục sức khoẻ 🏥 (viện phí cố định)'],
     ] },
     { name: '💸 Giao dịch & Ngân hàng', cmds: [
         ['give', 'chuyển tiền cho người khác'],
         ['bank', 'tài khoản & ngân hàng: số dư / gửi / rút (balance · gui · rut)'],
         ['rob', 'cướp tiền (rủi ro cao!)'],
         ['vay', 'vay–trả nợ 🤝 (muon · tra · doi · so)'],
+        ['tangdo', 'tặng vật phẩm trong kho cho người khác 🎁'],
+        ['cuutro', 'nhận trợ cấp phá sản khi ví và ngân hàng hết sạch 🌸'],
     ] },
     { name: '🎲 Minigame', cmds: [
         ['coinflip', 'tung đồng xu'],
@@ -73,13 +81,17 @@ const CATEGORIES = [
     { name: '⚙️ Quản trị (cần quyền)', cmds: [
         ['setup', 'tạo phòng riêng cho Waguri + hướng dẫn nhanh'],
         ['config', 'cấu hình bot cho server (Quản lý Server)'],
+        ['serverinfo', 'xuất báo cáo cấu trúc server: kênh/role/cấu hình (Quản lý Server)'],
     ] },
     { name: '🏰 Bang hội', cmds: [
         ['clan', 'lập bang / quỹ chung / ⚔️ chiến tranh bang (create·join·info·list·deposit·withdraw·kick·disband·war)'],
     ] },
     { name: '🏆 Khác', cmds: [
+        ['start', 'bắt đầu cùng Waguri — nhận quà chào mừng & hướng dẫn 🌸'],
         ['leaderboard', 'bảng xếp hạng (server / toàn cầu)'],
         ['event', 'xem sự kiện x2 đang diễn ra 🎉'],
+        ['worldevent', 'sự kiện cộng đồng toàn server 🌍 (view · contribute · claim)'],
+        ['ticket', 'mở kênh hỗ trợ riêng với Staff 🌸 (create · panel · close)'],
         ['vote', 'vote trên Top.gg nhận thưởng 💝'],
         ['bot', 'thông tin, trạng thái, hỗ trợ, mời bot (ping · about · support · invite)'],
         ['server', 'thông tin server'],

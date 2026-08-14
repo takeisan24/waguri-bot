@@ -1280,7 +1280,19 @@
         "user": "discord user overview information",
         "claim-support": "claim exclusive Support Server join rewards 🎁",
         "deletedata": "permanently delete all your game data (irreversible) 🗑️",
-        "help": "this help guidebook command"
+        "help": "this help guidebook command",
+        "study": "Pomodoro study companion 📚 — set a focus timer, earn coins + EXP + a daily streak when you finish (start · status · stop · leaderboard)",
+        "heo": "Pig farming 🐷 — buy piglets, feed, bathe, rest and cure them, then sell for profit. You can also steal from other farms (info · mua · an · tam · ngu · ban · chuabenh · trom · box)",
+        "trongcay": "Crop growing 🌱 — buy seeds, water, fertilise and harvest. Revive withered plants; you can also raid other gardens (info · muagiong · tuoi · bonphan · thuhoach · hoisinh · phacay · trom · box)",
+        "prestige": "Prestige 🌟 — restart from scratch in exchange for permanent perks (higher energy cap, glowing profile ring). For long-time players.",
+        "repair": "Repair a worn gathering tool 🔧 — costs 15% of its shop price, cheaper than buying new.",
+        "hospital": "Hospital treatment 🏥 — fully cure illness for a fixed fee.",
+        "tangdo": "Give an item from your inventory to someone else 🎁 — any kind: food, tools, vehicles.",
+        "cuutro": "Bankruptcy relief from Waguri 🌸 — only available when both your wallet and bank are completely empty.",
+        "start": "Get started with Waguri 🌸 — claim your welcome gift and a walkthrough of the first steps. Run this first.",
+        "worldevent": "Server-wide community event 🌍 — everyone contributes toward a shared goal, then shares the reward (view · contribute · claim)",
+        "ticket": "Open a private support channel with Waguri Staff 🌸 — for help you would rather not ask publicly (create · panel · close)",
+        "serverinfo": "Export a report of the server structure: channels, roles, settings — for auditing. Requires Manage Server."
       }
     },
     "action": {

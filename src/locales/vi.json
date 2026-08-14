@@ -1280,7 +1280,19 @@
         "user": "thông tin người dùng",
         "claim-support": "nhận quà gia nhập Server Support độc quyền 🎁",
         "deletedata": "xoá toàn bộ dữ liệu cá nhân của bạn (không hoàn tác) 🗑️",
-        "help": "bảng trợ giúp này"
+        "help": "bảng trợ giúp này",
+        "study": "Học bài Pomodoro cùng Waguri 📚 — hẹn giờ tập trung, xong nhận xu + EXP + chuỗi chuyên cần (start · status · stop · leaderboard)",
+        "heo": "Nuôi heo 🐷 — mua heo giống, cho ăn, tắm, ngủ, chữa bệnh rồi bán lấy lời. Cũng có thể trộm heo nhà người khác (info · mua · an · tam · ngu · ban · chuabenh · trom · box)",
+        "trongcay": "Trồng cây 🌱 — mua giống, tưới, bón phân rồi thu hoạch. Cây héo thì hồi sinh; cũng có thể trộm vườn người khác (info · muagiong · tuoi · bonphan · thuhoach · hoisinh · phacay · trom · box)",
+        "prestige": "Chuyển sinh 🌟 — làm lại từ đầu để đổi lấy đặc quyền vĩnh viễn (tăng trần năng lượng, viền hào quang trên hồ sơ). Dành cho người đã chơi lâu.",
+        "repair": "Sửa công cụ khai thác đã mòn 🔧 — tốn 15% giá mua, rẻ hơn mua mới.",
+        "hospital": "Nhập viện hồi phục sức khoẻ 🏥 — chữa dứt điểm khi bị bệnh, viện phí cố định.",
+        "tangdo": "Tặng vật phẩm trong kho cho người khác 🎁 — mọi loại: đồ ăn, dụng cụ, xe cộ.",
+        "cuutro": "Nhận trợ cấp phá sản từ Waguri 🌸 — chỉ dùng được khi cả ví lẫn ngân hàng đã hết sạch tiền.",
+        "start": "Bắt đầu cùng Waguri 🌸 — nhận quà chào mừng và hướng dẫn những bước đầu tiên. Lệnh nên chạy đầu tiên khi mới vào.",
+        "worldevent": "Sự kiện cộng đồng toàn server 🌍 — cả server cùng góp sức đạt mục tiêu chung rồi chia thưởng (view · contribute · claim)",
+        "ticket": "Mở kênh hỗ trợ riêng tư với Staff Waguri 🌸 — dùng khi cần trợ giúp mà không muốn hỏi công khai (create · panel · close)",
+        "serverinfo": "Xuất báo cáo cấu trúc server: kênh, role, cấu hình — để rà soát. Cần quyền Quản lý Server."
       }
     },
     "action": {

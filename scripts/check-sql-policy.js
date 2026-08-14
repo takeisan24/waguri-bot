@@ -42,6 +42,21 @@ function stripComments(sql) {
 }
 
 /**
+ * Bỏ phần THÂN của mọi khối dollar-quote ($$ … $$, $function$ … $function$).
+ *
+ * Chỉ dùng cho R5 (DDL idempotent): luật đó nói về DDL ở CẤP CAO NHẤT của migration,
+ * còn chữ nằm trong thân hàm thì không phải DDL. Không có bước này, `0112` bị báo
+ * "CREATE TABLE thiếu IF NOT EXISTS" chỉ vì thân hàm có chuỗi
+ * `command_tag IN ('CREATE TABLE', ...)` — một CHUỖI VĂN BẢN, không tạo bảng nào.
+ *
+ * Cùng lớp lỗi với vụ `check-rpc-status.js` từng đếm nhầm status nằm trong comment:
+ * gate đọc văn bản thô thì phải loại bỏ mọi vùng "chỉ là chữ" trước khi kết luận.
+ */
+function stripDollarQuotedBodies(sql) {
+    return sql.replace(/\$([A-Za-z_]*)\$[\s\S]*?\$\1\$/g, ' ');
+}
+
+/**
  * Tách các định nghĩa hàm theo dollar-quote ($$ … $$ hoặc $function$ … $function$).
  * Trả [{ name, args, header, body }] — header là phần trước dollar-quote (chứa
  * SECURITY DEFINER / SET search_path), body là thân hàm.
@@ -177,9 +192,11 @@ for (const f of files) {
 
     // ---------- R5: DDL không idempotent ----------
     // Luật 3: migration phải chạy lại được mà không lỗi (rebuild / apply lại).
-    if (/create\s+table\s+(?!if\s+not\s+exists)/i.test(sql)) add(f, 'R5_not_idempotent', 'CREATE TABLE thiếu IF NOT EXISTS');
-    if (/create\s+index\s+(?!if\s+not\s+exists|concurrently)/i.test(sql)) add(f, 'R5_not_idempotent', 'CREATE INDEX thiếu IF NOT EXISTS');
-    if (/create\s+function\s/i.test(sql)) add(f, 'R5_not_idempotent', 'CREATE FUNCTION thiếu OR REPLACE');
+    // Soi trên bản ĐÃ BỎ THÂN HÀM: chữ trong thân hàm là chuỗi văn bản, không phải DDL.
+    const ddl = stripDollarQuotedBodies(sql);
+    if (/create\s+table\s+(?!if\s+not\s+exists)/i.test(ddl)) add(f, 'R5_not_idempotent', 'CREATE TABLE thiếu IF NOT EXISTS');
+    if (/create\s+index\s+(?!if\s+not\s+exists|concurrently)/i.test(ddl)) add(f, 'R5_not_idempotent', 'CREATE INDEX thiếu IF NOT EXISTS');
+    if (/create\s+function\s/i.test(ddl)) add(f, 'R5_not_idempotent', 'CREATE FUNCTION thiếu OR REPLACE');
 }
 
 // --- Đối chiếu allowlist (ratchet) ---------------------------
