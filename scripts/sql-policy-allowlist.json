@@ -81,11 +81,16 @@
     "0095_market_fluctuations.sql::R3_read_then_write_no_lock::sell_item_market(3 args) đọc inventory không FOR UPDATE rồi ghi lại",
     "0095_market_fluctuations.sql::R4_grant_write_rpc_to_anon::sell_item_market -> service_role, authenticated, anon",
     "0096_fix_market_item_ids.sql::R1_duplicate_number::số 0096 dùng bởi: 0096_fix_market_item_ids.sql, 0096_wealth_rank_and_bakery_privacy.sql",
-    "0096_wealth_rank_and_bakery_privacy.sql::R1_duplicate_number::số 0096 dùng bởi: 0096_fix_market_item_ids.sql, 0096_wealth_rank_and_bakery_privacy.sql"
+    "0096_wealth_rank_and_bakery_privacy.sql::R1_duplicate_number::số 0096 dùng bởi: 0096_fix_market_item_ids.sql, 0096_wealth_rank_and_bakery_privacy.sql",
+    "0108_clan_loan_row_locks.sql::R3_read_then_write_no_lock::loan_collect(2 args) đọc loans không FOR UPDATE rồi ghi lại",
+    "0108_clan_loan_row_locks.sql::R3_read_then_write_no_lock::loan_repay(3 args) đọc loans không FOR UPDATE rồi ghi lại"
   ],
   "superseded": {
     "note": "Vi phạm ở các file DƯỚI ĐÂY đã được VÁ bằng migration MỚI đè lên (luật forward-only: không sửa file đã apply prod). Gate quét tĩnh nên vẫn thấy file gốc — ghi ở đây để không ai tưởng là nợ chưa trả.",
     "0095_market_fluctuations.sql": "vá bởi 0098_market_derived_pricing.sql (FOR UPDATE + guard + search_path + REVOKE anon + giá suy ra)",
     "0093_tickets_system.sql": "vá bởi 0101_pin_search_path_claim_ticket.sql (search_path + sửa điều kiện hồi sinh ticket CLOSED)"
+  },
+  "intentional": {
+    "loan_repay / loan_collect đọc bảng loans không FOR UPDATE": "KHÔNG THỂ sửa theo nghĩa đen: cả hai đọc bằng SELECT sum(remaining) và Postgres từ chối — \"FOR UPDATE is not allowed with aggregate functions\" (đã thử trên waguri-test). Bảo vệ thật là KHOÁ VÍ NGƯỜI VAY (đã thêm ở 0108): mọi lời gọi loan_repay/loan_collect chạm khoản nợ của cùng một người vay đều phải lấy khoá users(p_borrower) trước, nên phần đọc loans được xếp hàng theo. Heuristic R3 không nhìn được thứ tự khoá liên bảng."
   }
 }
