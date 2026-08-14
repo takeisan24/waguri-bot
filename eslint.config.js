@@ -16,6 +16,13 @@ module.exports = [
             'no-undef': 'error',
             'no-dupe-keys': 'error',
             'no-unreachable': 'error',
+            // Cùng họ với `no-undef` ở trên: định danh giải sai, chỉ lộ khi người dùng chạy
+            // tới đúng nhánh đó. `/eco-admin trace` từng crash vì `const C` khai báo ở CUỐI
+            // hàm còn nhánh trace nằm TRƯỚC -> chạm vào biến trong vùng chết (TDZ).
+            // `functions`/`classes` = false: hàm được hoisted đầy đủ, gọi trước khai báo là
+            // hợp lệ và là văn phong sẵn có trong repo. Chỉ soi `variables` — đúng lớp lỗi.
+            // Bật lúc toàn repo đã 0 vi phạm, nên KHÔNG cần allowlist như các gate khác.
+            'no-use-before-define': ['error', { functions: false, classes: false, variables: true }],
             'no-unused-vars': 'off', // nhiều biến đặt tên có chủ đích; tránh nhiễu
         },
     },

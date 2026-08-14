@@ -80,6 +80,12 @@ module.exports = {
         await interaction.deferReply();
 
         const sub = interaction.options.getSubcommand();
+        // Khai báo MỘT lần ở đầu scope hàm, trước mọi nhánh `sub`. Trước đây có tới hai
+        // `const C`: một trong khối `report`, một ở cuối hàm. Nhánh `trace` không có bản
+        // cục bộ nên giải về bản cuối hàm — đang trong vùng chết (TDZ) vì `const` không
+        // được khởi tạo lúc hoisted -> `/eco-admin trace` ném ReferenceError và không bao
+        // giờ phản hồi. Mọi nhánh dùng chung một khai báo thì không còn chỗ cho lỗi đó.
+        const C = config.CURRENCY;
 
         // --- Báo cáo telemetry kinh tế (không cần target user) ---
         if (sub === 'report') {
@@ -91,7 +97,6 @@ module.exports = {
                     description: t(locale, 'commands.eco-admin.no_telemetry')
                 })] });
             }
-            const C = config.CURRENCY;
             const cur = snaps[0];
             const prev = snaps[1];
             const weekRef = snaps[Math.min(snaps.length - 1, 7)];
@@ -226,7 +231,6 @@ module.exports = {
             });
             return interaction.editReply({ embeds: [embed] });
         }
-        const C = config.CURRENCY;
 
         // Audit log: ghi lại mọi thao tác admin (cấp tiền/đồ/premium/ban/reset) để truy vết.
         console.log(`[ECO-ADMIN AUDIT] owner=${interaction.user.id} action=${sub} target=${target.id} ` +
