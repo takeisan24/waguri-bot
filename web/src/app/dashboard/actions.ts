@@ -45,46 +45,40 @@ export async function upgradePetSkill(skillId: string) {
   }
 
   const admin = createAdminClient();
-  const { data: pet, error: petErr } = await admin
-    .from("user_pets")
-    .select("*")
-    .eq("user_id", userId)
-    .single();
 
-  if (petErr || !pet) {
-    return { success: false, error: isEn ? "Pet not found" : "Không tìm thấy thú cưng" };
-  }
+  // Toàn bộ "kiểm điểm -> kiểm cấp trần -> trừ điểm -> nâng cấp" nằm TRONG một RPC
+  // khoá hàng (migration 0109). Lối cũ đọc pet rồi ghi đè CẢ KHỐI `skills` ở đây:
+  //   · bấm đúp / mở 2 tab / dùng web và bot cùng lúc -> cùng đọc skill_points = 1,
+  //     cùng ghi 0 với kỹ năng của riêng mình => 2 cấp kỹ năng cho 1 điểm
+  //   · ghi đè nguyên khối còn xoá mất thay đổi mà bot vừa ghi (lost update)
+  // Allow-list kỹ năng + cấp trần nay nằm TRONG RPC, nên bot và web dùng chung một
+  // nguồn sự thật thay vì mỗi bên tự nhớ.
+  const { data: res, error } = await admin.rpc("upgrade_pet_skill", {
+    p_user: userId,
+    p_skill: skillId,
+  });
 
-  const skillPoints = pet.skill_points || 0;
-  if (skillPoints <= 0) {
-    return { success: false, error: isEn ? "No skill points available" : "Hết điểm kỹ năng rồi cậu ơi" };
-  }
-
-  // Allow-list các kỹ năng hợp lệ + cấp tối đa (khớp SKILL_LIST trong PetSkillTree.tsx).
-  // KHÔNG suy ra maxLevel từ ternary: trước đây mọi skillId lạ bị coi là skill 3 cấp hợp lệ,
-  // client tự chế có thể tiêm key tùy ý vào JSON `skills` (DB dùng chung với bot).
-  const SKILL_MAX: Record<string, number> = { fishing_luck: 3, double_gem: 2, bakery_efficiency: 3 };
-  const maxLevel = SKILL_MAX[skillId];
-  if (!maxLevel) {
-    return { success: false, error: isEn ? "Unknown skill" : "Kỹ năng không hợp lệ" };
-  }
-  const skills = (pet.skills as Record<string, number>) || {};
-  const curLvl = skills[skillId] || 0;
-
-  if (curLvl >= maxLevel) {
-    return { success: false, error: isEn ? "Skill already at maximum level" : "Kỹ năng đã đạt cấp tối đa" };
-  }
-
-  const updatedSkills = { ...skills, [skillId]: curLvl + 1 };
-  const updatedPoints = skillPoints - 1;
-
-  const { error: updateErr } = await admin
-    .from("user_pets")
-    .update({ skills: updatedSkills, skill_points: updatedPoints })
-    .eq("user_id", userId);
-
-  if (updateErr) {
+  if (error) {
+    console.error("[UPGRADE PET SKILL ERROR]", error);
     return { success: false, error: isEn ? "Failed to update database" : "Lưu vào cơ sở dữ liệu thất bại" };
+  }
+
+  const status = (res as { status?: string } | null)?.status;
+  if (status !== "ok") {
+    const errMap: Record<string, string> = isEn
+      ? {
+          no_pet: "Pet not found",
+          no_points: "No skill points available",
+          max_level: "Skill already at maximum level",
+          bad_skill: "Unknown skill",
+        }
+      : {
+          no_pet: "Không tìm thấy thú cưng",
+          no_points: "Hết điểm kỹ năng rồi cậu ơi",
+          max_level: "Kỹ năng đã đạt cấp tối đa",
+          bad_skill: "Kỹ năng không hợp lệ",
+        };
+    return { success: false, error: errMap[status ?? ""] ?? (isEn ? "Unknown error" : "Lỗi không xác định") };
   }
 
   revalidatePath("/dashboard/pet");

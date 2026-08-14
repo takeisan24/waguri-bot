@@ -2394,7 +2394,7 @@ module.exports = {
     createWorldEvent,
     getWorldEventContributions,
     getClanUpgrade,
-    updatePetSkills,
+    upgradePetSkill,
     claimWorldEventReward,
     getLatestWorldEvent,
     clanDepositResource,
@@ -2606,18 +2606,29 @@ async function getClanUpgrade(clanId) {
     }
 }
 
-async function updatePetSkills(userId, skills, skillPoints) {
+/**
+ * Nâng 1 cấp kỹ năng thú cưng NGUYÊN TỬ (migration 0109).
+ *
+ * Thay cho lối cũ "đọc pet -> tính trong JS -> ghi đè cả khối `skills` + `skill_points`",
+ * vốn có ở CẢ bot (/pet skill-up) lẫn web (upgradePetSkill). Bấm đúp / 2 tab / web và
+ * bot cùng lúc đều đọc skill_points = 1 rồi cùng ghi 0 với kỹ năng của riêng mình
+ * => 2 cấp kỹ năng cho 1 điểm. Ghi đè nguyên khối `skills` còn xoá mất thay đổi phía kia.
+ *
+ * RPC khoá hàng (FOR UPDATE), dùng jsonb_set trên giá trị cột HIỆN TẠI, và giữ luôn
+ * danh sách kỹ năng + cấp trần để đường gọi mới không phải nhớ tự kiểm.
+ *
+ * @returns {object|null} { status: 'ok'|'no_pet'|'no_points'|'max_level'|'bad_skill', ... }
+ */
+async function upgradePetSkill(userId, skillId) {
     try {
-        const { data, error } = await supabase
-            .from('user_pets')
-            .update({ skills, skill_points: skillPoints })
-            .eq('user_id', userId)
-            .select()
-            .single();
+        const { data, error } = await supabase.rpc('upgrade_pet_skill', {
+            p_user: String(userId),
+            p_skill: String(skillId),
+        });
         if (error) throw error;
         return data;
     } catch (e) {
-        logError('updatePetSkills', e, { userId, skills, skillPoints });
+        logError('upgradePetSkill', e, { userId, skillId });
         return null;
     }
 }

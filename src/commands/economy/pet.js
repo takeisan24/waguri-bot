@@ -270,36 +270,38 @@ module.exports = {
                 return interaction.editReply({ embeds: [embed] });
             }
             const skillId = interaction.options.getString('skill');
-            const skillPoints = pet.skill_points || 0;
-            if (skillPoints <= 0) {
-                const embed = buildWaguriEmbed(interaction, 'warning', {
+
+            // Toàn bộ "kiểm điểm -> kiểm cấp trần -> trừ điểm -> nâng cấp" nằm TRONG một
+            // RPC khoá hàng (migration 0109). Lối cũ đọc pet rồi ghi đè cả khối `skills`
+            // ở JS: bấm đúp / mở 2 tab / dùng web và bot cùng lúc đều đọc skill_points = 1
+            // rồi cùng ghi 0 => 2 cấp kỹ năng cho 1 điểm.
+            const r = await db.upgradePetSkill(userId, skillId);
+            const isEn = locale.startsWith('en');
+
+            if (r && r.status === 'no_points') {
+                return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'warning', {
                     locale,
-                    description: locale.startsWith('en')
+                    description: isEn
                         ? 'Your pet does not have any Skill Points left! Feed it to level up.'
-                        : 'Thú cưng của cậu không còn Điểm kỹ năng nào! Hãy cho ăn để lên cấp.'
-                });
-                return interaction.editReply({ embeds: [embed] });
+                        : 'Thú cưng của cậu không còn Điểm kỹ năng nào! Hãy cho ăn để lên cấp.',
+                })] });
             }
-
-            const maxLevel = skillId === 'double_gem' ? 2 : 3;
-            const skills = pet.skills || {};
-            const curLvl = skills[skillId] || 0;
-
-            if (curLvl >= maxLevel) {
-                const embed = buildWaguriEmbed(interaction, 'warning', {
+            if (r && r.status === 'max_level') {
+                return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'warning', {
                     locale,
-                    description: locale.startsWith('en')
-                        ? `This skill has already reached its maximum level (${maxLevel})!`
-                        : `Kỹ năng này đã đạt cấp tối đa (${maxLevel})!`
-                });
-                return interaction.editReply({ embeds: [embed] });
+                    description: isEn
+                        ? `This skill has already reached its maximum level (${r.max})!`
+                        : `Kỹ năng này đã đạt cấp tối đa (${r.max})!`,
+                })] });
+            }
+            if (r && (r.status === 'no_pet' || r.status === 'bad_skill')) {
+                return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'error', {
+                    locale, description: t(locale, 'common.generic_error'),
+                })] });
             }
 
-            skills[skillId] = curLvl + 1;
-            const newPoints = skillPoints - 1;
-
-            const ok = await db.updatePetSkills(userId, skills, newPoints);
-            if (!ok) {
+            // RPC là nguồn sự thật cho cấp mới & điểm còn lại -> không tự tính lại ở JS.
+            if (!r || r.status !== 'ok') {
                 const embed = buildWaguriEmbed(interaction, 'error', {
                     locale,
                     description: t(locale, 'commands.pet.err_system')
@@ -307,7 +309,6 @@ module.exports = {
                 return interaction.editReply({ embeds: [embed] });
             }
 
-            const isEn = locale.startsWith('en');
             const skillNames = {
                 fishing_luck: isEn ? 'Fishing Luck' : 'May mắn Câu cá',
                 double_gem: isEn ? 'Double Ores' : 'Nhân đôi Đá quý',
@@ -318,8 +319,8 @@ module.exports = {
                 locale,
                 title: isEn ? 'Skill Upgraded!' : 'Nâng cấp kỹ năng thành công!',
                 description: isEn
-                    ? `Successfully upgraded **${skillNames[skillId]}** to **Level ${curLvl + 1}**! Remaining Skill Points: ${newPoints}.`
-                    : `Đã nâng cấp kỹ năng **${skillNames[skillId]}** lên **Cấp ${curLvl + 1}**! Điểm kỹ năng còn lại: ${newPoints}.`
+                    ? `Successfully upgraded **${skillNames[skillId]}** to **Level ${r.level}**! Remaining Skill Points: ${r.points_left}.`
+                    : `Đã nâng cấp kỹ năng **${skillNames[skillId]}** lên **Cấp ${r.level}**! Điểm kỹ năng còn lại: ${r.points_left}.`
             });
             return interaction.editReply({ embeds: [embed] });
         }

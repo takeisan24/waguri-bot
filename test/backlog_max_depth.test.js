@@ -151,11 +151,32 @@ if (!hasTestDb) {
         assert.strictEqual(newPoints, 2, 'Cộng điểm kỹ năng thành công');
 
         // 3. Nâng cấp kỹ năng pet -> thành công
-        const ok = await db.updatePetSkills(testUser, { fishing_luck: 1 }, 1);
-        assert.ok(ok, 'Nâng cấp kỹ năng thành công');
+        const ok = await db.upgradePetSkill(testUser, 'fishing_luck');
+        assert.strictEqual(ok.status, 'ok', 'Nâng cấp kỹ năng thành công');
+        assert.strictEqual(ok.level, 1, 'RPC trả về cấp mới');
+        assert.strictEqual(ok.points_left, 1, 'RPC trả về số điểm còn lại');
 
         const p = await db.getPet(testUser);
         assert.strictEqual(p.skills.fishing_luck, 1, 'Kỹ năng câu cá đạt Lv 1');
         assert.strictEqual(p.skill_points, 1, 'Còn lại 1 điểm kỹ năng');
+
+        // 4. Kỹ năng lạ bị chặn ngay trong RPC (không phải chỉ ở tầng lệnh),
+        //    và KHÔNG được trừ điểm.
+        const bad = await db.upgradePetSkill(testUser, 'khong_ton_tai');
+        assert.strictEqual(bad.status, 'bad_skill', 'Kỹ năng không có trong danh sách bị từ chối');
+
+        // 5. Mấu chốt của 0109: 1 điểm chỉ đổi được ĐÚNG 1 cấp. Trước đây hai lời
+        //    gọi đọc-sửa-ghi song song cùng thấy skill_points = 1 rồi cùng ghi 0.
+        const [a, b] = await Promise.all([
+            db.upgradePetSkill(testUser, 'double_gem'),
+            db.upgradePetSkill(testUser, 'bakery_efficiency'),
+        ]);
+        const soLanOk = [a, b].filter(r => r.status === 'ok').length;
+        assert.strictEqual(soLanOk, 1, 'Chỉ MỘT trong hai lời gọi song song được nâng cấp');
+
+        const p2 = await db.getPet(testUser);
+        assert.strictEqual(p2.skill_points, 0, 'Đã tiêu hết điểm, không âm');
+        const tongCap = Object.values(p2.skills || {}).reduce((s, v) => s + Number(v || 0), 0);
+        assert.strictEqual(tongCap, 2, 'Tổng cấp kỹ năng = tổng điểm đã tiêu (2), không phải 3');
     });
 }
