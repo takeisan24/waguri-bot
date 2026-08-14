@@ -156,6 +156,25 @@ for (const f of files) {
         }
     }
 
+    // ---------- R6: cấp quyền GHI trên BẢNG cho anon/authenticated ----------
+    // 89 RPC ghi dữ liệu đang cho anon gọi được (mặc định của Postgres: hàm được GRANT
+    // cho PUBLIC). Chúng KHÔNG khai thác được — đã thử `SET ROLE anon` rồi gọi
+    // increment_balance: "permission denied for table users". Toàn bộ lớp bảo vệ đó
+    // nằm ở quyền BẢNG (0055/0103 revoke sạch khỏi anon).
+    // => Chỉ cần một migration cấp lại quyền ghi bảng cho anon là 89 hàm kia sống dậy.
+    // 0095_market đã từng GRANT SELECT cho anon (đọc thì vô hại), nên rủi ro là thật.
+    const tableGrantRe = /grant\s+([\w\s,]+?)\s+on\s+(?:table\s+)?(?:public\.)?(\w+)\s+to\s+([^;]+)/gi;
+    let tg;
+    while ((tg = tableGrantRe.exec(sql)) !== null) {
+        const privs = tg[1].toLowerCase();
+        const table = tg[2];
+        const roles = tg[3].toLowerCase();
+        if (/\bfunction\b/.test(tg[0].toLowerCase())) continue;   // R4 lo phần hàm
+        const exposed = /\banon\b|\bauthenticated\b|\bpublic\b/.test(roles);
+        const writes = /\ball\b|\binsert\b|\bupdate\b|\bdelete\b|\btruncate\b/.test(privs);
+        if (exposed && writes) add(f, 'R6_table_write_grant_to_anon', `${table} <- ${privs.trim()} cho ${roles.trim()}`);
+    }
+
     // ---------- R5: DDL không idempotent ----------
     // Luật 3: migration phải chạy lại được mà không lỗi (rebuild / apply lại).
     if (/create\s+table\s+(?!if\s+not\s+exists)/i.test(sql)) add(f, 'R5_not_idempotent', 'CREATE TABLE thiếu IF NOT EXISTS');
@@ -185,6 +204,7 @@ const RULE_HINT = {
     R3_read_then_write_no_lock: 'Thêm FOR UPDATE vào câu SELECT … INTO + guard row-count sau khi ghi.',
     R4_grant_write_rpc_to_anon: 'REVOKE khỏi public/anon/authenticated, chỉ GRANT cho service_role.',
     R5_not_idempotent: 'Dùng IF NOT EXISTS / CREATE OR REPLACE.',
+    R6_table_write_grant_to_anon: 'KHÔNG cấp quyền GHI bảng cho anon/authenticated — đó là lớp duy nhất chặn 89 RPC ghi dữ liệu vốn PUBLIC gọi được.',
 };
 
 console.log(`Quét ${files.length} migration · ${violations.length} vi phạm (${allowSet.size} đã ghi nhận trong allowlist)`);

@@ -207,12 +207,15 @@ module.exports = {
 
             return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'info', {
                 title: isEn ? `🔎・Ledger — ${who.username}` : `🔎・Nhật ký giao dịch — ${who.username}`,
+                // buildWaguriEmbed CHỈ nhận {title, description, fields, thumbnail, image} —
+                // truyền `footer` sẽ bị nuốt im lặng, nên chú thích nằm trong description.
                 description:
                     (isEn
-                        ? `Last **${rows.length}** entries · money net: **${netMoney >= 0 ? '+' : ''}${fmt(netMoney, locale)}** ${C}\n\n`
-                        : `**${rows.length}** dòng gần nhất · tiền ròng: **${netMoney >= 0 ? '+' : ''}${fmt(netMoney, locale)}** ${C}\n\n`)
+                        ? `Last **${rows.length}** entries · money net: **${netMoney >= 0 ? '+' : ''}${fmt(netMoney, locale)}** ${C}\n` +
+                          `_The \`code\` tag is the DB function that made the change._\n\n`
+                        : `**${rows.length}** dòng gần nhất · tiền ròng: **${netMoney >= 0 ? '+' : ''}${fmt(netMoney, locale)}** ${C}\n` +
+                          `_Chữ trong \`ngoặc\` là hàm DB đã thực hiện thay đổi._\n\n`)
                     + lines.join('\n').slice(0, 3500),
-                footer: isEn ? 'Source = the DB function that made the change' : 'Nguồn = hàm DB đã thực hiện thay đổi',
             })] });
         }
 
