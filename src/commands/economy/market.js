@@ -270,6 +270,16 @@ module.exports = {
             if (r.status === 'bad_qty') {
                 return failWith(t(locale, 'commands.market.title_list'), t(locale, 'commands.store.sell_error_bad_qty'));
             }
+            // `bad_price` do migration 0107 thêm khi vá MÁY IN TIỀN qua giá âm:
+            // market_buy làm `wallet - v_price where wallet >= v_price`, với v_price âm
+            // thì điều kiện luôn đúng và phép trừ thành phép CỘNG cho người mua
+            // (đã đo trên test: mua +1.000.000, bán -950.000, ròng +50.000 từ không khí).
+            // Slash chặn nhờ setMinValue, đường prefix thì không.
+            if (r.status === 'bad_price') {
+                return failWith(t(locale, 'commands.market.title_list'), isEn
+                    ? '❌ Price must be greater than 0!'
+                    : '❌ Giá bán phải lớn hơn 0 nhen~');
+            }
             return interaction.editReply({
                 embeds: [buildWaguriEmbed(interaction, 'success', {
                     locale,
