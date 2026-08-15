@@ -21,7 +21,7 @@ export default function SiteHeader() {
 
   const NAV = [
     { href: "/study", label: t("nav.study") },
-    { href: "/market", label: "📈 Chợ Nông Sản" },
+    { href: "/market", label: t("nav.market") },
     { href: "/commands", label: t("nav.commands") },
     { href: "/wiki", label: t("nav.wiki") },
     { href: "/leaderboard", label: t("nav.leaderboard") },
@@ -80,7 +80,7 @@ export default function SiteHeader() {
         </Link>
 
         {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-300">
+        <nav className="hidden xl:flex items-center gap-6 text-sm font-medium text-slate-300">
           {NAV.map((n) =>
             n.external ? (
               <a key={n.href} href={n.href} target="_blank" rel="noopener noreferrer" className="hover:text-pink-300 transition-colors">
@@ -107,7 +107,7 @@ export default function SiteHeader() {
         {/* Mobile hamburger */}
         <button
           onClick={() => setOpen((v) => !v)}
-          className="md:hidden flex flex-col gap-1.5 p-2"
+          className="xl:hidden flex flex-col gap-1.5 p-2"
           aria-label="Menu"
           aria-expanded={open}
         >
@@ -119,7 +119,7 @@ export default function SiteHeader() {
 
       {/* Mobile dropdown */}
       {open ? (
-        <div className="md:hidden border-t border-pink-300/10 bg-[#0d0812]/95 backdrop-blur-md px-6 py-4 flex flex-col gap-3">
+        <div className="xl:hidden border-t border-pink-300/10 bg-[#0d0812]/95 backdrop-blur-md px-6 py-4 flex flex-col gap-3">
           {NAV.map((n) =>
             n.external ? (
               <a key={n.href} href={n.href} target="_blank" rel="noopener noreferrer" className="text-slate-200 hover:text-pink-300 py-1" onClick={() => setOpen(false)}>

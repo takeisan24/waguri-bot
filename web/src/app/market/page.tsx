@@ -35,7 +35,7 @@ export default async function MarketPage() {
         { key: "wood", title: "🪵 Forestry", desc: "Solid wood, premium Ky Nam agarwood" },
       ]
     : [
-        { key: "crop", title: "🌾 Nông Sản Cultivation", desc: "Lúa nước, dưa hấu, cà chua, khoai tây" },
+        { key: "crop", title: "🌾 Nông Sản", desc: "Lúa nước, dưa hấu, cà chua, khoai tây" },
         { key: "pig", title: "🥓 Chăn Nuôi Heo", desc: "Thịt heo sạch nguyên con" },
         { key: "fish", title: "🐟 Thủy Sản Câu Cá", desc: "Cá tươi, Cá Koi Nhật, Cá Rồng Vàng" },
         { key: "ore", title: "💎 Khai Thác Đào Mỏ", desc: "Đá siêu cấp, Vàng Đông Triều" },
@@ -50,7 +50,7 @@ export default async function MarketPage() {
         {/* Header Title */}
         <div className="text-center max-w-3xl mx-auto space-y-4">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-pink-500/10 border border-pink-500/20 text-pink-300 text-xs md:text-sm font-semibold">
-            <span>📈 Waguri Commodity Market Engine</span>
+            <span>{isEn ? "📈 Waguri Commodity Market Engine" : "📈 Cỗ máy giá chợ Waguri"}</span>
           </div>
           <h1 className="text-3xl md:text-5xl font-black tracking-tight text-white">
             {isEn ? "Live Commodity " : "Chợ Nông Thủy Sản "}<span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-rose-300 to-amber-200">{isEn ? "Market" : "Biến Động"}</span>
