@@ -65,3 +65,4 @@ waguri-test-schema.sql
 # Private MP3 Audio Files for Easter Egg
 *.mp3
 assets/hvl_audio/
+.playwright-mcp/
