@@ -6,7 +6,7 @@
 
 <p align="center">
   <a href="https://waguri-bot.vercel.app">
-    <img src="docs/screenshot.png" alt="Trang chủ Waguri" width="100%">
+    <img src="assets/screenshot.png" alt="Trang chủ Waguri" width="100%">
   </a>
   <br>
   <sub><a href="https://waguri-bot.vercel.app">waguri-bot.vercel.app</a> — dashboard, bảng xếp hạng, quản lý Premium</sub>
