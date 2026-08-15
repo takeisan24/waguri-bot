@@ -35,19 +35,19 @@
     "share": "🔗 Chia sẻ hồ sơ"
   },
   "nav": {
-    "study": "📚 Phòng Học Bài",
+    "study": "Phòng học bài",
     "commands": "Lệnh",
     "wiki": "Cẩm nang",
-    "leaderboard": "Bảng xếp hạng",
-    "vote": "💝 Vote",
-    "invite": "Mời Waguri 🌸",
+    "leaderboard": "Xếp hạng",
+    "vote": "Vote",
+    "invite": "Mời Waguri",
     "login": "Đăng nhập",
     "dashboard": "Dashboard",
     "profile": "🌸 Hồ sơ",
     "logout": "Đăng xuất",
     "changelog": "Nhật ký cập nhật",
     "status": "Trạng thái",
-    "market": "📈 Chợ Nông Sản"
+    "market": "Chợ nông sản"
   },
   "footer": {
     "desc": "Bot Discord RPG kinh tế và AI Waifu bản địa hóa văn hóa Việt Nam.",

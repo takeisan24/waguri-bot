@@ -38,7 +38,6 @@ export default function LanguageSelector() {
         aria-expanded={isOpen}
       >
         <span>{currentLang.flag}</span>
-        <span className="uppercase">{currentLang.code}</span>
         <svg
           className={`w-3 h-3 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
           fill="none"

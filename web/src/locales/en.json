@@ -35,19 +35,19 @@
     "share": "🔗 Share profile"
   },
   "nav": {
-    "study": "📚 Study Room",
+    "study": "Study Room",
     "commands": "Commands",
     "wiki": "Wiki",
-    "leaderboard": "Leaderboard",
-    "vote": "💝 Vote",
-    "invite": "Invite Waguri 🌸",
+    "leaderboard": "Ranking",
+    "vote": "Vote",
+    "invite": "Invite Waguri",
     "login": "Login",
     "dashboard": "Dashboard",
     "profile": "🌸 Profile",
     "logout": "Logout",
     "changelog": "Changelog",
     "status": "Status",
-    "market": "📈 Market"
+    "market": "Market"
   },
   "footer": {
     "desc": "Vietnamese culture localized economy RPG & AI Waifu Discord Bot.",
