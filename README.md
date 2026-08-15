@@ -4,6 +4,14 @@
 [![Supabase](https://img.shields.io/badge/Database-Supabase%20%2F%20Postgres-3ECF8E.svg)](https://supabase.com)
 [![Node](https://img.shields.io/badge/Node.js-%E2%89%A520-339933.svg)](https://nodejs.org)
 
+<p align="center">
+  <a href="https://waguri-bot.vercel.app">
+    <img src="docs/screenshot.png" alt="Trang chủ Waguri" width="100%">
+  </a>
+  <br>
+  <sub><a href="https://waguri-bot.vercel.app">waguri-bot.vercel.app</a> — dashboard, bảng xếp hạng, quản lý Premium</sub>
+</p>
+
 **Waguri** là một Discord bot **kinh tế · nhập vai · cộng đồng** bản địa hoá đậm chất Việt Nam, kèm
 **AI trò chuyện** mang persona dịu dàng, lễ phép, hay động viên (lấy cảm hứng từ nhân vật **Waguri Kaoruko**).
 Từ nghề vỉa hè (nhặt ve chai, bán trà đá) leo lên đại gia, lập bang hội, chơi Loto/Bingo trong voice,
