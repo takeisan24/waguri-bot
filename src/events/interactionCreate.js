@@ -321,7 +321,7 @@ async function handleTicketOpen(interaction, category = 'general') {
     const active = await db.getActiveTicket(guild.id, user.id);
     if (active) {
         return interaction.editReply({
-            content: `❌ Cậu đang có 1 Ticket đang hoạt động tại kênh <#${active.channel_id}> rồi nhen! Vui lòng hoàn tất hoặc đóng ticket cũ trước.`,
+            content: t(locale, 'commands.ticket.err_already_open', { channel: `<#${active.channel_id}>` }),
         });
     }
 
@@ -362,16 +362,42 @@ async function handleTicketOpen(interaction, category = 'general') {
         },
     ];
 
-    const staffRole = guild.roles.cache.find(r => /staff|support|mod|admin/i.test(r.name));
-    if (staffRole) {
-        overwrites.push({
-            id: staffRole.id,
-            allow: [
-                PermissionsBitField.Flags.ViewChannel,
-                PermissionsBitField.Flags.SendMessages,
-                PermissionsBitField.Flags.ReadMessageHistory,
-            ],
-        });
+    // --- Xác định STAFF: hai tầng, KHÔNG dò theo tên role -------------------------------
+    // Cách cũ `roles.cache.find(r => /staff|support|mod|admin/i.test(r.name))` hỏng CẢ HAI
+    // chiều: khớp nhầm role tên `admin-logs` -> lộ nội dung ticket riêng tư; không khớp
+    // role tên `Hỗ trợ`/`Nhân viên` -> staff KHÔNG thấy ticket, người chơi chờ mãi. Regex
+    // không có một từ tiếng Việt nào mà đây là bot tiếng Việt, nên nhánh thứ hai mới phổ biến.
+    const QUYEN_STAFF = [
+        PermissionsBitField.Flags.ViewChannel,
+        PermissionsBitField.Flags.SendMessages,
+        PermissionsBitField.Flags.ReadMessageHistory,
+    ];
+    const cauHinh = await db.getGuildSettings(guild.id);
+    let roleStaff = [];
+
+    // Tầng 1: admin đã chỉ đích danh qua `/config staff-role` -> chính xác tuyệt đối.
+    if (cauHinh?.staff_role_id) {
+        const r = guild.roles.cache.get(String(cauHinh.staff_role_id));
+        if (r) roleStaff = [r];
+    }
+    // Tầng 2: chưa cấu hình -> lấy mọi role CÓ QUYỀN quản lý luồng. Đây là tín hiệu ngữ
+    // nghĩa (Discord đã trao quyền) thay vì đoán qua chữ trong tên. `has()` mặc định tính
+    // cả Administrator nên tầng này tự động bao luôn mọi role admin.
+    if (!roleStaff.length) {
+        roleStaff = guild.roles.cache
+            .filter(r => r.id !== guild.id && !r.managed &&
+                         r.permissions.has(PermissionsBitField.Flags.ManageThreads))
+            .first(10);   // chặn trần: Discord giới hạn số overwrite mỗi kênh
+    }
+
+    for (const r of roleStaff) overwrites.push({ id: r.id, allow: QUYEN_STAFF });
+
+    // Dự phòng cuối (phương án (c)): server chưa hề có role quản trị nào. Chủ server vốn đã
+    // thấy kênh nhờ Administrator bỏ qua overwrite, nhưng thêm tường minh để kênh HIỆN trong
+    // danh sách của họ thay vì chỉ "thấy nếu đi tìm" — rồi mention một lần ở dưới.
+    const thieuCauHinh = roleStaff.length === 0;
+    if (thieuCauHinh && guild.ownerId) {
+        overwrites.push({ id: guild.ownerId, allow: QUYEN_STAFF });
     }
 
     let ticketChannel;
@@ -386,35 +412,67 @@ async function handleTicketOpen(interaction, category = 'general') {
     } catch (err) {
         logError('create_ticket_channel', err, { user: user.id, guild: guild.id });
         return interaction.editReply({
-            content: '⚠️ Bot thiếu quyền `Manage Channels` (Quản lý kênh) để mở Ticket. Cậu báo Admin cấp thêm quyền cho Waguri nhen!',
+            content: t(locale, 'commands.ticket.err_bot_no_perm'),
         });
     }
 
-    await db.createTicket(guild.id, ticketChannel.id, user.id, category);
+    // Ghi DB NGAY và KIỂM kết quả. Trước đây giá trị trả về bị bỏ qua: DB lỗi -> kênh vẫn
+    // tồn tại mãi mà không có bản ghi -> `getActiveTicket` trả rỗng -> người chơi mở được
+    // VÔ HẠN ticket, và kênh mồ côi chất đống trong server.
+    const banGhi = await db.createTicket(guild.id, ticketChannel.id, user.id, category);
+    if (!banGhi) {
+        // Dọn kênh vừa tạo để không để lại rác. Kênh phải có TRƯỚC vì bản ghi cần channel_id,
+        // nên không thể đảo thứ tự — bù lại bằng việc hoàn tác khi bước sau hỏng.
+        await ticketChannel.delete('Ghi ticket vào DB thất bại — dọn kênh mồ côi').catch(() => {});
+        return interaction.editReply({
+            embeds: [buildWaguriEmbed(interaction, 'error', {
+                locale, description: t(locale, 'commands.ticket.error_desc'),
+            })],
+        });
+    }
 
-    const catLabels = { general: '💬 Thắc mắc chung', bug: '🐛 Báo lỗi (Bug Report)', premium: '💎 Hỗ trợ Premium' };
+    const catLabels = {
+        general: t(locale, 'commands.ticket.cat_general'),
+        bug: t(locale, 'commands.ticket.cat_bug'),
+        premium: t(locale, 'commands.ticket.cat_premium'),
+    };
     const guideEmbed = new EmbedBuilder()
         .setColor('#f472b6')
-        .setTitle(`🌸 Kênh Hỗ Trợ Private • ${catLabels[category] || 'General'}`)
-        .setDescription(
-            `Chào <@${user.id}>! Kênh ticket hỗ trợ riêng tư của cậu đã được khởi tạo.\n\nVui lòng mô tả chi tiết vấn đề hoặc kèm ảnh bằng chứng bên dưới. Đội ngũ Staff sẽ phản hồi cậu sớm nhất có thể nhen!`
-        )
+        .setTitle(`${t(locale, 'commands.ticket.guide_title')} • ${catLabels[category] || category}`)
+        .setDescription(t(locale, 'commands.ticket.guide_desc', { user: user.id }))
         .addFields(
-            { name: '👤 Người mở', value: `<@${user.id}>`, inline: true },
-            { name: '📂 Phân loại', value: catLabels[category] || category, inline: true },
-            { name: '🛡️ Trạng thái', value: '🟢 `ĐANG MỞ (OPEN)`', inline: true }
+            { name: t(locale, 'commands.ticket.field_opener'), value: `<@${user.id}>`, inline: true },
+            { name: t(locale, 'commands.ticket.field_category'), value: catLabels[category] || category, inline: true },
+            { name: t(locale, 'commands.ticket.field_status'), value: t(locale, 'commands.ticket.status_open'), inline: true }
         )
         .setFooter({ text: 'Waguri Support Ticket System' });
 
-    const claimBtn = new ButtonBuilder().setCustomId('tkt:claim').setLabel('🙋‍♂️ Nhận Ticket').setStyle(ButtonStyle.Success);
-    const lockBtn = new ButtonBuilder().setCustomId('tkt:lock').setLabel('🔒 Khóa Chat').setStyle(ButtonStyle.Secondary);
-    const closeBtn = new ButtonBuilder().setCustomId('tkt:close').setLabel('🛑 Đóng Ticket').setStyle(ButtonStyle.Danger);
+    // Cảnh báo hiển thị NGAY TRONG ticket, nơi admin chắc chắn nhìn thấy khi vào đọc.
+    if (thieuCauHinh) {
+        guideEmbed.addFields({
+            name: t(locale, 'commands.ticket.warn_no_staff_title'),
+            value: t(locale, 'commands.ticket.warn_no_staff_desc'),
+        });
+    }
+
+    const claimBtn = new ButtonBuilder().setCustomId('tkt:claim').setLabel(t(locale, 'commands.ticket.btn_claim')).setStyle(ButtonStyle.Success);
+    const lockBtn = new ButtonBuilder().setCustomId('tkt:lock').setLabel(t(locale, 'commands.ticket.btn_lock')).setStyle(ButtonStyle.Secondary);
+    const closeBtn = new ButtonBuilder().setCustomId('tkt:close').setLabel(t(locale, 'commands.ticket.btn_close')).setStyle(ButtonStyle.Danger);
     const row = new ActionRowBuilder().addComponents(claimBtn, lockBtn, closeBtn);
 
-    await ticketChannel.send({ content: `<@${user.id}> | ${staffRole ? `<@&${staffRole.id}>` : ''}`, embeds: [guideEmbed], components: [row] });
+    // Không có role staff nào -> mention CHỦ SERVER một lần, để ticket không nằm im chờ
+    // người không biết là mình cần đọc.
+    const nhacAi = roleStaff.length
+        ? roleStaff.map(r => `<@&${r.id}>`).join(' ')
+        : (thieuCauHinh && guild.ownerId ? `<@${guild.ownerId}>` : '');
+    await ticketChannel.send({
+        content: `<@${user.id}>${nhacAi ? ' | ' + nhacAi : ''}`,
+        embeds: [guideEmbed],
+        components: [row],
+    });
 
     await interaction.editReply({
-        content: `✅ Ticket hỗ trợ của cậu đã được tạo tại kênh <#${ticketChannel.id}>!`,
+        content: t(locale, 'commands.ticket.success_reply', { thread: `<#${ticketChannel.id}>` }),
     });
 }
 

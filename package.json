@@ -21,8 +21,9 @@
     "check-help": "node scripts/check-help-sync.js",
     "db:snapshot": "node scripts/db-snapshot.js",
     "check-db": "node scripts/check-db-applied.js && node scripts/check-db-drift.js && node scripts/db-snapshot.js --check",
-    "test": "node scripts/check-i18n-coverage.js && node --test",
-    "prepare": "git config core.hooksPath scripts/git-hooks || exit 0"
+    "test": "node scripts/check-i18n-coverage.js && node scripts/check-i18n-bot.js && node --test",
+    "prepare": "git config core.hooksPath scripts/git-hooks || exit 0",
+    "check-i18n-bot": "node scripts/check-i18n-bot.js"
   },
   "dependencies": {
     "@discordjs/voice": "^0.19.2",

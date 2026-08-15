@@ -3,9 +3,9 @@
  * Manages active focus sessions, progress bar rendering, and atomic reward completion.
  */
 
-const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType } = require('discord.js');
+const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, MessageFlags } = require('discord.js');
 const db = require('../database');
-const { t } = require('../lib/i18n');
+const { t, getInteractionLanguage } = require('../lib/i18n');
 
 // Active sessions map: userId -> SessionObject
 const activeSessions = new Map();
@@ -49,15 +49,15 @@ function formatTime(ms) {
 /**
  * Build Study Control Row Buttons
  */
-function buildControlRow(isPaused = false) {
+function buildControlRow(isPaused = false, locale = 'vi') {
     return new ActionRowBuilder().addComponents(
         new ButtonBuilder()
             .setCustomId(isPaused ? 'study_resume' : 'study_pause')
-            .setLabel(isPaused ? 'Tiếp tục ▶️' : 'Tạm dừng ⏸️')
+            .setLabel(t(locale, isPaused ? 'commands.study.btn_resume' : 'commands.study.btn_pause'))
             .setStyle(isPaused ? ButtonStyle.Success : ButtonStyle.Secondary),
         new ButtonBuilder()
             .setCustomId('study_stop')
-            .setLabel('Nộp bài sớm ⏹️')
+            .setLabel(t(locale, 'commands.study.btn_stop'))
             .setStyle(ButtonStyle.Danger)
     );
 }
@@ -71,18 +71,19 @@ function buildStudyEmbed(session, remainingMs) {
     const percent = Math.min(100, Math.floor((elapsedMs / totalMs) * 100));
     const progressBar = renderProgressBar(percent);
     const formattedRemaining = formatTime(remainingMs);
+    const lc = session.locale || 'vi';
 
     const embed = new EmbedBuilder()
         .setColor(session.isPaused ? '#F59E0B' : '#8B5CF6')
-        .setTitle(`📚 GÓC HỌC BÀI POMODORO WAGURI — ${session.sessionName}`)
-        .setDescription(
-            `*Waguri đang ngồi cạnh giữ im lặng để cậu tập trung nè~* 🌸\n\n` +
-            `**Môn học / Công việc:** ${session.sessionName}\n` +
-            `**Tiến trình:** \`${progressBar}\`\n` +
-            `**Thời gian còn lại:** \`${formattedRemaining}\` / \`${session.durationMinutes} phút\`\n` +
-            `**Trạng thái:** ${session.isPaused ? '⏸️ *Tạm dừng giải lao*' : '🟢 *Đang tập trung cùng Waguri...*'}`
-        )
-        .setFooter({ text: 'Waguri Study Companion • Tập trung 25p - Nghỉ 5p' })
+        .setTitle(t(lc, 'commands.study.panel_title', { name: session.sessionName }))
+        .setDescription(t(lc, 'commands.study.panel_desc', {
+            name: session.sessionName,
+            bar: progressBar,
+            remain: formattedRemaining,
+            total: session.durationMinutes,
+            status: t(lc, session.isPaused ? 'commands.study.panel_status_paused' : 'commands.study.panel_status_focus'),
+        }))
+        .setFooter({ text: t(lc, 'commands.study.panel_footer') })
         .setTimestamp();
 
     return embed;
@@ -149,28 +150,20 @@ function scheduleFinishTimer(session, delayMs) {
             if (result.awarded) {
                 finishEmbed = new EmbedBuilder()
                     .setColor('#10B981')
-                    .setTitle(`🎉 HOÀN THÀNH PHIÊN HỌC — ${session.sessionName}!`)
-                    .setDescription(
-                        `*Waguri khẽ vỗ tay chúc mừng cậu nè!* 🌸🍵\n\n` +
-                        `Cậu đã chăm chỉ hoàn thành **${session.durationMinutes} phút** tập trung tuyệt vời!\n` +
-                        `**Phần thưởng:**\n` +
-                        `• **+${result.earnedCoins} Xu** 🪙\n` +
-                        `• **+${result.earnedExp} EXP** ✨\n` +
-                        `• **+${result.studyPoints} Hạt Hoa Kikyo 🌸**\n` +
-                        `• **Chuỗi Chuyên Cần 📚:** \`${result.newStreak} ngày\`\n\n` +
-                        `*Nghỉ tay 5-10 phút uống chút trà cùng Waguri rùi tiếp tục nhen!* ☕`
-                    )
+                    .setTitle(t(session.locale || 'vi', 'commands.study.done_title', { name: session.sessionName }))
+                    .setDescription(t(session.locale || 'vi', 'commands.study.done_desc', {
+                        minutes: session.durationMinutes, coins: result.earnedCoins,
+                        exp: result.earnedExp, points: result.studyPoints, streak: result.newStreak,
+                    }))
                     .setTimestamp();
             } else {
                 // RPC cộng thưởng thất bại -> KHÔNG báo đã nhận thưởng (tránh lừa người dùng).
                 finishEmbed = new EmbedBuilder()
                     .setColor('#F59E0B')
-                    .setTitle(`✅ ĐÃ HOÀN THÀNH PHIÊN HỌC — ${session.sessionName}`)
-                    .setDescription(
-                        `*Waguri ghi nhận cậu đã học xong **${session.durationMinutes} phút** rồi nhen!* 🌸\n\n` +
-                        `⚠️ Hệ thống đang bận nên **chưa cộng được phần thưởng** vào lúc này. ` +
-                        `Cậu thử lại sau một chút hoặc báo admin nếu tình trạng lặp lại nhé~ 🍵`
-                    )
+                    .setTitle(t(session.locale || 'vi', 'commands.study.done_partial_title', { name: session.sessionName }))
+                    .setDescription(t(session.locale || 'vi', 'commands.study.done_partial_desc', {
+                        minutes: session.durationMinutes,
+                    }))
                     .setTimestamp();
             }
 
@@ -207,7 +200,8 @@ async function startStudySession(userId, guildId, sessionName, durationMinutes, 
         remainingMs: totalMs,
         timer: null,
         updateInterval: null,
-        message: null
+        message: null,
+        locale: await getInteractionLanguage(interaction),
     };
 
     activeSessions.set(userId, session);
@@ -241,15 +235,15 @@ async function handleStudyButton(interaction) {
 
     if (!session) {
         return interaction.reply({
-            content: '🌸 *Cậu chưa có phiên học nào đang chạy nhen~* 🍵',
-            ephemeral: true
+            content: t(await getInteractionLanguage(interaction), 'commands.study.err_no_session'),
+            flags: MessageFlags.Ephemeral
         }).catch(() => {});
     }
 
     if (session.message && message && session.message.id !== message.id) {
         return interaction.reply({
-            content: '🌸 *Đây không phải góc học tập của cậu nhen~ Cậu hãy dùng `/study start` để tạo phiên học cho riêng mình nha!* 🍵',
-            ephemeral: true
+            content: t(session.locale || 'vi', 'commands.study.err_not_yours'),
+            flags: MessageFlags.Ephemeral
         }).catch(() => {});
     }
 

@@ -1088,7 +1088,21 @@
       "success_reply": "✅ Tớ đã mở phòng hỗ trợ cho cậu tại {thread}~ Vào đó mô tả vấn đề nhé! 🌸",
       "error_desc": "Đã có lỗi xảy ra khi tạo phòng hỗ trợ~ 😥 Cậu thử lại sau hoặc liên hệ trực tiếp với staff nhé!",
       "closed_by": "🔒 Ticket đã được đóng bởi <@{user}>. Cảm ơn cậu đã liên hệ~ 🌸",
-      "err_not_thread": "Lệnh này chỉ dùng được trong luồng hỗ trợ (ticket)~"
+      "err_not_thread": "Lệnh này chỉ dùng được trong luồng hỗ trợ (ticket)~",
+      "err_already_open": "🌸 Cậu đang có một phòng hỗ trợ mở tại {channel} rồi nhen~ Hoàn tất hoặc đóng phòng cũ trước đã nhé!",
+      "err_bot_no_perm": "⚠️ Tớ thiếu quyền `Quản lý kênh` (Manage Channels) nên chưa mở phòng được~ Cậu nhờ Admin cấp thêm quyền cho tớ nhen! 🌸",
+      "cat_general": "💬 Thắc mắc chung",
+      "cat_bug": "🐛 Báo lỗi",
+      "cat_premium": "💎 Hỗ trợ Premium",
+      "field_opener": "👤 Người mở",
+      "field_category": "📂 Phân loại",
+      "field_status": "🛡️ Trạng thái",
+      "status_open": "🟢 `ĐANG MỞ`",
+      "btn_claim": "🙋 Nhận ticket",
+      "btn_lock": "🔒 Khoá chat",
+      "btn_close": "🛑 Đóng ticket",
+      "warn_no_staff_title": "⚠️ Server chưa đặt role Staff",
+      "warn_no_staff_desc": "Tớ chưa tìm ra role nào có quyền quản lý luồng, nên tạm thời chỉ chủ server nhìn thấy phòng này.\nAdmin hãy chạy `/config staff-role` để chỉ định role Staff nhen~ 🌸"
     },
     "start": {
       "title": "🌸・Chào mừng cậu đến với Waguri!",
@@ -1539,7 +1553,9 @@
       "val_disabled_role": "*(tắt auto-role)*",
       "val_disabled_announcement": "*(tắt thông báo)*",
       "status_enabled_emoji": "🟢 Bật",
-      "status_disabled_emoji": "🔴 Tắt"
+      "status_disabled_emoji": "🔴 Tắt",
+      "staff_role_success": "✅ Đã đặt <@&{role}> làm role Staff xem ticket hỗ trợ nhen~ 🌸",
+      "staff_role_cleared": "✅ Đã xoá cấu hình role Staff. Tớ sẽ tự dò theo **quyền Quản lý luồng** thay vì theo tên role nhen~ 🌸"
     },
     "craft": {
       "cost_fee": " + {fee} {currency} tiền công",
@@ -1887,6 +1903,32 @@
       "view_desc": "🏷️ Danh hiệu: {title}\n🎨 Màu hồ sơ: {color}",
       "view_footer": "Đặt: /cosmetic title · /cosmetic color",
       "view_title": "🎨・Cosmetic của cậu"
+    },
+    "study": {
+      "err_already_running": "🌸 *Cậu đang có một phiên học chưa hoàn thành rùi nhen! Dùng `/study status` để xem hoặc `/study stop` để nộp bài sớm nhen~* 🍵",
+      "log_title": "📚 NHẬT KÝ HỌC TẬP WAGURI",
+      "log_hint": "*Dùng `/study start` để bắt đầu một phiên Pomodoro 25 phút mới cùng Waguri nhen!* ✨",
+      "err_no_session_stop": "🌸 *Cậu chưa có phiên học nào đang chạy để dừng nhen~* 🍵",
+      "err_no_session": "🌸 *Cậu chưa có phiên học nào đang chạy nhen~* 🍵",
+      "err_not_yours": "🌸 *Đây không phải góc học tập của cậu nhen~ Cậu hãy dùng `/study start` để tạo phiên học cho riêng mình nha!* 🍵",
+      "lb_empty": "🌸 *Chưa có thành tích học tập nào được ghi nhận. Hãy gõ `/study start` để là người đầu tiên ghi danh nhen!* ✨",
+      "lb_header": "🏆 **TOP 10 HỌC VIÊN CHUYÊN CẦN HỌC VIỆN KIKYO** 📚\n\n",
+      "lb_title": "📚 BẢNG XẾP HẠNG HỌC TẬP WAGURI",
+      "panel_title": "📚 GÓC HỌC BÀI POMODORO WAGURI — {name}",
+      "panel_desc": "*Waguri đang ngồi cạnh giữ im lặng để cậu tập trung nè~* 🌸\n\n**Môn học / Công việc:** {name}\n**Tiến trình:** `{bar}`\n**Thời gian còn lại:** `{remain}` / `{total} phút`\n**Trạng thái:** {status}",
+      "panel_status_paused": "⏸️ *Tạm dừng giải lao*",
+      "panel_status_focus": "🟢 *Đang tập trung cùng Waguri...*",
+      "panel_footer": "Waguri Study Companion • Tập trung 25p - Nghỉ 5p",
+      "btn_pause": "Tạm dừng ⏸️",
+      "btn_resume": "Tiếp tục ▶️",
+      "btn_stop": "Nộp bài sớm ⏹️",
+      "done_title": "🎉 HOÀN THÀNH PHIÊN HỌC — {name}!",
+      "done_desc": "*Waguri khẽ vỗ tay chúc mừng cậu nè!* 🌸🍵\n\nCậu đã chăm chỉ hoàn thành **{minutes} phút** tập trung tuyệt vời!\n**Phần thưởng:**\n• **+{coins} Xu** 🪙\n• **+{exp} EXP** ✨\n• **+{points} Hạt Hoa Kikyo 🌸**\n• **Chuỗi Chuyên Cần 📚:** `{streak} ngày`\n\n*Nghỉ tay 5-10 phút uống chút trà cùng Waguri rùi tiếp tục nhen!* ☕",
+      "done_partial_title": "✅ ĐÃ HOÀN THÀNH PHIÊN HỌC — {name}",
+      "done_partial_desc": "*Waguri ghi nhận cậu đã học xong **{minutes} phút** rồi nhen!* 🌸\n\n⚠️ Hệ thống đang bận nên **chưa cộng được phần thưởng** vào lúc này. Cậu thử lại sau một chút hoặc báo admin nếu tình trạng lặp lại nhé~ 🍵",
+      "log_stats": "*Hiện tại cậu chưa có phiên học nào đang chạy nhen~*\n\n**Thống kê cá nhân:**\n• **Chuỗi Chuyên Cần 📚:** `{streak} ngày`\n• **Tổng thời gian tập trung:** `{hours} giờ {minutes} phút`\n• **Hạt Hoa Kikyo 🌸:** `{points} hạt`\n\n",
+      "stop_saved": "🌸 *Waguri đã lưu lại phiên học \"{name}\" cho cậu rùi nhen~ Hẹn gặp lại cậu ở phiên học tiếp theo!* ✨",
+      "lb_row": "{medal} **#{rank}** <@{user}> — `{streak} ngày` (Tổng {hours}h {minutes}m)\n"
     }
   },
   "lib": {

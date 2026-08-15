@@ -32,6 +32,8 @@ module.exports = {
                     { name: 'Tiếng Việt 🇻🇳', value: 'vi' },
                     { name: 'English 🇬🇧', value: 'en' }
                 )))
+        .addSubcommand(s => s.setName('staff-role').setDescription('Đặt role Staff được xem ticket hỗ trợ (bỏ trống để tự dò theo quyền)')
+            .addRoleOption(o => o.setName('role').setDescription('Role Staff / Support role')))
         .addSubcommand(s => s.setName('view').setDescription('Xem cấu hình hiện tại')),
     async execute(interaction) {
         const locale = await getInteractionLanguage(interaction);
@@ -144,6 +146,20 @@ module.exports = {
                 description: lang === 'en'
                     ? t(locale, 'commands.config.language_success_en')
                     : t(locale, 'commands.config.language_success_vi')
+            });
+            return interaction.editReply({ embeds: [embed] });
+        }
+
+        if (sub === 'staff-role') {
+            // Bỏ trống = xoá cấu hình -> quay về tự dò theo QUYỀN `ManageThreads`, chứ không
+            // phải dò theo tên role (cách cũ hỏng cả hai chiều, xem interactionCreate.js).
+            const role = interaction.options.getRole('role');
+            await db.setGuildSetting(gid, 'staff_role_id', role ? role.id : null);
+            const embed = buildWaguriEmbed(interaction, 'success', {
+                locale,
+                description: role
+                    ? t(locale, 'commands.config.staff_role_success', { role: role.id })
+                    : t(locale, 'commands.config.staff_role_cleared'),
             });
             return interaction.editReply({ embeds: [embed] });
         }

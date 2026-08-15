@@ -1088,7 +1088,21 @@
       "success_reply": "✅ I have opened a support room for you at {thread}~ Go there to describe your issue! 🌸",
       "error_desc": "An error occurred while creating the support room~ 😥 Please try again later or contact staff directly!",
       "closed_by": "🔒 This ticket was closed by <@{user}>. Thanks so much for reaching out~ 🌸",
-      "err_not_thread": "This can only be used inside a support thread (ticket)~"
+      "err_not_thread": "This can only be used inside a support thread (ticket)~",
+      "err_already_open": "🌸 You already have an open support room at {channel}~ Please finish or close it first!",
+      "err_bot_no_perm": "⚠️ I am missing the `Manage Channels` permission so I cannot open a room~ Please ask an Admin to grant it to me! 🌸",
+      "cat_general": "💬 General question",
+      "cat_bug": "🐛 Bug report",
+      "cat_premium": "💎 Premium support",
+      "field_opener": "👤 Opened by",
+      "field_category": "📂 Category",
+      "field_status": "🛡️ Status",
+      "status_open": "🟢 `OPEN`",
+      "btn_claim": "🙋 Claim ticket",
+      "btn_lock": "🔒 Lock chat",
+      "btn_close": "🛑 Close ticket",
+      "warn_no_staff_title": "⚠️ No staff role configured",
+      "warn_no_staff_desc": "I could not find any role with the Manage Threads permission, so only the server owner can see this room for now.\nAdmins, please run `/config staff-role` to set a staff role~ 🌸"
     },
     "start": {
       "title": "🌸・Welcome to Waguri!",
@@ -1539,7 +1553,9 @@
       "val_disabled_role": "*(disabled auto-role)*",
       "val_disabled_announcement": "*(disabled update announcements)*",
       "status_enabled_emoji": "🟢 Enabled",
-      "status_disabled_emoji": "🔴 Disabled"
+      "status_disabled_emoji": "🔴 Disabled",
+      "staff_role_success": "✅ <@&{role}> is now the staff role for support tickets~ 🌸",
+      "staff_role_cleared": "✅ Staff role cleared. I will detect staff by the **Manage Threads permission** instead of by role name~ 🌸"
     },
     "craft": {
       "cost_fee": " + {fee} {currency} crafting fee",
@@ -1887,6 +1903,32 @@
       "view_desc": "🏷️ Title: {title}\n🎨 Profile color: {color}",
       "view_footer": "Set with: /cosmetic title · /cosmetic color",
       "view_title": "🎨・Your Cosmetics"
+    },
+    "study": {
+      "err_already_running": "🌸 *You already have an unfinished study session! Use `/study status` to check it or `/study stop` to finish early~* 🍵",
+      "log_title": "📚 WAGURI STUDY LOG",
+      "log_hint": "*Use `/study start` to begin a fresh 25-minute Pomodoro session with Waguri!* ✨",
+      "err_no_session_stop": "🌸 *You have no running session to stop~* 🍵",
+      "err_no_session": "🌸 *You have no running study session~* 🍵",
+      "err_not_yours": "🌸 *This is not your study corner~ Use `/study start` to create your own session!* 🍵",
+      "lb_empty": "🌸 *No study records yet. Type `/study start` to be the first one on the board!* ✨",
+      "lb_header": "🏆 **TOP 10 MOST DILIGENT KIKYO STUDENTS** 📚\n\n",
+      "lb_title": "📚 WAGURI STUDY LEADERBOARD",
+      "panel_title": "📚 WAGURI POMODORO STUDY CORNER — {name}",
+      "panel_desc": "*Waguri is sitting quietly beside you so you can focus~* 🌸\n\n**Subject / Task:** {name}\n**Progress:** `{bar}`\n**Time left:** `{remain}` / `{total} min`\n**Status:** {status}",
+      "panel_status_paused": "⏸️ *Paused for a break*",
+      "panel_status_focus": "🟢 *Focusing with Waguri...*",
+      "panel_footer": "Waguri Study Companion • Focus 25m - Break 5m",
+      "btn_pause": "Pause ⏸️",
+      "btn_resume": "Resume ▶️",
+      "btn_stop": "Finish early ⏹️",
+      "done_title": "🎉 SESSION COMPLETE — {name}!",
+      "done_desc": "*Waguri claps softly for you!* 🌸🍵\n\nYou diligently completed **{minutes} minutes** of great focus!\n**Rewards:**\n• **+{coins} coins** 🪙\n• **+{exp} EXP** ✨\n• **+{points} Kikyo Flower Seeds 🌸**\n• **Study streak 📚:** `{streak} days`\n\n*Take a 5-10 minute tea break with Waguri, then keep going!* ☕",
+      "done_partial_title": "✅ SESSION FINISHED — {name}",
+      "done_partial_desc": "*Waguri noted that you studied for **{minutes} minutes**!* 🌸\n\n⚠️ The system is busy so **rewards could not be granted** right now. Please try again shortly, or tell an admin if it keeps happening~ 🍵",
+      "log_stats": "*You have no running study session right now~*\n\n**Your stats:**\n• **Study streak 📚:** `{streak} days`\n• **Total focus time:** `{hours}h {minutes}m`\n• **Kikyo Flower Seeds 🌸:** `{points}`\n\n",
+      "stop_saved": "🌸 *Waguri saved your \"{name}\" session~ See you at the next one!* ✨",
+      "lb_row": "{medal} **#{rank}** <@{user}> — `{streak} days` (Total {hours}h {minutes}m)\n"
     }
   },
   "data": {

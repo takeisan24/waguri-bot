@@ -374,6 +374,7 @@ const SUBCOMMAND_DESCRIPTIONS = {
     "event.status": { vi: "Xem sự kiện hiện tại", en: "View the current event" },
     // config
     "config.confession-channel": { vi: "Đặt kênh đăng confession", en: "Set confession channel" },
+    "config.staff-role": { vi: "Đặt role Staff được xem ticket hỗ trợ (bỏ trống để tự dò theo quyền)", en: "Set the staff role that can view support tickets (leave empty to auto-detect by permission)" },
     "config.ai": { vi: "Bật/tắt trò chuyện AI khi tag Waguri", en: "Toggle AI chat when tagging Waguri" },
     "config.ai-channel": { vi: "Giới hạn AI chỉ trả lời ở 1 kênh (bỏ trống = mọi kênh)", en: "Limit AI replies to 1 channel (empty = all channels)" },
     "config.pvp": { vi: "Bật/tắt PvP: cướp /rob + trộm heo/cây", en: "Toggle PvP: rob / thievery" },

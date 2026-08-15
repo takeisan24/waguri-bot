@@ -1,0 +1,10 @@
+{
+  "_ghi_chu": "Mốc ratchet: file CHƯA có i18n tại thời điểm chụp. Dọn được file nào thì gỡ khỏi đây để mốc siết lại. ĐỪNG thêm file mới vào — hãy i18n nó.",
+  "files": [
+    "src/commands/economy/chop.js",
+    "src/commands/economy/mine.js",
+    "src/commands/games/bingo.js",
+    "src/commands/games/loto.js",
+    "src/events/channelDelete.js"
+  ]
+}

@@ -1,6 +1,7 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, MessageFlags } = require('discord.js');
 const studyLib = require('../../lib/study');
 const db = require('../../database');
+const { getInteractionLanguage, t } = require('../../lib/i18n');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -43,6 +44,7 @@ module.exports = {
         ),
 
     async execute(interaction) {
+        const locale = await getInteractionLanguage(interaction);
         const subcommand = interaction.options.getSubcommand();
         const userId = interaction.user.id;
         const guildId = interaction.guildId;
@@ -54,14 +56,14 @@ module.exports = {
             const result = await studyLib.startStudySession(userId, guildId, title, duration, interaction);
             if (!result.success && result.reason === 'ALREADY_ACTIVE') {
                 return interaction.reply({
-                    content: '🌸 *Cậu đang có một phiên học tập trung chưa hoàn thành rùi nhen! Dùng `/study status` để xem hoặc `/study stop` để nộp bài sớm nhen~* 🍵',
-                    ephemeral: true
+                    content: t(locale, 'commands.study.err_already_running'),
+                    flags: MessageFlags.Ephemeral
                 });
             }
 
             const session = result.session;
             const embed = studyLib.buildStudyEmbed(session, session.remainingMs);
-            const row = studyLib.buildControlRow(session.isPaused);
+            const row = studyLib.buildControlRow(session.isPaused, locale);
 
             const msg = await interaction.reply({ embeds: [embed], components: [row], fetchReply: true });
             session.message = msg;
@@ -78,38 +80,35 @@ module.exports = {
 
                 const embed = new EmbedBuilder()
                     .setColor('#8B5CF6')
-                    .setTitle('📚 NHẬT KÝ HỌC TẬP WAGURI')
+                    .setTitle(t(locale, 'commands.study.log_title'))
                     .setDescription(
-                        `*Hiện tại cậu chưa có phiên học nào đang chạy nhen~*\n\n` +
-                        `**Thống kê cá nhân:**\n` +
-                        `• **Chuỗi Chuyên Cần 📚:** \`${streak} ngày\`\n` +
-                        `• **Tổng thời gian tập trung:** \`${Math.floor(totalMinutes / 60)} giờ ${totalMinutes % 60} phút\`\n` +
-                        `• **Hạt Hoa Kikyo 🌸:** \`${points} hạt\`\n\n` +
-                        '*Dùng `/study start` để bắt đầu một phiên Pomodoro 25 phút mới cùng Waguri nhen!* ✨'
+                        t(locale, 'commands.study.log_stats', {
+                            streak, hours: Math.floor(totalMinutes / 60), minutes: totalMinutes % 60, points,
+                        }) + t(locale, 'commands.study.log_hint')
                     )
                     .setTimestamp();
 
-                return interaction.reply({ embeds: [embed], ephemeral: true });
+                return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
             }
 
             const remaining = session.endsAt - Date.now();
             const embed = studyLib.buildStudyEmbed(session, remaining);
-            const row = studyLib.buildControlRow(session.isPaused);
-            return interaction.reply({ embeds: [embed], components: [row], ephemeral: true });
+            const row = studyLib.buildControlRow(session.isPaused, locale);
+            return interaction.reply({ embeds: [embed], components: [row], flags: MessageFlags.Ephemeral });
         }
 
         if (subcommand === 'stop') {
             const result = await studyLib.finishSession(userId, true);
             if (!result) {
                 return interaction.reply({
-                    content: '🌸 *Cậu chưa có phiên học nào đang chạy để dừng nhen~* 🍵',
-                    ephemeral: true
+                    content: t(locale, 'commands.study.err_no_session_stop'),
+                    flags: MessageFlags.Ephemeral
                 });
             }
 
             return interaction.reply({
-                content: `🌸 *Waguri đã lưu lại phiên học "${result.session.sessionName}" cho cậu rùi nhen~ Hẹn gặp lại cậu ở phiên học tiếp theo!* ✨`,
-                ephemeral: true
+                content: t(locale, 'commands.study.stop_saved', { name: result.session.sessionName }),
+                flags: MessageFlags.Ephemeral
             });
         }
 
@@ -117,20 +116,23 @@ module.exports = {
             const topList = await db.getStudyLeaderboard(10);
             if (!topList || topList.length === 0) {
                 return interaction.reply({
-                    content: '🌸 *Chưa có thành tích học tập nào được ghi nhận. Hãy gõ `/study start` để là người đầu tiên ghi danh nhen!* ✨',
-                    ephemeral: true
+                    content: t(locale, 'commands.study.lb_empty'),
+                    flags: MessageFlags.Ephemeral
                 });
             }
 
-            let desc = '🏆 **TOP 10 HỌC VIÊN CHUYÊN CẦN HỌC VIỆN KIKYO** 📚\n\n';
+            let desc = t(locale, 'commands.study.lb_header');
             topList.forEach((row, idx) => {
                 const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '🎖️';
-                desc += `${medal} **#${idx + 1}** <@${row.user_id}> — \`${row.study_streak} ngày\` (Tổng ${Math.floor((row.total_study_minutes || 0) / 60)}h ${row.total_study_minutes % 60}m)\n`;
+                desc += t(locale, 'commands.study.lb_row', {
+                    medal, rank: idx + 1, user: row.user_id, streak: row.study_streak,
+                    hours: Math.floor((row.total_study_minutes || 0) / 60), minutes: row.total_study_minutes % 60,
+                });
             });
 
             const embed = new EmbedBuilder()
                 .setColor('#8B5CF6')
-                .setTitle('📚 BẢNG XẾP HẠNG HỌC TẬP WAGURI')
+                .setTitle(t(locale, 'commands.study.lb_title'))
                 .setDescription(desc)
                 .setTimestamp();
 
