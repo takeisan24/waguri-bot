@@ -19,7 +19,7 @@ async function parseOptions(message, commandData, tokens) {
         }
     }
 
-    const strings = {}, integers = {}, booleans = {}, users = {}, members = {}, channels = {};
+    const strings = {}, integers = {}, booleans = {}, users = {}, members = {}, channels = {}, roles = {};
 
     // Hợp đồng slash có HAI ràng buộc, không phải một: biên số (min/max) VÀ danh sách
     // `choices`. Discord ép cả hai ở phía client; prefix không đi qua Discord nên phải
@@ -76,6 +76,18 @@ async function parseOptions(message, commandData, tokens) {
             case ApplicationCommandOptionType.Boolean:
                 booleans[def.name] = /^(true|1|có|yes|y)$/i.test(raw);
                 break;
+            // Option ROLE trước đây KHÔNG có nhánh riêng -> rơi xuống `default` và bị
+            // lưu thành chuỗi, còn `interaction.options.getRole` thì không tồn tại.
+            // Hệ quả: mọi lệnh có option role (`/config welcome-role`, `/config
+            // staff-role`, `/antinuke whitelist-add`) đều ném TypeError khi gọi qua
+            // prefix — lệnh chết câm chứ không báo lỗi tử tế.
+            // Tra theo ID trước rồi mới tới mentions: `mentions.roles.first()` luôn trả
+            // cùng một role cho MỌI option role trong cùng câu lệnh.
+            case ApplicationCommandOptionType.Role: {
+                const id = raw.replace(/[<@&>]/g, '');
+                roles[def.name] = message.guild?.roles?.cache.get(id) || message.mentions.roles?.first() || null;
+                break;
+            }
             case ApplicationCommandOptionType.Channel: {
                 const id = raw.replace(/[<#>]/g, '');
                 channels[def.name] = message.mentions.channels.first() || message.guild?.channels?.cache.get(id) || null;
@@ -95,7 +107,7 @@ async function parseOptions(message, commandData, tokens) {
                 strings[def.name] = raw;
         }
     }
-    return { subcommand, strings, integers, booleans, users, members, channels };
+    return { subcommand, strings, integers, booleans, users, members, channels, roles };
 }
 
 /**
@@ -147,6 +159,7 @@ async function buildPrefixInteraction(message, command, tokens) {
             getUser: (n) => (parsed.users[n] ?? null),
             getMember: (n) => (parsed.members[n] ?? null),
             getChannel: (n) => (parsed.channels[n] ?? null),
+            getRole: (n) => (parsed.roles[n] ?? null),
             getSubcommand: () => parsed.subcommand,
             getFocused: () => '',
         },

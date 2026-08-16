@@ -14,6 +14,15 @@
     "add_exp(p_user_id text, p_amount bigint)",
     "add_health(p_user_id text, p_delta integer)",
     "add_pass_xp(p_user_id text, p_season_id text, p_xp_amount integer, p_xp_per_level integer)",
+    "antinuke_action_log(p_incident bigint, p_kind text, p_target text, p_payload jsonb)",
+    "antinuke_get(p_guild text)",
+    "antinuke_incident_open(p_guild text, p_executor text, p_action text, p_hits integer, p_window integer, p_mode text, p_verdict text, p_punished boolean, p_detail jsonb)",
+    "antinuke_incidents_recent(p_guild text, p_limit integer)",
+    "antinuke_prune_incidents(p_days integer)",
+    "antinuke_set_config(p_guild text, p_key text, p_value text, p_actor text)",
+    "antinuke_set_flag(p_guild text, p_field text, p_value text, p_actor text)",
+    "antinuke_whitelist_add(p_guild text, p_entity text, p_kind text, p_actor text)",
+    "antinuke_whitelist_remove(p_guild text, p_entity text)",
     "approve_premium_order(p_code text, p_ref text)",
     "auction_bid(p_bidder text, p_auction bigint, p_amount bigint)",
     "auction_cancel(p_seller text, p_auction bigint)",
@@ -151,6 +160,10 @@
   ],
   "indexes": [
     "achievements_pkey",
+    "antinuke_actions_pkey",
+    "antinuke_incidents_pkey",
+    "antinuke_settings_pkey",
+    "antinuke_whitelist_pkey",
     "auctions_pkey",
     "bakeries_pkey",
     "bakery_likes_pkey",
@@ -167,6 +180,8 @@
     "game_stakes_pkey",
     "guild_members_pkey",
     "guild_settings_pkey",
+    "idx_antinuke_actions_incident",
+    "idx_antinuke_incidents_guild",
     "idx_auctions_active",
     "idx_game_stakes_session",
     "idx_guild_members_guild",
@@ -215,6 +230,42 @@
       "achievement_id:text",
       "unlocked_at:timestamp with time zone",
       "user_id:text"
+    ],
+    "antinuke_actions": [
+      "created_at:timestamp with time zone",
+      "id:bigint",
+      "incident_id:bigint",
+      "kind:text",
+      "payload:jsonb",
+      "target_id:text"
+    ],
+    "antinuke_incidents": [
+      "action_type:text",
+      "created_at:timestamp with time zone",
+      "detail:jsonb",
+      "executor_id:text",
+      "guild_id:text",
+      "hit_count:integer",
+      "id:bigint",
+      "mode:text",
+      "punished:boolean",
+      "verdict:text",
+      "window_ms:integer"
+    ],
+    "antinuke_settings": [
+      "config:jsonb",
+      "enabled:boolean",
+      "guild_id:text",
+      "mode:text",
+      "updated_at:timestamp with time zone",
+      "updated_by:text"
+    ],
+    "antinuke_whitelist": [
+      "added_by:text",
+      "created_at:timestamp with time zone",
+      "entity_id:text",
+      "guild_id:text",
+      "kind:text"
     ],
     "auctions": [
       "channel_id:text",

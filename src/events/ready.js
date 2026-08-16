@@ -129,6 +129,14 @@ module.exports = {
         // Gửi số server lên các bot-list định kỳ (top.gg / discordbotlist / discord.bots.gg)
         startStatsAutopost(client);
 
+        // Làm ấm cache chống nuke cho MỌI guild. Đây không phải tối ưu — nó là điều kiện
+        // để hệ hoạt động: đường nóng (`src/lib/antinuke/index.js`) đọc cấu hình ĐỒNG BỘ
+        // từ RAM và không được phép await Supabase. Guild chưa nạp = coi như TẮT.
+        // Chạy ở nền, giãn cách 120 ms/guild để không nện DB lúc khởi động.
+        require('../lib/antinuke/config').warm(client)
+            .then(n => { if (n > 0) console.log(`[ANTI-NUKE] Đã nạp cấu hình cho ${n} server.`); })
+            .catch(e => console.error('[ANTI-NUKE] Không nạp được cấu hình:', e?.message || e));
+
         // Bật HTTP server nhận webhook vote Top.gg (thưởng tức thì) + health check
         // (nếu có TOPGG_WEBHOOK_AUTH + PORT). No-op khi thiếu cấu hình.
         require('../lib/voteServer').startVoteServer(client);

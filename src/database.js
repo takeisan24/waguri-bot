@@ -2458,6 +2458,16 @@ module.exports = {
     clanDepositResource,
     addPetSkillPoints,
     // battle pass (đã export ở khối trên — bỏ 5 key trùng để no-dupe-keys sạch)
+    // chống nuke (migration 0119)
+    antinukeGet,
+    antinukeSetFlag,
+    antinukeSetConfig,
+    antinukeWhitelistAdd,
+    antinukeWhitelistRemove,
+    antinukeIncidentOpen,
+    antinukeActionLog,
+    antinukeIncidentsRecent,
+    antinukePruneIncidents,
 };
 
 async function likeBakery(likerId, ownerId) {
@@ -2968,5 +2978,165 @@ async function sellItemMarket(userId, itemId, amount) {
     } catch (e) {
         logError('sellItemMarket', e, { userId, itemId, amount });
         return { success: false, error: 'DB_ERROR' };
+    }
+}
+
+// ============================================================
+//  CHỐNG NUKE (migration 0119) — xem docs/spec-antinuke.md
+//
+//  ⚠️ Mọi helper ở đây trả `null` khi lỗi, KHÔNG trả giá trị mặc định "an toàn giả".
+//  Lý do: tầng cache (src/lib/antinuke/config.js) phải phân biệt được "server này
+//  tắt anti-nuke" với "DB không trả lời". Nhầm hai thứ đó = lá chắn tự tắt đúng lúc
+//  Supabase chập chờn, tức là đúng lúc dễ bị tấn công nhất.
+// ============================================================
+
+/** Cấu hình + whitelist của một guild trong MỘT lượt RTT. `null` = DB lỗi (giữ cache cũ). */
+async function antinukeGet(guildId) {
+    try {
+        const { data, error } = await supabase.rpc('antinuke_get', { p_guild: String(guildId) });
+        if (error) throw error;
+        return data || null;
+    } catch (e) {
+        logError('antinukeGet', e, { guild: guildId });
+        return null;
+    }
+}
+
+/**
+ * Đặt cờ chính `enabled` | `mode`.
+ * Trả CHUỖI status: 'ok' | 'mode_invalid' | 'field_invalid' | 'error'.
+ * Cố ý KHÔNG trả boolean: gọi xong mà chỉ biết "thất bại" thì tầng lệnh không nói
+ * được cho chủ server biết vì sao — và với lá chắn an ninh, "đã bật" sai sự thật là
+ * hỏng nặng hơn một thông báo lỗi.
+ */
+async function antinukeSetFlag(guildId, field, value, actorId = null) {
+    try {
+        const { data, error } = await supabase.rpc('antinuke_set_flag', {
+            p_guild: String(guildId),
+            p_field: String(field),
+            p_value: value === null || value === undefined ? '' : String(value),
+            p_actor: actorId ? String(actorId) : null,
+        });
+        if (error) throw error;
+        return data?.status || 'error';
+    } catch (e) {
+        logError('antinukeSetFlag', e, { guild: guildId, field });
+        return 'error';
+    }
+}
+
+/** Đặt/xoá một khoá trong config (chuỗi rỗng = xoá). Trả 'ok' | 'error'. */
+async function antinukeSetConfig(guildId, key, value, actorId = null) {
+    try {
+        const { data, error } = await supabase.rpc('antinuke_set_config', {
+            p_guild: String(guildId),
+            p_key: String(key),
+            p_value: value === null || value === undefined ? '' : String(value),
+            p_actor: actorId ? String(actorId) : null,
+        });
+        if (error) throw error;
+        return data?.status || 'error';
+    } catch (e) {
+        logError('antinukeSetConfig', e, { guild: guildId, key });
+        return 'error';
+    }
+}
+
+/** Thêm miễn trừ. Trả status: 'ok' | 'whitelist_full' | 'kind_invalid' | 'error'. */
+async function antinukeWhitelistAdd(guildId, entityId, kind = 'user', actorId = null) {
+    try {
+        const { data, error } = await supabase.rpc('antinuke_whitelist_add', {
+            p_guild: String(guildId),
+            p_entity: String(entityId),
+            p_kind: String(kind),
+            p_actor: actorId ? String(actorId) : null,
+        });
+        if (error) throw error;
+        return data?.status || 'error';
+    } catch (e) {
+        logError('antinukeWhitelistAdd', e, { guild: guildId, entityId });
+        return 'error';
+    }
+}
+
+/** Gỡ miễn trừ. Trả 'ok' | 'not_found' | 'error'. */
+async function antinukeWhitelistRemove(guildId, entityId) {
+    try {
+        const { data, error } = await supabase.rpc('antinuke_whitelist_remove', {
+            p_guild: String(guildId),
+            p_entity: String(entityId),
+        });
+        if (error) throw error;
+        return data?.status || 'error';
+    } catch (e) {
+        logError('antinukeWhitelistRemove', e, { guild: guildId, entityId });
+        return 'error';
+    }
+}
+
+/** Mở một sự cố, trả id (bigint) hoặc null. Gọi SAU khi đã ra tay (fire-and-forget). */
+async function antinukeIncidentOpen(row) {
+    try {
+        const { data, error } = await supabase.rpc('antinuke_incident_open', {
+            p_guild: String(row.guildId),
+            p_executor: row.executorId ? String(row.executorId) : null,
+            p_action: String(row.action),
+            p_hits: Number(row.hits || 0),
+            p_window: Number(row.windowMs || 0),
+            p_mode: String(row.mode || 'dryrun'),
+            p_verdict: String(row.verdict),
+            p_punished: Boolean(row.punished),
+            p_detail: row.detail || {},
+        });
+        if (error) throw error;
+        return data ?? null;
+    } catch (e) {
+        logError('antinukeIncidentOpen', e, { guild: row?.guildId });
+        return null;
+    }
+}
+
+/** Ghi một thao tác thuộc sự cố (để P1 gỡ ban hàng loạt / hoàn tác). */
+async function antinukeActionLog(incidentId, kind, targetId = null, payload = {}) {
+    if (!incidentId) return false;
+    try {
+        const { error } = await supabase.rpc('antinuke_action_log', {
+            p_incident: Number(incidentId),
+            p_kind: String(kind),
+            p_target: targetId ? String(targetId) : null,
+            p_payload: payload || {},
+        });
+        if (error) throw error;
+        return true;
+    } catch (e) {
+        logError('antinukeActionLog', e, { incidentId, kind });
+        return false;
+    }
+}
+
+/** Danh sách sự cố gần nhất của guild ([] nếu lỗi — chỉ dùng để hiển thị). */
+async function antinukeIncidentsRecent(guildId, limit = 10) {
+    try {
+        const { data, error } = await supabase.rpc('antinuke_incidents_recent', {
+            p_guild: String(guildId),
+            p_limit: Number(limit),
+        });
+        if (error) throw error;
+        return data || [];
+    } catch (e) {
+        logError('antinukeIncidentsRecent', e, { guild: guildId });
+        return [];
+    }
+}
+
+/** Dọn sổ sự cố cũ (chạy nền cùng telemetry). Trả số dòng đã xoá. */
+async function antinukePruneIncidents(days = 90) {
+    try {
+        const { data, error } = await supabase.rpc('antinuke_prune_incidents', { p_days: Number(days) });
+        if (error) throw error;
+        return Number(data || 0);
+    } catch (e) {
+        logError('antinukePruneIncidents', e, { days });
+        return 0;
     }
 }

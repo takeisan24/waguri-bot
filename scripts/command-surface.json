@@ -1,4 +1,16 @@
 {
+  "antinuke": [
+    "check",
+    "enable",
+    "incidents",
+    "lockdown",
+    "logchannel",
+    "mode",
+    "status",
+    "whitelist-add",
+    "whitelist-list",
+    "whitelist-remove"
+  ],
   "config": [
     "ai",
     "ai-channel",

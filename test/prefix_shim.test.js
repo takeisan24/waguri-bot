@@ -143,3 +143,41 @@ test('prefix: option KHÔNG khai báo biên thì giữ nguyên giá trị (kể 
     const it = await buildPrefixInteraction(fakeMessage, c2, ['-5000']);
     assert.strictEqual(it.options.getInteger('amount'), -5000);
 });
+
+// ------------------------------------------------------------------
+// Option ROLE — hồi quy.
+//
+// Trước bản vá này, parseOptions không có nhánh nào cho ApplicationCommandOptionType.Role
+// và object options KHÔNG có `getRole`. Mọi lệnh dùng option role (`/config welcome-role`,
+// `/config staff-role`, `/antinuke whitelist-add`) đều ném TypeError ngay dòng đầu khi
+// gọi qua prefix -> lệnh chết câm, người dùng chỉ thấy bot im lặng.
+// ------------------------------------------------------------------
+const roleGia = { id: '555', name: 'Mod' };
+const msgCoRole = {
+    ...fakeMessage,
+    guild: { roles: { cache: new Map([['555', roleGia]]) } },
+    mentions: { users: { first: () => null }, channels: { first: () => null }, roles: { first: () => null } },
+};
+const cmdRole = {
+    data: new SlashCommandBuilder()
+        .setName('thurole')
+        .setDescription('lệnh thử role')
+        .addSubcommand(s => s.setName('dat').setDescription('thử')
+            .addRoleOption(o => o.setName('role').setDescription('role'))),
+};
+
+test('prefix: option role phân giải được từ mention <@&id>', async () => {
+    const it = await buildPrefixInteraction(msgCoRole, cmdRole, ['dat', '<@&555>']);
+    assert.strictEqual(typeof it.options.getRole, 'function', 'thiếu getRole = lệnh ném TypeError');
+    assert.strictEqual(it.options.getRole('role'), roleGia);
+});
+
+test('prefix: option role không nhập -> null, không nổ', async () => {
+    const it = await buildPrefixInteraction(msgCoRole, cmdRole, ['dat']);
+    assert.strictEqual(it.options.getRole('role'), null);
+});
+
+test('prefix: role id không tồn tại -> null', async () => {
+    const it = await buildPrefixInteraction(msgCoRole, cmdRole, ['dat', '<@&999>']);
+    assert.strictEqual(it.options.getRole('role'), null);
+});

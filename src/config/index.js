@@ -254,6 +254,56 @@ module.exports = {
     // Rate limit tổng (chống spam lệnh / quá tải DB)
     RATE_LIMIT: { MAX: 5, WINDOW_MS: 5000 }, // tối đa 5 lệnh / 5 giây / người
 
+    // ------------------------------------------------------------------
+    // Chống Nuke (anti-nuke). Thiết kế đầy đủ: docs/spec-antinuke.md
+    // Mọi con số ở đây là MẶC ĐỊNH TOÀN CỤC; từng server ghi đè qua `/antinuke`.
+    // ------------------------------------------------------------------
+    ANTINUKE: {
+        // Luật phát hiện: hành vi -> ngưỡng / cửa sổ / hình phạt.
+        // `limit` là số lần của CÙNG MỘT NGƯỜI trong `windowMs`.
+        // `lockdown: true` = kèm khoá server (đây là các hành vi không thể nhầm với dọn dẹp).
+        RULES: {
+            channel_delete: { limit: 3, windowMs: 20_000, verdict: 'ban',   lockdown: true },
+            channel_create: { limit: 5, windowMs: 20_000, verdict: 'ban' },
+            role_delete:    { limit: 3, windowMs: 20_000, verdict: 'ban',   lockdown: true },
+            role_create:    { limit: 5, windowMs: 20_000, verdict: 'strip' },
+            member_ban:     { limit: 3, windowMs: 20_000, verdict: 'ban',   lockdown: true },
+            member_kick:    { limit: 5, windowMs: 20_000, verdict: 'strip' },
+            member_prune:   { limit: 1, windowMs: 20_000, verdict: 'ban',   lockdown: true },
+            // Ba luật dưới đây ngưỡng = 1: chúng KHÔNG có phiên bản "vô tình".
+            perm_escalate:  { limit: 1, windowMs: 20_000, verdict: 'strip' },
+            bot_add:        { limit: 1, windowMs: 20_000, verdict: 'strip' },
+            guild_update:   { limit: 2, windowMs: 30_000, verdict: 'strip' },
+            webhook_create: { limit: 3, windowMs: 20_000, verdict: 'strip' },
+            emoji_delete:   { limit: 5, windowMs: 30_000, verdict: 'strip' },
+        },
+
+        // Quyền được coi là "nguy hiểm": cấp một trong số này cho role/người = leo thang.
+        // Sáu quyền này đủ để nuke một server; các quyền còn lại thì không.
+        DANGEROUS_PERMS: ['Administrator', 'ManageGuild', 'ManageRoles', 'ManageChannels', 'BanMembers', 'ManageWebhooks'],
+
+        WHITELIST_MAX: 50,          // phải khớp trần trong RPC antinuke_whitelist_add
+        BUCKET_CAP: 50,             // số mốc thời gian giữ tối đa mỗi bộ đếm (chống phình RAM)
+        SWEEP_INTERVAL_MS: 300_000, // 5 phút dọn bộ đếm nguội một lần
+        CONFIG_TTL_MS: 60_000,      // TTL cache cấu hình trong RAM
+        PANIC_EXECUTORS: 2,         // >= 2 kẻ tấn công khác nhau trong PANIC_WINDOW_MS -> nghi chiếm tài khoản hàng loạt
+        PANIC_WINDOW_MS: 60_000,
+        QUEUE_SPACING_MS: 350,      // giãn cách thao tác API khi dọn dẹp (tránh 429)
+        QUEUE_MAX_PER_INCIDENT: 60, // trần thao tác mỗi sự cố — thà thiếu còn hơn treo bot
+        ALERT_COOLDOWN_MS: 10_000,  // gộp báo động: 1 lần / 10 giây / server
+        // MỘT VỤ NUKE = MỘT SỰ CỐ. Không có trần này thì kẻ xoá 10 kênh sinh ra 8 dòng
+        // sự cố + 8 lệnh ban (đã đo). Hậu quả không chỉ là ồn: 8 lệnh API thừa giữa lúc
+        // đang cần băng thông nhất, và quy trình khoá chạy lại nhiều lần có thể ghi đè
+        // bản ghi "trạng thái trước khi khoá" -> server kẹt khoá vĩnh viễn.
+        // Hết trần mà vẫn còn hành vi phá hoại thì sự cố mới được mở (tấn công chưa dừng).
+        INCIDENT_COOLDOWN_MS: 60_000,
+        INCIDENT_WRITE_BUDGET_MS: 1_500, // chờ DB ghi sự cố tối đa bấy nhiêu rồi vẫn báo động
+        // Tắt anti-nuke có ĐỘ TRỄ: kẻ chiếm được tài khoản chủ server sẽ tắt lá chắn
+        // trước khi ra tay. 5 phút + báo động ngay là đủ để chủ server thật can thiệp.
+        DISABLE_DELAY_MS: 5 * 60_000,
+        INCIDENT_KEEP_DAYS: 90,
+    },
+
     // Vote trên Top.gg (cần TOPGG_TOKEN để check & autopost). Vote lại được sau 12h.
     // ⚖️ CÂN LẠI 2026-08-15 (đợt 5). Trước đây: REWARD 5.000 + STREAK_BONUS 1.000.
     // Công thức đầy đủ là `REWARD × (cuối tuần ? 2 : 1) + min(chuỗi−1, 7) × STREAK_BONUS`,

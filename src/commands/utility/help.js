@@ -82,6 +82,7 @@ const CATEGORIES = [
         ['setup', 'tạo phòng riêng cho Waguri + hướng dẫn nhanh'],
         ['config', 'cấu hình bot cho server (Quản lý Server)'],
         ['serverinfo', 'xuất báo cáo cấu trúc server: kênh/role/cấu hình (Quản lý Server)'],
+        ['antinuke', '🛡️ chống nuke: chặn xoá kênh/role & ban hàng loạt (Chủ server)'],
     ] },
     { name: '🏰 Bang hội', cmds: [
         ['clan', 'lập bang / quỹ chung / ⚔️ chiến tranh bang (create·join·info·list·deposit·withdraw·kick·disband·war)'],

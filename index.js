@@ -16,6 +16,11 @@ const client = new Client({
         GatewayIntentBits.MessageContent,
         GatewayIntentBits.GuildMembers, // cần cho event guildMemberAdd (privileged intent — phải bật trong Developer Portal)
         GatewayIntentBits.GuildVoiceStates, // cần cho Voice Channel detection & Easter Egg Music Player
+        // BẮT BUỘC cho hệ chống nuke: `guildAuditLogEntryCreate` (event DUY NHẤT cho biết
+        // AI vừa xoá kênh/ban người, ngay lúc nó xảy ra) nằm dưới intent này.
+        // KHÔNG phải privileged intent -> khỏi bật gì trong Developer Portal.
+        // Thiếu nó thì anti-nuke im lặng hoàn toàn mà không báo lỗi gì.
+        GatewayIntentBits.GuildModeration,
     ],
 });
 
@@ -202,6 +207,11 @@ async function runEconomySnapshot() {
         // một lệnh. Hàm này bỏ qua người vừa điểm danh trong 24h nên không thu hai lần.
         const thue = await db.chargeWealthTax();
         if (thue?.so_nguoi > 0) console.log(`[TELEMETRY] Thuế tài sản: thu ${thue.tong_thu} từ ${thue.so_nguoi} người.`);
+
+        // Dọn sổ sự cố chống nuke (migration 0119). 90 ngày là đủ để điều tra một vụ
+        // nuke; giữ lâu hơn chỉ phình DB free-tier.
+        const suCo = await db.antinukePruneIncidents(require('./src/config').ANTINUKE.INCIDENT_KEEP_DAYS);
+        if (suCo > 0) console.log(`[ANTI-NUKE] Đã dọn ${suCo} dòng sự cố cũ.`);
     } catch (e) { logError('economy_snapshot', e); }
     if (!shuttingDown) {
         setTimeout(runEconomySnapshot, 12 * 60 * 60_000).unref();

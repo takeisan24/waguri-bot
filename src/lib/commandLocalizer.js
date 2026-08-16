@@ -2,6 +2,10 @@
 // Định nghĩa bản dịch và hàm địa phương hóa tự động cho các Slash Commands.
 
 const COMMAND_DESCRIPTIONS = {
+    "antinuke": {
+        vi: "🛡️ Chống nuke: chặn xoá kênh/role & ban hàng loạt, tự phong quyền",
+        en: "🛡️ Anti-nuke: stop mass channel/role deletion, ban waves, self-granted perms"
+    },
     "leaderboard": {
         vi: "Bảng xếp hạng 🏆",
         en: "Leaderboard 🏆"
@@ -342,6 +346,16 @@ const COMMAND_DESCRIPTIONS = {
 };
 
 const SUBCOMMAND_DESCRIPTIONS = {
+    "antinuke.enable": { vi: "Bật/tắt lá chắn (TẮT có độ trễ 5 phút + báo động)", en: "Turn the shield on/off (turning OFF is delayed 5 minutes + alerts)" },
+    "antinuke.mode": { vi: "Chế độ: chỉ ghi log (thử) hay thi hành thật", en: "Mode: log-only (dry run) or enforce" },
+    "antinuke.status": { vi: "Xem cấu hình & trạng thái lá chắn", en: "View shield settings and status" },
+    "antinuke.check": { vi: "Kiểm tra bot có ĐỦ ĐIỀU KIỆN chống nuke không", en: "Check whether the bot is actually able to stop a nuke" },
+    "antinuke.whitelist-add": { vi: "Miễn trừ một người hoặc một role", en: "Exempt a user or a role" },
+    "antinuke.whitelist-remove": { vi: "Gỡ miễn trừ", en: "Remove an exemption" },
+    "antinuke.whitelist-list": { vi: "Xem danh sách miễn trừ", en: "View the exemption list" },
+    "antinuke.logchannel": { vi: "Kênh nhận báo động (bỏ trống để gỡ)", en: "Alert channel (leave empty to clear)" },
+    "antinuke.lockdown": { vi: "Khoá/mở khoá server thủ công", en: "Lock or unlock the server manually" },
+    "antinuke.incidents": { vi: "Nhật ký sự cố gần đây", en: "Recent incident log" },
     "market.view": { vi: "Xem các món đang bán", en: "Browse items on sale" },
     "market.prices": { vi: "Xem biến động giá chợ hiện tại & thời gian biến động tiếp theo 📊", en: "View live market prices & next shift countdown 📊" },
     "market.mine": { vi: "Xem các món cậu đang bán", en: "View the items you're selling" },
@@ -556,6 +570,13 @@ const SUBCOMMAND_DESCRIPTIONS = {
 };
 
 const OPTION_DESCRIPTIONS = {
+    "antinuke.mode.mode": { vi: "Chế độ", en: "Mode" },
+    "antinuke.lockdown.state": { vi: "Khoá hay mở", en: "Lock or unlock" },
+    "antinuke.enable.enabled": { vi: "Bật lá chắn?", en: "Enable the shield?" },
+    "antinuke.whitelist-add.user": { vi: "Người được miễn trừ", en: "User to exempt" },
+    "antinuke.whitelist-add.role": { vi: "Role được miễn trừ", en: "Role to exempt" },
+    "antinuke.whitelist-remove.user": { vi: "Người cần gỡ", en: "User to remove" },
+    "antinuke.whitelist-remove.role": { vi: "Role cần gỡ", en: "Role to remove" },
     "study.start.duration": { vi: "Thời gian học (phút), mặc định 25m ⏱️", en: "Study duration (minutes), default 25m ⏱️" },
     "study.start.title": { vi: "Tên mục tiêu học bài 📖", en: "Study goal title 📖" },
     "clan.war.clan": { vi: "Tên bang đối thủ", en: "Rival clan's name" },
@@ -653,6 +674,11 @@ const OPTION_DESCRIPTIONS = {
 };
 
 const CHOICE_LOCALIZATIONS = {
+    // chống nuke
+    "dryrun": { vi: "Chỉ ghi log (an toàn, nên dùng 7 ngày đầu)", en: "Log only (safe — recommended for the first 7 days)" },
+    "enforce": { vi: "Thi hành thật (trừng phạt + khoá server)", en: "Enforce (punish + lock the server)" },
+    "lock": { vi: "Khoá", en: "Lock" },
+    "unlock": { vi: "Mở khoá", en: "Unlock" },
     // boi
     "bach_duong": { vi: "♈ Bạch Dương", en: "♈ Aries" },
     "kim_nguu": { vi: "♉ Kim Ngưu", en: "♉ Taurus" },
