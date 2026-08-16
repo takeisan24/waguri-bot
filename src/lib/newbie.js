@@ -1,3 +1,4 @@
+const { MessageFlags } = require('discord.js');
 const db = require('../database');
 const { buildWaguriEmbed } = require('./embed');
 const { getInteractionLanguage, t } = require('./i18n');
@@ -56,7 +57,7 @@ async function handleNewbieQuest(interaction, key, amount = 1) {
                 description: desc
             });
 
-            await interaction.followUp({ embeds: [embed], ephemeral: true }).catch(() => {});
+            await interaction.followUp({ embeds: [embed], flags: MessageFlags.Ephemeral }).catch(() => {});
         }
     } catch (err) {
         console.error('[NEWBIE ERROR] handleNewbieQuest:', err);

@@ -466,7 +466,29 @@ async function getDiscoveries(userId) {
     }
 }
 
-/** Nhận thưởng bộ sưu tập nguyên tử qua RPC claim_collection_reward. 
+/**
+ * Các bộ sưu tập người dùng ĐÃ nhận thưởng.
+ *
+ * Trước đây `/album` tự gọi `db.supabase.from('user_collection_rewards')` — đi cửa sau,
+ * vi phạm Luật 2 (mọi thao tác DB phải qua helper trong database.js). Cửa sau không có lớp
+ * try/catch của tầng này, nên DB trục trặc là lệnh ném lỗi ra ngoài.
+ * Trả `Set` rỗng khi lỗi, cùng khuôn với `getDiscoveries()` ngay trên.
+ */
+async function getClaimedCollectionSets(userId) {
+    try {
+        const { data, error } = await supabase
+            .from('user_collection_rewards')
+            .select('set_id')
+            .eq('user_id', userId);
+        if (error) throw error;
+        return new Set((data || []).map(r => r.set_id));
+    } catch (error) {
+        console.error('[DATABASE ERROR] getClaimedCollectionSets():', error);
+        return new Set();
+    }
+}
+
+/** Nhận thưởng bộ sưu tập nguyên tử qua RPC claim_collection_reward.
  * Trả về: 'ok' | 'already_claimed' | 'not_completed' | 'user_not_found' | 'error'
  */
 async function claimCollectionReward(userId, setId, requiredItems, rewardCoins, title) {
@@ -2372,6 +2394,7 @@ module.exports = {
     // album
     discoverItem,
     getDiscoveries,
+    getClaimedCollectionSets,
     claimCollectionReward,
     // loans
     loanCreate,

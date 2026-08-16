@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, MessageFlags } = require('discord.js');
 const { buildWaguriEmbed } = require('../../lib/embed');
 const db = require('../../database.js');
 const config = require('../../config');
@@ -32,13 +32,8 @@ module.exports = {
             });
         }
 
-        // Đọc danh sách đã nhận thưởng
-        const { data: claimedRewardsData, error: claimedError } = await db.supabase
-            .from('user_collection_rewards')
-            .select('set_id')
-            .eq('user_id', target.id);
-        
-        const claimedSets = new Set((claimedRewardsData || []).map(r => r.set_id));
+        // Đọc danh sách đã nhận thưởng — qua helper (Luật 2), không gọi thẳng supabase.
+        const claimedSets = await db.getClaimedCollectionSets(target.id);
 
         const RARITY_INFO = {
             common: { name: t(locale, 'rarity.common'), emoji: '⚪', color: '#B0C4DE' },
@@ -204,7 +199,7 @@ module.exports = {
             if (i.user.id !== interaction.user.id) {
                 return i.reply({
                     content: t(locale, 'common.not_for_you'),
-                    ephemeral: true
+                    flags: MessageFlags.Ephemeral
                 });
             }
 
@@ -257,11 +252,11 @@ module.exports = {
                         ephemeral: false
                     });
                 } else if (result === 'already_claimed') {
-                    await interaction.followUp({ content: t(locale, 'commands.album.already_claimed'), ephemeral: true });
+                    await interaction.followUp({ content: t(locale, 'commands.album.already_claimed'), flags: MessageFlags.Ephemeral });
                 } else if (result === 'not_completed') {
-                    await interaction.followUp({ content: t(locale, 'commands.album.not_completed'), ephemeral: true });
+                    await interaction.followUp({ content: t(locale, 'commands.album.not_completed'), flags: MessageFlags.Ephemeral });
                 } else {
-                    await interaction.followUp({ content: t(locale, 'commands.album.error'), ephemeral: true });
+                    await interaction.followUp({ content: t(locale, 'commands.album.error'), flags: MessageFlags.Ephemeral });
                 }
             }
         });

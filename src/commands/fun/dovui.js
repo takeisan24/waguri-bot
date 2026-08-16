@@ -93,8 +93,18 @@ module.exports = {
                 }
             });
         } catch (error) {
+            // Luật 6 (AGENTS.md): lệnh KHÔNG được ném lỗi ra ngoài. Trước đây chỗ này dọn
+            // `active` rồi `throw error` — handler ngoài có bắt nên bot không sập, nhưng
+            // người chơi chỉ nhận được thông báo lỗi chung chung, còn `interaction` thì đã
+            // `deferReply()` từ dòng 18 nên nếu không trả lời sẽ treo ở trạng thái "đang
+            // nghĩ" cho tới khi hết hạn.
             active.delete(interaction.channelId);
-            throw error;
+            console.error('[DOVUI] Lỗi khi chạy ván đố:', error?.message || error);
+            const embedErr = buildWaguriEmbed(interaction, 'error', {
+                locale, description: t(locale, 'common.generic_error'),
+            });
+            // Đã defer nên dùng editReply; bọc catch phòng interaction đã hết hạn.
+            await interaction.editReply({ embeds: [embedErr] }).catch(() => {});
         }
     },
 };

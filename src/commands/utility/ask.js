@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, MessageFlags } = require('discord.js');
 const { buildWaguriEmbed } = require('../../lib/embed');
 const { chatWithWaguri } = require('../../lib/ai');
 const config = require('../../config');
@@ -35,7 +35,7 @@ module.exports = {
             if (bpRes && bpRes.success && bpRes.levelUp) {
                 await interaction.followUp({
                     content: t(locale, 'commands.daily.bp_levelup', { level: bpRes.newLevel }),
-                    ephemeral: true
+                    flags: MessageFlags.Ephemeral
                 }).catch(() => null);
             }
         }
