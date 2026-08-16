@@ -1935,19 +1935,19 @@
   "data": {
     "items": {
       "trai_1500": {
-        "name": "Wet Rice"
+        "name": "Common Fruit"
       },
       "trai_2500": {
-        "name": "Potato"
+        "name": "Fine Fruit"
       },
       "hoa_2000": {
-        "name": "Tomato"
+        "name": "Fair Flowers"
       },
       "hoa_3500": {
-        "name": "Watermelon"
+        "name": "Premium Flowers"
       },
       "thit_heo_2500": {
-        "name": "Pork"
+        "name": "Fair Pork"
       },
       "can_cau": {
         "name": "Iron Fishing Rod"
@@ -1957,9 +1957,6 @@
       },
       "riu_sat": {
         "name": "Iron Axe"
-      },
-      "bo_do_sua_xe": {
-        "name": "Gekka Baking Kit"
       },
       "do_trom": {
         "name": "Lockpick"
@@ -1976,9 +1973,6 @@
       "laptop": {
         "name": "Subaru's Laptop"
       },
-      "may_quay": {
-        "name": "Subaru's Camera"
-      },
       "ban_phim_co": {
         "name": "Mechanical Keyboard"
       },
@@ -1987,9 +1981,6 @@
       },
       "xe_wave": {
         "name": "Wave Scooter"
-      },
-      "xe_sh": {
-        "name": "Vespa Scooter"
       },
       "sh": {
         "name": "Honda SH Scooter"
@@ -2006,71 +1997,59 @@
       "bh_lao_dong": {
         "name": "Labor Insurance"
       },
-      "bh_duong_pho": {
-        "name": "School Safety Insurance"
-      },
       "che_ba_mau": {
-        "name": "Three-Color Dessert"
+        "name": "Chè Ba Màu"
       },
       "banh_mi": {
-        "name": "Vietnamese Banh Mi"
+        "name": "Bánh Mì Việt Nam"
       },
       "xoi": {
-        "name": "Sticky Rice"
+        "name": "Xôi Xéo Hà Nội"
       },
       "banh_cuon": {
-        "name": "Steamed Rice Rolls"
+        "name": "Bánh Cuốn Thanh Trì"
       },
       "tra_sua": {
-        "name": "Milk Tea"
+        "name": "Trà Sữa Trân Châu"
       },
       "goi_cuon": {
-        "name": "Fresh Spring Rolls"
+        "name": "Gỏi Cuốn"
       },
       "banh_xeo": {
-        "name": "Crispy Pancake"
+        "name": "Bánh Xèo Miền Tây"
       },
       "mi_quang": {
-        "name": "Quang Noodles"
+        "name": "Mì Quảng Đà Nẵng"
       },
       "com_tam": {
-        "name": "Broken Rice"
+        "name": "Cơm Tấm Sài Gòn"
       },
       "pho": {
-        "name": "Phở Beef Noodle Soup"
+        "name": "Phở Hà Nội"
       },
       "bun_bo": {
-        "name": "Bún Bò Huế Spicy Beef Noodle Soup"
+        "name": "Bún Bò Huế"
       },
       "ca_phe": {
-        "name": "Vietnamese Iced Coffee"
-      },
-      "nuoc_tang_luc": {
-        "name": "Gekka Fruit Soda"
+        "name": "Cà Phê Sữa Đá"
       },
       "chao_ga": {
-        "name": "Chicken Rice Porridge"
+        "name": "Cháo Gà"
       },
       "hop_y_te": {
         "name": "First-Aid Kit"
       },
       "ca_phe_trung": {
-        "name": "Egg Coffee"
+        "name": "Cà Phê Trứng"
       },
       "com_ga": {
-        "name": "Chicken Rice"
+        "name": "Cơm Gà"
       },
       "banh_trung_thu": {
-        "name": "Mooncake"
+        "name": "Bánh Trung Thu"
       },
       "banh_chung": {
-        "name": "Bánh Chưng Rice Cake"
-      },
-      "ve_vip": {
-        "name": "Strawberry Shortcake"
-      },
-      "ve_dai_gia": {
-        "name": "Cheesecake"
+        "name": "Bánh Chưng"
       },
       "nuoc_chanh": {
         "name": "Lemonade"
@@ -2088,10 +2067,10 @@
         "name": "Rare Fish"
       },
       "ca_rong_vang": {
-        "name": "Golden Arowana"
+        "name": "Kim Long Arowana"
       },
       "ca_koi_nhat": {
-        "name": "Japanese Koi"
+        "name": "Royal Koi"
       },
       "streak_freeze": {
         "name": "Streak Freeze"
@@ -2109,7 +2088,7 @@
         "name": "Dong Trieu Gold"
       },
       "ky_nam": {
-        "name": "Ky Nam Wood"
+        "name": "Kỳ Nam Agarwood"
       },
       "tam_go": {
         "name": "Wooden Plank"
@@ -2128,6 +2107,102 @@
       },
       "vuong_mieng_gold": {
         "name": "Golden Crown"
+      },
+      "trai_2000": {
+        "name": "Fair Fruit"
+      },
+      "trai_3000": {
+        "name": "Select Fruit"
+      },
+      "trai_3500": {
+        "name": "Premium Fruit"
+      },
+      "hoa_1500": {
+        "name": "Common Flowers"
+      },
+      "hoa_2500": {
+        "name": "Pretty Flowers"
+      },
+      "hoa_3000": {
+        "name": "Rare Flowers"
+      },
+      "thit_heo_2000": {
+        "name": "Common Pork"
+      },
+      "thit_heo_3000": {
+        "name": "Fine Pork"
+      },
+      "thit_heo_3500": {
+        "name": "Select Pork"
+      },
+      "thit_heo_4000": {
+        "name": "Albino Pork"
+      },
+      "thit_heo_holo": {
+        "name": "Hologram Pork"
+      },
+      "bo_hoa": {
+        "name": "Fresh Bouquet"
+      },
+      "can_ho": {
+        "name": "Apartment"
+      },
+      "cam_heo": {
+        "name": "Pig Feed"
+      },
+      "hop_qua": {
+        "name": "Gekka Gift Box"
+      },
+      "may_anh": {
+        "name": "Subaru's Camera"
+      },
+      "sieu_xe": {
+        "name": "Mazda Miata MX-5"
+      },
+      "biet_thu": {
+        "name": "Kikyo Villa"
+      },
+      "gau_bong": {
+        "name": "Waguri Plushie"
+      },
+      "phan_bon": {
+        "name": "Fertilizer"
+      },
+      "xe_vespa": {
+        "name": "Pink Vespa"
+      },
+      "banh_flan": {
+        "name": "Gekka Caramel Flan"
+      },
+      "du_thuyen": {
+        "name": "Academy Yacht"
+      },
+      "hvl_album": {
+        "name": "HVL - MCK Album"
+      },
+      "soda_gekka": {
+        "name": "Gekka Fruit Soda"
+      },
+      "tui_hermes": {
+        "name": "Kikyo Designer Bag"
+      },
+      "banh_su_kem": {
+        "name": "Gekka Cream Puff"
+      },
+      "bo_lam_banh": {
+        "name": "Gekka Baking Kit"
+      },
+      "banh_kem_dau": {
+        "name": "Gekka Strawberry Cake"
+      },
+      "bh_hoc_duong": {
+        "name": "School Insurance"
+      },
+      "dong_ho_saku": {
+        "name": "Saku's Watch"
+      },
+      "banh_cheesecake": {
+        "name": "Gekka Cheesecake"
       }
     },
     "jobs": {
@@ -2457,19 +2532,19 @@
   },
   "items": {
     "trai_1500": {
-      "name": "Wet Rice"
+      "name": "Common Fruit"
     },
     "trai_2500": {
-      "name": "Potato"
+      "name": "Fine Fruit"
     },
     "hoa_2000": {
-      "name": "Tomato"
+      "name": "Fair Flowers"
     },
     "hoa_3500": {
-      "name": "Watermelon"
+      "name": "Premium Flowers"
     },
     "thit_heo_2500": {
-      "name": "Pork"
+      "name": "Fair Pork"
     },
     "can_cau": {
       "name": "Iron Fishing Rod"
@@ -2479,9 +2554,6 @@
     },
     "riu_sat": {
       "name": "Iron Axe"
-    },
-    "bo_do_sua_xe": {
-      "name": "Gekka Baking Kit"
     },
     "do_trom": {
       "name": "Lockpick"
@@ -2498,9 +2570,6 @@
     "laptop": {
       "name": "Subaru's Laptop"
     },
-    "may_quay": {
-      "name": "Subaru's Camera"
-    },
     "ban_phim_co": {
       "name": "Mechanical Keyboard"
     },
@@ -2509,9 +2578,6 @@
     },
     "xe_wave": {
       "name": "Wave Scooter"
-    },
-    "xe_sh": {
-      "name": "Vespa Scooter"
     },
     "sh": {
       "name": "Honda SH Scooter"
@@ -2528,71 +2594,59 @@
     "bh_lao_dong": {
       "name": "Labor Insurance"
     },
-    "bh_duong_pho": {
-      "name": "School Safety Insurance"
-    },
     "che_ba_mau": {
-      "name": "Three-Color Dessert"
+      "name": "Chè Ba Màu"
     },
     "banh_mi": {
-      "name": "Vietnamese Banh Mi"
+      "name": "Bánh Mì Việt Nam"
     },
     "xoi": {
-      "name": "Sticky Rice"
+      "name": "Xôi Xéo Hà Nội"
     },
     "banh_cuon": {
-      "name": "Steamed Rice Rolls"
+      "name": "Bánh Cuốn Thanh Trì"
     },
     "tra_sua": {
-      "name": "Milk Tea"
+      "name": "Trà Sữa Trân Châu"
     },
     "goi_cuon": {
-      "name": "Fresh Spring Rolls"
+      "name": "Gỏi Cuốn"
     },
     "banh_xeo": {
-      "name": "Crispy Pancake"
+      "name": "Bánh Xèo Miền Tây"
     },
     "mi_quang": {
-      "name": "Quang Noodles"
+      "name": "Mì Quảng Đà Nẵng"
     },
     "com_tam": {
-      "name": "Broken Rice"
+      "name": "Cơm Tấm Sài Gòn"
     },
     "pho": {
-      "name": "Phở Beef Noodle Soup"
+      "name": "Phở Hà Nội"
     },
     "bun_bo": {
-      "name": "Bún Bò Huế Spicy Beef Noodle Soup"
+      "name": "Bún Bò Huế"
     },
     "ca_phe": {
-      "name": "Vietnamese Iced Coffee"
-    },
-    "nuoc_tang_luc": {
-      "name": "Gekka Fruit Soda"
+      "name": "Cà Phê Sữa Đá"
     },
     "chao_ga": {
-      "name": "Chicken Rice Porridge"
+      "name": "Cháo Gà"
     },
     "hop_y_te": {
       "name": "First-Aid Kit"
     },
     "ca_phe_trung": {
-      "name": "Egg Coffee"
+      "name": "Cà Phê Trứng"
     },
     "com_ga": {
-      "name": "Chicken Rice"
+      "name": "Cơm Gà"
     },
     "banh_trung_thu": {
-      "name": "Mooncake"
+      "name": "Bánh Trung Thu"
     },
     "banh_chung": {
-      "name": "Bánh Chưng Rice Cake"
-    },
-    "ve_vip": {
-      "name": "Strawberry Shortcake"
-    },
-    "ve_dai_gia": {
-      "name": "Cheesecake"
+      "name": "Bánh Chưng"
     },
     "nuoc_chanh": {
       "name": "Lemonade"
@@ -2610,10 +2664,10 @@
       "name": "Rare Fish"
     },
     "ca_rong_vang": {
-      "name": "Golden Arowana"
+      "name": "Kim Long Arowana"
     },
     "ca_koi_nhat": {
-      "name": "Japanese Koi"
+      "name": "Royal Koi"
     },
     "streak_freeze": {
       "name": "Streak Freeze"
@@ -2631,7 +2685,7 @@
       "name": "Dong Trieu Gold"
     },
     "ky_nam": {
-      "name": "Ky Nam Wood"
+      "name": "Kỳ Nam Agarwood"
     },
     "tam_go": {
       "name": "Wooden Plank"
@@ -2650,6 +2704,102 @@
     },
     "vuong_mieng_gold": {
       "name": "Golden Crown"
+    },
+    "trai_2000": {
+      "name": "Fair Fruit"
+    },
+    "trai_3000": {
+      "name": "Select Fruit"
+    },
+    "trai_3500": {
+      "name": "Premium Fruit"
+    },
+    "hoa_1500": {
+      "name": "Common Flowers"
+    },
+    "hoa_2500": {
+      "name": "Pretty Flowers"
+    },
+    "hoa_3000": {
+      "name": "Rare Flowers"
+    },
+    "thit_heo_2000": {
+      "name": "Common Pork"
+    },
+    "thit_heo_3000": {
+      "name": "Fine Pork"
+    },
+    "thit_heo_3500": {
+      "name": "Select Pork"
+    },
+    "thit_heo_4000": {
+      "name": "Albino Pork"
+    },
+    "thit_heo_holo": {
+      "name": "Hologram Pork"
+    },
+    "bo_hoa": {
+      "name": "Fresh Bouquet"
+    },
+    "can_ho": {
+      "name": "Apartment"
+    },
+    "cam_heo": {
+      "name": "Pig Feed"
+    },
+    "hop_qua": {
+      "name": "Gekka Gift Box"
+    },
+    "may_anh": {
+      "name": "Subaru's Camera"
+    },
+    "sieu_xe": {
+      "name": "Mazda Miata MX-5"
+    },
+    "biet_thu": {
+      "name": "Kikyo Villa"
+    },
+    "gau_bong": {
+      "name": "Waguri Plushie"
+    },
+    "phan_bon": {
+      "name": "Fertilizer"
+    },
+    "xe_vespa": {
+      "name": "Pink Vespa"
+    },
+    "banh_flan": {
+      "name": "Gekka Caramel Flan"
+    },
+    "du_thuyen": {
+      "name": "Academy Yacht"
+    },
+    "hvl_album": {
+      "name": "HVL - MCK Album"
+    },
+    "soda_gekka": {
+      "name": "Gekka Fruit Soda"
+    },
+    "tui_hermes": {
+      "name": "Kikyo Designer Bag"
+    },
+    "banh_su_kem": {
+      "name": "Gekka Cream Puff"
+    },
+    "bo_lam_banh": {
+      "name": "Gekka Baking Kit"
+    },
+    "banh_kem_dau": {
+      "name": "Gekka Strawberry Cake"
+    },
+    "bh_hoc_duong": {
+      "name": "School Insurance"
+    },
+    "dong_ho_saku": {
+      "name": "Saku's Watch"
+    },
+    "banh_cheesecake": {
+      "name": "Gekka Cheesecake"
     }
   },
   "pig": {

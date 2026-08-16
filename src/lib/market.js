@@ -6,17 +6,17 @@
 // cân bằng quanh. Kết hợp hệ số 0.70–1.50 -> bán đỉnh = giá mua × 0.75 < giá mua,
 // nên KHÔNG THỂ mua ở /store rồi bán kiếm lời (sự cố máy in tiền 2026-08).
 const BASE_MARKET_ITEMS = {
-    'trai_1500':      { basePrice: 1500,  category: 'crop', emoji: '🌾', nameVi: 'Lúa Nước',          nameEn: 'Wet Rice' },
-    'trai_2500':      { basePrice: 2500,  category: 'crop', emoji: '🥔', nameVi: 'Khoai Tây',         nameEn: 'Potato' },
-    'hoa_2000':       { basePrice: 2000,  category: 'crop', emoji: '🍅', nameVi: 'Cà Chua',           nameEn: 'Tomato' },
-    'hoa_3500':       { basePrice: 3500,  category: 'crop', emoji: '🍉', nameVi: 'Dưa Hấu',           nameEn: 'Watermelon' },
-    'thit_heo_2500':  { basePrice: 2500,  category: 'pig',  emoji: '🥓', nameVi: 'Thịt Heo',          nameEn: 'Pork' },
+    'trai_1500':      { basePrice: 1500,  category: 'crop', emoji: '🍎', nameVi: 'Trái Cây Loại Thường',          nameEn: 'Common Fruit' },
+    'trai_2500':      { basePrice: 2500,  category: 'crop', emoji: '🍇', nameVi: 'Trái Cây Loại Ngon',         nameEn: 'Fine Fruit' },
+    'hoa_2000':       { basePrice: 2000,  category: 'crop', emoji: '🌷', nameVi: 'Hoa Loại Khá',           nameEn: 'Fair Flowers' },
+    'hoa_3500':       { basePrice: 3500,  category: 'crop', emoji: '🌺', nameVi: 'Hoa Hảo Hạng',           nameEn: 'Premium Flowers' },
+    'thit_heo_2500':  { basePrice: 2500,  category: 'pig',  emoji: '🥓', nameVi: 'Thịt Heo Loại Khá',          nameEn: 'Fair Pork' },
     'ca_tuoi':        { basePrice: 150,   category: 'fish', emoji: '🐟', nameVi: 'Cá Tươi',           nameEn: 'Fresh Fish' },
-    'ca_koi_nhat':    { basePrice: 40000, category: 'fish', emoji: '🐠', nameVi: 'Cá Koi',            nameEn: 'Koi Fish' },
-    'ca_rong_vang':   { basePrice: 10000, category: 'fish', emoji: '🐉', nameVi: 'Cá Rồng Vàng',      nameEn: 'Golden Dragon Fish' },
-    'quang_sat':      { basePrice: 50,    category: 'ore',  emoji: '💎', nameVi: 'Đá Siêu Cấp',       nameEn: 'Super Gem' },
+    'ca_koi_nhat':    { basePrice: 40000, category: 'fish', emoji: '🐠', nameVi: 'Cá Koi Hoàng Gia',            nameEn: 'Royal Koi' },
+    'ca_rong_vang':   { basePrice: 10000, category: 'fish', emoji: '🐉', nameVi: 'Cá Rồng Kim Long',      nameEn: 'Kim Long Arowana' },
+    'quang_sat':      { basePrice: 50,    category: 'ore',  emoji: '🪨', nameVi: 'Quặng Sắt',       nameEn: 'Iron Ore' },
     'vang_dong_tren': { basePrice: 2500,  category: 'ore',  emoji: '🥇', nameVi: 'Vàng Đông Triều',      nameEn: 'Dong Trieu Gold' },
-    'go':             { basePrice: 30,    category: 'wood', emoji: '🪵', nameVi: 'Gỗ Rắn',            nameEn: 'Solid Wood' },
+    'go':             { basePrice: 30,    category: 'wood', emoji: '🪵', nameVi: 'Gỗ',            nameEn: 'Wood' },
     'ky_nam':         { basePrice: 7500,  category: 'wood', emoji: '🪵', nameVi: 'Kỳ Nam',            nameEn: 'Ky Nam Agarwood' },
 };
 

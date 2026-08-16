@@ -38,17 +38,20 @@ module.exports = {
             .setDescription('Bán nông/thủy/khoáng sản cho hệ thống theo giá chợ biến động 💸')
             .addStringOption(o => o.setName('item').setDescription('Loại nông/thủy sản cần bán').setRequired(true)
                 .addChoices(
-                    { name: '🌾 Lúa Nước', value: 'trai_1500' },
-                    { name: '🥔 Khoai Tây', value: 'trai_2500' },
-                    { name: '🍅 Cà Chua', value: 'hoa_2000' },
-                    { name: '🍉 Dưa Hấu', value: 'hoa_3500' },
-                    { name: '🥓 Thịt Heo', value: 'thit_heo_2500' },
+                    // Tên PHẢI khớp `items.name` trong DB. Trước đây chỗ này gọi hoa là
+                    // "Cà Chua"/"Dưa Hấu" và quặng sắt là "Đá Siêu Cấp" — người chơi trồng
+                    // hoa cúc, thu về thứ mà chợ bảo là cà chua. Xem docs/spec-dot-6-i18n-3-tang.md
+                    { name: '🍎 Trái Cây Loại Thường', value: 'trai_1500' },
+                    { name: '🍇 Trái Cây Loại Ngon', value: 'trai_2500' },
+                    { name: '🌷 Hoa Loại Khá', value: 'hoa_2000' },
+                    { name: '🌺 Hoa Hảo Hạng', value: 'hoa_3500' },
+                    { name: '🥓 Thịt Heo Loại Khá', value: 'thit_heo_2500' },
                     { name: '🐟 Cá Tươi', value: 'ca_tuoi' },
-                    { name: '🐠 Cá Koi', value: 'ca_koi_nhat' },
-                    { name: '🐉 Cá Rồng Vàng', value: 'ca_rong_vang' },
-                    { name: '💎 Đá Siêu Cấp', value: 'quang_sat' },
+                    { name: '🐠 Cá Koi Hoàng Gia', value: 'ca_koi_nhat' },
+                    { name: '🐉 Cá Rồng Kim Long', value: 'ca_rong_vang' },
+                    { name: '🪨 Quặng Sắt', value: 'quang_sat' },
                     { name: '🥇 Vàng Đông Triều', value: 'vang_dong_tren' },
-                    { name: '🪵 Gỗ Rắn', value: 'go' },
+                    { name: '🪵 Gỗ', value: 'go' },
                     { name: '🪵 Kỳ Nam', value: 'ky_nam' }
                 ))
             .addIntegerOption(o => o.setName('amount').setDescription('Số lượng cần bán (nhập > 0)').setRequired(true).setMinValue(1)))
