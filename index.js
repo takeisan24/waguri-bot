@@ -196,6 +196,12 @@ async function runEconomySnapshot() {
         // tranh chấp/điều tra exploit mà không phình DB free-tier.
         const pruned = await db.pruneEconomyLedger(30);
         if (pruned > 0) console.log(`[TELEMETRY] Đã dọn ${pruned} dòng nhật ký giao dịch cũ hơn 30 ngày.`);
+
+        // Thuế tài sản (migration 0118). Trước đây thuế nằm TRONG `claim_daily`, nên ai
+        // không bao giờ điểm danh thì không bao giờ bị thu — hệ thống thưởng cho việc né
+        // một lệnh. Hàm này bỏ qua người vừa điểm danh trong 24h nên không thu hai lần.
+        const thue = await db.chargeWealthTax();
+        if (thue?.so_nguoi > 0) console.log(`[TELEMETRY] Thuế tài sản: thu ${thue.tong_thu} từ ${thue.so_nguoi} người.`);
     } catch (e) { logError('economy_snapshot', e); }
     if (!shuttingDown) {
         setTimeout(runEconomySnapshot, 12 * 60 * 60_000).unref();

@@ -55,8 +55,15 @@ if (!hasTestDb) {
         assert.strictEqual(rows[0].kind, 'wallet');
         assert.strictEqual(Number(rows[0].delta), 5000);
         assert.strictEqual(Number(rows[0].balance_after), 5000);
-        assert.strictEqual(rows[0].source, 'increment_balance',
-            'phải suy được ĐÚNG tên RPC — nếu ra "users" là ledger_source bắt nhầm tên BẢNG');
+        // Hợp đồng ĐỔI ở đợt 5 (migration 0117): trước đây nhãn là 'increment_balance' —
+        // tên helper DÙNG CHUNG, khiến 730/730 dòng sổ đều một nhãn và không chỉnh cân bằng
+        // kinh tế được. Nay `addMoney` suy nguồn từ ngăn xếp lời gọi JS nên nhãn là NƠI GỌI.
+        assert.notStrictEqual(rows[0].source, 'users',
+            'không được bắt nhầm tên BẢNG');
+        assert.notStrictEqual(rows[0].source, 'increment_balance',
+            'không được dừng ở tên helper dùng chung — phải truy ra nơi gọi thật');
+        assert.strictEqual(rows[0].source, 'ledger.integration.test',
+            'nhãn phải là file đã gọi addMoney');
     });
 
     test('Ledger: đổi NĂNG LƯỢNG / ĐỘ BỀN thì KHÔNG ghi (chống phình vô ích)', async () => {

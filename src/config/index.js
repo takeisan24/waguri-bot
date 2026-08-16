@@ -255,11 +255,24 @@ module.exports = {
     RATE_LIMIT: { MAX: 5, WINDOW_MS: 5000 }, // tối đa 5 lệnh / 5 giây / người
 
     // Vote trên Top.gg (cần TOPGG_TOKEN để check & autopost). Vote lại được sau 12h.
+    // ⚖️ CÂN LẠI 2026-08-15 (đợt 5). Trước đây: REWARD 5.000 + STREAK_BONUS 1.000.
+    // Công thức đầy đủ là `REWARD × (cuối tuần ? 2 : 1) + min(chuỗi−1, 7) × STREAK_BONUS`,
+    // nên mức trần thật là 34.000 xu/NGÀY (chuỗi 8+, cuối tuần, 2 lượt) — tương đương
+    // **38 giờ cày `/work`** (~900 xu/giờ). Hai cú bấm ăn đứt gần hai ngày chơi thật thì
+    // mọi nội dung gameplay mất hết ý nghĩa kinh tế. Đây là lỗi TỈ LỆ, sai ở mọi quy mô.
+    //
+    // Cắt đôi cả hai vế -> trần còn 17.000/ngày (19 giờ cày). Vẫn cao hơn gameplay, CHẤP
+    // NHẬN CÓ CHỦ Ý: vote là đòn bẩy marketing đẩy hạng top.gg, không thuần là cân bằng.
+    //
+    // Thời điểm sửa được chọn có tính toán: đo ngày 2026-08-15 thấy **0 người từng vote**
+    // => không ai bị nerf, không mất thiện cảm. Sửa sau khi có người quen nhận 34.000/ngày
+    // thì đắt hơn nhiều.
+    // Xem lại sau ≥30 ngày có dữ liệu thật (docs/spec-dot-5-kinh-te.md).
     VOTE: {
-        REWARD: 5000, EXP: 50, COOLDOWN_HOURS: 12,
+        REWARD: 2500, EXP: 50, COOLDOWN_HOURS: 12,
         STREAK_GRACE_HOURS: 36,   // vote lại trong 36h (12h cd + 24h dư) thì GIỮ chuỗi
-        STREAK_BONUS: 1000,       // thưởng cộng thêm mỗi mốc streak (từ ngày thứ 2)
-        STREAK_BONUS_MAX: 7,      // cap số mốc cộng (tối đa +7.000)
+        STREAK_BONUS: 500,        // thưởng cộng thêm mỗi mốc streak (từ ngày thứ 2)
+        STREAK_BONUS_MAX: 7,      // cap số mốc cộng (tối đa +3.500)
         REMINDER: true,           // bật nhắc vote qua DM khi đủ 12h
     },
 

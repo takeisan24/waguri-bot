@@ -107,12 +107,49 @@ async function getUser(userId) {
  * @param {string} type - 'wallet' hoặc 'bank'
  * @returns {boolean} - true nếu thành công, false nếu không đủ tiền/lỗi
  */
+// Tên "thân thiện" cho vài file hay gặp; file khác thì lấy luôn tên file.
+const NGUON_THEO_FILE = {
+    messageCreate: 'chat',
+    'eco-admin': 'admin',
+    interactionCreate: 'tuong_tac',
+    voteServer: 'vote',
+    voteReward: 'vote',
+    supportReward: 'qua_support',
+    newbie: 'tan_thu',
+};
+
+/**
+ * Suy ra NGUỒN tiền từ ngăn xếp lời gọi JS.
+ *
+ * Vì sao không thêm tham số `source` vào 39 chỗ gọi `addMoney`: dễ sót, và người sau thêm
+ * chỗ gọi thứ 40 lại quên — đúng lớp lỗi "luật chỉ là văn xuôi" mà dự án đang tìm cách bỏ.
+ * Đọc ngăn xếp thì 0 chỗ gọi phải sửa và tự đúng với mọi chỗ gọi tương lai.
+ *
+ * Trước đây sổ nhật ký có 730/730 dòng đều mang nhãn `increment_balance` nên không chỉnh
+ * cân bằng kinh tế được — không biết tiền từ đâu ra.
+ */
+function nguonTuNganXep() {
+    try {
+        // slice(3): bỏ dòng "Error", chính hàm này, và addMoney -> còn nơi gọi thật.
+        const dong = (new Error().stack || '').split('\n').slice(3);
+        for (const d of dong) {
+            const m = d.match(/[\\/]([\w.-]+)\.js/);
+            if (!m) continue;
+            const ten = m[1];
+            if (ten === 'database') continue;          // bỏ qua chính tầng DB
+            return NGUON_THEO_FILE[ten] || ten;
+        }
+    } catch { /* suy nguồn hỏng thì thà không có nhãn còn hơn làm hỏng giao dịch */ }
+    return null;
+}
+
 async function addMoney(userId, amount, type = 'wallet') {
     try {
         const { data, error } = await supabase.rpc('increment_balance', {
             p_user_id: userId,
             p_field: type,
             p_amount: amount,
+            p_source: nguonTuNganXep(),
         });
 
         if (error) throw error;
@@ -1135,6 +1172,22 @@ async function deleteUserData(userId) {
 //  TELEMETRY KINH TẾ
 // ============================================================
 /** Chụp nhanh tổng cung tiền/phân bố hôm nay (upsert). Trả dòng snapshot hoặc null. */
+/**
+ * Thu thuế tài sản cho những người KHÔNG điểm danh trong 24h qua (migration 0118).
+ * Người có điểm danh đã đóng qua `claim_daily` rồi -> RPC tự bỏ qua, không thu hai lần.
+ * @returns {{status:string, so_nguoi:number, tong_thu:number}|null}
+ */
+async function chargeWealthTax() {
+    try {
+        const { data, error } = await supabase.rpc('charge_wealth_tax');
+        if (error) throw error;
+        return data;
+    } catch (error) {
+        console.error('[DATABASE ERROR] chargeWealthTax():', error?.message || error);
+        return null;
+    }
+}
+
 async function snapshotEconomy() {
     try {
         const { data, error } = await supabase.rpc('snapshot_economy');
@@ -2264,6 +2317,7 @@ module.exports = {
     deleteUserData,
     // telemetry kinh tế
     snapshotEconomy,
+    chargeWealthTax,
     syncAdminExclusions,
     getEconomySnapshots,
     getLedgerUser,
