@@ -108,17 +108,19 @@ test('KINH TẾ #5 — Bản sao web không được trôi lệch khỏi bot', (
     const tsSrc = fs.readFileSync(path.join(ROOT, 'web/src/lib/market.ts'), 'utf8');
 
     const webItems = {};
-    const entryRe = /(\w+):\s*\{\s*basePrice:\s*(\d+),\s*category:\s*"(\w+)"[\s\S]*?nameVi:\s*"([^"]+)",\s*nameEn:\s*"([^"]+)"/g;
+    // `emoji` được so từ 2026-08-17: trước đây không so, nên biểu tượng có thể trôi lệch
+    // giữa hai file mà không gate nào thấy — web hiện 🍅 còn bot hiện 🌷 cho cùng một món.
+    const entryRe = /(\w+):\s*\{\s*basePrice:\s*(\d+),\s*category:\s*"(\w+)",\s*emoji:\s*"([^"]+)"[\s\S]*?nameVi:\s*"([^"]+)",\s*nameEn:\s*"([^"]+)"/g;
     let m;
     while ((m = entryRe.exec(tsSrc)) !== null) {
-        webItems[m[1]] = { basePrice: Number(m[2]), category: m[3], nameVi: m[4], nameEn: m[5] };
+        webItems[m[1]] = { basePrice: Number(m[2]), category: m[3], emoji: m[4], nameVi: m[5], nameEn: m[6] };
     }
 
     assert.ok(Object.keys(webItems).length > 0, 'Không parse được BASE_MARKET_ITEMS từ web/src/lib/market.ts');
 
     const botItems = {};
     for (const [id, v] of Object.entries(BASE_MARKET_ITEMS)) {
-        botItems[id] = { basePrice: v.basePrice, category: v.category, nameVi: v.nameVi, nameEn: v.nameEn };
+        botItems[id] = { basePrice: v.basePrice, category: v.category, emoji: v.emoji, nameVi: v.nameVi, nameEn: v.nameEn };
     }
     assert.deepStrictEqual(webItems, botItems,
         'web/src/lib/market.ts lệch với src/lib/market.js. ' +

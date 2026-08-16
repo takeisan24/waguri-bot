@@ -69,6 +69,21 @@ for (const [nhom, ns] of [['items', 'items'], ['items', 'data.items'], ['jobs', 
     }
 }
 
+// ---------- 4) Hai namespace vật phẩm phải NÓI CÙNG MỘT THỨ ----------
+// `items.*` và `data.items.*` cùng chứa tên vật phẩm (29 lời gọi dùng cái đầu, 22 dùng cái
+// sau). Trùng lặp này là nợ đã ghi Backlog; chừng nào còn tồn tại thì phải bị ép khớp, nếu
+// không cùng một món sẽ mang hai tên khác nhau tuỳ lệnh người chơi gõ.
+{
+    const a = en.items || {}, b = en.data?.items || {};
+    const lech = [...new Set([...Object.keys(a), ...Object.keys(b)])]
+        .filter(id => a[id]?.name !== b[id]?.name);
+    if (lech.length) {
+        loi.push(`en.json: \`items.*\` và \`data.items.*\` lệch nhau ở ${lech.length} món:\n` +
+                 `        ${lech.slice(0, 8).join(', ')}${lech.length > 8 ? `, … +${lech.length - 8}` : ''}\n` +
+                 `        -> cùng một vật phẩm hiện hai tên khác nhau tuỳ lệnh.`);
+    }
+}
+
 const tong = (catalog.items || []).length + (catalog.jobs || []).length;
 console.log(`Đối chiếu ${tong} bản ghi DB (${(catalog.items || []).length} vật phẩm · ${(catalog.jobs || []).length} nghề) với locale bot`);
 
