@@ -9,7 +9,52 @@ function getClient() {
     return new GoogleGenAI({ apiKey: rawKey });
 }
 
-const REQUEST_TIMEOUT_MS = 20000;
+// Đo thật 2026-08-17 trên `gemini-3.6-flash`: độ trễ dao động 4,8s – 39,5s (model dòng
+// "thinking" nghĩ càng nhiều càng lâu). Mốc 20s cũ cắt ngang khá nhiều lượt đang chạy bình
+// thường -> người dùng nhận lỗi thay vì câu trả lời chậm. Trả lời chậm vẫn hơn không có.
+const REQUEST_TIMEOUT_MS = 35000;
+
+/**
+ * Đọc kết quả từ Gemini — cẩn thận hơn `result.text || parts[0].text` cũ.
+ *
+ * Hai vấn đề của cách cũ:
+ *  1. `parts[0]` có thể là phần SUY NGHĨ (`part.thought === true`) chứ không phải câu trả
+ *     lời, và khi có nhiều part thì nó bỏ mất các part sau.
+ *  2. Không hề kiểm `finishReason`. Model dòng thinking tiêu token suy nghĩ TRONG CÙNG
+ *     ngân sách `maxOutputTokens`, nên khi nghĩ nhiều là câu trả lời bị cắt NGANG TỪ.
+ *     Đo thật với trần 600: nghĩ 521–574 token -> chỉ còn 22 token cho câu trả lời,
+ *     **2/3 lượt bị cắt**. Người dùng thấy "Ôi, nghe cậu nói muốn học" rồi hết.
+ *
+ * Trần đã nâng lên 2000 (config.AI.MAX_OUTPUT_TOKENS) nên chuyện này hiếm đi nhiều, nhưng
+ * vẫn phải xử lý: thà cắt về câu hoàn chỉnh cuối còn hơn để lửng giữa từ.
+ */
+function docKetQua(result, modelName) {
+    const cand = result?.candidates?.[0];
+    const parts = cand?.content?.parts || [];
+
+    // Ghép MỌI part không phải suy nghĩ, thay vì chỉ lấy part đầu.
+    const ghep = parts.filter(p => !p.thought && typeof p.text === 'string').map(p => p.text).join('');
+    let text = result?.text || ghep || '';
+
+    if (cand?.finishReason === 'MAX_TOKENS') {
+        const u = result?.usageMetadata || {};
+        console.warn(`[GEMINI] Câu trả lời bị cắt vì hết ngân sách token ` +
+            `(model ${modelName}, nghĩ ${u.thoughtsTokenCount ?? '?'} + trả lời ${u.candidatesTokenCount ?? '?'} token). ` +
+            `Cân nhắc nâng config.AI.MAX_OUTPUT_TOKENS.`);
+        text = catVeCauHoanChinh(text);
+    }
+    return text;
+}
+
+/** Cắt về dấu kết câu cuối cùng để không bỏ lửng giữa từ. Giữ nguyên nếu không tìm thấy. */
+function catVeCauHoanChinh(text) {
+    if (!text) return text;
+    const cat = Math.max(text.lastIndexOf('.'), text.lastIndexOf('!'), text.lastIndexOf('?'),
+                         text.lastIndexOf('~'), text.lastIndexOf('…'));
+    // Chỉ cắt khi phần giữ lại vẫn đủ dài — tránh biến câu trả lời thành một chữ.
+    if (cat > 40) return text.slice(0, cat + 1);
+    return text.replace(/\s+\S*$/, '') + '…';
+}
 
 /**
  * @param {string} systemPrompt
@@ -72,7 +117,7 @@ async function chat(systemPrompt, history, userText, options = {}) {
             });
 
             const result = await Promise.race([apiCall, timeout]);
-            return result.text || result.candidates?.[0]?.content?.parts?.[0]?.text || '';
+            return docKetQua(result, modelName);
         } catch (err) {
             lastError = err;
             const errMsg = String(err?.message || '');

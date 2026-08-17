@@ -101,7 +101,12 @@ module.exports = {
         GEMINI_MODEL: process.env.GEMINI_MODEL || 'gemini-3.6-flash',
         GEMINI_PREMIUM_MODEL: process.env.GEMINI_PREMIUM_MODEL || 'gemini-3.1-pro-preview',
         MAX_CONTEXT_TURNS: 6,    // số lượt hội thoại gần nhất giữ lại theo kênh
-        MAX_OUTPUT_TOKENS: 600,  // đủ dài cho câu trả lời tự nhiên (vẫn gọn cho Discord)
+        // ⚠️ 600 -> 2000 (2026-08-17). `gemini-3.6-flash` là model dòng "thinking": token
+        // SUY NGHĨ tiêu chung ngân sách này với câu trả lời. Đo thật: nghĩ hết 521–574
+        // token, chỉ còn 22 token cho câu trả lời -> **2/3 lượt bị cắt ngang từ**.
+        // Với trần 2000: 0/3 lượt bị cắt. Không thể tắt suy nghĩ (`thinkingBudget: 0` bị
+        // API trả 400) và `thinkingBudget: 128` bị bỏ qua (vẫn nghĩ 352–552).
+        MAX_OUTPUT_TOKENS: 2000,  // đủ dài cho câu trả lời tự nhiên (vẫn gọn cho Discord)
         USER_COOLDOWN_MS: 4000,  // chống spam mỗi người
         FREE_DAILY: 15,          // số lượt chat AI/ngày cho user thường
         PREMIUM_DAILY: 150,      // số lượt chat AI/ngày cho user Premium
