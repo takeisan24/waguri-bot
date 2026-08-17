@@ -200,7 +200,6 @@
     "idx_users_networth",
     "inventory_pkey",
     "inventory_user_id_item_id_key",
-    "inventory_user_item_unique",
     "items_pkey",
     "jobs_pkey",
     "loans_pkey",
@@ -225,6 +224,7 @@
     "world_event_contributions_pkey",
     "world_events_pkey"
   ],
+  "rang_buoc_trung": [],
   "tables": {
     "achievements": [
       "achievement_id:text",

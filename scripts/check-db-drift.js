@@ -73,6 +73,16 @@ const soSanhMang = (ten, a = [], b = []) => {
     for (const b of test.bang_chua_bat_rls || []) lech.push(`BẢO MẬT: bảng test chưa bật RLS → ${b}`);
     for (const f of test.definer_khong_ghim_search_path || []) lech.push(`BẢO MẬT: hàm test SECURITY DEFINER chưa ghim search_path → ${f}`);
 
+    // --- ràng buộc trùng (0121): bắt tuyệt đối trên CẢ HAI DB ---
+    // So tên index hai chiều không thấy được lỗi này: hai bản trùng mang tên khác nhau nên
+    // trông như hai thứ khác nhau, và cả test lẫn prod đều có nên hai bên vẫn "khớp". Đó là
+    // cách `inventory` giữ hai ràng buộc UNIQUE (user_id, item_id) y hệt suốt gần hai năm.
+    for (const nguon of [['test', test], ['ảnh chụp prod', chuan]]) {
+        for (const r of nguon[1].rang_buoc_trung || []) {
+            lech.push(`RÀNG BUỘC TRÙNG (${nguon[0]}): ${r} — mỗi lần ghi bảng phải cập nhật hai index y hệt.`);
+        }
+    }
+
     const soBang = Object.keys(bangChuan).length;
     console.log(`So DB test với ảnh chụp prod: ${soBang} bảng · ${(chuan.functions || []).length} hàm · ` +
                 `${(chuan.indexes || []).length} index`);
