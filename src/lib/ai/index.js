@@ -15,10 +15,27 @@ try {
     console.warn('[SYSTEM WARNING] Failed to load manga_lore.json:', e.message);
 }
 
+// LƯU Ý: mỗi khoá trong manga_lore.json phải có một nhánh ở đây, nếu không nó là mã chết —
+// hai khoá `thi_cu` và `tsumugi` từng nằm im trong file mà không bao giờ được đọc tới.
 function findMatchingLore(text) {
     if (!text) return [];
     const normalized = text.toLowerCase();
     const matches = [];
+    // Chủ đề trung tâm của truyện — trước đây KHÔNG có lore lẫn từ khoá, nên hỏi đúng vào
+    // ruột câu chuyện thì Waguri phải tự bịa.
+    if (normalized.includes('chidori') || normalized.includes('định kiến') || normalized.includes('dinh kien') ||
+        normalized.includes('coi thường') || normalized.includes('tin đồn') || normalized.includes('lời đồn') ||
+        normalized.includes('phán xét')) {
+        if (mangaLore.dinh_kien) matches.push(mangaLore.dinh_kien);
+    }
+    if (normalized.includes('học bổng') || normalized.includes('hoc bong') ||
+        normalized.includes('nhà giàu') || normalized.includes('tiểu thư') || normalized.includes('giàu')) {
+        if (mangaLore.hoc_bong) matches.push(mangaLore.hoc_bong);
+    }
+    if (normalized.includes('kikyo') || normalized.includes('trường của cậu') ||
+        normalized.includes('trường cậu') || normalized.includes('học viện')) {
+        if (mangaLore.kikyo) matches.push(mangaLore.kikyo);
+    }
     if (normalized.includes('bánh su kem') || normalized.includes('creampuff')) {
         if (mangaLore.banh_su_kem) matches.push(mangaLore.banh_su_kem);
     }
