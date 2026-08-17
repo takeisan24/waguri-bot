@@ -1,7 +1,9 @@
 const { Events, MessageFlags } = require('discord.js');
 const { rateLimited } = require('../lib/ratelimit');
 const { isBanned } = require('../lib/bans');
-const { isBlocked, getJail } = require('../lib/jail');
+// `getJailForAck` chứ không phải `getJail`: cả hai nơi gọi trong file này đều nằm TRƯỚC khi
+// lệnh kịp `deferReply()`, nên phải có trần thời gian (xem lib/jail.js).
+const { isBlocked, getJailForAck } = require('../lib/jail');
 const { buildWaguriEmbed } = require('../lib/embed');
 const { recordMembership } = require('../lib/membership');
 const { logError, skipLog } = require('../lib/logger');
@@ -54,23 +56,25 @@ module.exports = {
             db.syncProfile(interaction.user.id, interaction.user.username, interaction.user.displayAvatarURL({ extension: 'png', size: 128 }));
 
             // Tự động đồng bộ role cấp độ nếu tương tác diễn ra ở Server Support.
-            // BỌC try/catch: đây là việc phụ (best-effort). Nếu getUser lỗi (Supabase chập
-            // chờn) mà không bắt, execute() reject TRƯỚC khi lệnh kịp ack -> interaction chết
-            // ("This interaction failed") và rơi vào unhandledRejection log-only -> im lặng.
+            //
+            // KHÔNG `await`: đây là việc phụ (best-effort), người dùng không chờ kết quả của
+            // nó. Trước đây `db.getUser()` được await ngay tại đây, tức mọi tương tác ở server
+            // support phải đợi một vòng DB TRƯỚC khi lệnh kịp `deferReply()` — mà
+            // `SUPABASE_TIMEOUT_MS` là 10 giây, gấp hơn ba lần hạn ack 3 giây của Discord.
+            // Bỏ await xoá hẳn mắt xích đó, tốt hơn là bọc trần thời gian cho nó.
+            //
+            // `.catch()` ở cuối là bắt buộc: không có nó, một promise trôi nổi mà reject sẽ
+            // thành unhandledRejection.
             if (interaction.guildId === config.ROLE_REWARDS.SUPPORT_GUILD_ID && interaction.member) {
-                try {
-                    const { syncSupportGuildRoles } = require('../lib/supportReward');
-                    const user = await db.getUser(interaction.user.id);
-                    if (user) {
+                const member = interaction.member;
+                db.getUser(interaction.user.id)
+                    .then(user => {
+                        if (!user) return;
+                        const { syncSupportGuildRoles } = require('../lib/supportReward');
                         const { getLevelFromExp } = require('../lib/leveling');
-                        const level = getLevelFromExp(Number(user.exp || 0));
-                        syncSupportGuildRoles(interaction.member, level).catch(e => {
-                            console.error('[ROLE SYNC ERROR] interactionCreate:', e);
-                        });
-                    }
-                } catch (e) {
-                    console.error('[ROLE SYNC ERROR] interactionCreate getUser:', e.message);
-                }
+                        return syncSupportGuildRoles(member, getLevelFromExp(Number(user.exp || 0)));
+                    })
+                    .catch(e => console.error('[ROLE SYNC ERROR] interactionCreate:', e?.message || e));
             }
 
             const locale = await getInteractionLanguage(interaction);
@@ -86,7 +90,7 @@ module.exports = {
 
             // Chặn khi đang bị giam (chỉ kiểm tra với lệnh kiếm tiền/cờ bạc/trộm)
             if (isBlocked(interaction.commandName)) {
-                const jail = await getJail(interaction.user.id);
+                const jail = await getJailForAck(interaction.user.id);
                 if (jail) {
                     const time = `<t:${Math.floor(jail.until / 1000)}:R>`;
                     const embed = buildWaguriEmbed(interaction, 'error', {
@@ -197,7 +201,7 @@ module.exports = {
                     return interaction.reply({ embeds: [buildWaguriEmbed(interaction, 'warning', { locale, description: t(locale, 'common.rate_limited') })], flags: MessageFlags.Ephemeral });
                 }
                 if (isBlocked('work')) {
-                    const jail = await getJail(interaction.user.id);
+                    const jail = await getJailForAck(interaction.user.id);
                     if (jail) {
                         return interaction.reply({ embeds: [buildWaguriEmbed(interaction, 'error', { locale, title: t(locale, 'common.jail_title'), description: t(locale, 'common.jail_locked', { time: `<t:${Math.floor(jail.until / 1000)}:R>` }) })], flags: MessageFlags.Ephemeral });
                     }
@@ -208,19 +212,28 @@ module.exports = {
             }
 
             // Nút bật/tắt hiển thị hồ sơ web (trong /profile của chính mình).
+            //
+            // ACK TRƯỚC, LÀM SAU: handler này chạy HAI lời gọi DB (getUser + setProfilePublic)
+            // rồi mới trả lời. Nút cũng có hạn ack 3 giây như lệnh slash, mà
+            // SUPABASE_TIMEOUT_MS là 10 giây — DB chậm là nút chết với "This interaction
+            // failed". Ở đây KHÔNG bọc trần thời gian được như `getJailForAck`, vì nút cần
+            // biết trạng thái thật mới quyết định bật hay tắt; đoán mò sẽ ghi sai. Nên defer
+            // ngay (ack trong vài mili giây, mua thêm 15 phút) rồi mới đụng DB.
             if (interaction.customId === 'profile:toggle') {
                 try {
+                    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
                     const u = await db.getUser(interaction.user.id);
                     const newPublic = (u?.profile_public === false); // đang ẩn -> bật; đang hiện -> tắt
                     await db.setProfilePublic(interaction.user.id, newPublic);
-                    await interaction.reply({
+                    await interaction.editReply({
                         content: newPublic
                             ? t(locale, 'commands.profile.public_show', { id: interaction.user.id })
                             : t(locale, 'commands.profile.public_hide'),
-                        flags: MessageFlags.Ephemeral,
                     });
                 } catch (error) {
                     logError('profile:toggle', error);
+                    // Đã defer rồi mà lỗi -> không báo thì người dùng nhìn vòng xoay mãi.
+                    await ackButtonError(interaction, locale);
                 }
                 return;
             }

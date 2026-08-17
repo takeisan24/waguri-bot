@@ -3,6 +3,7 @@
 // Hỗ trợ nested keys, dynamic parameters substitution, và fallback an toàn.
 const vi = require('../locales/vi.json');
 const en = require('../locales/en.json');
+const { withTimeout, ACK_LOOKUP_TIMEOUT } = require('./timeout');
 
 const locales = { vi, en };
 
@@ -57,7 +58,9 @@ function t(locale, key, params = {}) {
 // lần đọc DB trong timeout 800ms để một lần treo tự rơi về locale do Discord cung cấp.
 const LOCALE_CACHE_TTL = 60_000;
 const LOCALE_CACHE_MAX = 20_000;
-const DB_LOOKUP_TIMEOUT = 800;
+// Trần tra DB nay lấy từ `lib/timeout.js` để mọi lời gọi trên đường trước ack dùng CHUNG một
+// con số. Trước đây nó là hằng riêng ở đây, nên `getJail`/`getUser` cùng đường không hưởng.
+const DB_LOOKUP_TIMEOUT = ACK_LOOKUP_TIMEOUT;
 const localeCache = new Map(); // `${userId}:${guildId}` -> { locale, exp }
 
 // Key gồm CẢ guildId: khi user chưa đặt ngôn ngữ cá nhân, locale phụ thuộc server (bước 2/3), nên
@@ -86,19 +89,6 @@ function invalidateLocaleCache(userId) {
     for (const key of localeCache.keys()) {
         if (key.startsWith(prefix)) localeCache.delete(key);
     }
-}
-
-// Trả về undefined nếu promise không kịp trong `ms` (rơi sang fallback kế tiếp), không ném lỗi.
-function withTimeout(promise, ms) {
-    let timer;
-    const guard = new Promise((resolve) => {
-        timer = setTimeout(() => resolve(undefined), ms);
-        if (typeof timer?.unref === 'function') timer.unref();
-    });
-    return Promise.race([
-        Promise.resolve(promise).catch(() => undefined),
-        guard,
-    ]).finally(() => clearTimeout(timer));
 }
 
 /**

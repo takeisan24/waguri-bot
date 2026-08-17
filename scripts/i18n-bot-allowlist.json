@@ -26,6 +26,7 @@
     "src/lib/commandLocalizer.js": "CHÍNH LÀ bảng dịch tên/mô tả lệnh. Tiếng Việt ở đây là đầu ra mong muốn.",
     "src/lib/eventCalendar.js": "4 chuỗi hiển thị là thông báo phát vào MỘT kênh cố định (ANNOUNCEMENT_CHANNEL_ID, biến môi trường toàn cục) — không có người nhận cụ thể để lấy locale. Muốn song ngữ là quyết định sản phẩm, không phải sửa máy móc. 4 chuỗi còn lại là console.log.",
     "src/lib/hvlPlayer.js": "NỢ THẬT: 14 nhãn nút trình phát nhạc (Lặp 1 bài, Lặp album…).",
+    "src/lib/jail.js": "Một dòng console.warn nội bộ khi getJailForAck quá hạn — log cho người vận hành đọc, không hiện cho người chơi. Chuỗi hiển thị của hệ giam nằm ở common.jailed* trong locale.",
     "src/lib/logger.js": "Log nội bộ.",
     "src/lib/masoi/engine.js": "Tên/mô tả 6 vai ở đây chỉ là GIÁ TRỊ DỰ PHÒNG. Mọi đường hiển thị đi qua getRoleName/getRoleDesc trong masoi.js:68-69, vốn gọi `t(locale, 'commands.masoi.roles.*')` trước; locale đã có đủ 6 vai cả vi lẫn en. Chỗ dùng thẳng chỉ là `.emoji` (không phụ thuộc ngôn ngữ).",
     "src/lib/noitu.js": "Từ điển trò Nối Từ — trò chơi tiếng Việt theo bản chất, không dịch được.",
