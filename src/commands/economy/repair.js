@@ -60,7 +60,7 @@ module.exports = {
         const cost = REPAIR_COSTS[toolId];
 
         const r = await db.repairTool(userId, toolId, cost);
-        const toolName = t(locale, `items.${toolId}.name`) || TOOL_NAMES[toolId] || toolId;
+        const toolName = t(locale, `data.items.${toolId}.name`) || TOOL_NAMES[toolId] || toolId;
 
         if (r === 'no_tool') {
             const embed = buildWaguriEmbed(interaction, 'error', {

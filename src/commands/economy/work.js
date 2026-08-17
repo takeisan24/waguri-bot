@@ -212,7 +212,7 @@ module.exports = {
 
             if (usedVehicle) {
                 const vehicleName = config.VEHICLES[usedVehicle.vehicle_id]?.name || usedVehicle.vehicle_id;
-                const vehicleNameTrans = t(locale, `items.${usedVehicle.vehicle_id}.name`) || vehicleName;
+                const vehicleNameTrans = t(locale, `data.items.${usedVehicle.vehicle_id}.name`) || vehicleName;
                 resultMessage += isEn
                     ? `\n🚗 You drove **${vehicleNameTrans}** to work (Durability: ${usedVehicle.durability}/100)${usedVehicle.broken ? ' ⚠️ *Vehicle broke after this trip!*' : ''}`
                     : `\n🚗 Cậu đã lái **${vehicleNameTrans}** đi làm (Độ bền xe: ${usedVehicle.durability}/100)${usedVehicle.broken ? ' ⚠️ *Xe đã bị hỏng sau chuyến đi này!*' : ''}`;

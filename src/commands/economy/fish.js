@@ -24,14 +24,14 @@ async function fishDrops({ userId, c, userPet, locale }) {
         if (c.name === 'Cá lòng tong' && rand < 0.35) {
             await db.giveItemAdmin(userId, 'ca_tuoi', 1);
             await db.discoverItem(userId, 'ca_tuoi');
-            const iName = t(locale, 'items.ca_tuoi.name') || 'Cá Tươi';
+            const iName = t(locale, 'data.items.ca_tuoi.name') || 'Cá Tươi';
             desc += en
                 ? `\n🐟 Your bucket has **1× ${iName}** *(ingredient for \`/tiembanh\`)*`
                 : `\n🐟 Giỏ cá có thêm **1× Cá Tươi** *(nguyên liệu \`/tiembanh\`)*`;
         } else if (c.name === 'Cá rô phi' && rand < 0.45) {
             await db.giveItemAdmin(userId, 'ca_tuoi', 1);
             await db.discoverItem(userId, 'ca_tuoi');
-            const iName = t(locale, 'items.ca_tuoi.name') || 'Cá Tươi';
+            const iName = t(locale, 'data.items.ca_tuoi.name') || 'Cá Tươi';
             desc += en
                 ? `\n🐟 Your bucket has **1× ${iName}** *(ingredient for \`/tiembanh\`)*`
                 : `\n🐟 Giỏ cá có thêm **1× Cá Tươi** *(nguyên liệu \`/tiembanh\`)*`;
@@ -39,14 +39,14 @@ async function fishDrops({ userId, c, userPet, locale }) {
             if (rand < 0.30) {
                 await db.giveItemAdmin(userId, 'ca_ngon', 1);
                 await db.discoverItem(userId, 'ca_ngon');
-                const iName = t(locale, 'items.ca_ngon.name') || 'Cá Ngon';
+                const iName = t(locale, 'data.items.ca_ngon.name') || 'Cá Ngon';
                 desc += en
                     ? `\n✨ Your bucket has **1× ${iName}** *(special bakery ingredient!)*`
                     : `\n✨ Giỏ cá có thêm **1× Cá Ngon** *(nguyên liệu làm bánh đặc biệt!)*`;
             } else if (rand < 0.70) {
                 await db.giveItemAdmin(userId, 'ca_tuoi', 1);
                 await db.discoverItem(userId, 'ca_tuoi');
-                const iName = t(locale, 'items.ca_tuoi.name') || 'Cá Tươi';
+                const iName = t(locale, 'data.items.ca_tuoi.name') || 'Cá Tươi';
                 desc += en
                     ? `\n🐟 Your bucket has **1× ${iName}** *(ingredient for \`/tiembanh\`)*`
                     : `\n🐟 Giỏ cá có thêm **1× Cá Tươi** *(nguyên liệu \`/tiembanh\`)*`;
@@ -63,21 +63,21 @@ async function fishDrops({ userId, c, userPet, locale }) {
             if (rand < (dropRates.FISH_CA_RONG_VANG + fishingLuckBuff)) {
                 await db.giveItemAdmin(userId, 'ca_rong_vang', 1);
                 await db.discoverItem(userId, 'ca_rong_vang');
-                const iName = t(locale, 'items.ca_rong_vang.name') || 'Cá Rồng Kim Long';
+                const iName = t(locale, 'data.items.ca_rong_vang.name') || 'Cá Rồng Kim Long';
                 desc += en
                     ? `\n🏮 Your bucket has **1× ${iName}** 👑 *(super rare Epic item!)*`
                     : `\n🏮 Giỏ cá có thêm **1× Cá Rồng Kim Long** 👑 *(vật phẩm Sử Thi siêu hiếm!)*`;
             } else if (rand < 0.40) {
                 await db.giveItemAdmin(userId, 'ca_hiem', 1);
                 await db.discoverItem(userId, 'ca_hiem');
-                const iName = t(locale, 'items.ca_hiem.name') || 'Cá Hiếm';
+                const iName = t(locale, 'data.items.ca_hiem.name') || 'Cá Hiếm';
                 desc += en
                     ? `\n🌟 Your bucket has **1× ${iName}** *(rare ingredient for bakery!)*`
                     : `\n🌟 Giỏ cá có thêm **1× Cá Hiếm** *(nguyên liệu siêu hiếm cho tiệm!)*`;
             } else {
                 await db.giveItemAdmin(userId, 'ca_ngon', 1);
                 await db.discoverItem(userId, 'ca_ngon');
-                const iName = t(locale, 'items.ca_ngon.name') || 'Cá Ngon';
+                const iName = t(locale, 'data.items.ca_ngon.name') || 'Cá Ngon';
                 desc += en
                     ? `\n✨ Your bucket has **1× ${iName}** *(special bakery ingredient!)*`
                     : `\n✨ Giỏ cá có thêm **1× Cá Ngon** *(nguyên liệu làm bánh đặc biệt!)*`;
@@ -94,7 +94,7 @@ async function fishDrops({ userId, c, userPet, locale }) {
             if (rand < (dropRates.FISH_CA_KOI_NHAT + fishingLuckBuff)) {
                 await db.giveItemAdmin(userId, 'ca_koi_nhat', 1);
                 await db.discoverItem(userId, 'ca_koi_nhat');
-                const iName = t(locale, 'items.ca_koi_nhat.name') || 'Cá Koi Hoàng Gia';
+                const iName = t(locale, 'data.items.ca_koi_nhat.name') || 'Cá Koi Hoàng Gia';
                 desc += en
                     ? `\n👑 Your bucket has **1× ${iName}** ⭐ *(super rare LEGENDARY item!)*`
                     : `\n👑 Giỏ cá có thêm **1× Cá Koi Hoàng Gia** ⭐ *(vật phẩm HUYỀN THOẠI cực hiếm!)*`;

@@ -326,7 +326,7 @@ function runResourceGather(interaction, { key, title, table }) {
                     await db.giveItemAdmin(userId, matId, qty);
                     await db.discoverItem(userId, matId);
                     const it = await db.getItem(matId);
-                    const itNameTrans = t(locale, `items.${matId}.name`) || it?.name || matId;
+                    const itNameTrans = t(locale, `data.items.${matId}.name`) || it?.name || matId;
                     if (doubleGemSuccess) {
                         out += en
                             ? `\n🎒 Picked up: **${qty}× ${itNameTrans}** *(for \`/craft\` - ⛏️ Pet Double Ores!)*`
@@ -346,14 +346,14 @@ function runResourceGather(interaction, { key, title, table }) {
                 if (key === 'mine' && Math.random() < (dropRates.MINE_VANG_DONG_TRIEU * rareChanceMult)) {
                     await db.giveItemAdmin(userId, 'vang_dong_tren', 1);
                     await db.discoverItem(userId, 'vang_dong_tren');
-                    const iName = t(locale, 'items.vang_dong_tren.name') || 'Vàng Đông Triều';
+                    const iName = t(locale, 'data.items.vang_dong_tren.name') || 'Vàng Đông Triều';
                     out += en
                         ? `\n✨ The rubble collapsed to reveal: **1× ${iName}** 🟡 *(Rare Ore!)*`
                         : `\n✨ Đất đá sụt lở để lộ ra: **1× Vàng Đông Triều** 🟡 *(Quặng hiếm!)*`;
                 } else if (key === 'chop' && Math.random() < dropRates.CHOP_KY_NAM) {
                     await db.giveItemAdmin(userId, 'ky_nam', 1);
                     await db.discoverItem(userId, 'ky_nam');
-                    const iName = t(locale, 'items.ky_nam.name') || 'Kỳ Nam';
+                    const iName = t(locale, 'data.items.ky_nam.name') || 'Kỳ Nam';
                     out += en
                         ? `\n🌲 Tree sap condensed into: **1× ${iName}** 🌟 *(Epic Wood!)*`
                         : `\n🌲 Nhựa cây tụ lại thành khối: **1× Kỳ Nam** 🌟 *(Gỗ Sử Thi cực hiếm!)*`;

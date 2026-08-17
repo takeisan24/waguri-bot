@@ -208,7 +208,7 @@ module.exports = {
                     banh_kem_dau: { name: 'Bánh Kem Dâu Gekka 🍰', mult: 3.0 }
                 };
                 const cfg = FOOD_CONFIGS[food];
-                const foodName = t(locale, `items.${food}.name`) || cfg.name;
+                const foodName = t(locale, `data.items.${food}.name`) || cfg.name;
                 const taken = await db.takeItem(userId, food, 1);
                 if (!taken) {
                     const embed = buildWaguriEmbed(interaction, 'warning', {

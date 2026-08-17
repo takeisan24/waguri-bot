@@ -88,11 +88,11 @@ module.exports = {
         const inv = await db.getInventory(interaction.user.id);
         await interaction.respond(inv
             .filter(r => {
-                const name = t(locale, `items.${r.item_id}.name`) || r.items?.name || r.item_id;
+                const name = t(locale, `data.items.${r.item_id}.name`) || r.items?.name || r.item_id;
                 return name.toLowerCase().includes(focused) || r.item_id.includes(focused);
             })
             .slice(0, 25).map(r => {
-                const name = t(locale, `items.${r.item_id}.name`) || r.items?.name || r.item_id;
+                const name = t(locale, `data.items.${r.item_id}.name`) || r.items?.name || r.item_id;
                 return { name: `${name} (x${r.quantity})`, value: r.item_id };
             }));
     },
@@ -194,7 +194,7 @@ module.exports = {
         // chết với 10062. Mọi nhánh dưới đây đều defer nên gom lên một chỗ.
         await interaction.deferReply();
         const items = await db.getItems();
-        const nameOf = id => t(locale, `items.${id}.name`) || items.find(i => i.id === id)?.name || id;
+        const nameOf = id => t(locale, `data.items.${id}.name`) || items.find(i => i.id === id)?.name || id;
 
         if (sub === 'auctions') {
             const rows = await db.getActiveAuctions(50);

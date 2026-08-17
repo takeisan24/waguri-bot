@@ -20,11 +20,11 @@ module.exports = {
         const focused = interaction.options.getFocused().toLowerCase();
         await interaction.respond(RECIPES
             .filter(r => {
-                const name = t(locale, `items.${r.result}.name`) || r.name;
+                const name = t(locale, `data.items.${r.result}.name`) || r.name;
                 return name.toLowerCase().includes(focused) || r.id.includes(focused);
             })
             .slice(0, 25).map(r => {
-                const name = t(locale, `items.${r.result}.name`) || r.name;
+                const name = t(locale, `data.items.${r.result}.name`) || r.name;
                 return { name, value: r.id };
             }));
     },
@@ -35,7 +35,7 @@ module.exports = {
         const items = await db.getItems();
         const nameOf = id => {
             const originalName = items.find(i => i.id === id)?.name || id;
-            return t(locale, `items.${id}.name`) || originalName;
+            return t(locale, `data.items.${id}.name`) || originalName;
         };
         const priceOf = id => Number(items.find(i => i.id === id)?.price || 0);
         const sub = interaction.options.getSubcommand();
@@ -44,7 +44,7 @@ module.exports = {
             const lines = RECIPES.map(r => {
                 const mats = Object.entries(r.mats).map(([id, q]) => `${q}× ${nameOf(id)}`).join(' + ');
                 const costStr = r.cost > 0 ? t(locale, 'commands.craft.cost_fee', { fee: fmt(r.cost, locale), currency: config.CURRENCY }) : '';
-                const recipeName = t(locale, `items.${r.result}.name`) || r.name;
+                const recipeName = t(locale, `data.items.${r.result}.name`) || r.name;
                 const resaleVal = fmt(Math.floor(priceOf(r.result) * 0.5), locale);
                 return t(locale, 'commands.craft.list_line', {
                     name: recipeName,
@@ -101,7 +101,7 @@ module.exports = {
             return interaction.editReply({ embeds: [embed] });
         }
 
-        const recipeName = t(locale, `items.${recipe.result}.name`) || recipe.name;
+        const recipeName = t(locale, `data.items.${recipe.result}.name`) || recipe.name;
         const embed = buildWaguriEmbed(interaction, 'success', {
             description: t(locale, 'commands.craft.success_desc', {
                 qty: recipe.qty,

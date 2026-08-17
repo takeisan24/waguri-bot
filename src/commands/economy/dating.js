@@ -221,7 +221,7 @@ module.exports = {
             const taken = await db.takeItem(userId, itemId, 1);
             if (!taken) {
                 const item = await db.getItem(itemId);
-                const itemNameTrans = t(locale, `items.${itemId}.name`) || item?.name || itemId;
+                const itemNameTrans = t(locale, `data.items.${itemId}.name`) || item?.name || itemId;
                 const embed = buildWaguriEmbed(interaction, 'warning', {
                     description: locale.startsWith('en')
                         ? `You don't have **1× ${itemNameTrans}** in your inventory to give 🥺 Buy it at \`/store\` or go farming!`

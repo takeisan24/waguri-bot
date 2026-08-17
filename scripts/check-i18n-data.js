@@ -45,6 +45,14 @@ for (const ns of ['items', 'data.items', 'data.jobs']) {
     }
 }
 
+// ---------- 1b) `items.*` đã bị GỘP vào `data.items.*` — không được hồi sinh ----------
+// Hai namespace song song chính là thứ đẻ ra lỗi "người Việt đọc tiếng Anh" ở đợt 6:
+// 29 lời gọi dùng cái này, 22 dùng cái kia, và chỉ MỘT trong hai bị nhiễm tiếng Anh.
+if (en.items && Object.keys(en.items).length) {
+    loi.push(`en.json chứa \`items.*\` (${Object.keys(en.items).length} khoá) — namespace này ĐÃ GỘP vào \`data.items.*\`.\n` +
+             `        Hai namespace song song là gốc của lỗi tên vật phẩm ở đợt 6. Dùng \`data.items.*\`.`);
+}
+
 // ---------- 2 & 3) en.json phải phủ ĐÚNG tập id trong DB ----------
 if (!fs.existsSync(CATALOG)) {
     console.error(`❌ Thiếu ${path.relative(ROOT, CATALOG)}. Chạy: npm run db:catalog`);
@@ -52,7 +60,7 @@ if (!fs.existsSync(CATALOG)) {
 }
 const catalog = JSON.parse(fs.readFileSync(CATALOG, 'utf8'));
 
-for (const [nhom, ns] of [['items', 'items'], ['items', 'data.items'], ['jobs', 'data.jobs']]) {
+for (const [nhom, ns] of [['items', 'data.items'], ['jobs', 'data.jobs']]) {
     const ids = catalog[nhom] || [];
     const kho = ns.split('.').reduce((x, k) => x?.[k], en) || {};
     const thieu = ids.filter(id => !kho[id]?.name);
@@ -69,29 +77,14 @@ for (const [nhom, ns] of [['items', 'items'], ['items', 'data.items'], ['jobs', 
     }
 }
 
-// ---------- 4) Hai namespace vật phẩm phải NÓI CÙNG MỘT THỨ ----------
-// `items.*` và `data.items.*` cùng chứa tên vật phẩm (29 lời gọi dùng cái đầu, 22 dùng cái
-// sau). Trùng lặp này là nợ đã ghi Backlog; chừng nào còn tồn tại thì phải bị ép khớp, nếu
-// không cùng một món sẽ mang hai tên khác nhau tuỳ lệnh người chơi gõ.
-{
-    const a = en.items || {}, b = en.data?.items || {};
-    const lech = [...new Set([...Object.keys(a), ...Object.keys(b)])]
-        .filter(id => a[id]?.name !== b[id]?.name);
-    if (lech.length) {
-        loi.push(`en.json: \`items.*\` và \`data.items.*\` lệch nhau ở ${lech.length} món:\n` +
-                 `        ${lech.slice(0, 8).join(', ')}${lech.length > 8 ? `, … +${lech.length - 8}` : ''}\n` +
-                 `        -> cùng một vật phẩm hiện hai tên khác nhau tuỳ lệnh.`);
-    }
-}
-
 const tong = (catalog.items || []).length + (catalog.jobs || []).length;
 console.log(`Đối chiếu ${tong} bản ghi DB (${(catalog.items || []).length} vật phẩm · ${(catalog.jobs || []).length} nghề) với locale bot`);
 
 if (loi.length) {
     console.error(`\n❌ ${loi.length} vấn đề i18n ở tầng DỮ LIỆU:\n`);
     loi.forEach(l => console.error('  • ' + l));
-    console.error('\nThêm vật phẩm mới vào DB thì phải thêm tên tiếng Anh vào src/locales/en.json');
-    console.error('(cả `items.*` lẫn `data.items.*` — hai namespace này đang song song, xem Backlog).');
+    console.error('\nThêm vật phẩm mới vào DB thì phải thêm tên tiếng Anh vào `data.items.*`');
+    console.error('trong src/locales/en.json (KHÔNG thêm vào vi.json — tên Việt lấy từ DB).');
     console.error('Sau khi đổi danh mục DB, chạy lại: npm run db:catalog');
     process.exit(1);
 }

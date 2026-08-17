@@ -18,12 +18,12 @@ module.exports = {
         const choices = items
             .filter(i => i.effect_type && i.effect_type !== 'none')
             .filter(i => {
-                const name = t(locale, `items.${i.id}.name`) || i.name;
+                const name = t(locale, `data.items.${i.id}.name`) || i.name;
                 return name.toLowerCase().includes(focused) || i.id.includes(focused);
             })
             .slice(0, 25)
             .map(i => {
-                const name = t(locale, `items.${i.id}.name`) || i.name;
+                const name = t(locale, `data.items.${i.id}.name`) || i.name;
                 return { name, value: i.id };
             });
         await interaction.respond(choices);
@@ -44,7 +44,7 @@ module.exports = {
             return interaction.editReply({ embeds: [embed] });
         }
 
-        const itemName = t(locale, `items.${item.id}.name`) || item.name;
+        const itemName = t(locale, `data.items.${item.id}.name`) || item.name;
 
         // Dùng lần lượt tới khi đủ số lượng hoặc hết đồ trong kho
         let used = 0, lastStatus = 'ok';

@@ -11,6 +11,11 @@
 // `scripts/i18n-bot-allowlist.json`, chỉ chặn vi phạm MỚI. KHÔNG bắt sửa hết file cũ ngay —
 // đó sẽ là over-scope. Mỗi lần dọn được một file thì gỡ nó khỏi allowlist, mốc tự siết lại.
 //
+// MỖI MỤC TRONG MỐC PHẢI CÓ LÝ DO. Bản đầu chỉ là mảng đường dẫn, nên nó đọc như 5 việc
+// tồn — trong khi kiểm lại thì CẢ 5 đều là báo nhầm (khoá tra bảng, mô tả slash đã được
+// commandLocalizer dịch, console.log). Mốc không lý do vừa giấu nợ thật vừa bịa nợ ảo.
+// Lý do mở đầu bằng `NỢ THẬT:` được đếm riêng và in ra mỗi lần chạy.
+//
 //   node scripts/check-i18n-bot.js                     -> kiểm
 //   node scripts/check-i18n-bot.js --update-allowlist  -> chụp lại mốc (dùng khi CỐ Ý)
 // ============================================================
@@ -22,8 +27,9 @@ const ROOT = path.join(__dirname, '..');
 const ALLOW = path.join(__dirname, 'i18n-bot-allowlist.json');
 const capNhat = process.argv.includes('--update-allowlist');
 
-// Chỉ soi nơi sinh ra chữ hiển thị cho người dùng.
-const THU_MUC = ['src/commands', 'src/events'];
+// Nơi sinh ra chữ hiển thị cho người dùng. `src/lib` được thêm sau khi phát hiện gate cũ
+// mù hẳn với nó: chữ nút bấm, mô tả vai Ma Sói, thông báo lỗi cược đều nằm ở đây.
+const THU_MUC = ['src/commands', 'src/events', 'src/lib'];
 
 // Dấu tiếng Việt — dùng dấu phụ nên không bắt nhầm tiếng Anh.
 const VI = /[àáảãạăằắẳẵặâầấẩẫậđèéẻẽẹêềếểễệìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵ]/i;
@@ -56,21 +62,43 @@ for (const tm of THU_MUC) {
 }
 viPham.sort((a, b) => a.file.localeCompare(b.file));
 
+const mocCu = fs.existsSync(ALLOW) ? JSON.parse(fs.readFileSync(ALLOW, 'utf8')) : {};
+// Chấp nhận cả dạng cũ (mảng đường dẫn) lẫn dạng mới (đường dẫn -> lý do).
+const lyDoCu = Array.isArray(mocCu.files)
+    ? Object.fromEntries(mocCu.files.map(f => [f, '']))
+    : (mocCu.files || {});
+
 if (capNhat) {
-    fs.writeFileSync(ALLOW, JSON.stringify({
-        _ghi_chu: 'Mốc ratchet: file CHƯA có i18n tại thời điểm chụp. Dọn được file nào thì ' +
-                  'gỡ khỏi đây để mốc siết lại. ĐỪNG thêm file mới vào — hãy i18n nó.',
-        files: viPham.map(v => v.file),
-    }, null, 2) + '\n', 'utf8');
-    console.log(`✅ Đã chụp mốc: ${viPham.length} file.`);
+    // Giữ nguyên lý do đã viết; mục mới bị đánh dấu để không lặng lẽ nuốt thêm nợ.
+    const files = {};
+    for (const v of viPham) files[v.file] = lyDoCu[v.file] || `CHƯA XÉT: ${v.so} chuỗi — ghi lý do miễn, hoặc i18n rồi xoá khỏi đây.`;
+    fs.writeFileSync(ALLOW, JSON.stringify({ ...mocCu, files }, null, 2) + '\n', 'utf8');
+    const chuaXet = Object.values(files).filter(l => l.startsWith('CHƯA XÉT')).length;
+    console.log(`✅ Đã chụp mốc: ${viPham.length} file${chuaXet ? ` · ${chuaXet} mục CHƯA XÉT cần viết lý do` : ''}.`);
     process.exit(0);
 }
 
-const daBiet = new Set((fs.existsSync(ALLOW) ? JSON.parse(fs.readFileSync(ALLOW, 'utf8')).files : []) || []);
+const daBiet = new Set(Object.keys(lyDoCu));
 const moi = viPham.filter(v => !daBiet.has(v.file));
 const daDon = [...daBiet].filter(f => !viPham.some(v => v.file === f));
 
+const noThat = Object.entries(lyDoCu).filter(([, l]) => l.startsWith('NỢ THẬT'));
+const chuaXet = Object.entries(lyDoCu).filter(([, l]) => !l || l.startsWith('CHƯA XÉT'));
+
 console.log(`Quét ${THU_MUC.join(', ')} · ${viPham.length} file chưa có i18n (${daBiet.size} đã ghi nhận trong mốc)`);
+console.log(`   ${daBiet.size - noThat.length - chuaXet.length} miễn có căn cứ · ${noThat.length} nợ thật · ${chuaXet.length} chưa xét`);
+
+if (noThat.length) {
+    console.log('\n📌 Nợ i18n thật còn tồn (không chặn CI, nhưng người dùng EN đọc phải tiếng Việt):');
+    noThat.forEach(([f, l]) => console.log(`   · ${f} — ${l.replace(/^NỢ THẬT:\s*/, '')}`));
+}
+
+if (chuaXet.length) {
+    console.error(`\n❌ ${chuaXet.length} mục trong mốc chưa có lý do:`);
+    chuaXet.forEach(([f]) => console.error('   · ' + f));
+    console.error('\nViết lý do miễn vào scripts/i18n-bot-allowlist.json, hoặc i18n file rồi xoá mục đó.');
+    process.exit(1);
+}
 
 if (daDon.length) {
     console.log(`\n🎉 ${daDon.length} file đã được dọn — nhớ chạy \`--update-allowlist\` để siết mốc:`);

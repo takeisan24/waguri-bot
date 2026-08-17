@@ -17,12 +17,12 @@ module.exports = {
         const inv = await db.getInventory(interaction.user.id);
         const choices = inv
             .filter(r => {
-                const name = t(locale, `items.${r.item_id}.name`) || r.items?.name || r.item_id;
+                const name = t(locale, `data.items.${r.item_id}.name`) || r.items?.name || r.item_id;
                 return name.toLowerCase().includes(focused) || r.item_id.includes(focused);
             })
             .slice(0, 25)
             .map(r => {
-                const name = t(locale, `items.${r.item_id}.name`) || r.items?.name || r.item_id;
+                const name = t(locale, `data.items.${r.item_id}.name`) || r.items?.name || r.item_id;
                 return { name: `${name} (x${r.quantity})`, value: r.item_id };
             });
         await interaction.respond(choices);
@@ -50,7 +50,7 @@ module.exports = {
         const item = await db.getItem(itemId);
         if (!item) return err(t(locale, 'commands.tangdo.err_item_not_found'));
 
-        const itemName = t(locale, `items.${item.id}.name`) || item.name;
+        const itemName = t(locale, `data.items.${item.id}.name`) || item.name;
 
         if (isWaguri) {
             // Tặng quà cho Waguri

@@ -1,10 +1,37 @@
 {
-  "_ghi_chu": "Mốc ratchet: file CHƯA có i18n tại thời điểm chụp. Dọn được file nào thì gỡ khỏi đây để mốc siết lại. ĐỪNG thêm file mới vào — hãy i18n nó.",
-  "files": [
-    "src/commands/economy/chop.js",
-    "src/commands/economy/mine.js",
-    "src/commands/games/bingo.js",
-    "src/commands/games/loto.js",
-    "src/events/channelDelete.js"
-  ]
+  "_ghi_chu": [
+    "Mốc ratchet của check-i18n-bot. MỖI MỤC PHẢI CÓ LÝ DO — danh sách không lý do đọc như",
+    "một đống việc tồn, trong khi phần lớn thực ra là dữ liệu/log hợp lệ.",
+    "",
+    "Lý do bắt đầu bằng 'NỢ THẬT:' = chữ người dùng đọc, chưa dịch, cần xử lý.",
+    "Mọi lý do khác = miễn có căn cứ (dữ liệu tiếng Việt, log nội bộ, hoặc đã dịch ở tầng khác).",
+    "",
+    "Dọn xong file nào thì xoá khỏi đây rồi chạy --update-allowlist để siết mốc.",
+    "ĐỪNG thêm file mới kèm lý do bịa — hãy i18n nó."
+  ],
+  "files": {
+    "src/commands/economy/chop.js": "Chuỗi là KHOÁ tra bảng chiến lợi phẩm, không phải chữ hiển thị. Dịch ở RESOURCE_NAMES trong src/lib/gather.js (phủ 6/6 món).",
+    "src/commands/economy/mine.js": "Như chop.js — khoá tra bảng, RESOURCE_NAMES phủ 7/7 món.",
+    "src/commands/games/bingo.js": "Chỉ còn .setDescription() của slash, do src/lib/commandLocalizer.js dịch. Logic chạy nằm ở src/lib/bingoPrefix.js (32 lời gọi i18n).",
+    "src/commands/games/loto.js": "Như bingo.js — logic ở src/lib/loto.js (33 lời gọi i18n).",
+    "src/events/channelDelete.js": "Một dòng console.log nội bộ, người dùng không đọc.",
+    "src/lib/ai/gemini.js": "Log cảnh báo nội bộ (console.warn khi câu trả lời bị cắt).",
+    "src/lib/ai/index.js": "Từ vựng ngữ cảnh cho AI + log nội bộ.",
+    "src/lib/ai/persona.js": "Prompt nhân vật gửi cho model, không phải giao diện.",
+    "src/lib/amlich.js": "Dữ liệu âm lịch (can, chi, tiết khí) — danh từ riêng tiếng Việt, dịch sẽ sai.",
+    "src/lib/antinuke/config.js": "Mô tả nội bộ, không hiển thị.",
+    "src/lib/antinuke/index.js": "Mô tả nội bộ, không hiển thị.",
+    "src/lib/antinuke/lockdown.js": "Mô tả nội bộ, không hiển thị.",
+    "src/lib/autobackup.js": "Log nội bộ.",
+    "src/lib/bet.js": "NỢ THẬT: 4 thông báo lỗi khi đặt cược.",
+    "src/lib/commandLocalizer.js": "CHÍNH LÀ bảng dịch tên/mô tả lệnh. Tiếng Việt ở đây là đầu ra mong muốn.",
+    "src/lib/eventCalendar.js": "NỢ THẬT: 8 chuỗi tiêu đề/mô tả embed sự kiện.",
+    "src/lib/hvlPlayer.js": "NỢ THẬT: 14 nhãn nút trình phát nhạc (Lặp 1 bài, Lặp album…).",
+    "src/lib/logger.js": "Log nội bộ.",
+    "src/lib/masoi/engine.js": "NỢ THẬT: 9 mô tả vai Ma Sói hiện cho người chơi.",
+    "src/lib/noitu.js": "Từ điển trò Nối Từ — trò chơi tiếng Việt theo bản chất, không dịch được.",
+    "src/lib/owner.js": "Log nội bộ.",
+    "src/lib/season.js": "Tên mùa/lễ tiếng Việt (Tết Nguyên Đán…) — danh từ riêng.",
+    "src/lib/voteServer.js": "NỢ THẬT: 24 chuỗi trên trang HTML hiện sau khi vote. Ưu tiên thấp — chưa ai từng vote."
+  }
 }
