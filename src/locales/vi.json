@@ -1933,6 +1933,12 @@
     }
   },
   "lib": {
+    "bet": {
+      "gambling_off": "Máy chủ này đã **tắt trò may rủi** rồi nha~ Mình chơi hoạt động khác cho vui nhé 🌸",
+      "invalid_amount": "Số tiền cược không hợp lệ~ (nhập số, hoặc `all`)",
+      "min": "Cược tối thiểu **{amount}** {currency} nhé~",
+      "max": "Cược tối đa **{amount}** {currency} thôi~"
+    },
     "couple": {
       "target_not_found": "Cậu muốn dành cho ai? Nhập @người nhé~ 🌸",
       "target_bot": "Bot ngại lắm~ 😳",

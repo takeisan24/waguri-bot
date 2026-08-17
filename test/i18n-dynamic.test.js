@@ -96,3 +96,39 @@ test('i18n: mọi mô tả slash command/subcommand/option có bản EN (không 
         offenders.map(o => '   + ' + o).join('\n') + '\n'
     );
 });
+
+//  (C) `checkBet` là hàm lib DÙNG CHUNG cho 8 lệnh cược (bacay, baucua, blackjack, coinflip,
+//      duangua, masoi, taixiu, xocdia). Nó từng trả THẲNG câu tiếng Việt và cả 8 lệnh nhét
+//      nguyên văn vào embed, nên người dùng EN đọc tiếng Việt ở mọi trò cược. Guard (B) không
+//      thấy vì nó chỉ soi MÔ TẢ slash, không soi chuỗi lúc chạy.
+test('i18n: checkBet trả đúng ngôn ngữ cho cả 3 nhánh lỗi (8 lệnh cược dùng chung)', async () => {
+    const { checkBet } = require('../src/lib/bet');
+
+    // Chỉ tính dấu tiếng Việt sau khi bỏ tên đơn vị tiền: `config.CURRENCY` cố ý giữ nguyên
+    // ở cả hai ngôn ngữ (225 chuỗi trong en.json cũng dùng nó qua {currency}).
+    const VI_DAU = /[àáảãạăằắẳẵặâầấẩẫậđèéẻẽẹêềếểễệìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵ]/i;
+    const boTienTe = s => s.split(config.CURRENCY).join('');
+
+    // guildId = null -> bỏ qua nhánh gọi DB `gamblingEnabled`, test chạy offline.
+    const NHANH = [
+        ['cược rỗng', 0],
+        ['dưới mức tối thiểu', config.GAMBLE.MIN_BET - 1],
+        ['trên mức tối đa', config.GAMBLE.MAX_BET + 1],
+    ];
+
+    for (const [ten, so] of NHANH) {
+        const vi = await checkBet(so, null, 'vi');
+        const en = await checkBet(so, null, 'en');
+
+        assert.ok(vi && en, `checkBet phải trả chuỗi lỗi cho nhánh "${ten}"`);
+        assert.notStrictEqual(en, vi, `Nhánh "${ten}": bản EN trùng y hệt bản VI -> chưa dịch`);
+        assert.ok(!VI_DAU.test(boTienTe(en)),
+            `Nhánh "${ten}": bản EN còn dấu tiếng Việt -> ${JSON.stringify(en)}`);
+    }
+
+    // Nhánh hợp lệ phải trả null ở MỌI ngôn ngữ (null = cho phép cược).
+    for (const ngonNgu of ['vi', 'en']) {
+        assert.strictEqual(await checkBet(config.GAMBLE.MIN_BET, null, ngonNgu), null,
+            `Cược hợp lệ phải trả null (locale ${ngonNgu})`);
+    }
+});

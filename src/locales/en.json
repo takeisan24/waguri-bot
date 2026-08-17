@@ -2492,6 +2492,12 @@
     }
   },
   "lib": {
+    "bet": {
+      "gambling_off": "This server has **gambling turned off**~ Let's play something else for fun instead 🌸",
+      "invalid_amount": "That bet amount is not valid~ (enter a number, or `all`)",
+      "min": "The minimum bet is **{amount}** {currency}~",
+      "max": "The maximum bet is **{amount}** {currency}~"
+    },
     "couple": {
       "target_not_found": "Who is it for? Please tag them~ 🌸",
       "target_bot": "Bot is shy~ 😳",

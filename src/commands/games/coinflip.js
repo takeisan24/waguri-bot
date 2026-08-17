@@ -33,7 +33,7 @@ module.exports = {
 
         const bet = parseAmount(interaction.options.getString('bet'), Number(user.wallet));
         const side = interaction.options.getString('side');
-        const err = await checkBet(bet, interaction.guildId);
+        const err = await checkBet(bet, interaction.guildId, locale);
         if (err) {
             const embed = buildWaguriEmbed(interaction, 'warning', {
                 locale,

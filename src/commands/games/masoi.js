@@ -24,7 +24,7 @@ module.exports = {
         await interaction.deferReply();
         const locale = await getInteractionLanguage(interaction);
         const bet = interaction.options.getInteger('bet');
-        const err = await checkBet(bet, interaction.guildId);
+        const err = await checkBet(bet, interaction.guildId, locale);
         if (err) {
             const embed = buildWaguriEmbed(interaction, 'warning', { locale, description: `🌸 ${err}` });
             return interaction.editReply({ embeds: [embed] });
