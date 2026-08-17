@@ -1946,6 +1946,23 @@
       "love_status": "Tình cảm cặp đôi: **{love}** — *{tier}*",
       "cooldown_extra": "*(âu yếm hơi nhiều rồi, để tình cảm thấm thêm chút nhé~)*"
     },
+    "hvl": {
+      "loop_one": "🔂 Lặp 1 bài",
+      "loop_all": "🔁 Lặp album",
+      "loop_off": "➡️ Tắt lặp",
+      "shuffle_on": "🔀 Bật",
+      "shuffle_off": "➡️ Tắt",
+      "unlocked": "🎉 **Chúc mừng cậu đã mở khóa thành công đĩa nhạc bí mật HVL - MCK!**",
+      "now_playing": "🎵 **Bài đang phát [{num}/30]**: `{title}`",
+      "modes": "🔁 **Chế độ Lặp**: {loop} | 🔀 **Phát Ngẫu Nhiên**: {shuffle}",
+      "footer": "Waguri Music Engine • Phát mượt mà 320kbps 🌸",
+      "err_no_voice": "🌸 *Hủm? Cậu vừa thì thầm một mật mã kỳ lạ ở đâu đó... Nhưng dường như giọng nói ấy chưa chạm tới căn phòng thoại nào cả~* 🗝️",
+      "err_no_perm": "🌸 *Hủm? Căn phòng đó dường như đang khóa cửa đối với tớ mất rồi~* 🔒",
+      "err_other_channel": "🌸 *Waguri đang dừng chân ở một căn phòng thoại khác trong server rồi nhen~* 🍵",
+      "err_connect": "🌸 *Không thể kết nối vào phòng thoại, cậu kiểm tra lại kết nối mạng hoặc thử lại sau nhen~* 🍵",
+      "err_disconnected": "🌸 *Đĩa nhạc bí mật đã ngắt kết nối mất rồi...* 🗝️",
+      "stopped": "🌸 *Waguri đã cất đĩa nhạc bí mật HVL - MCK vào tủ kính tiệm Gekka rùi nhen~ Hẹn gặp lại cậu!* ✨"
+    },
     "newbie": {
       "step_1": "Bước 1: Điểm danh đầu tiên 📅",
       "step_2": "Bước 2: Chăm chỉ làm việc ⚡",
@@ -1956,6 +1973,13 @@
       "desc_all_complete": "\n\n🏆 **[HOÀN THÀNH CHUỖI TÂN THỦ]**\nCậu thật xuất sắc! Nhận thêm **+{bonus} VNĐ** và Danh hiệu: 🏷️ **{title}**! 🌸💖",
       "desc_next_step": "\n\n👉 **Nhiệm vụ tiếp theo:** *{name}* (Gõ `/quest` để xem chi tiết)",
       "embed_title": "🔰・Nhiệm vụ tân thủ"
+    },
+    "voteServer": {
+      "dm_vote_thanks": "🌸 Cảm ơn cậu đã vote cho Waguri{weekend}! Mình tặng cậu **{coins}** {currency} + **{exp} EXP** nè 💝\n🔥 Chuỗi vote: **{streak} ngày**{bonus}\nNhớ ghé vote tiếp sau 12 tiếng để giữ chuỗi nha~",
+      "dm_vote_weekend": " (cuối tuần x2)",
+      "dm_vote_streak_bonus": " (thưởng chuỗi +{amount} {currency})",
+      "dm_premium_thanks": "🌸 Cảm ơn cậu đã nâng cấp **Waguri Premium** 💎!\nMình đã kích hoạt **+{months} tháng** cho cậu rồi nè~{until}\nGõ `/premium` để xem quyền lợi nha 💕",
+      "dm_premium_until": " Hết hạn <t:{time}:R>."
     }
   },
   "data": {

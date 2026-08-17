@@ -132,6 +132,12 @@ module.exports = {
                         shimState.replied = true;
                         return shimState.sent;
                     };
+                    // Lệnh prefix không có hạn ack 3 giây nên tra ngôn ngữ ở đây là an toàn.
+                    const hvlLocale = await getInteractionLanguage({
+                        guildId: message.guildId,
+                        user: message.author,
+                        guildLocale: message.guild?.preferredLocale
+                    });
                     await startHvlPlayer({
                         user: message.author,
                         member: message.member,
@@ -144,7 +150,7 @@ module.exports = {
                         deferReply: async () => { shimState.deferred = true; await message.channel.sendTyping().catch(() => {}); },
                         editReply: shimSend,
                         reply: shimSend,
-                    });
+                    }, hvlLocale);
                 } catch (error) {
                     console.error('[EASTER EGG ERROR] w!hvl:', error);
                 }

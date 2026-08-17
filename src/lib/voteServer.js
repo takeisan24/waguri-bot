@@ -15,8 +15,11 @@ const { computeVoteReward } = require('./voteReward');
 const { getProgress, getLevelFromExp } = require('./leveling');
 const { tierOf } = require('./ai/persona');
 const { extractPremiumCode } = require('./paymatch');
+const { getInteractionLanguage, t } = require('./i18n');
 
-const fmt = n => Number(n).toLocaleString('vi-VN');
+// Trước đây ghim cứng 'vi-VN' nên người dùng EN đọc "1.000.000" thay vì "1,000,000".
+// Mặc định 'vi' để những nơi gọi chưa truyền locale giữ nguyên hành vi cũ.
+const fmt = (n, locale = 'vi') => Number(n).toLocaleString(String(locale).startsWith('en') ? 'en-US' : 'vi-VN');
 
 // Xác thực chữ ký webhook v1 của Top.gg.
 // Header: x-topgg-signature: "t={unix},v1={hex}"; ký HMAC-SHA256("{t}.{rawBody}") bằng secret whs_...
@@ -197,12 +200,19 @@ async function grantVoteReward(client, userId, isWeekend) {
     // DM cảm ơn (im lặng nếu user tắt DM)
     try {
         const user = await client.users.fetch(userId);
-        await user.send(
-            `🌸 Cảm ơn cậu đã vote cho Waguri${isWeekend ? ' (cuối tuần x2)' : ''}! ` +
-            `Mình tặng cậu **${fmt(coins)}** ${config.CURRENCY} + **${exp} EXP** nè 💝\n` +
-            `🔥 Chuỗi vote: **${streak} ngày**${bonus > 0 ? ` (thưởng chuỗi +${fmt(bonus)} ${config.CURRENCY})` : ''}\n` +
-            `Nhớ ghé vote tiếp sau 12 tiếng để giữ chuỗi nha~`
-        );
+        // DM không có guild, nên `getInteractionLanguage` bỏ qua bậc cấu hình server và rơi
+        // thẳng xuống bậc 2 — đọc `users.locale` trong DB. Đúng thứ cần cho tin nhắn riêng.
+        const locale = await getInteractionLanguage({ user: { id: userId } });
+        await user.send(t(locale, 'lib.voteServer.dm_vote_thanks', {
+            weekend: isWeekend ? t(locale, 'lib.voteServer.dm_vote_weekend') : '',
+            coins: fmt(coins, locale),
+            currency: config.CURRENCY,
+            exp,
+            streak,
+            bonus: bonus > 0
+                ? t(locale, 'lib.voteServer.dm_vote_streak_bonus', { amount: fmt(bonus, locale), currency: config.CURRENCY })
+                : '',
+        }));
     } catch { /* user tắt DM -> bỏ qua */ }
 }
 
@@ -216,12 +226,11 @@ async function dmPremiumThanks(client, r) {
     try {
         const user = await client.users.fetch(String(r.user_id));
         const until = r.until ? Math.floor(new Date(r.until).getTime() / 1000) : null;
-        await user.send(
-            `🌸 Cảm ơn cậu đã nâng cấp **Waguri Premium** 💎!\n` +
-            `Mình đã kích hoạt **+${r.months} tháng** cho cậu rồi nè~` +
-            (until ? ` Hết hạn <t:${until}:R>.` : '') +
-            `\nGõ \`/premium\` để xem quyền lợi nha 💕`
-        );
+        const locale = await getInteractionLanguage({ user: { id: String(r.user_id) } });
+        await user.send(t(locale, 'lib.voteServer.dm_premium_thanks', {
+            months: r.months,
+            until: until ? t(locale, 'lib.voteServer.dm_premium_until', { time: until }) : '',
+        }));
     } catch { /* user tắt DM -> bỏ qua */ }
 }
 

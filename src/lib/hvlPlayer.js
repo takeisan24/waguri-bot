@@ -20,6 +20,7 @@ const {
 const playlist = require('../data/hvl_playlist.json');
 const db = require('../database.js');
 const logger = require('./logger');
+const { t } = require('./i18n');
 const { rateLimited } = require('./ratelimit');
 
 // Local audio directory & Production CDN fallback
@@ -97,22 +98,29 @@ async function clearVoiceStatus(client, channelId) {
 /**
  * Tạo Embed Player UI mượt mà
  */
+// `session.locale` chứ không phải locale của người vừa bấm nút: embed này là MỘT tin nhắn
+// dùng chung trong kênh, ai cũng đọc. Nó cũng được vẽ lại khi bài tự chuyển
+// (`handleTrackFinish` -> `playTrackIndex`), lúc đó KHÔNG có interaction nào để hỏi ngôn ngữ.
+// Nên ngôn ngữ được chốt theo người mở album và lưu trong session.
 function buildPlayerEmbed(session, track) {
+    const locale = session.locale || 'vi';
     const color = MOOD_COLORS[track.group] || 0xFF9EAA;
     const trackNum = String(track.id).padStart(2, '0');
-    const loopLabel = session.loopMode === LOOP_MODES.ONE ? '🔂 Lặp 1 bài' : (session.loopMode === LOOP_MODES.ALL ? '🔁 Lặp album' : '➡️ Tắt lặp');
-    const shuffleLabel = session.isShuffled ? '🔀 Bật' : '➡️ Tắt';
+    const loopKey = session.loopMode === LOOP_MODES.ONE ? 'loop_one'
+        : (session.loopMode === LOOP_MODES.ALL ? 'loop_all' : 'loop_off');
+    const loopLabel = t(locale, `lib.hvl.${loopKey}`);
+    const shuffleLabel = t(locale, session.isShuffled ? 'lib.hvl.shuffle_on' : 'lib.hvl.shuffle_off');
 
     const embed = new EmbedBuilder()
         .setColor(color)
-        .setTitle('🎧 HVL - MCK (Special Easter Egg Album)')
+        .setTitle('🎧 HVL - MCK (Special Easter Egg Album)')   // tên album, không dịch
         .setDescription(
-            `🎉 **Chúc mừng cậu đã mở khóa thành công đĩa nhạc bí mật HVL - MCK!**\n\n` +
-            `🎵 **Bài đang phát [${trackNum}/30]**: \`${track.title}\`\n` +
-            `⏱️ \`00:00 ▰▰▰▰▱▱▱▱▱▱ 03:30\`\n\n` +
-            `🔁 **Chế độ Lặp**: ${loopLabel} | 🔀 **Phát Ngẫu Nhiên**: ${shuffleLabel}`
+            t(locale, 'lib.hvl.unlocked') + '\n\n' +
+            t(locale, 'lib.hvl.now_playing', { num: trackNum, title: track.title }) + '\n' +
+            '⏱️ `00:00 ▰▰▰▰▱▱▱▱▱▱ 03:30`\n\n' +
+            t(locale, 'lib.hvl.modes', { loop: loopLabel, shuffle: shuffleLabel })
         )
-        .setFooter({ text: 'Waguri Music Engine • Phát mượt mà 320kbps 🌸' });
+        .setFooter({ text: t(locale, 'lib.hvl.footer') });
 
     return embed;
 }
@@ -154,13 +162,16 @@ function buildControlRow(session, disabled = false) {
 /**
  * Khởi tạo hoặc lấy Player Session cho Server Guild
  */
-async function startHvlPlayer(interaction) {
+// `locale` do NƠI GỌI truyền vào chứ không tự tra ở đây: cả hai nơi gọi đều đã có sẵn, và
+// `handleHvlButton` nằm trên đường trước ack của nút — thêm một lượt tra DB ở đó là đúng
+// thứ vừa phải sửa ở bản vá ack (xem test/ack_path.test.js).
+async function startHvlPlayer(interaction, locale = 'vi') {
     const guildId = interaction.guildId;
     const voiceChannel = interaction.member?.voice?.channel;
 
     if (!voiceChannel) {
         return interaction.reply({
-            content: '🌸 *Hủm? Cậu vừa thì thầm một mật mã kỳ lạ ở đâu đó... Nhưng dường như giọng nói ấy chưa chạm tới căn phòng thoại nào cả~* 🗝️',
+            content: t(locale, 'lib.hvl.err_no_voice'),
             flags: MessageFlags.Ephemeral
         });
     }
@@ -169,7 +180,7 @@ async function startHvlPlayer(interaction) {
     const permissions = voiceChannel.permissionsFor(interaction.client.user);
     if (!permissions || !permissions.has('Connect') || !permissions.has('Speak')) {
         return interaction.reply({
-            content: '🌸 *Hủm? Căn phòng đó dường như đang khóa cửa đối với tớ mất rồi~* 🔒',
+            content: t(locale, 'lib.hvl.err_no_perm'),
             flags: MessageFlags.Ephemeral
         });
     }
@@ -179,7 +190,7 @@ async function startHvlPlayer(interaction) {
         const existing = players.get(guildId);
         if (existing.channelId !== voiceChannel.id) {
             return interaction.reply({
-                content: '🌸 *Waguri đang dừng chân ở một căn phòng thoại khác trong server rồi nhen~* 🍵',
+                content: t(locale, 'lib.hvl.err_other_channel'),
                 flags: MessageFlags.Ephemeral
             });
         } else {
@@ -224,7 +235,10 @@ async function startHvlPlayer(interaction) {
         isPaused: false,
         textChannel: interaction.channel,
         lastMessage: null,
-        idleTimer: null
+        idleTimer: null,
+        // Chốt ngôn ngữ theo người mở album: embed là tin nhắn dùng chung và còn được vẽ lại
+        // lúc bài tự chuyển, khi đó không có interaction nào để hỏi.
+        locale,
     };
 
     players.set(guildId, session);
@@ -247,7 +261,7 @@ async function startHvlPlayer(interaction) {
         // Đã deferReply() ở trên -> phải editReply (reply() sau defer sẽ reject InteractionAlreadyReplied,
         // và trước đây không .catch() -> unhandledRejection, user không thấy thông báo lỗi).
         return interaction.editReply({
-            content: '🌸 *Không thể kết nối vào phòng thoại, cậu kiểm tra lại kết nối mạng hoặc thử lại sau nhen~* 🍵'
+            content: t(locale, 'lib.hvl.err_connect')
         }).catch(() => {});
     }
 
@@ -346,14 +360,14 @@ function handleTrackFinish(guildId) {
 /**
  * Xử lý Tương tác Nút bấm Player UI
  */
-async function handleHvlButton(interaction) {
+async function handleHvlButton(interaction, locale = 'vi') {
     const { customId, guildId } = interaction;
     if (!customId || !customId.startsWith('hvl_')) return false;
 
     const session = players.get(guildId);
     if (!session) {
         await interaction.reply({
-            content: '🌸 *Đĩa nhạc bí mật đã ngắt kết nối mất rồi...* 🗝️',
+            content: t(locale, 'lib.hvl.err_disconnected'),
             flags: MessageFlags.Ephemeral
         }).catch(() => {});
         return true;
@@ -397,7 +411,7 @@ async function handleHvlButton(interaction) {
     } else if (customId === 'hvl_stop') {
         // Reply trước, destroy sau — đảm bảo user nhận được thông báo
         await interaction.reply({
-            content: '🌸 *Waguri đã cất đĩa nhạc bí mật HVL - MCK vào tủ kính tiệm Gekka rùi nhen~ Hẹn gặp lại cậu!* ✨',
+            content: t(locale, 'lib.hvl.stopped'),
             flags: MessageFlags.Ephemeral
         }).catch(() => {});
         await destroyPlayer(guildId);

@@ -288,7 +288,9 @@ module.exports = {
             if (interaction.customId.startsWith('hvl_')) {
                 try {
                     const { handleHvlButton } = require('../lib/hvlPlayer');
-                    await handleHvlButton(interaction);
+                    // Truyền `locale` đã phân giải sẵn ở đầu nhánh nút — hvlPlayer không tự
+                    // tra lại, tránh thêm một lượt đọc DB vào đường trước ack.
+                    await handleHvlButton(interaction, locale);
                 } catch (error) {
                     logError('hvl_button', error, { customId: interaction.customId });
                     await ackButtonError(interaction, locale);

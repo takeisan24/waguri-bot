@@ -2505,6 +2505,23 @@
       "love_status": "Relationship Love: **{love}** — *{tier}*",
       "cooldown_extra": "*(too much affection too fast, let the feeling settle down a bit~)*"
     },
+    "hvl": {
+      "loop_one": "🔂 Loop one",
+      "loop_all": "🔁 Loop album",
+      "loop_off": "➡️ Loop off",
+      "shuffle_on": "🔀 On",
+      "shuffle_off": "➡️ Off",
+      "unlocked": "🎉 **You unlocked the secret HVL - MCK album!**",
+      "now_playing": "🎵 **Now playing [{num}/30]**: `{title}`",
+      "modes": "🔁 **Loop**: {loop} | 🔀 **Shuffle**: {shuffle}",
+      "footer": "Waguri Music Engine • Smooth 320kbps playback 🌸",
+      "err_no_voice": "🌸 *Hmm? You whispered a strange passphrase somewhere... but your voice hasn't reached any voice room yet~* 🗝️",
+      "err_no_perm": "🌸 *Hmm? That room seems to be locked to me~* 🔒",
+      "err_other_channel": "🌸 *Waguri is already resting in another voice room on this server~* 🍵",
+      "err_connect": "🌸 *I couldn't join the voice room~ Could you check your connection, or try again a little later?* 🍵",
+      "err_disconnected": "🌸 *The secret album got disconnected...* 🗝️",
+      "stopped": "🌸 *Waguri tucked the secret HVL - MCK album back into the Gekka shop display case~ See you again!* ✨"
+    },
     "newbie": {
       "step_1": "Step 1: First check-in 📅",
       "step_2": "Step 2: Hard working ⚡",
@@ -2515,6 +2532,13 @@
       "desc_all_complete": "\n\n🏆 **[NEWBIE QUESTLINE COMPLETED]**\nExcellent job! You received **+{bonus} VNĐ** and the Title: 🏷️ **{title}**! 🌸💖",
       "desc_next_step": "\n\n👉 **Next Quest:** *{name}* (Type `/quest` to see details)",
       "embed_title": "🔰・Newbie Quests"
+    },
+    "voteServer": {
+      "dm_vote_thanks": "🌸 Thank you for voting for Waguri{weekend}! Here is **{coins}** {currency} + **{exp} EXP** for you 💝\n🔥 Vote streak: **{streak} days**{bonus}\nCome back in 12 hours to keep your streak going~",
+      "dm_vote_weekend": " (weekend x2)",
+      "dm_vote_streak_bonus": " (streak bonus +{amount} {currency})",
+      "dm_premium_thanks": "🌸 Thank you for upgrading to **Waguri Premium** 💎!\nI have activated **+{months} months** for you~{until}\nType `/premium` to see your perks 💕",
+      "dm_premium_until": " Expires <t:{time}:R>."
     }
   },
   "species": {
