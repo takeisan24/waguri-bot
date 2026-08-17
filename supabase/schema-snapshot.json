@@ -154,10 +154,9 @@
     "use_insurance(p_user_id text, p_item_id text)",
     "use_tool(p_user_id text, p_item_id text)",
     "use_vehicle(p_user_id text)",
-    "user_wealth_rank(p_user text)",
-    "xoso_bet(p_user text, p_number integer, p_amount bigint, p_date date)",
-    "xoso_resolve(p_date date, p_number integer, p_mult integer)"
+    "user_wealth_rank(p_user text)"
   ],
+  "ham_goi_bang_khong_ton_tai": [],
   "indexes": [
     "achievements_pkey",
     "antinuke_actions_pkey",

@@ -77,9 +77,16 @@ const soSanhMang = (ten, a = [], b = []) => {
     // So tên index hai chiều không thấy được lỗi này: hai bản trùng mang tên khác nhau nên
     // trông như hai thứ khác nhau, và cả test lẫn prod đều có nên hai bên vẫn "khớp". Đó là
     // cách `inventory` giữ hai ràng buộc UNIQUE (user_id, item_id) y hệt suốt gần hai năm.
+    // --- hàm gọi bảng không tồn tại (0123): bắt tuyệt đối trên CẢ HAI DB ---
+    // Postgres không kiểm tên bảng trong thân hàm plpgsql, và `DROP TABLE ... CASCADE` cũng
+    // không đụng tới hàm tham chiếu nó. Đó là cách `feed_pet_with_fee` gọi bảng `pets`
+    // (tên thật `user_pets`) mà không ai biết: `/pet feed food:money` luôn báo lỗi hệ thống.
     for (const nguon of [['test', test], ['ảnh chụp prod', chuan]]) {
         for (const r of nguon[1].rang_buoc_trung || []) {
             lech.push(`RÀNG BUỘC TRÙNG (${nguon[0]}): ${r} — mỗi lần ghi bảng phải cập nhật hai index y hệt.`);
+        }
+        for (const r of nguon[1].ham_goi_bang_khong_ton_tai || []) {
+            lech.push(`HÀM GỌI BẢNG MA (${nguon[0]}): ${r} — gọi vào là lỗi lúc chạy, không lỗi lúc tạo.`);
         }
     }
 

@@ -92,6 +92,39 @@ if (!hasTestDb) {
         assert.strictEqual(newExp, gain, 'EXP hiện tại của pet chính xác');
     });
 
+    // Test này sinh ra từ một lỗi sống: `feed_pet_with_fee` gọi bảng `pets` trong khi bảng
+    // thật tên `user_pets`, nên `/pet feed food:money` CHƯA TỪNG chạy được — người chơi luôn
+    // nhận "lỗi hệ thống". Nó lọt vì test cũ chỉ phủ `feedPet` (ăn bằng vật phẩm), còn nhánh
+    // ăn bằng TIỀN đi qua một RPC khác hẳn và không ai gọi tới trong test. Xem migration 0122.
+    test('Pet Progression: Cho Pet ăn bằng TIỀN trừ đúng ví và cộng đúng EXP', async () => {
+        const { data: petTruoc } = await supabase.from('user_pets').select('exp').eq('user_id', testUser).single();
+        const expTruoc = Number(petTruoc.exp);
+
+        await supabase.from('users').update({ wallet: 5000 }).eq('user_id', testUser);
+
+        // 1) Đủ tiền -> cộng exp, trừ đúng số tiền
+        const expMoi = await db.feedPetWithFee(testUser, 7, 300);
+        assert.notStrictEqual(expMoi, null, 'Không được trả null (null = RPC ném lỗi)');
+        assert.strictEqual(expMoi, expTruoc + 7, 'EXP cộng đúng phần thưởng');
+
+        const { data: sauKhiAn } = await supabase.from('users').select('wallet').eq('user_id', testUser).single();
+        assert.strictEqual(Number(sauKhiAn.wallet), 4700, 'Ví bị trừ đúng chi phí');
+
+        // 2) Không đủ tiền -> trả -1 và KHÔNG được trừ ví
+        const thieuTien = await db.feedPetWithFee(testUser, 7, 999999);
+        assert.strictEqual(thieuTien, -1, 'Thiếu tiền phải trả -1');
+        const { data: sauKhiThieu } = await supabase.from('users').select('wallet').eq('user_id', testUser).single();
+        assert.strictEqual(Number(sauKhiThieu.wallet), 4700, 'Thất bại thì ví giữ nguyên');
+
+        // 3) Chưa có pet -> trả -2 và KHÔNG được trừ ví. Đây chính là dòng từng ném
+        //    `relation "pets" does not exist`, nên phải kiểm riêng.
+        await supabase.from('user_pets').delete().eq('user_id', testUser);
+        const chuaCoPet = await db.feedPetWithFee(testUser, 7, 300);
+        assert.strictEqual(chuaCoPet, -2, 'Chưa có pet phải trả -2, không phải null');
+        const { data: sauKhiKhongPet } = await supabase.from('users').select('wallet').eq('user_id', testUser).single();
+        assert.strictEqual(Number(sauKhiKhongPet.wallet), 4700, 'Không có pet thì ví giữ nguyên');
+    });
+
     test('Baking Season: Kiểm tra logic nướng bánh theo mùa âm lịch', () => {
         const bpLib = require('../src/lib/battlepass');
         const seasonId = bpLib.getCurrentSeasonId();
