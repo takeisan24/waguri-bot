@@ -116,10 +116,14 @@
         "networth": "💎 Net Worth",
         "progress": "📊 EXP Progress ({current}/{total})",
         "partner": "💞 Partner",
-        "web_profile": "🔗 Web Profile"
+        "web_profile": "🔗 Web Profile",
+        "waguri": "🌸 Closeness with Waguri",
+        "waguri_memory": "💭 What Waguri remembers about you"
       },
       "public_hide": "🙈 Your web profile is now **HIDDEN**~ Others won't be able to see it anymore.",
-      "public_show": "👁️ Your web profile is now **VISIBLE**~ Anyone can view it at waguri-bot.vercel.app/u/{id} 🌸"
+      "public_show": "👁️ Your web profile is now **VISIBLE**~ Anyone can view it at waguri-bot.vercel.app/u/{id} 🌸",
+      "waguri_next": "**{remain}** more to reach {next}",
+      "waguri_max": "You have reached the closest bond with Waguri ✨"
     },
     "inventory": {
       "empty_title": "backpack・Inventory Empty",
@@ -2492,6 +2496,15 @@
     }
   },
   "lib": {
+    "ai": {
+      "tier_up": {
+        "marker": "🌸 *Closeness with Waguri: {tier}*",
+        "quen_biet": "Oh, and... I think we get along really well, you know~ 🌸",
+        "ban_than": "Talking with you feels so easy somehow... like we have known each other for ages ✨",
+        "than_thiet": "I have noticed I keep looking forward to talking with you lately... hehe 🌸",
+        "tri_ky": "Thank you for staying with me this long. You are really special to me ✨"
+      }
+    },
     "bet": {
       "gambling_off": "This server has **gambling turned off**~ Let's play something else for fun instead 🌸",
       "invalid_amount": "That bet amount is not valid~ (enter a number, or `all`)",

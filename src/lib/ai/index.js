@@ -2,6 +2,8 @@
 const config = require('../../config');
 const db = require('../../database.js');
 const { WAGURI_SYSTEM_PROMPT, tierOf } = require('./persona');
+// Đặt tên `dich` chứ không phải `t`: trong hàm chat, `t` đã là BẬC THIỆN CẢM (tierOf).
+const { t: dich } = require('../i18n');
 const { getLevelFromExp } = require('../leveling');
 const { getEventInfo } = require('../event');
 const { activeSeasons, SEASON_LABEL } = require('../season');
@@ -296,7 +298,30 @@ async function chatWithWaguri(channelId, userId, userName, userText, locale) {
     reply = extractAndStoreMemory(reply, userId, memory); // trích & lưu ký ức, loại marker khỏi hiển thị
     reply = formatReply(reply, userId, userName); // @mention + bọc lệnh trong `code`
 
-    db.incrAffection(userId, 1); // trò chuyện làm Waguri thân thiết hơn
+    // Trò chuyện làm Waguri thân thiết hơn. Trước đây gọi rồi VỨT giá trị trả về, nên người
+    // dùng leo qua các bậc mà không hề hay biết — cả thang 5 bậc (vốn thật sự đổi giọng cô ấy)
+    // là vô hình. Nay so bậc trước/sau để đánh dấu khoảnh khắc đó.
+    //
+    // `await` ở đây an toàn: lệnh đã defer từ lâu và lời gọi AI phía trên vừa tốn ~1,4s, nên
+    // nó không nằm trên đường ack (xem test/ack_path.test.js).
+    try {
+        const kqAff = await db.incrAffection(userId, 1);
+        if (kqAff && Number.isFinite(kqAff.affection)) {
+            const bacSau = tierOf(kqAff.affection);
+            // Chỉ báo khi THỰC SỰ vượt mốc, không báo mỗi lượt.
+            if (bacSau && bacSau.min > t.min) {
+                const loi = dich(locale, `lib.ai.tier_up.${bacSau.key}`);
+                const nhan = dich(locale, 'lib.ai.tier_up.marker', { tier: bacSau.name });
+                // Mức "trung lập": một câu TRONG VAI + một dòng đánh dấu rất nhẹ. Không dùng
+                // thông báo hệ thống kiểu "🎉 Lên cấp 2" vì nó phá mất ảo giác người thật.
+                if (loi) reply += `\n\n${loi}`;
+                if (nhan) reply += `\n-# ${nhan}`;
+            }
+        }
+    } catch (e) {
+        // Cộng thiện cảm hỏng thì KHÔNG được làm mất câu trả lời đã có.
+        console.error('[AI] incrAffection lỗi:', e?.message || e);
+    }
 
     // Cập nhật ngữ cảnh, cắt bớt và đảm bảo bắt đầu bằng 'user' (Gemini yêu cầu)
     history = [...history, { role: 'user', content: framed }, { role: 'assistant', content: reply }];

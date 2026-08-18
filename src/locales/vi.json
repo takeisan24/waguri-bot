@@ -116,10 +116,14 @@
         "networth": "💎 Tổng tài sản",
         "progress": "📊 Tiến trình EXP ({current}/{total})",
         "partner": "💞 Người thương",
-        "web_profile": "🔗 Hồ sơ web"
+        "web_profile": "🔗 Hồ sơ web",
+        "waguri": "🌸 Thân thiết với Waguri",
+        "waguri_memory": "💭 Waguri nhớ về cậu"
       },
       "public_hide": "🙈 Đã **ẨN** hồ sơ web của cậu rồi~ Người khác sẽ không xem được nữa nhé.",
-      "public_show": "👁️ Đã **HIỆN** hồ sơ web của cậu nha~ Mọi người xem được tại waguri-bot.vercel.app/u/{id} 🌸"
+      "public_show": "👁️ Đã **HIỆN** hồ sơ web của cậu nha~ Mọi người xem được tại waguri-bot.vercel.app/u/{id} 🌸",
+      "waguri_next": "Còn **{remain}** nữa là tới {next}",
+      "waguri_max": "Cậu đã ở bậc thân thiết nhất với Waguri rồi đó ✨"
     },
     "inventory": {
       "empty_title": "backpack・Kho đồ trống",
@@ -1933,6 +1937,15 @@
     }
   },
   "lib": {
+    "ai": {
+      "tier_up": {
+        "marker": "🌸 *Thân thiết với Waguri: {tier}*",
+        "quen_biet": "À mà... hình như mình với cậu nói chuyện hợp nhau ghê đó nha~ 🌸",
+        "ban_than": "Tự nhiên mình thấy nói chuyện với cậu thoải mái ghê... như quen nhau lâu lắm rồi ấy ✨",
+        "than_thiet": "Mình để ý là dạo này cứ hay mong tới lúc được nhắn với cậu đó... hihi 🌸",
+        "tri_ky": "Cảm ơn cậu đã ở bên mình lâu tới vậy nha. Với mình, cậu đặc biệt lắm đó ✨"
+      }
+    },
     "bet": {
       "gambling_off": "Máy chủ này đã **tắt trò may rủi** rồi nha~ Mình chơi hoạt động khác cho vui nhé 🌸",
       "invalid_amount": "Số tiền cược không hợp lệ~ (nhập số, hoặc `all`)",

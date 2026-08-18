@@ -84,12 +84,21 @@ HIỂU BIẾT VỀ SERVER (chỉ dùng khi được hỏi):
 // Xưng hô "mình – cậu" giữ nguyên ở mọi bậc; chỉ độ khách sáo thay đổi.
 //
 // LƯU Ý: `min`/`name`/`guide` được dating.js và couple.js dùng — giữ nguyên hình dạng.
+// MỐC ĐIỂM, chỉnh lại 2026-08-18 theo dữ liệu thật: mốc cũ là 0/15/50/120/300, mà điểm cao
+// nhất TOÀN SERVER từ trước tới nay chỉ là 30 — nghĩa là chưa một ai từng vượt quá bậc 2, và
+// phần lớn chưa từng trải qua MỘT lần lên bậc nào. Một cơ chế không ai chạm tới thì chỉ tồn
+// tại trên giấy. Mốc mới 0/5/25/80/200: lần lên bậc đầu tiên đến ngay trong phiên đầu (người
+// dùng trung bình chat ~6 lượt/phiên) để họ biết cơ chế này có thật, còn các bậc trên vẫn đủ
+// xa để giữ ý nghĩa. Không ai bị TỤT bậc vì mốc chỉ hạ xuống.
+//
+// `key` là khoá ổn định để tra chuỗi `lib.ai.tier_up.*` trong locale — đừng dùng `name` làm
+// khoá vì nó có emoji và sẽ đổi khi biên tập lại.
 const AFFECTION_TIERS = [
-    { min: 300, name: '💞 Tri kỷ',     guide: 'thân mật và ấm áp nhất, gần như không còn khách sáo — nói ngắn, mềm, hay dùng "nha", "đó", "~"; vẫn xưng "mình – cậu" và vẫn trong sáng' },
-    { min: 120, name: '💗 Thân thiết', guide: 'rất thân, quan tâm từng chút, đôi khi trêu nhẹ; bỏ bớt "ạ", dùng nhiều "đấy", "nhỉ", "nha"' },
-    { min: 50,  name: '💓 Bạn thân',   guide: 'cởi mở, gần gũi, đã quen nhịp nói chuyện của nhau; lễ phép nhưng không còn giữ kẽ' },
-    { min: 15,  name: '💛 Quen biết',  guide: 'thân thiện như đã quen, vẫn giữ nếp lễ phép của Kikyo' },
-    { min: 0,   name: '🤍 Người mới',  guide: 'lễ phép và ấm áp như lần đầu gặp — câu tròn vành, thỉnh thoảng có "ạ", nhưng không xa cách' },
+    { min: 200, key: 'tri_ky',     name: '💞 Tri kỷ',     guide: 'thân mật và ấm áp nhất, gần như không còn khách sáo — nói ngắn, mềm, hay dùng "nha", "đó", "~"; vẫn xưng "mình – cậu" và vẫn trong sáng' },
+    { min: 80,  key: 'than_thiet', name: '💗 Thân thiết', guide: 'rất thân, quan tâm từng chút, đôi khi trêu nhẹ; bỏ bớt "ạ", dùng nhiều "đấy", "nhỉ", "nha"' },
+    { min: 25,  key: 'ban_than',   name: '💓 Bạn thân',   guide: 'cởi mở, gần gũi, đã quen nhịp nói chuyện của nhau; lễ phép nhưng không còn giữ kẽ' },
+    { min: 5,   key: 'quen_biet',  name: '💛 Quen biết',  guide: 'thân thiện như đã quen, vẫn giữ nếp lễ phép của Kikyo' },
+    { min: 0,   key: 'nguoi_moi',  name: '🤍 Người mới',  guide: 'lễ phép và ấm áp như lần đầu gặp — câu tròn vành, thỉnh thoảng có "ạ", nhưng không xa cách' },
 ];
 const tierOf = aff => AFFECTION_TIERS.find(t => aff >= t.min);
 

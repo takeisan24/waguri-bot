@@ -16,6 +16,7 @@ const path = require('path');
 
 const { WAGURI_SYSTEM_PROMPT, AFFECTION_TIERS, tierOf, CAMEO_PROFILES } = require('../src/lib/ai/persona');
 const lore = require('../src/data/manga_lore.json');
+const { chuaTu } = require('../scripts/lib/viWord');
 
 test('persona: xưng hô "mình – cậu", không có "tớ"/"tôi" trong ví dụ giọng', () => {
     assert.ok(/xưng \*\*"mình"\*\*/.test(WAGURI_SYSTEM_PROMPT) || /Xưng \*\*"mình"\*\*/.test(WAGURI_SYSTEM_PROMPT),
@@ -25,8 +26,10 @@ test('persona: xưng hô "mình – cậu", không có "tớ"/"tôi" trong ví d
     const viDu = WAGURI_SYSTEM_PROMPT.split('\n').filter(d => /^- "/.test(d.trim()));
     assert.ok(viDu.length >= 5, `Cần ít nhất 5 ví dụ thoại để neo giọng (đang có ${viDu.length})`);
     for (const d of viDu) {
-        assert.ok(!/\btớ\b/i.test(d), `Ví dụ giọng dùng "tớ" — sai xưng hô canon: ${d}`);
-        assert.ok(!/\btôi\b/i.test(d), `Ví dụ giọng dùng "tôi" — sai xưng hô canon: ${d}`);
+        // KHÔNG dùng `\b`: với tiếng Việt nó sai cả hai chiều (bỏ lọt "tớ đi", báo nhầm
+        // "tới lúc"). Xem scripts/lib/viWord.js — đo được 5/6 trường hợp sai.
+        assert.ok(!chuaTu(d, ['tớ']), `Ví dụ giọng dùng "tớ" — sai xưng hô canon: ${d}`);
+        assert.ok(!chuaTu(d, ['tôi']), `Ví dụ giọng dùng "tôi" — sai xưng hô canon: ${d}`);
     }
     // Phải có ví dụ dùng "mình"
     assert.ok(viDu.some(d => /\bmình\b/i.test(d)), 'Không ví dụ nào dùng "mình"');
@@ -64,10 +67,14 @@ test('persona: AFFECTION_TIERS giữ nguyên hình dạng cho dating.js / couple
     for (let i = 1; i < AFFECTION_TIERS.length; i++) {
         assert.ok(AFFECTION_TIERS[i - 1].min > AFFECTION_TIERS[i].min, 'AFFECTION_TIERS phải giảm dần theo min');
     }
-    assert.strictEqual(tierOf(0).min, 0);
-    assert.strictEqual(tierOf(14).min, 0);
-    assert.strictEqual(tierOf(15).min, 15);
-    assert.strictEqual(tierOf(999).min, 300);
+    // Không ghim con số mốc ở đây — mốc là tham số cân bằng, đã đổi 2026-08-18 (0/15/50/120/300
+    // -> 0/5/25/80/200) vì chưa ai từng vượt quá bậc 2. Chỉ khẳng định HÀNH VI của tierOf.
+    const thap = AFFECTION_TIERS[AFFECTION_TIERS.length - 1];
+    const bacHai = AFFECTION_TIERS[AFFECTION_TIERS.length - 2];
+    assert.strictEqual(tierOf(0).min, thap.min);
+    assert.strictEqual(tierOf(bacHai.min - 1).min, thap.min, 'Ngay dưới mốc phải còn ở bậc thấp hơn');
+    assert.strictEqual(tierOf(bacHai.min).min, bacHai.min, 'Đúng mốc phải lên bậc');
+    assert.strictEqual(tierOf(Number.MAX_SAFE_INTEGER).min, AFFECTION_TIERS[0].min);
 });
 
 test('lore: mọi khoá đều có nhánh từ khoá đọc tới (không có mục chết)', () => {

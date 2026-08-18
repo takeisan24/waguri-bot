@@ -4,6 +4,7 @@ const config = require('../../config');
 const { getProgress } = require('../../lib/leveling');
 const { createWaguriBar, getWaguriFooter, buildWaguriEmbed } = require('../../lib/embed');
 const { getInteractionLanguage, t } = require('../../lib/i18n');
+const { AFFECTION_TIERS, tierOf } = require('../../lib/ai/persona');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -70,8 +71,47 @@ module.exports = {
             embed.addFields({ name: t(locale, 'commands.profile.fields.partner'), value: t(locale, 'commands.profile.partner_desc', { user: user.partner_id, score: Number(user.love || 0) }), inline: false });
         }
 
-        // Link hồ sơ web (share được)
         const isSelf = target.id === interaction.user.id;
+
+        // --- Quan hệ với Waguri (CHỈ hiện cho chính chủ) ---
+        //
+        // Vì sao thêm: thang 5 bậc thiện cảm thật sự đổi giọng Waguri, và cô ấy ghi nhớ tới 25
+        // điều về người chơi — nhưng TRƯỚC ĐÂY không nơi nào cho người chơi thấy hai thứ đó.
+        // Đo 2026-08-18: 20 người có thiện cảm > 0, điểm cao nhất 30, một nửa thử một hai lần
+        // rồi thôi. Vòng lặp bạn đồng hành vô hình thì không ai có lý do quay lại.
+        //
+        // CHỈ CHÍNH CHỦ: ký ức là chuyện riêng giữa người chơi và Waguri; xem hồ sơ người khác
+        // không được lộ. `/profile` cho phép chỉ định `target` nên phải chặn rõ ở đây.
+        if (isSelf) {
+            const aff = Number(user.affection || 0);
+            const bac = tierOf(aff);
+            const caoHon = [...AFFECTION_TIERS].reverse().find(x => x.min > aff);
+            const tienDo = caoHon
+                ? t(locale, 'commands.profile.waguri_next', { next: caoHon.name, remain: caoHon.min - aff })
+                : t(locale, 'commands.profile.waguri_max');
+            embed.addFields({
+                name: t(locale, 'commands.profile.fields.waguri'),
+                value: `${bac.name} · ${aff} 💗\n${tienDo}`,
+                inline: false,
+            });
+
+            const kyUc = user.ai_memory && typeof user.ai_memory === 'object' ? user.ai_memory : null;
+            const muc = kyUc
+                ? Object.entries(kyUc)
+                    .filter(([k, v]) => k && v != null && String(v).trim())
+                    .slice(0, 6)                       // giữ embed gọn; có thể nhớ tới 25 điều
+                    .map(([k, v]) => `• ${String(v).slice(0, 80)}`)
+                : [];
+            if (muc.length) {
+                embed.addFields({
+                    name: t(locale, 'commands.profile.fields.waguri_memory'),
+                    value: muc.join('\n'),
+                    inline: false,
+                });
+            }
+        }
+
+        // Link hồ sơ web (share được)
         const isPublic = user.profile_public !== false;
         if (isPublic) {
             embed.addFields({ name: t(locale, 'commands.profile.fields.web_profile'), value: `[waguri-bot.vercel.app/u/${target.id}](https://waguri-bot.vercel.app/u/${target.id})`, inline: false });

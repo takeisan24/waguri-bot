@@ -21,6 +21,7 @@
 require('dotenv').config();
 const { WAGURI_SYSTEM_PROMPT, tierOf } = require('../src/lib/ai/persona');
 const gemini = require('../src/lib/ai/gemini');
+const { chuaTu } = require('./lib/viWord');
 
 const AFF = Number(process.argv[2] || 0);
 
@@ -54,7 +55,12 @@ const nghi = ms => new Promise(r => setTimeout(r, ms));
 function cham(s) {
     return {
         // 1) Xưng hô: canon là 私 -> "mình". "tớ"/"tôi" là sai thanh ghi.
-        saiXungHo: /\btớ\b/i.test(s) || /\btôi\b/i.test(s),
+        //
+        // ⚠️ Bản đầu dùng /\btớ\b/ và nó SAI 5/6 trường hợp: `\b` của JS dựa trên [A-Za-z0-9_]
+        // nên với tiếng Việt nó vừa báo nhầm ("tới lúc") vừa BỎ LỌT lỗi thật ("tớ đi", "của tớ.").
+        // Chiều bỏ lọt khiến con số "0/8 sai xưng hô" báo cáo ngày 2026-08-18 KHÔNG chứng minh
+        // được điều nó tưởng là chứng minh. Xem scripts/lib/viWord.js.
+        saiXungHo: chuaTu(s, ['tớ', 'tôi']),
         // 2) Định dạng: đang nhắn tin, không phải kịch bản truyện.
         coNhanTen: /\*\*Waguri\*\*\s*:/.test(s),
         coChiDanSanKhau: /\*\([^)]+\)\*/.test(s),
@@ -98,5 +104,7 @@ function cham(s) {
     console.log(`  có nhãn tên              : ${dem('coNhanTen')}/${kq.length}   (mục tiêu 0)`);
     console.log(`  có chỉ dẫn sân khấu      : ${dem('coChiDanSanKhau')}/${kq.length}   (mục tiêu 0)`);
     console.log(`  độ dài trung bình        : ${Math.round(kq.reduce((s, x) => s + x.dai, 0) / kq.length)} ký tự`);
-    console.log('\n  Mốc trước khi sửa persona (2026-08-17): sai xưng hô 2/5 · nhãn tên 3/5 · chỉ dẫn sân khấu 3/5.');
+    console.log('\n  Mốc trước khi sửa persona (2026-08-17): nhãn tên 3/5 · chỉ dẫn sân khấu 3/5.');
+    console.log('  (Con số "sai xưng hô 2/5" của mốc cũ đo bằng regex `\\b` hỏng nên KHÔNG so được;');
+    console.log('   hai tiêu chí kia dùng regex không dính lỗi đó nên vẫn dùng làm mốc được.)');
 })();
