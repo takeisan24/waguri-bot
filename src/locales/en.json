@@ -1,48 +1,8 @@
 {
   "common": {
-    "empty": "(empty)",
-    "none": "None",
-    "not_for_you": "This button isn't for you~ 🌸",
-    "invalid_subcommand": "Invalid subcommand~ 🌸",
-    "game_timeout_cancelled": "The {game} game was cancelled due to timeout~ 🌸",
-    "currency": "VND",
-    "error_title": "❌ Error",
-    "warning_title": "⚠️ Warning",
-    "success_title": "✅ Success",
-    "info_title": "ℹ️ Info",
-    "db_error": "Hmm, I couldn't fetch your data, please try again later~ 🌸",
-    "retry_later": "Oops, an error occurred, please try again later~ 🌸",
-    "generic_error": "An error occurred while executing this command! 🥺",
-    "banned": "You have been banned from using the bot~ Contact the admin if there is any mistake.",
-    "rate_limited": "You are doing that too fast~ please wait a few seconds! 🌸",
-    "item_not_found": "I couldn't find this item~",
-    "insufficient_funds": "Your wallet doesn't have enough **{cost}** {currency}~ 😟",
-    "no_energy": "You are out of energy ({current}/{max} ⚡, need {cost}). Rest a bit or eat something with `/eat`~ 🌸",
-    "low_health": "Your health is too low (**{current}/100** ❤️). You need at least **30** health to work. Please use medicine/medical kit (`/eat`) or use `/hospital` to heal! 🏥",
-    "cooldown": "Slow down~ wait {time}s and try again! 🌸",
-    "jailed": "You cannot do this while in jail~\nReason: **{reason}**\nReleased in {time}. 🌸",
-    "jailed_no_reason": "You cannot do this while in jail~\nReleased in {time}. 🌸",
-    "jail_title": "🚓・You are Imprisoned",
-    "jail_locked": "You cannot perform this action while in jail~ Released {time}. 🌸",
-    "welcome_age_error": "⚠️ Your Discord account must be at least **7 days** old to claim the welcome gift (anti-clone measure)~ 🌸",
-    "generic_error_title": "💥・An error occurred!",
     "ai_quota_exceeded": "You have used all **{cap}** of your chat limits with me today 🥺 — upgrade to `/premium` for more 💎",
-    "embed_footer": "🌸 Waguri • Gekka Bakery Assistant",
-    "paginate": {
-      "empty": "(empty)",
-      "footer": "Page {current}/{total}"
-    },
-    "welcome": {
-      "title": "🌸・Welcome new member!",
-      "desc": "**Hello {user}** — I'm **Waguri Kaoruko**, the manager of Gekka Bakery! 🍰\n\nI'm so glad you visited **{guild}**~ You will love it here!\n\n**Let's get started:**\n> 📜 Get to know the server channels.\n> 🎁 Type `/start` to claim your **welcome gift** and begin your journey! 🌸\n\n*Wishing you sweet moments with everyone~* 💕"
-    },
-    "guild_create": {
-      "support_link": "\n> 🛟 **Need help?** [Join Support Server]({url})!",
-      "welcome_title": "🌸・Hello, I'm Waguri!",
-      "welcome_desc": "*A warm welcome to Gekka Bakery!* 🍰\n\nThank you so much for inviting me to **{guild}**! I'll be your energetic companion and \"bakery manager\"~\n\n**✨ Our Services:**\n> 🎁 **New to the shop?** Type `/start` to claim your **welcome gift** & quick guide!\n> 💬 **Chat with Waguri:** Type `/ask` or tag me to chat about my studies at Kikyo or baking with Rintaro!\n> 💼 **Work & Economy:** Earn money for sweets via `/work`, claim daily allowance via `/daily`, shop via `/store`.\n> 🎲 **Fun with friends:** Test your luck with `/taixiu`, `/blackjack`, `/masoi` (Werewolf).\n> 📜 **Help Guide:** Type `/help` for detailed command instructions!{supportLink}\n\n*Hope we'll create sweet memories together!* 🌸",
-      "welcome_footer": "Prefix {prefix} is also supported (e.g. {prefix}help) • Have fun playing!",
-      "game_timeout_cancelled": "The {game} game has been automatically cancelled and refunded due to inactivity in the last 10 minutes! ⏰🌸"
-    },
+    "ai_quota_global": "I have been chatting a lot today and I am getting a little tired... 🥺 Let me rest a bit, and we can talk again tomorrow~ 🌸",
+    "banned": "You have been banned from using the bot~ Contact the admin if there is any mistake.",
     "btn": {
       "confirm": "Confirm",
       "cancel": "Cancel",
@@ -50,6 +10,8 @@
       "back": "Back",
       "next": "Next"
     },
+    "cooldown": "Slow down~ wait {time}s and try again! 🌸",
+    "currency": "VND",
     "days": {
       "0": "Sunday",
       "1": "Monday",
@@ -58,7 +20,46 @@
       "4": "Thursday",
       "5": "Friday",
       "6": "Saturday"
-    }
+    },
+    "db_error": "Hmm, I couldn't fetch your data, please try again later~ 🌸",
+    "embed_footer": "🌸 Waguri • Gekka Bakery Assistant",
+    "empty": "(empty)",
+    "error_title": "❌ Error",
+    "game_timeout_cancelled": "The {game} game was cancelled due to timeout~ 🌸",
+    "generic_error": "An error occurred while executing this command! 🥺",
+    "generic_error_title": "💥・An error occurred!",
+    "guild_create": {
+      "support_link": "\n> 🛟 **Need help?** [Join Support Server]({url})!",
+      "welcome_title": "🌸・Hello, I'm Waguri!",
+      "welcome_desc": "*A warm welcome to Gekka Bakery!* 🍰\n\nThank you so much for inviting me to **{guild}**! I'll be your energetic companion and \"bakery manager\"~\n\n**✨ Our Services:**\n> 🎁 **New to the shop?** Type `/start` to claim your **welcome gift** & quick guide!\n> 💬 **Chat with Waguri:** Type `/ask` or tag me to chat about my studies at Kikyo or baking with Rintaro!\n> 💼 **Work & Economy:** Earn money for sweets via `/work`, claim daily allowance via `/daily`, shop via `/store`.\n> 🎲 **Fun with friends:** Test your luck with `/taixiu`, `/blackjack`, `/masoi` (Werewolf).\n> 📜 **Help Guide:** Type `/help` for detailed command instructions!{supportLink}\n\n*Hope we'll create sweet memories together!* 🌸",
+      "welcome_footer": "Prefix {prefix} is also supported (e.g. {prefix}help) • Have fun playing!",
+      "game_timeout_cancelled": "The {game} game has been automatically cancelled and refunded due to inactivity in the last 10 minutes! ⏰🌸"
+    },
+    "info_title": "ℹ️ Info",
+    "insufficient_funds": "Your wallet doesn't have enough **{cost}** {currency}~ 😟",
+    "invalid_subcommand": "Invalid subcommand~ 🌸",
+    "item_not_found": "I couldn't find this item~",
+    "jail_locked": "You cannot perform this action while in jail~ Released {time}. 🌸",
+    "jail_title": "🚓・You are Imprisoned",
+    "jailed": "You cannot do this while in jail~\nReason: **{reason}**\nReleased in {time}. 🌸",
+    "jailed_no_reason": "You cannot do this while in jail~\nReleased in {time}. 🌸",
+    "low_health": "Your health is too low (**{current}/100** ❤️). You need at least **30** health to work. Please use medicine/medical kit (`/eat`) or use `/hospital` to heal! 🏥",
+    "no_energy": "You are out of energy ({current}/{max} ⚡, need {cost}). Rest a bit or eat something with `/eat`~ 🌸",
+    "none": "None",
+    "not_for_you": "This button isn't for you~ 🌸",
+    "paginate": {
+      "empty": "(empty)",
+      "footer": "Page {current}/{total}"
+    },
+    "rate_limited": "You are doing that too fast~ please wait a few seconds! 🌸",
+    "retry_later": "Oops, an error occurred, please try again later~ 🌸",
+    "success_title": "✅ Success",
+    "warning_title": "⚠️ Warning",
+    "welcome": {
+      "title": "🌸・Welcome new member!",
+      "desc": "**Hello {user}** — I'm **Waguri Kaoruko**, the manager of Gekka Bakery! 🍰\n\nI'm so glad you visited **{guild}**~ You will love it here!\n\n**Let's get started:**\n> 📜 Get to know the server channels.\n> 🎁 Type `/start` to claim your **welcome gift** and begin your journey! 🌸\n\n*Wishing you sweet moments with everyone~* 💕"
+    },
+    "welcome_age_error": "⚠️ Your Discord account must be at least **7 days** old to claim the welcome gift (anti-clone measure)~ 🌸"
   },
   "disease": {
     "sick_active_note": "🤒 You are sick — income reduced by {pct}% & lost {loss} health. Use `/hospital` to cure it!",

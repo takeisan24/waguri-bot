@@ -120,6 +120,15 @@ module.exports = {
         USER_COOLDOWN_MS: 4000,  // chống spam mỗi người
         FREE_DAILY: 15,          // số lượt chat AI/ngày cho user thường
         PREMIUM_DAILY: 150,      // số lượt chat AI/ngày cho user Premium
+        // Trần cho TOÀN DỰ ÁN mỗi ngày. Giới hạn theo đầu người KHÔNG bảo vệ được một khoá
+        // API dùng chung: 10 người dùng hết quota riêng là 150 lượt, không ai vi phạm gì cả,
+        // mà hạn mức chung vẫn cạn — người thứ 11 nhận lỗi và không hiểu vì sao.
+        //
+        // Chọn 300: cao hơn hẳn mức dùng thật (đo 2026-08-18: 20 người TỪ TRƯỚC TỚI NAY,
+        // ~125 lượt tổng cộng), nhưng đủ thấp để không chạm trần gói free — hôm nay gọi ~30
+        // lượt flash-lite không dính 429 lần nào, nên trần thật thoải mái trên mức đó.
+        // Đây là BẢO HIỂM cho lúc đông người, không phải giới hạn đang cắn.
+        GLOBAL_DAILY: Number(process.env.AI_GLOBAL_DAILY) || 300,
         // (Đã bỏ cờ DISABLE_QUOTA_LIMIT: nó không được dùng ở đâu -> quota AI vẫn luôn bật.
         //  Giữ cap để tránh đội chi phí Gemini. Muốn tắt cap thì chỉnh trực tiếp consumeAiQuota.)
     },

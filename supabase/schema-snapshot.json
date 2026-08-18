@@ -560,6 +560,7 @@
     ],
     "users": [
       "affection:integer",
+      "affection_days:integer",
       "ai_memory:jsonb",
       "ai_used:integer",
       "ai_used_date:date",

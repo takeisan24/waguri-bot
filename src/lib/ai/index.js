@@ -59,6 +59,10 @@ function findMatchingLore(text) {
     return matches.slice(0, 2); // Tối đa chèn 2 ý ngữ cảnh để không làm phình prompt
 }
 
+// `user_id` giả cho bộ đếm toàn cục trong `daily_counters`. Bảng này không có khoá ngoại nên
+// dùng được; tiền tố `__` để không đụng ID Discord (vốn toàn chữ số).
+const GLOBAL_KEY = '__ai_global__';
+
 const contexts = new Map();  // channelId -> [{role,content}]
 const ctxSeen = new Map();   // channelId -> lần hoạt động gần nhất (ms) — để dọn ngữ cảnh cũ
 const cooldowns = new Map(); // userId -> timestamp hết cooldown
@@ -167,6 +171,18 @@ async function chatWithWaguri(channelId, userId, userName, userText, locale) {
     if (!q) return { ok: false, reason: 'error' };
     if (q.allowed === false) {
         return { ok: false, reason: 'quota', used: q.used, cap: q.cap, premium: q.premium };
+    }
+
+    // Trần cho TOÀN DỰ ÁN. Kiểm SAU quota cá nhân để người đã hết lượt riêng không tiêu lẹm
+    // vào ngân sách chung. Dùng lại `claim_daily_counter` (tự reset theo ngày, cập nhật nguyên
+    // tử) với một `user_id` giả — `daily_counters` không có khoá ngoại nên không cần bảng mới.
+    //
+    // FAIL-OPEN có chủ ý: đếm hỏng (trả null) thì VẪN cho chat. Đây là bộ đếm bảo hiểm, không
+    // phải cổng an toàn — để nó chặn người dùng khi chính nó lỗi là đánh đổi sai.
+    const soChung = await db.claimAiGlobalQuota(GLOBAL_KEY, config.AI.GLOBAL_DAILY);
+    if (soChung === -1) {
+        await db.refundAiQuota(userId); // chưa gọi API thì không được trừ lượt của người ta
+        return { ok: false, reason: 'quota_global' };
     }
 
     const provider = getProvider();

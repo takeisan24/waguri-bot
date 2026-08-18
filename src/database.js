@@ -738,6 +738,28 @@ async function transferItem(fromId, toId, itemId, qty = 1) {
 }
 
 /** Tăng đếm lượt/ngày theo key. Trả số đã dùng (>=1) hoặc -1 nếu vượt cap. */
+/**
+ * Trần AI cho TOÀN DỰ ÁN trong ngày. Trả:
+ *   số đếm  -> còn ngân sách
+ *   -1      -> đã hết ngân sách chung
+ *   null    -> KHÔNG ĐẾM ĐƯỢC (DB lỗi)
+ *
+ * Vì sao không dùng thẳng `claimDailyCounter`: hàm đó trả `-1` cho CẢ hai trường hợp "hết
+ * hạn mức" lẫn "DB lỗi". Nơi gọi không phân biệt được, nên một lần Supabase chập chờn sẽ
+ * chặn hết người dùng — fail-closed. Với bộ đếm bảo hiểm thì đó là đánh đổi sai: nó phải
+ * fail-OPEN, giống bài học `getJailForAck` (xem lib/jail.js).
+ */
+async function claimAiGlobalQuota(key, max) {
+    try {
+        const { data, error } = await supabase.rpc('claim_daily_counter', { p_user_id: key, p_key: key, p_max: max });
+        if (error) throw error;
+        return typeof data === 'number' ? data : null;
+    } catch (error) {
+        console.error('[DATABASE ERROR] claimAiGlobalQuota():', error?.message || error);
+        return null; // không đếm được -> nơi gọi tự quyết định (đang là cho qua)
+    }
+}
+
 async function claimDailyCounter(userId, key, max) {
     try {
         const { data, error } = await supabase.rpc('claim_daily_counter', { p_user_id: userId, p_key: key, p_max: max });
@@ -2386,6 +2408,7 @@ module.exports = {
     takeItem,
     transferItem,
     claimDailyCounter,
+    claimAiGlobalQuota,
     bumpPoliceHeat,
     resetPoliceHeat,
     // cosmetic

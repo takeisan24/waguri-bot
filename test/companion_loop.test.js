@@ -80,3 +80,78 @@ test('tierOf trả đúng bậc theo mốc mới', () => {
     assert.strictEqual(tierOf(5).key, 'quen_biet');
     assert.strictEqual(tierOf(9999).key, 'tri_ky');
 });
+
+test('hạn mức toàn cục: có trần cho CẢ DỰ ÁN, không chỉ theo đầu người', () => {
+    const config = require('../src/config');
+    assert.ok(Number.isInteger(config.AI.GLOBAL_DAILY) && config.AI.GLOBAL_DAILY > 0,
+        'Thiếu AI.GLOBAL_DAILY — giới hạn theo đầu người KHÔNG bảo vệ được một khoá API dùng chung');
+    assert.ok(config.AI.GLOBAL_DAILY >= config.AI.FREE_DAILY,
+        'Trần chung phải >= trần một người, nếu không người đầu tiên đã chặn hết cả server');
+
+    const src = fs.readFileSync(path.join(__dirname, '..', 'src', 'lib', 'ai', 'index.js'), 'utf8');
+    const iQuota = src.indexOf('consumeAiQuota');
+    const iGlobal = src.indexOf('GLOBAL_DAILY');
+    assert.ok(iQuota !== -1 && iGlobal !== -1, 'Không tìm thấy hai lớp kiểm quota');
+    assert.ok(iQuota < iGlobal,
+        'Phải kiểm quota CÁ NHÂN trước quota CHUNG — người đã hết lượt riêng không được tiêu lẹm ngân sách chung');
+    assert.ok(/quota_global/.test(src), 'Thiếu lý do trả về riêng cho hết ngân sách chung');
+    assert.ok(/refundAiQuota/.test(src.slice(iGlobal, iGlobal + 800)),
+        'Chặn vì ngân sách chung thì phải HOÀN lượt cá nhân — chưa gọi API mà vẫn trừ là oan người dùng');
+});
+
+test('hạn mức toàn cục: thông điệp KHÔNG đổ lỗi cho người dùng', () => {
+    for (const [ten, loc] of [['vi', vi], ['en', en]]) {
+        const s = loc.common?.ai_quota_global;
+        assert.ok(s && s.trim(), `${ten}.json thiếu common.ai_quota_global`);
+    }
+    // Ngân sách chung cạn không phải lỗi của người đang nhắn -> không được nói "cậu hết lượt".
+    assert.ok(!/cậu đã dùng hết|cậu hết lượt/i.test(vi.common.ai_quota_global),
+        'Thông điệp ngân sách CHUNG đang đổ lỗi cho người dùng — họ có thể chưa dùng lượt nào');
+    assert.ok(!chuaTu(vi.common.ai_quota_global, ['tớ', 'tôi']), 'Sai xưng hô canon');
+});
+
+test('đo lường: cột đếm ngày tồn tại trong migration và có backfill', () => {
+    const thuMuc = path.join(__dirname, '..', 'supabase', 'migrations');
+    const file = fs.readdirSync(thuMuc).find(f => f.includes('affection_days'));
+    assert.ok(file, 'Thiếu migration thêm affection_days');
+    const sql = fs.readFileSync(path.join(thuMuc, file), 'utf8');
+    assert.ok(/ADD COLUMN IF NOT EXISTS affection_days/i.test(sql), 'Thiếu lệnh thêm cột');
+    assert.ok(/UPDATE users/i.test(sql) && /affection_days = 1/.test(sql),
+        'Thiếu backfill — người đã có thiện cảm phải được tính ít nhất 1 ngày');
+    assert.ok(/v_ngay_moi/.test(sql), 'Phải chốt cờ ngày-mới TRƯỚC khi reset v_date');
+});
+
+// Test này sinh ra từ một lỗi THẬT vừa mắc: bản đầu gọi `claimDailyCounter`, mà hàm đó trả
+// -1 cho CẢ "hết hạn mức" LẪN "DB lỗi". Nơi gọi không phân biệt được, nên mỗi lần Supabase
+// chập chờn là chặn hết người dùng — fail-CLOSED, trong khi comment ngay bên cạnh ghi
+// "fail-open có chủ ý". Cùng lớp lỗi với getJailForAck đã sửa ở 6d67389.
+test('hạn mức toàn cục: DB lỗi thì VẪN cho chat (fail-open)', async () => {
+    const db = require('../src/database');
+    const gemini = require('../src/lib/ai/gemini');
+    const { chatWithWaguri } = require('../src/lib/ai');
+
+    const goc = {
+        quota: db.consumeAiQuota, global: db.claimAiGlobalQuota,
+        chat: gemini.chat, aff: db.incrAffection, user: db.getUser,
+    };
+    try {
+        db.consumeAiQuota = async () => ({ allowed: true, used: 1, cap: 15, premium: false });
+        db.getUser = async () => null;
+        db.incrAffection = async () => null;
+        gemini.chat = async () => 'Chào cậu~';
+
+        // null = KHÔNG đếm được (DB lỗi) -> phải cho qua
+        db.claimAiGlobalQuota = async () => null;
+        let res = await chatWithWaguri('c1', 'u_failopen', 'Tester', 'hi', 'vi');
+        assert.strictEqual(res.ok, true, 'DB đếm lỗi mà lại chặn người dùng — phải fail-OPEN');
+
+        // -1 = thật sự hết ngân sách chung -> phải chặn
+        db.claimAiGlobalQuota = async () => -1;
+        res = await chatWithWaguri('c2', 'u_failopen2', 'Tester', 'hi', 'vi');
+        assert.strictEqual(res.ok, false);
+        assert.strictEqual(res.reason, 'quota_global', 'Hết ngân sách chung phải có lý do riêng');
+    } finally {
+        db.consumeAiQuota = goc.quota; db.claimAiGlobalQuota = goc.global;
+        gemini.chat = goc.chat; db.incrAffection = goc.aff; db.getUser = goc.user;
+    }
+});

@@ -1,48 +1,8 @@
 {
   "common": {
-    "empty": "(trống)",
-    "none": "Không có",
-    "not_for_you": "Nút này không phải của cậu đâu nha~ 🌸",
-    "invalid_subcommand": "Lệnh phụ không hợp lệ~ 🌸",
-    "game_timeout_cancelled": "Ván {game} đã bị huỷ do quá thời gian chờ~ 🌸",
-    "currency": "VNĐ",
-    "error_title": "❌ Lỗi",
-    "warning_title": "⚠️ Cảnh báo",
-    "success_title": "✅ Thành công",
-    "info_title": "ℹ️ Thông tin",
-    "db_error": "Hơ, mình chưa lấy được dữ liệu của cậu, thử lại sau nhé~ 🌸",
-    "retry_later": "Ơ, có lỗi rồi, cậu thử lại sau nhé~ 🌸",
-    "generic_error": "Đã có lỗi xảy ra khi thực thi lệnh này! 🥺",
-    "banned": "Cậu đã bị chặn sử dụng bot~ Liên hệ admin nếu có nhầm lẫn nhé.",
-    "rate_limited": "Cậu thao tác hơi nhanh rồi~ chờ vài giây nhé! 🌸",
-    "item_not_found": "Mình không tìm thấy vật phẩm này~",
-    "insufficient_funds": "Ví cậu không đủ **{cost}** {currency} rồi~ 😟",
-    "no_energy": "Cậu hết năng lượng rồi ({current}/{max} ⚡, cần {cost}). Nghỉ ngơi chút hoặc ăn gì đó bằng `/eat` nhé~ 🌸",
-    "low_health": "Sức khỏe của cậu quá yếu (**{current}/100** ❤️). Cậu cần ít nhất **30** sức khỏe để làm việc. Hãy dùng thuốc/hộp y tế (`/eat`) hoặc chạy lệnh `/hospital` để nhập viện nhé!",
-    "cooldown": "Từ từ thôi nào~ nghỉ {time}s rồi làm tiếp nhé! 🌸",
-    "jailed": "Cậu chưa thể làm việc này khi đang bị giam đâu~\nLý do: **{reason}**\nĐược thả {time}. 🌸",
-    "jailed_no_reason": "Cậu chưa thể làm việc này khi đang bị giam đâu~\nĐược thả {time}. 🌸",
-    "jail_title": "🚓・Cậu đang bị giam",
-    "jail_locked": "Cậu chưa thể làm việc khi đang bị giam đâu~ Được thả {time}. 🌸",
-    "welcome_age_error": "⚠️ Tài khoản Discord của cậu phải được tạo từ ít nhất **7 ngày** trước mới nhận được quà chào mừng chống clone nha~ 🌸",
-    "generic_error_title": "💥・Có lỗi xảy ra!",
     "ai_quota_exceeded": "Cậu đã dùng hết **{cap}** lượt chat với mình hôm nay rồi 🥺 — nâng cấp `/premium` để có thêm nhé 💎",
-    "embed_footer": "🌸 Waguri • Trợ lý Tiệm bánh Gekka",
-    "paginate": {
-      "empty": "(trống)",
-      "footer": "Trang {current}/{total}"
-    },
-    "welcome": {
-      "title": "🌸・Chào mừng thành viên mới!",
-      "desc": "**Xin chào {user}** — tớ là **Waguri Kaoruko**, quản lý tiệm bánh Gekka! 🍰\n\nTớ rất vui vì cậu đã ghé thăm **{guild}** đó~ Cậu sẽ thích ở đây mà!\n\n**Bắt đầu nhé:**\n> 📜 Hãy làm quen với các kênh của server nha.\n> 🎁 Gõ `/start` để nhận **quà chào mừng** và bắt đầu hành trình! 🌸\n\n*Chúc cậu có những giây phút thật ngọt ngào bên mọi người~* 💕"
-    },
-    "guild_create": {
-      "support_link": "\n> 🛟 **Cần giúp đỡ?** [Vào server hỗ trợ]({url}) nha!",
-      "welcome_title": "🌸・Xin chào, mình là Waguri!",
-      "welcome_desc": "*Hân hạnh được chào đón các quý khách ghé thăm tiệm bánh Gekka!* 🍰\n\nCảm ơn cậu rất nhiều vì đã mời tớ ghé thăm **{guild}**! Tớ sẽ là người bạn đồng hành kiêm \"quản lý tiệm bánh\" siêu năng nổ của cậu đó~\n\n**✨ Các Dịch Vụ Tại Tiệm:**\n> 🎁 **Người mới bắt đầu từ đây:** Gõ `/start` để nhận **quà chào mừng** & hướng dẫn nhanh nha!\n> 💬 **Trò chuyện cùng Waguri:** Gõ `/ask` hoặc tag tớ để tớ chia sẻ chuyện học ở Kikyo hay làm bánh cùng Rintaro nha!\n> 💼 **Lao động & Kinh tế:** Kiếm tiền mua bánh ngọt qua `/work`, nhận trợ cấp `/daily`, mua sắm `/store`.\n> 🎲 **Giải trí cùng bạn bè:** Thử sức với `/taixiu`, `/blackjack`, `/masoi` cực kỳ kịch tính.\n> 📜 **Sổ tay hướng dẫn:** Gõ `/help` để tớ chỉ dẫn chi tiết cách dùng các lệnh nhé!{supportLink}\n\n*Hy vọng chúng mình sẽ có những kỷ niệm thật ngọt ngào bên nhau!* 🌸",
-      "welcome_footer": "Hỗ trợ cả tiền tố {prefix} (ví dụ: {prefix}help) • Cùng chơi vui vẻ nha!",
-      "game_timeout_cancelled": "Ván {game} đã bị tự động hủy và hoàn vé do không có hoạt động nào trong 10 phút qua! ⏰🌸"
-    },
+    "ai_quota_global": "Hôm nay mình trò chuyện hơi nhiều nên thấm mệt rồi... 🥺 Cậu cho mình nghỉ một chút nha, mai mình lại nói chuyện với cậu nhé~ 🌸",
+    "banned": "Cậu đã bị chặn sử dụng bot~ Liên hệ admin nếu có nhầm lẫn nhé.",
     "btn": {
       "confirm": "Xác nhận",
       "cancel": "Hủy bỏ",
@@ -50,6 +10,8 @@
       "back": "Quay lại",
       "next": "Tiếp theo"
     },
+    "cooldown": "Từ từ thôi nào~ nghỉ {time}s rồi làm tiếp nhé! 🌸",
+    "currency": "VNĐ",
     "days": {
       "0": "Chủ Nhật",
       "1": "Thứ Hai",
@@ -58,7 +20,46 @@
       "4": "Thứ Năm",
       "5": "Thứ Sáu",
       "6": "Thứ Bảy"
-    }
+    },
+    "db_error": "Hơ, mình chưa lấy được dữ liệu của cậu, thử lại sau nhé~ 🌸",
+    "embed_footer": "🌸 Waguri • Trợ lý Tiệm bánh Gekka",
+    "empty": "(trống)",
+    "error_title": "❌ Lỗi",
+    "game_timeout_cancelled": "Ván {game} đã bị huỷ do quá thời gian chờ~ 🌸",
+    "generic_error": "Đã có lỗi xảy ra khi thực thi lệnh này! 🥺",
+    "generic_error_title": "💥・Có lỗi xảy ra!",
+    "guild_create": {
+      "support_link": "\n> 🛟 **Cần giúp đỡ?** [Vào server hỗ trợ]({url}) nha!",
+      "welcome_title": "🌸・Xin chào, mình là Waguri!",
+      "welcome_desc": "*Hân hạnh được chào đón các quý khách ghé thăm tiệm bánh Gekka!* 🍰\n\nCảm ơn cậu rất nhiều vì đã mời tớ ghé thăm **{guild}**! Tớ sẽ là người bạn đồng hành kiêm \"quản lý tiệm bánh\" siêu năng nổ của cậu đó~\n\n**✨ Các Dịch Vụ Tại Tiệm:**\n> 🎁 **Người mới bắt đầu từ đây:** Gõ `/start` để nhận **quà chào mừng** & hướng dẫn nhanh nha!\n> 💬 **Trò chuyện cùng Waguri:** Gõ `/ask` hoặc tag tớ để tớ chia sẻ chuyện học ở Kikyo hay làm bánh cùng Rintaro nha!\n> 💼 **Lao động & Kinh tế:** Kiếm tiền mua bánh ngọt qua `/work`, nhận trợ cấp `/daily`, mua sắm `/store`.\n> 🎲 **Giải trí cùng bạn bè:** Thử sức với `/taixiu`, `/blackjack`, `/masoi` cực kỳ kịch tính.\n> 📜 **Sổ tay hướng dẫn:** Gõ `/help` để tớ chỉ dẫn chi tiết cách dùng các lệnh nhé!{supportLink}\n\n*Hy vọng chúng mình sẽ có những kỷ niệm thật ngọt ngào bên nhau!* 🌸",
+      "welcome_footer": "Hỗ trợ cả tiền tố {prefix} (ví dụ: {prefix}help) • Cùng chơi vui vẻ nha!",
+      "game_timeout_cancelled": "Ván {game} đã bị tự động hủy và hoàn vé do không có hoạt động nào trong 10 phút qua! ⏰🌸"
+    },
+    "info_title": "ℹ️ Thông tin",
+    "insufficient_funds": "Ví cậu không đủ **{cost}** {currency} rồi~ 😟",
+    "invalid_subcommand": "Lệnh phụ không hợp lệ~ 🌸",
+    "item_not_found": "Mình không tìm thấy vật phẩm này~",
+    "jail_locked": "Cậu chưa thể làm việc khi đang bị giam đâu~ Được thả {time}. 🌸",
+    "jail_title": "🚓・Cậu đang bị giam",
+    "jailed": "Cậu chưa thể làm việc này khi đang bị giam đâu~\nLý do: **{reason}**\nĐược thả {time}. 🌸",
+    "jailed_no_reason": "Cậu chưa thể làm việc này khi đang bị giam đâu~\nĐược thả {time}. 🌸",
+    "low_health": "Sức khỏe của cậu quá yếu (**{current}/100** ❤️). Cậu cần ít nhất **30** sức khỏe để làm việc. Hãy dùng thuốc/hộp y tế (`/eat`) hoặc chạy lệnh `/hospital` để nhập viện nhé!",
+    "no_energy": "Cậu hết năng lượng rồi ({current}/{max} ⚡, cần {cost}). Nghỉ ngơi chút hoặc ăn gì đó bằng `/eat` nhé~ 🌸",
+    "none": "Không có",
+    "not_for_you": "Nút này không phải của cậu đâu nha~ 🌸",
+    "paginate": {
+      "empty": "(trống)",
+      "footer": "Trang {current}/{total}"
+    },
+    "rate_limited": "Cậu thao tác hơi nhanh rồi~ chờ vài giây nhé! 🌸",
+    "retry_later": "Ơ, có lỗi rồi, cậu thử lại sau nhé~ 🌸",
+    "success_title": "✅ Thành công",
+    "warning_title": "⚠️ Cảnh báo",
+    "welcome": {
+      "title": "🌸・Chào mừng thành viên mới!",
+      "desc": "**Xin chào {user}** — tớ là **Waguri Kaoruko**, quản lý tiệm bánh Gekka! 🍰\n\nTớ rất vui vì cậu đã ghé thăm **{guild}** đó~ Cậu sẽ thích ở đây mà!\n\n**Bắt đầu nhé:**\n> 📜 Hãy làm quen với các kênh của server nha.\n> 🎁 Gõ `/start` để nhận **quà chào mừng** và bắt đầu hành trình! 🌸\n\n*Chúc cậu có những giây phút thật ngọt ngào bên mọi người~* 💕"
+    },
+    "welcome_age_error": "⚠️ Tài khoản Discord của cậu phải được tạo từ ít nhất **7 ngày** trước mới nhận được quà chào mừng chống clone nha~ 🌸"
   },
   "disease": {
     "sick_active_note": "🤒 Cậu đang bị bệnh — thu nhập giảm {pct}% & mất {loss} máu. Tới `/hospital` chữa nhé!",

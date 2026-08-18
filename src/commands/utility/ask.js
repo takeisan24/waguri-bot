@@ -15,6 +15,15 @@ module.exports = {
         const locale = await getInteractionLanguage(interaction);
         const res = await chatWithWaguri(interaction.channelId, interaction.user.id, interaction.user.username, text, locale);
         if (!res.ok) {
+            // Hết ngân sách CHUNG của cả dự án — không phải lỗi của riêng người này, nên
+            // thông điệp cũng không nên đổ cho họ. Waguri nói là mình mệt, không nói "cậu hết lượt".
+            if (res.reason === 'quota_global') {
+                const embed = buildWaguriEmbed(interaction, 'warning', {
+                    locale,
+                    description: t(locale, 'common.ai_quota_global')
+                });
+                return interaction.editReply({ embeds: [embed] });
+            }
             if (res.reason === 'quota') {
                 const embed = buildWaguriEmbed(interaction, 'warning', {
                     locale,

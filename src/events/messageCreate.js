@@ -288,7 +288,10 @@ module.exports = {
 
             const res = await chatWithWaguri(message.channelId, message.author.id, message.author.username, text, locale);
             if (!res.ok) {
-                if (res.reason === 'quota') {
+                if (res.reason === 'quota_global') {
+                    // Ngân sách CHUNG cạn — lỗi không thuộc về người này, đừng nói "cậu hết lượt".
+                    message.reply(t(locale, 'common.ai_quota_global')).catch(() => {});
+                } else if (res.reason === 'quota') {
                     const quotaMsg = t(locale, 'common.ai_quota_exceeded', { cap: res.cap });
                     message.reply(quotaMsg).catch(() => {});
                 }
