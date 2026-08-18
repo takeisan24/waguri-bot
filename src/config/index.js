@@ -98,15 +98,25 @@ module.exports = {
 
     // AI persona Waguri (Google Gemini)
     AI: {
-        GEMINI_MODEL: process.env.GEMINI_MODEL || 'gemini-3.6-flash',
-        GEMINI_PREMIUM_MODEL: process.env.GEMINI_PREMIUM_MODEL || 'gemini-3.1-pro-preview',
+        // ⚠️ 2026-08-18: chuyển từ `gemini-3.6-flash` sang dòng **flash-lite**. Đo trực tiếp,
+        // cùng prompt, cùng câu hỏi, trên khoá gói MIỄN PHÍ của dự án:
+        //     gemini-3.6-flash        -> 503 quá tải / timeout >35s
+        //     gemini-3.7-flash        -> 503 quá tải
+        //     gemini-3.5-flash-lite   -> 1.446ms, token "nghĩ" = 0
+        //     gemini-flash-lite-latest-> 1.444ms, token "nghĩ" = 0
+        // Bộ 8 câu phỏng vấn nhân vật trên flash-lite: 8/8 thành công, 0/8 sai xưng hô,
+        // 0/8 nhảy sang định dạng kịch bản. Chất lượng nhân vật ngang bằng, có phần hơn.
+        // Đây là cách duy nhất tìm được để chat AI chạy ỔN ĐỊNH ở ngân sách 0 đồng.
+        GEMINI_MODEL: process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite',
+        // Trước đây là `gemini-3.1-pro-preview` — model này có hạn mức **bằng 0** trên gói
+        // free (API trả thẳng `limit: 0`), tức người Premium nhận dịch vụ TỆ HƠN người thường.
+        GEMINI_PREMIUM_MODEL: process.env.GEMINI_PREMIUM_MODEL || 'gemini-3.6-flash',
         MAX_CONTEXT_TURNS: 6,    // số lượt hội thoại gần nhất giữ lại theo kênh
-        // ⚠️ 600 -> 2000 (2026-08-17). `gemini-3.6-flash` là model dòng "thinking": token
-        // SUY NGHĨ tiêu chung ngân sách này với câu trả lời. Đo thật: nghĩ hết 521–574
-        // token, chỉ còn 22 token cho câu trả lời -> **2/3 lượt bị cắt ngang từ**.
-        // Với trần 2000: 0/3 lượt bị cắt. Không thể tắt suy nghĩ (`thinkingBudget: 0` bị
-        // API trả 400) và `thinkingBudget: 128` bị bỏ qua (vẫn nghĩ 352–552).
-        MAX_OUTPUT_TOKENS: 2000,  // đủ dài cho câu trả lời tự nhiên (vẫn gọn cho Discord)
+        // Lịch sử: 600 -> 2000 (2026-08-17) vì model dòng "thinking" tiêu token suy nghĩ
+        // chung ngân sách này, làm cắt ngang từ. Nay 2000 -> 1200: flash-lite KHÔNG có pha
+        // suy nghĩ (đo được: 0 token nghĩ, câu trả lời 98–104 token), nên trần 2000 là thừa.
+        // 1200 vẫn dư cho model dự phòng có suy nghĩ (~574 nghĩ + ~150 đáp).
+        MAX_OUTPUT_TOKENS: 1200,
         USER_COOLDOWN_MS: 4000,  // chống spam mỗi người
         FREE_DAILY: 15,          // số lượt chat AI/ngày cho user thường
         PREMIUM_DAILY: 150,      // số lượt chat AI/ngày cho user Premium

@@ -66,3 +66,7 @@ waguri-test-schema.sql
 *.mp3
 assets/hvl_audio/
 .playwright-mcp/
+
+# Sao lưu .env (chứa khoá bí mật) — repo này CÔNG KHAI, tuyệt đối không được commit
+.env.bak*
+.env.*.bak

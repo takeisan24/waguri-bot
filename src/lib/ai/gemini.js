@@ -9,10 +9,16 @@ function getClient() {
     return new GoogleGenAI({ apiKey: rawKey });
 }
 
-// Đo thật 2026-08-17 trên `gemini-3.6-flash`: độ trễ dao động 4,8s – 39,5s (model dòng
-// "thinking" nghĩ càng nhiều càng lâu). Mốc 20s cũ cắt ngang khá nhiều lượt đang chạy bình
-// thường -> người dùng nhận lỗi thay vì câu trả lời chậm. Trả lời chậm vẫn hơn không có.
-const REQUEST_TIMEOUT_MS = 35000;
+// Lịch sử con số này:
+//   20s -> 35s (2026-08-17): `gemini-3.6-flash` là model dòng "thinking", đo được 4,8s–39,5s;
+//                            mốc 20s cắt ngang cả những lượt đang chạy bình thường.
+//   35s -> 15s (2026-08-18): chuyển sang flash-lite, đo được ~1,4s và KHÔNG có pha suy nghĩ.
+//
+// Vì sao hạ xuống chứ không giữ rộng cho chắc: timeout phía client KHÔNG huỷ được request
+// phía server, nên mỗi lượt bỏ dở vẫn bị tính vào hạn mức. Chờ 35s rồi vứt đi là đốt hạn
+// mức mà chẳng ai nhận được gì — mà người dùng Discord cũng không đợi 35 giây. Thà hỏng
+// nhanh rồi thử lại model dự phòng.
+const REQUEST_TIMEOUT_MS = 15000;
 
 /**
  * Đọc kết quả từ Gemini — cẩn thận hơn `result.text || parts[0].text` cũ.
@@ -67,11 +73,20 @@ async function chat(systemPrompt, history, userText, options = {}) {
     const ai = getClient();
     if (!ai) throw new Error('Thiếu GEMINI_API_KEY');
 
+    // Thứ tự dự phòng, xếp theo ĐỘ TIN CẬY ĐO ĐƯỢC trên gói free chứ không theo "model xịn hơn":
+    //   1. model chính (mặc định flash-lite — ~1,4s, chưa lần nào lỗi trong 8/8 lượt thử)
+    //   2. flash-lite bản -latest: cùng dòng, phòng khi bản ghim tạm trục trặc
+    //   3. gemini-3.6-flash: nặng hơn, hay 503, chỉ dùng khi cả hai trên đều hỏng
+    //
+    // Bản cũ có `gemini-3.1-pro-preview` ở cuối — model đó có hạn mức **bằng 0** trên gói
+    // free (API trả thẳng `limit: 0`), nên nhánh dự phòng cuối BẢO ĐẢM hỏng, chỉ tổ tốn thêm
+    // 1,5s rồi ném lỗi. Nó còn làm lỗi giới hạn-theo-phút của flash trông như cạn hạn mức
+    // ngày, khiến tôi chẩn đoán sai hôm 2026-08-17.
     const primaryModel = options.model || config.AI.GEMINI_MODEL;
     const candidates = [
         primaryModel,
-        'gemini-3.6-flash',
-        'gemini-3.1-pro-preview'
+        'gemini-flash-lite-latest',
+        'gemini-3.6-flash'
     ].filter((m, i, self) => m && self.indexOf(m) === i);
 
     let lastError = null;

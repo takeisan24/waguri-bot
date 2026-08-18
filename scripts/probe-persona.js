@@ -23,6 +23,15 @@ const { WAGURI_SYSTEM_PROMPT, tierOf } = require('../src/lib/ai/persona');
 const gemini = require('../src/lib/ai/gemini');
 
 const AFF = Number(process.argv[2] || 0);
+
+// Model có thể chỉ định để SO SÁNH:  node scripts/probe-persona.js 0 gemini-3.5-flash-lite
+// Mặc định lấy từ config để probe luôn đo đúng thứ bot thật đang dùng.
+const MODEL = process.argv[3] || process.env.PROBE_MODEL || require('../src/config').AI.GEMINI_MODEL;
+
+// Giãn cách giữa các lượt. Model dòng "thinking" cần giãn rộng vì chậm và dễ chạm giới hạn
+// phút; flash-lite trả lời ~1,4s nên 5s là đủ.
+const GIAN_MS = Number(process.env.PROBE_GAP_MS || 5000);
+
 const t = tierOf(AFF);
 
 let sys = `${WAGURI_SYSTEM_PROMPT}\n\n[Người đang trò chuyện: Tuấn — thân thiết: ${t.name} (${AFF} điểm); Level 1. Hãy trò chuyện ${t.guide}.]`;
@@ -54,13 +63,13 @@ function cham(s) {
 }
 
 (async () => {
-    console.log(`═══ Bậc: ${t.name} (aff=${AFF}) · prompt ${sys.length} ký tự ═══\n`);
+    console.log(`═══ Bậc: ${t.name} (aff=${AFF}) · model ${MODEL} · prompt ${sys.length} ký tự ═══\n`);
     const kq = [];
     for (let i = 0; i < HOI.length; i++) {
         const [nhan, hoi] = HOI[i];
-        if (i) await nghi(20000); // giãn để tránh giới hạn theo phút
+        if (i) await nghi(GIAN_MS);
         try {
-            const r = await gemini.chat(sys, [], `Tuấn: ${hoi}`, { model: 'gemini-3.6-flash' });
+            const r = await gemini.chat(sys, [], `Tuấn: ${hoi}`, { model: MODEL });
             const c = cham(r);
             kq.push(c);
             const co = [
