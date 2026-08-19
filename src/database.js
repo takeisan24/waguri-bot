@@ -739,6 +739,24 @@ async function transferItem(fromId, toId, itemId, qty = 1) {
 
 /** Tăng đếm lượt/ngày theo key. Trả số đã dùng (>=1) hoặc -1 nếu vượt cap. */
 /**
+ * Tổng quan AI cho `/eco-admin report` (owner-only, CHỈ ĐỌC).
+ * Trả object của RPC `ai_overview()` (migration 0125), hoặc null nếu lỗi.
+ *
+ * Sinh ra vì server lớn nhất TẮT AI suốt 5 ngày mà không ai biết — nó chỉ lộ khi có người
+ * ngồi chạy SQL tay. Thứ không ai nhìn thấy thì không ai sửa.
+ */
+async function aiOverview() {
+    try {
+        const { data, error } = await supabase.rpc('ai_overview');
+        if (error) throw error;
+        return data || null;
+    } catch (error) {
+        console.error('[DATABASE ERROR] aiOverview():', error?.message || error);
+        return null;
+    }
+}
+
+/**
  * Trần AI cho TOÀN DỰ ÁN trong ngày. Trả:
  *   số đếm  -> còn ngân sách
  *   -1      -> đã hết ngân sách chung
@@ -2409,6 +2427,7 @@ module.exports = {
     transferItem,
     claimDailyCounter,
     claimAiGlobalQuota,
+    aiOverview,
     bumpPoliceHeat,
     resetPoliceHeat,
     // cosmetic

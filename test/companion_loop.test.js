@@ -193,3 +193,36 @@ test('sai kênh: chuỗi chỉ đường có chỗ chèn kênh và đúng xưng 
     // bản đầu viết /mình/ THIẾU cờ i nên không khớp chữ "Mình" viết hoa.
     assert.ok(chuaTu(vi.common.ai_wrong_channel, ['mình']), 'Phải xưng "mình"');
 });
+
+// ── Bảng theo dõi AI cho chủ dự án ───────────────────────────────────────────────────────
+// Server lớn nhất (193 người) TẮT AI suốt 5 ngày mà không ai biết — chỉ lộ khi có người ngồi
+// chạy SQL tay. Thứ không ai NHÌN THẤY thì không ai sửa. Đó là lý do khối này tồn tại.
+test('tổng quan AI: RPC có trong migration và khoá quyền đúng', () => {
+    const thuMuc = path.join(__dirname, '..', 'supabase', 'migrations');
+    const file = fs.readdirSync(thuMuc).find(f => f.includes('ai_overview'));
+    assert.ok(file, 'Thiếu migration ai_overview');
+    const sql = fs.readFileSync(path.join(thuMuc, file), 'utf8');
+
+    assert.ok(/security definer/i.test(sql), 'Phải SECURITY DEFINER để đọc được xuyên RLS');
+    assert.ok(/set search_path/i.test(sql), 'SECURITY DEFINER phải ghim search_path');
+    assert.ok(/revoke all on function public\.ai_overview\(\) from public, anon, authenticated/i.test(sql),
+        'Hàm này lộ số liệu toàn hệ thống — phải REVOKE khỏi anon/authenticated');
+    assert.ok(/grant execute on function public\.ai_overview\(\) to service_role/i.test(sql),
+        'Phải GRANT cho service_role');
+    assert.ok(/\bstable\b/i.test(sql), 'Chỉ đọc thì nên khai STABLE');
+    assert.ok(/server_tat_ai/.test(sql), 'Thiếu mục quan trọng nhất: server đang TẮT AI');
+});
+
+test('tổng quan AI: được nối vào /eco-admin report (không cần lệnh mới)', () => {
+    const src = fs.readFileSync(path.join(__dirname, '..', 'src', 'commands', 'admin', 'eco-admin.js'), 'utf8');
+    assert.ok(/db\.aiOverview\(\)/.test(src), 'report chưa gọi db.aiOverview()');
+    assert.ok(/server_tat_ai/.test(src), 'report chưa hiện danh sách server tắt AI');
+    assert.ok(/GLOBAL_DAILY/.test(src), 'report chưa hiện ngân sách chung đã dùng');
+
+    // Phải chịu được aiOverview trả null (DB lỗi) mà không làm vỡ cả report.
+    assert.ok(/if \(ai\) \{/.test(src),
+        'Phải bọc trong nhánh if (ai) — aiOverview trả null khi DB lỗi, không được làm hỏng report');
+
+    const dbSrc = fs.readFileSync(path.join(__dirname, '..', 'src', 'database.js'), 'utf8');
+    assert.ok(/^\s{4}aiOverview,$/m.test(dbSrc), 'database.js chưa export aiOverview');
+});

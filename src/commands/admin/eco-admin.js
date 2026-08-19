@@ -107,16 +107,64 @@ module.exports = {
             };
             // Dữ liệu từ nhật ký giao dịch (migration 0104). Ledger mới bật nên có thể
             // rỗng trong ~24h đầu — hiển thị ghi chú thay vì bảng trống khó hiểu.
-            const [flow, gainers, activity] = await Promise.all([
+            const [flow, gainers, activity, ai] = await Promise.all([
                 db.getLedgerFlow(24, 8),
                 db.getLedgerTopGainers(24, 5),
                 db.getActivityByDay(7),
+                db.aiOverview(),
             ]);
 
             const fields = [{
                 name: t(locale, 'commands.eco-admin.trend_title'),
                 value: snaps.slice(0, 7).map(s => `\`${s.taken_on}\` ${fmt(s.total_supply, locale)} ${C}`).join('\n')
             }];
+
+            // --- Tổng quan AI ---
+            //
+            // Mục `server_tat_ai` là lý do chính khối này tồn tại: server lớn nhất (193 người)
+            // tắt AI suốt 5 ngày mà không ai biết, chỉ lộ ra khi có người chạy SQL tay. Thứ
+            // không ai nhìn thấy thì không ai sửa.
+            if (ai) {
+                const hn = ai.hom_nay || {};
+                const tl = ai.tich_luy || {};
+                const tat = ai.server_tat_ai || [];
+                const gioiHan = ai.server_gioi_han_kenh || [];
+
+                const dong = [
+                    isEn
+                        ? `💬 Today: **${fmt(hn.nguoi || 0, locale)}** people · **${fmt(hn.luot || 0, locale)}** turns`
+                        : `💬 Hôm nay: **${fmt(hn.nguoi || 0, locale)}** người · **${fmt(hn.luot || 0, locale)}** lượt`,
+                    isEn
+                        ? `🌸 Ever chatted: **${fmt(tl.nguoi_tung_chat || 0, locale)}** · came back on a 2nd day: **${fmt(tl.quay_lai_2_ngay || 0, locale)}**`
+                        : `🌸 Từng chat: **${fmt(tl.nguoi_tung_chat || 0, locale)}** · quay lại ngày 2+: **${fmt(tl.quay_lai_2_ngay || 0, locale)}**`,
+                    isEn
+                        ? `🔋 Shared budget: **${fmt(ai.ngan_sach_da_dung || 0, locale)}/${fmt(config.AI.GLOBAL_DAILY, locale)}**`
+                        : `🔋 Ngân sách chung: **${fmt(ai.ngan_sach_da_dung || 0, locale)}/${fmt(config.AI.GLOBAL_DAILY, locale)}**`,
+                ];
+
+                if (tat.length) {
+                    const nguoi = tat.reduce((s, x) => s + Number(x.so_nguoi || 0), 0);
+                    dong.push(isEn
+                        ? `🔴 **AI OFF in ${tat.length} server(s)** — ${fmt(nguoi, locale)} people cannot chat`
+                        : `🔴 **${tat.length} server đang TẮT AI** — ${fmt(nguoi, locale)} người không chat được`);
+                    dong.push(tat.slice(0, 3).map(x => `   \`${x.guild_id}\` (${fmt(x.so_nguoi, locale)})`).join('\n'));
+                } else {
+                    dong.push(isEn ? '🟢 No server has AI disabled' : '🟢 Không server nào đang tắt AI');
+                }
+
+                if (gioiHan.length) {
+                    const nguoi = gioiHan.reduce((s, x) => s + Number(x.so_nguoi || 0), 0);
+                    dong.push(isEn
+                        ? `📌 ${gioiHan.length} server(s) limit AI to one channel — ${fmt(nguoi, locale)} people`
+                        : `📌 ${gioiHan.length} server giới hạn AI vào 1 kênh — ${fmt(nguoi, locale)} người`);
+                }
+
+                fields.push({
+                    name: isEn ? '🌸 Waguri AI' : '🌸 Trò chuyện với Waguri',
+                    value: dong.join('\n').slice(0, 1000),
+                    inline: false,
+                });
+            }
 
             if (activity.length) {
                 fields.push({

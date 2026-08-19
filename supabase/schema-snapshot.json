@@ -14,6 +14,7 @@
     "add_exp(p_user_id text, p_amount bigint)",
     "add_health(p_user_id text, p_delta integer)",
     "add_pass_xp(p_user_id text, p_season_id text, p_xp_amount integer, p_xp_per_level integer)",
+    "ai_overview()",
     "antinuke_action_log(p_incident bigint, p_kind text, p_target text, p_payload jsonb)",
     "antinuke_get(p_guild text)",
     "antinuke_incident_open(p_guild text, p_executor text, p_action text, p_hits integer, p_window integer, p_mode text, p_verdict text, p_punished boolean, p_detail jsonb)",
