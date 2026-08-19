@@ -120,10 +120,19 @@ module.exports = {
 
             if (!bp.is_premium) {
                 row.addComponents(
+                    // ⚠️ KHÔNG dùng ButtonStyle.Premium ở đây. Đó là kiểu nút dành cho
+                    // MONETIZATION CỦA DISCORD: nó bắt buộc phải có `sku_id` trỏ tới một sản
+                    // phẩm đăng ký với Discord, và KHÔNG nhận `custom_id`. Dự án bán Premium
+                    // qua VietQR/Casso chứ không qua Discord, nên không có SKU nào cả.
+                    //
+                    // Hậu quả đo được trên log prod 2026-08-20: mỗi lần người CHƯA Premium gõ
+                    // `/pass` là ném `RangeError: Premium buttons must have an SKU id` ngay ở
+                    // editReply -> lệnh hỏng hoàn toàn. Vì hiện có 0 người Premium, nghĩa là
+                    // hỏng với 100% người dùng.
                     new ButtonBuilder()
                         .setCustomId(`pass:buy_confirm:${userId}`)
                         .setLabel(t(locale, 'commands.pass.btn_buy_premium'))
-                        .setStyle(ButtonStyle.Premium)
+                        .setStyle(ButtonStyle.Primary)
                 );
             }
 
@@ -391,7 +400,10 @@ async function updateViewEmbed(interaction, userId, seasonId, seasonLabel, local
             new ButtonBuilder()
                 .setCustomId(`pass:buy_confirm:${userId}`)
                 .setLabel(t(locale, 'commands.pass.btn_buy_premium'))
-                .setStyle(ButtonStyle.Premium)
+                // Cùng lý do như nút ở phần xem: Premium là kiểu nút của Discord Monetization,
+                // cần `sku_id` và không nhận `custom_id`. Chỗ này tôi bỏ sót ở lần sửa đầu —
+                // test quét cả thư mục mới lôi ra.
+                .setStyle(ButtonStyle.Primary)
         );
     }
 

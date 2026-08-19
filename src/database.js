@@ -370,15 +370,51 @@ async function setCooldown(userId, command, durationMinutes) {
 // ============================================================
 //  JOBS — nghề nghiệp
 // ============================================================
-async function getJobs() {
-    try {
-        const { data, error } = await supabase.from('jobs').select('*').order('required_level');
-        if (error) throw error;
-        return data || [];
-    } catch (error) {
-        console.error('[DATABASE ERROR] getJobs():', error);
-        return [];
+// ---- Cache DANH MỤC (vật phẩm / nghề) ----
+//
+// VÌ SAO CÓ: hai bảng này là DỮ LIỆU TĨNH — chỉ đổi khi chạy migration hoặc thêm món mới,
+// không đổi theo hành vi người chơi. Nhưng chúng được đọc lại từ DB ở đường nóng nhất:
+// autocomplete chạy MỖI LẦN GÕ MỘT KÝ TỰ, và autocomplete cũng có hạn ack 3 GIÂY như lệnh.
+//
+// Log prod 2026-08-20 cho thấy hậu quả: khi mạng chập chờn (DNS Supabase lỗi EAI_AGAIN),
+// `/eat` autocomplete ném `10062 Unknown interaction` liên tục — lời gọi DB không kịp về
+// trước hạn 3 giây. 7/8 lệnh có autocomplete đều gọi DB kiểu này.
+//
+// Cache 5 phút: đủ ngắn để thêm món mới hiện ra nhanh, đủ dài để autocomplete gần như không
+// bao giờ chạm DB. Phụ thêm: khi DB sập, autocomplete vẫn phục vụ được danh mục cũ.
+const CATALOG_TTL_MS = 5 * 60_000;
+const catalogCache = new Map(); // khoá -> { data, exp }
+
+async function catalogCached(key, fetcher) {
+    const hit = catalogCache.get(key);
+    if (hit && hit.exp > Date.now()) return hit.data;
+    const data = await fetcher();
+    // KHÔNG cache kết quả rỗng: `getItems`/`getJobs` trả [] khi DB lỗi, cache lại nghĩa là
+    // giữ nguyên trạng thái hỏng suốt 5 phút dù DB đã hồi.
+    if (Array.isArray(data) && data.length) {
+        catalogCache.set(key, { data, exp: Date.now() + CATALOG_TTL_MS });
+        return data;
     }
+    // DB lỗi mà cache còn dữ liệu cũ -> dùng tạm, hơn là trả rỗng.
+    return hit ? hit.data : data;
+}
+
+/** Xoá cache danh mục — gọi sau khi thêm/sửa vật phẩm hay nghề trong DB. */
+function invalidateCatalogCache() {
+    catalogCache.clear();
+}
+
+async function getJobs() {
+    return catalogCached('jobs', async () => {
+        try {
+            const { data, error } = await supabase.from('jobs').select('*').order('required_level');
+            if (error) throw error;
+            return data || [];
+        } catch (error) {
+            console.error('[DATABASE ERROR] getJobs():', error);
+            return [];
+        }
+    });
 }
 
 async function getJob(jobId) {
@@ -408,14 +444,16 @@ async function setUserJob(userId, jobId) {
 //  ITEMS / SHOP — vật phẩm
 // ============================================================
 async function getItems() {
-    try {
-        const { data, error } = await supabase.from('items').select('*').order('price');
-        if (error) throw error;
-        return data || [];
-    } catch (error) {
-        console.error('[DATABASE ERROR] getItems():', error);
-        return [];
-    }
+    return catalogCached('items', async () => {
+        try {
+            const { data, error } = await supabase.from('items').select('*').order('price');
+            if (error) throw error;
+            return data || [];
+        } catch (error) {
+            console.error('[DATABASE ERROR] getItems():', error);
+            return [];
+        }
+    });
 }
 
 async function getItem(itemId) {
@@ -2428,6 +2466,7 @@ module.exports = {
     claimDailyCounter,
     claimAiGlobalQuota,
     aiOverview,
+    invalidateCatalogCache,
     bumpPoliceHeat,
     resetPoliceHeat,
     // cosmetic
