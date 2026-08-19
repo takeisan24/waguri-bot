@@ -1,7 +1,7 @@
 // Lớp điều phối AI: chọn provider theo config, giữ ngữ cảnh theo kênh, chống spam.
 const config = require('../../config');
 const db = require('../../database.js');
-const { WAGURI_SYSTEM_PROMPT, tierOf } = require('./persona');
+const { WAGURI_SYSTEM_PROMPT, tierOf, tenBac } = require('./persona');
 // Đặt tên `dich` chứ không phải `t`: trong hàm chat, `t` đã là BẬC THIỆN CẢM (tierOf).
 const { t: dich } = require('../i18n');
 const { getLevelFromExp } = require('../leveling');
@@ -328,9 +328,9 @@ async function chatWithWaguri(channelId, userId, userName, userText, locale) {
             if (bacSau && bacSau.min > t.min) {
                 // Tên bậc PHẢI qua locale: `bacSau.name` trong persona.js viết cứng tiếng
                 // Việt, nên bản tiếng Anh từng ra "Closeness with Waguri: 💛 Quen biết".
-                const tenBac = dich(locale, `lib.ai.tier_name.${bacSau.key}`) || bacSau.name;
+                const tenBacMoi = tenBac(locale, bacSau);
                 const loi = dich(locale, `lib.ai.tier_up.${bacSau.key}`);
-                const nhan = dich(locale, 'lib.ai.tier_up.marker', { tier: tenBac });
+                const nhan = dich(locale, 'lib.ai.tier_up.marker', { tier: tenBacMoi });
                 // Mức "trung lập": một câu TRONG VAI + một dòng đánh dấu rất nhẹ. Không dùng
                 // thông báo hệ thống kiểu "🎉 Lên cấp 2" vì nó phá mất ảo giác người thật.
                 if (loi) reply += `\n\n${loi}`;

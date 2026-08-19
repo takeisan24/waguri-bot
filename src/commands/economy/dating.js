@@ -3,7 +3,7 @@
 const { SlashCommandBuilder } = require('discord.js');
 const db = require('../../database.js');
 const config = require('../../config');
-const { AFFECTION_TIERS, tierOf } = require('../../lib/ai/persona');
+const { AFFECTION_TIERS, tierOf, tenBac } = require('../../lib/ai/persona');
 const { buildWaguriEmbed, createWaguriBar } = require('../../lib/embed');
 const { getInteractionLanguage, t } = require('../../lib/i18n');
 
@@ -89,12 +89,8 @@ const GIFTS_EN = {
     go: { name: 'Rough Pine Wood 🪵', gain: -5, msg: 'Waguri held the rough piece of wood, slightly frowning in confusion: "Ah... what is this for? It feels so rough..." 🥺' }
 };
 
-const tierNames = {
-    'Người quen': { en: 'Acquaintance', vi: 'Người quen' },
-    'Bạn bè': { en: 'Friend', vi: 'Bạn bè' },
-    'Thân thiết': { en: 'Close Friend', vi: 'Thân thiết' },
-    'Tri kỷ': { en: 'Soulmate', vi: 'Tri kỷ' }
-};
+// Bảng dịch tên bậc cũ ở đây khoá theo tên CŨ ('Người quen', 'Bạn bè') — không còn khớp
+// tên hiện tại nên đã CHẾT từ lâu, luôn rơi về tiếng Việt. Nay dùng tenBac() tra locale.
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -131,7 +127,7 @@ module.exports = {
 
             const aff = Number(user.affection || 0);
             const tier = tierOf(aff);
-            const displayTierName = (tierNames[tier.name]?.[locale.startsWith('en') ? 'en' : 'vi']) || tier.name;
+            const displayTierName = tenBac(locale, tier);
             
             // Tìm mốc tier kế tiếp
             const sortedTiers = [...AFFECTION_TIERS].reverse(); // Sắp xếp từ thấp lên cao: 0, 15, 50, 120, 300
@@ -139,7 +135,7 @@ module.exports = {
             const nextLvlXp = nextTier ? nextTier.min : 300;
             const progressPct = Math.min(Math.floor((aff / nextLvlXp) * 100), 100);
 
-            const displayNextTierName = nextTier ? ((tierNames[nextTier.name]?.[locale.startsWith('en') ? 'en' : 'vi']) || nextTier.name) : '';
+            const displayNextTierName = nextTier ? tenBac(locale, nextTier) : '';
 
             let desc = t(locale, 'commands.dating.view_desc', {
                 tier: displayTierName,
@@ -185,7 +181,7 @@ module.exports = {
 
             let affMsg = '';
             if (res) {
-                const displayTierName = (tierNames[tierOf(res.affection).name]?.[locale.startsWith('en') ? 'en' : 'vi']) || tierOf(res.affection).name;
+                const displayTierName = tenBac(locale, tierOf(res.affection));
                 if (res.added > 0) {
                     affMsg = locale.startsWith('en')
                         ? `\n💖 **Affection**: +**${res.added}** points ➔ **${res.affection}** (${displayTierName})`
@@ -235,7 +231,7 @@ module.exports = {
 
             let affMsg = '';
             if (res) {
-                const displayTierName = (tierNames[tierOf(res.affection).name]?.[locale.startsWith('en') ? 'en' : 'vi']) || tierOf(res.affection).name;
+                const displayTierName = tenBac(locale, tierOf(res.affection));
                 if (res.added !== 0) {
                     const sign = res.added > 0 ? '+' : '';
                     affMsg = locale.startsWith('en')

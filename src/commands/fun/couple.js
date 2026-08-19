@@ -1,23 +1,15 @@
 const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, MessageFlags } = require('discord.js');
 const db = require('../../database.js');
 const config = require('../../config');
-const { AFFECTION_TIERS, tierOf } = require('../../lib/ai/persona');
+const { AFFECTION_TIERS, tierOf, tenBac } = require('../../lib/ai/persona');
 const { buildWaguriEmbed } = require('../../lib/embed');
 const { loveTier } = require('../../lib/couple');
 const { getInteractionLanguage, t } = require('../../lib/i18n');
 
 const fmt = (n, locale) => Number(n).toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN');
 
-const getAffectionTierName = (tierName, loc) => {
-    const mapping = {
-        '💞 Tri kỷ': { vi: '💞 Tri kỷ', en: '💞 Soulmate' },
-        '💗 Thân thiết': { vi: '💗 Thân thiết', en: '💗 Close Friend' },
-        '💓 Bạn thân': { vi: '💓 Bạn thân', en: '💓 Best Friend' },
-        '💛 Quen biết': { vi: '💛 Quen biết', en: '💛 Acquaintance' },
-        '🤍 Người mới': { vi: '🤍 Người mới', en: '🤍 Newcomer' }
-    };
-    return mapping[tierName]?.[loc.startsWith('en') ? 'en' : 'vi'] || tierName;
-};
+// Tên bậc nay tra trong locale qua tenBac() — bảng dịch cũ ở đây khoá theo CHUỖI HIỂN THỊ
+// (có emoji), nên chỉ cần biên tập lại tên là nó đứt lặng lẽ. Xem persona.js.
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -207,12 +199,12 @@ module.exports = {
             const nextLine = higher
                 ? t(locale, 'commands.couple.status_affection_next', {
                     points: higher.min - aff,
-                    tier: getAffectionTierName(higher.name, locale)
+                    tier: tenBac(locale, higher)
                 })
                 : t(locale, 'commands.couple.status_affection_max');
 
             let description = t(locale, 'commands.couple.status_affection_block', {
-                tier: getAffectionTierName(tObj.name, locale),
+                tier: tenBac(locale, tObj),
                 points: aff,
                 next: nextLine
             });

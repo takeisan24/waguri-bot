@@ -102,6 +102,26 @@ const AFFECTION_TIERS = [
 ];
 const tierOf = aff => AFFECTION_TIERS.find(t => aff >= t.min);
 
+/**
+ * Tên bậc theo ngôn ngữ. Dùng chỗ nào HIỂN THỊ tên bậc cho người dùng.
+ *
+ * VÌ SAO CÓ: `tier.name` viết cứng tiếng Việt, nên bản tiếng Anh từng ra
+ * "Closeness with Waguri: 💛 Quen biết" (người dùng chụp màn hình 2026-08-19).
+ *
+ * Trước đó có HAI bảng dịch riêng, cả hai đều khoá theo `tier.name` — tức khoá bằng chuỗi
+ * hiển thị có emoji:
+ *   · `couple.js` — khoá theo tên hiện tại, còn chạy nhưng nhân đôi dữ liệu locale
+ *   · `dating.js` — khoá theo tên CŨ ('Người quen', 'Bạn bè'), không còn khớp gì nên đã chết
+ *     từ lâu và luôn rơi về tiếng Việt
+ * Khoá bằng chuỗi hiển thị là gốc của cả hai: chỉ cần biên tập lại tên là bảng dịch đứt lặng
+ * lẽ. Nay khoá theo `tier.key` (ổn định) và tra trong locale.
+ */
+function tenBac(locale, tier) {
+    if (!tier) return '';
+    const { t } = require('../i18n'); // nạp trễ: tránh vòng lặp require khi i18n mở rộng sau này
+    return t(locale, `lib.ai.tier_name.${tier.key}`) || tier.name;
+}
+
 // Hồ sơ nhân vật phụ. Hiện KHÔNG nơi nào import (giữ lại làm tài liệu nhân vật + phòng khi
 // cần dựng cameo có kiểm soát). Tên đã sửa theo nguyên tác.
 const CAMEO_PROFILES = {
@@ -132,4 +152,4 @@ const CAMEO_PROFILES = {
     }
 };
 
-module.exports = { WAGURI_SYSTEM_PROMPT, AFFECTION_TIERS, tierOf, CAMEO_PROFILES };
+module.exports = { WAGURI_SYSTEM_PROMPT, AFFECTION_TIERS, tierOf, tenBac, CAMEO_PROFILES };

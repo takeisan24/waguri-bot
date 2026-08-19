@@ -272,9 +272,42 @@ test('ngôn ngữ: tên bậc có bản dịch, không viết cứng tiếng Vi�
         assert.ok(!chuaTu(enTen, ['Quen', 'Thân', 'Người', 'Bạn', 'Tri']),
             'Tên bậc EN còn tiếng Việt: ' + enTen);
     }
-    // Nơi hiển thị phải TRA locale chứ không dùng thẳng .name
-    const aiSrc = fs.readFileSync(path.join(__dirname, '..', 'src', 'lib', 'ai', 'index.js'), 'utf8');
-    assert.ok(/lib\.ai\.tier_name\./.test(aiSrc), 'ai/index.js chưa tra tên bậc qua locale');
-    const profileSrc = fs.readFileSync(path.join(__dirname, '..', 'src', 'commands', 'economy', 'profile.js'), 'utf8');
-    assert.ok(/lib\.ai\.tier_name\./.test(profileSrc), '/profile chưa tra tên bậc qua locale');
+    // Nơi hiển thị phải đi qua helper chung `tenBac()` chứ không dùng thẳng `.name`.
+    // Việc TRA khoá locale nay nằm gọn trong persona.js — xem test "chỉ có MỘT nguồn sự thật".
+    for (const f of ['lib/ai/index.js', 'commands/economy/profile.js']) {
+        const src = fs.readFileSync(path.join(__dirname, '..', 'src', f), 'utf8');
+        assert.ok(/tenBac\(/.test(src), f + ' chưa dùng tenBac() để lấy tên bậc theo ngôn ngữ');
+    }
+});
+
+test('tên bậc: chỉ có MỘT nguồn sự thật, không bảng dịch riêng lẻ', () => {
+    const { tenBac, tierOf } = require('../src/lib/ai/persona');
+
+    // Helper chung phải trả đúng theo ngôn ngữ
+    assert.strictEqual(tenBac('vi', tierOf(5)), vi.lib.ai.tier_name.quen_biet);
+    assert.strictEqual(tenBac('en', tierOf(5)), en.lib.ai.tier_name.quen_biet);
+    assert.strictEqual(tenBac('vi', null), '', 'tier rỗng phải trả chuỗi rỗng, không nổ');
+
+    // Không nơi nào được dựng bảng dịch tên bậc riêng. Hai bảng cũ đều khoá theo CHUỖI HIỂN
+    // THỊ có emoji, nên chỉ cần biên tập lại tên là chúng đứt lặng lẽ — dating.js đã đứt sẵn
+    // (khoá theo tên cũ 'Người quen', 'Bạn bè') và luôn rơi về tiếng Việt.
+    for (const f of ['commands/economy/dating.js', 'commands/fun/couple.js']) {
+        const src = fs.readFileSync(path.join(__dirname, '..', 'src', f), 'utf8');
+        assert.ok(!/const tierNames = \{/.test(src), f + ' còn bảng tierNames riêng');
+        assert.ok(!/getAffectionTierName\s*=/.test(src), f + ' còn getAffectionTierName riêng');
+        assert.ok(/tenBac\(/.test(src), f + ' chưa dùng helper chung tenBac()');
+    }
+
+    // Chuỗi tên bậc chỉ được tra ở ĐÚNG một chỗ trong src/
+    const tra = [];
+    const duyet = (d) => {
+        for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+            const p = path.join(d, e.name);
+            if (e.isDirectory()) duyet(p);
+            else if (e.name.endsWith('.js') && /lib\.ai\.tier_name\./.test(fs.readFileSync(p, 'utf8'))) tra.push(e.name);
+        }
+    };
+    duyet(path.join(__dirname, '..', 'src'));
+    assert.deepStrictEqual(tra, ['persona.js'],
+        'Khoá lib.ai.tier_name chỉ nên được tra trong persona.js, thấy ở: ' + tra.join(', '));
 });

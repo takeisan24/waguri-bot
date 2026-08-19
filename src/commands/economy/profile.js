@@ -4,7 +4,7 @@ const config = require('../../config');
 const { getProgress } = require('../../lib/leveling');
 const { createWaguriBar, getWaguriFooter, buildWaguriEmbed } = require('../../lib/embed');
 const { getInteractionLanguage, t } = require('../../lib/i18n');
-const { AFFECTION_TIERS, tierOf } = require('../../lib/ai/persona');
+const { AFFECTION_TIERS, tierOf, tenBac } = require('../../lib/ai/persona');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -87,13 +87,12 @@ module.exports = {
             const bac = tierOf(aff);
             const caoHon = [...AFFECTION_TIERS].reverse().find(x => x.min > aff);
             // Tên bậc qua locale — `bac.name` trong persona.js viết cứng tiếng Việt.
-            const tenBac = b => t(locale, `lib.ai.tier_name.${b.key}`) || b.name;
             const tienDo = caoHon
-                ? t(locale, 'commands.profile.waguri_next', { next: tenBac(caoHon), remain: caoHon.min - aff })
+                ? t(locale, 'commands.profile.waguri_next', { next: tenBac(locale, caoHon), remain: caoHon.min - aff })
                 : t(locale, 'commands.profile.waguri_max');
             embed.addFields({
                 name: t(locale, 'commands.profile.fields.waguri'),
-                value: `${tenBac(bac)} · ${aff} 💗\n${tienDo}`,
+                value: `${tenBac(locale, bac)} · ${aff} 💗\n${tienDo}`,
                 inline: false,
             });
 
