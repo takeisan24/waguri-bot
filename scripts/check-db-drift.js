@@ -88,6 +88,12 @@ const soSanhMang = (ten, a = [], b = []) => {
         for (const r of nguon[1].ham_goi_bang_khong_ton_tai || []) {
             lech.push(`HÀM GỌI BẢNG MA (${nguon[0]}): ${r} — gọi vào là lỗi lúc chạy, không lỗi lúc tạo.`);
         }
+        // 0127: sai tên CỘT. Lớp lỗi tệ nhất của dự án — `0094` study RPC ghi vào cột `coins`
+        // không tồn tại và báo THÀNH CÔNG GIẢ (xếp CRITICAL). Chỉ soi hai khuôn GHI
+        // (UPDATE ... SET, INSERT INTO) vì đó là nơi thiệt hại lớn nhất và regex đủ chắc.
+        for (const r of nguon[1].ham_ghi_cot_khong_ton_tai || []) {
+            lech.push(`HÀM GHI CỘT MA (${nguon[0]}): ${r} — dữ liệu KHÔNG được lưu, hoặc lỗi giữa transaction.`);
+        }
     }
 
     const soBang = Object.keys(bangChuan).length;

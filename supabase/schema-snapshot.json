@@ -94,11 +94,6 @@
     "loan_repay(p_borrower text, p_lender text, p_amount bigint)",
     "log_item_change()",
     "log_money_change()",
-    "lottery_buy(p_user_id text, p_count integer, p_price bigint, p_cut numeric, p_secs integer)",
-    "lottery_claim_ticket(p_user_id text, p_ticket_number text, p_def_reward_type text, p_def_reward_value text, p_def_reward_name text, p_duration_secs integer)",
-    "lottery_save_draw_result(p_round_no integer, p_winning_number text, p_next_reward_type text, p_next_reward_value text, p_next_reward_name text, p_duration_secs integer, p_last_winner_desc text, p_last_reward_desc text)",
-    "lottery_settle(p_cut numeric, p_secs integer)",
-    "lottery_view(p_user_id text, p_cut numeric, p_secs integer)",
     "market_block()",
     "market_buy(p_buyer text, p_listing bigint, p_fee numeric)",
     "market_cancel(p_seller text, p_listing bigint)",
@@ -157,6 +152,7 @@
     "use_vehicle(p_user_id text)",
     "user_wealth_rank(p_user text)"
   ],
+  "ham_ghi_cot_khong_ton_tai": [],
   "ham_goi_bang_khong_ton_tai": [],
   "indexes": [
     "achievements_pkey",
