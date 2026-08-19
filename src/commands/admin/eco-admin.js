@@ -142,12 +142,23 @@ module.exports = {
                         : `🔋 Ngân sách chung: **${fmt(ai.ngan_sach_da_dung || 0, locale)}/${fmt(config.AI.GLOBAL_DAILY, locale)}**`,
                 ];
 
+                // ID trần thì không hành động được — phải biết ĐÓ LÀ SERVER NÀO mới đi hỏi
+                // admin được. Bot có sẵn danh sách server nên tra tên tại chỗ.
+                // Nếu bot chạy nhiều shard thì cache chỉ có server của shard này; không tra
+                // được thì hiện ID để vẫn còn manh mối, chứ không im lặng bỏ qua.
+                const tenServer = (id) => {
+                    const g = interaction.client.guilds.cache.get(String(id));
+                    return g ? `**${g.name}**` : `\`${id}\``;
+                };
+
                 if (tat.length) {
                     const nguoi = tat.reduce((s, x) => s + Number(x.so_nguoi || 0), 0);
                     dong.push(isEn
                         ? `🔴 **AI OFF in ${tat.length} server(s)** — ${fmt(nguoi, locale)} people cannot chat`
                         : `🔴 **${tat.length} server đang TẮT AI** — ${fmt(nguoi, locale)} người không chat được`);
-                    dong.push(tat.slice(0, 3).map(x => `   \`${x.guild_id}\` (${fmt(x.so_nguoi, locale)})`).join('\n'));
+                    dong.push(tat.slice(0, 5).map(x =>
+                        `   ${tenServer(x.guild_id)} · ${fmt(x.so_nguoi, locale)} ${isEn ? 'people' : 'người'}`
+                    ).join('\n'));
                 } else {
                     dong.push(isEn ? '🟢 No server has AI disabled' : '🟢 Không server nào đang tắt AI');
                 }
@@ -157,6 +168,9 @@ module.exports = {
                     dong.push(isEn
                         ? `📌 ${gioiHan.length} server(s) limit AI to one channel — ${fmt(nguoi, locale)} people`
                         : `📌 ${gioiHan.length} server giới hạn AI vào 1 kênh — ${fmt(nguoi, locale)} người`);
+                    dong.push(gioiHan.slice(0, 5).map(x =>
+                        `   ${tenServer(x.guild_id)} · ${fmt(x.so_nguoi, locale)} ${isEn ? 'people' : 'người'}`
+                    ).join('\n'));
                 }
 
                 fields.push({
