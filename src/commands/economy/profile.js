@@ -86,12 +86,14 @@ module.exports = {
             const aff = Number(user.affection || 0);
             const bac = tierOf(aff);
             const caoHon = [...AFFECTION_TIERS].reverse().find(x => x.min > aff);
+            // Tên bậc qua locale — `bac.name` trong persona.js viết cứng tiếng Việt.
+            const tenBac = b => t(locale, `lib.ai.tier_name.${b.key}`) || b.name;
             const tienDo = caoHon
-                ? t(locale, 'commands.profile.waguri_next', { next: caoHon.name, remain: caoHon.min - aff })
+                ? t(locale, 'commands.profile.waguri_next', { next: tenBac(caoHon), remain: caoHon.min - aff })
                 : t(locale, 'commands.profile.waguri_max');
             embed.addFields({
                 name: t(locale, 'commands.profile.fields.waguri'),
-                value: `${bac.name} · ${aff} 💗\n${tienDo}`,
+                value: `${tenBac(bac)} · ${aff} 💗\n${tienDo}`,
                 inline: false,
             });
 

@@ -1940,6 +1940,13 @@
   },
   "lib": {
     "ai": {
+      "tier_name": {
+        "nguoi_moi": "🤍 Người mới",
+        "quen_biet": "💛 Quen biết",
+        "ban_than": "💓 Bạn thân",
+        "than_thiet": "💗 Thân thiết",
+        "tri_ky": "💞 Tri kỷ"
+      },
       "tier_up": {
         "marker": "🌸 *Thân thiết với Waguri: {tier}*",
         "quen_biet": "À mà... hình như mình với cậu nói chuyện hợp nhau ghê đó nha~ 🌸",

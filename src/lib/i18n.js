@@ -177,6 +177,33 @@ async function resolveInteractionLanguage(interaction, userId) {
     return 'vi';
 }
 
+// Dấu phụ tiếng Việt — chỉ tiếng Việt mới có tổ hợp này, nên có dấu là bằng chứng RẤT MẠNH,
+// mạnh hơn hẳn `guild.preferredLocale`.
+const DAU_TIENG_VIET = /[àáảãạăằắẳẵặâầấẩẫậđèéẻẽẹêềếểễệìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵ]/i;
+
+/**
+ * Người này có đang VIẾT tiếng Việt không?
+ *
+ * VÌ SAO CẦN: đường @mention (messageCreate) KHÔNG có `interaction.locale` — đó là thứ chỉ
+ * slash command mới có. Nên bậc 3 của getInteractionLanguage bị bỏ qua, bậc học ngôn ngữ
+ * không bao giờ chạy, và quyết định rơi xuống bậc 4: `guild.preferredLocale`.
+ *
+ * Mà `preferredLocale` của Discord **mặc định là en-US cho gần như mọi server** (chỉ server
+ * Community mới đổi được). Nó là giá trị mặc định vô nghĩa, không phải sở thích thật.
+ *
+ * Hậu quả đo được 2026-08-19: 298/306 người dùng có `users.locale` rỗng, nên gần như MỌI
+ * thông điệp hệ thống trên đường @mention hiện ra tiếng Anh cho một cộng đồng nói tiếng Việt.
+ * Lỗi bị che vì câu trả lời AI vẫn ra tiếng Việt — model bám theo ngôn ngữ người dùng viết,
+ * bất kể chỉ thị trong prompt.
+ *
+ * Chỉ khẳng định theo chiều DƯƠNG: có dấu -> chắc chắn tiếng Việt. Không có dấu KHÔNG có
+ * nghĩa là tiếng Anh (người Việt vẫn hay gõ không dấu), nên khi đó trả null để các bậc còn
+ * lại tự quyết.
+ */
+function detectVietnamese(text) {
+    return DAU_TIENG_VIET.test(String(text || '')) ? 'vi' : null;
+}
+
 function substitute(template, params) {
     if (typeof template !== 'string') return template;
     let result = template;
@@ -186,4 +213,4 @@ function substitute(template, params) {
     return result;
 }
 
-module.exports = { t, getLanguage, getInteractionLanguage, invalidateLocaleCache };
+module.exports = { t, getLanguage, getInteractionLanguage, invalidateLocaleCache, detectVietnamese };

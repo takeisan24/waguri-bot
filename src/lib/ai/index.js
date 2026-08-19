@@ -326,8 +326,11 @@ async function chatWithWaguri(channelId, userId, userName, userText, locale) {
             const bacSau = tierOf(kqAff.affection);
             // Chỉ báo khi THỰC SỰ vượt mốc, không báo mỗi lượt.
             if (bacSau && bacSau.min > t.min) {
+                // Tên bậc PHẢI qua locale: `bacSau.name` trong persona.js viết cứng tiếng
+                // Việt, nên bản tiếng Anh từng ra "Closeness with Waguri: 💛 Quen biết".
+                const tenBac = dich(locale, `lib.ai.tier_name.${bacSau.key}`) || bacSau.name;
                 const loi = dich(locale, `lib.ai.tier_up.${bacSau.key}`);
-                const nhan = dich(locale, 'lib.ai.tier_up.marker', { tier: bacSau.name });
+                const nhan = dich(locale, 'lib.ai.tier_up.marker', { tier: tenBac });
                 // Mức "trung lập": một câu TRONG VAI + một dòng đánh dấu rất nhẹ. Không dùng
                 // thông báo hệ thống kiểu "🎉 Lên cấp 2" vì nó phá mất ảo giác người thật.
                 if (loi) reply += `\n\n${loi}`;

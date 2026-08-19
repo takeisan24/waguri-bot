@@ -1,7 +1,7 @@
 const { Events } = require('discord.js');
 const config = require('../config');
 const db = require('../database.js');
-const { getInteractionLanguage, t } = require('../lib/i18n');
+const { getInteractionLanguage, t, detectVietnamese } = require('../lib/i18n');
 const { buildPrefixInteraction } = require('../lib/prefixShim');
 const { chatWithWaguri, onCooldown } = require('../lib/ai');
 const { handleMessage: handleNoiTu } = require('../lib/noitu');
@@ -315,9 +315,21 @@ module.exports = {
             if (onCooldown(message.author.id)) return;
             await message.channel.sendTyping().catch(() => {});
             
+            // `locale:` lấy từ CHÍNH CHỮ người ta vừa gõ. Đường @mention không có
+            // `interaction.locale` (thứ chỉ slash command mới có), nên bậc 3 của
+            // getInteractionLanguage bị bỏ qua và quyết định rơi xuống `guild.preferredLocale`
+            // — giá trị mà Discord mặc định là en-US cho gần như mọi server.
+            //
+            // Hậu quả đo được 2026-08-19: 298/306 người có `users.locale` rỗng, nên hầu hết
+            // thông điệp hệ thống hiện ra tiếng Anh giữa một cuộc trò chuyện tiếng Việt.
+            // Câu trả lời AI vẫn tiếng Việt (model bám theo người dùng) nên lỗi bị che.
+            //
+            // Có dấu tiếng Việt là bằng chứng mạnh hơn hẳn mặc định của Discord. Truyền vào
+            // bậc 3 nên nó cũng KÍCH HOẠT phần học ngôn ngữ, dần lấp chỗ rỗng kia.
             const locale = await getInteractionLanguage({
                 guildId: message.guildId,
                 user: message.author,
+                locale: detectVietnamese(text) || undefined,
                 guildLocale: message.guild?.preferredLocale
             });
 

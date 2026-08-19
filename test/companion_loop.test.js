@@ -226,3 +226,55 @@ test('tổng quan AI: được nối vào /eco-admin report (không cần lệnh
     const dbSrc = fs.readFileSync(path.join(__dirname, '..', 'src', 'database.js'), 'utf8');
     assert.ok(/^\s{4}aiOverview,$/m.test(dbSrc), 'database.js chưa export aiOverview');
 });
+
+// ── Ngôn ngữ trên đường @mention ─────────────────────────────────────────────────────────
+// Lỗi thật quan sát được 2026-08-19 (ảnh chụp từ người dùng): cả cuộc trò chuyện tiếng Việt
+// nhưng dòng lên bậc ra TIẾNG ANH, và dòng đánh dấu lẫn lộn "Closeness with Waguri: Quen biết".
+//
+// Gốc: đường @mention không có `interaction.locale` (chỉ slash command mới có), nên quyết định
+// rơi xuống `guild.preferredLocale` — thứ Discord mặc định en-US cho gần như mọi server.
+// 298/306 người có `users.locale` rỗng nên hầu hết đều dính.
+test('ngôn ngữ: nhận diện tiếng Việt từ chính chữ người dùng gõ', () => {
+    const { detectVietnamese } = require('../src/lib/i18n');
+    // Có dấu -> khẳng định tiếng Việt
+    assert.strictEqual(detectVietnamese('Hướng dẫn lam bùa yêu'), 'vi');
+    assert.strictEqual(detectVietnamese('Cứ hướng dân ik t có bỏ bùa m đâu'), 'vi');
+    // Không dấu -> KHÔNG kết luận (người Việt hay gõ không dấu) -> để bậc khác quyết
+    assert.strictEqual(detectVietnamese('hello how are you'), null);
+    assert.strictEqual(detectVietnamese('chao ban'), null);
+    assert.strictEqual(detectVietnamese(''), null);
+    assert.strictEqual(detectVietnamese(null), null);
+});
+
+test('ngôn ngữ: đường @mention truyền tín hiệu ngôn ngữ từ nội dung tin nhắn', () => {
+    const src = fs.readFileSync(path.join(__dirname, '..', 'src', 'events', 'messageCreate.js'), 'utf8');
+    const iMention = src.indexOf('Trò chuyện AI khi @mention');
+    assert.ok(iMention !== -1, 'Không tìm thấy nhánh @mention');
+    // Neo tới đúng lời gọi chatWithWaguri thay vì đếm ký tự — khối 'chỉ đường sai kênh'
+    // thêm sau đã đẩy dòng này ra xa và làm cửa sổ cố định trượt mất.
+    const iChat = src.indexOf('chatWithWaguri(message.channelId', iMention);
+    assert.ok(iChat !== -1, 'Không tìm thấy lời gọi chatWithWaguri trong nhánh @mention');
+    const nhanh = src.slice(iMention, iChat);
+    assert.ok(/detectVietnamese\(text\)/.test(nhanh),
+        'Nhánh @mention phải suy ngôn ngữ từ CHỮ người dùng gõ — guild.preferredLocale mặc định en-US nên vô nghĩa');
+});
+
+test('ngôn ngữ: tên bậc có bản dịch, không viết cứng tiếng Việt', () => {
+    for (const b of AFFECTION_TIERS) {
+        for (const [ten, loc] of [['vi', vi], ['en', en]]) {
+            const s = loc.lib?.ai?.tier_name?.[b.key];
+            assert.ok(s && s.trim(), ten + '.json thiếu lib.ai.tier_name.' + b.key);
+        }
+    }
+    // Bản EN không được lẫn tên tiếng Việt — đây chính là lỗi trong ảnh chụp.
+    for (const b of AFFECTION_TIERS) {
+        const enTen = en.lib.ai.tier_name[b.key];
+        assert.ok(!chuaTu(enTen, ['Quen', 'Thân', 'Người', 'Bạn', 'Tri']),
+            'Tên bậc EN còn tiếng Việt: ' + enTen);
+    }
+    // Nơi hiển thị phải TRA locale chứ không dùng thẳng .name
+    const aiSrc = fs.readFileSync(path.join(__dirname, '..', 'src', 'lib', 'ai', 'index.js'), 'utf8');
+    assert.ok(/lib\.ai\.tier_name\./.test(aiSrc), 'ai/index.js chưa tra tên bậc qua locale');
+    const profileSrc = fs.readFileSync(path.join(__dirname, '..', 'src', 'commands', 'economy', 'profile.js'), 'utf8');
+    assert.ok(/lib\.ai\.tier_name\./.test(profileSrc), '/profile chưa tra tên bậc qua locale');
+});

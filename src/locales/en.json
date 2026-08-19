@@ -2499,6 +2499,13 @@
   },
   "lib": {
     "ai": {
+      "tier_name": {
+        "nguoi_moi": "🤍 New friend",
+        "quen_biet": "💛 Acquainted",
+        "ban_than": "💓 Close friend",
+        "than_thiet": "💗 Dear friend",
+        "tri_ky": "💞 Soulmate"
+      },
       "tier_up": {
         "marker": "🌸 *Closeness with Waguri: {tier}*",
         "quen_biet": "Oh, and... I think we get along really well, you know~ 🌸",
