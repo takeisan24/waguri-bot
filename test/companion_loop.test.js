@@ -155,3 +155,41 @@ test('hạn mức toàn cục: DB lỗi thì VẪN cho chat (fail-open)', async 
         gemini.chat = goc.chat; db.incrAffection = goc.aff; db.getUser = goc.user;
     }
 });
+
+// ── Chỉ đường khi @mention sai kênh ──────────────────────────────────────────────────────
+// Đo 2026-08-19: 59% lượt tham gia server nằm ở server AI bị TẮT, 20% ở server giới hạn AI
+// vào một kênh. Nhóm thứ hai @mention Waguri ở kênh thường và trước đây không nhận được GÌ —
+// ba lệnh `return` im lặng liên tiếp trong messageCreate. Im lặng đọc như bot hỏng.
+test('sai kênh: chỉ đường thay vì im lặng, và KHÔNG đụng nhánh AI tắt', () => {
+    const src = fs.readFileSync(path.join(__dirname, '..', 'src', 'events', 'messageCreate.js'), 'utf8');
+
+    const iTat = src.indexOf("gs.ai_enabled === '0'");
+    const iKenh = src.indexOf('gs.ai_channel && gs.ai_channel !== message.channelId');
+    assert.ok(iTat !== -1 && iKenh !== -1, 'Không tìm thấy hai chốt chặn AI theo server');
+
+    // AI bị admin TẮT -> phải im lặng. Bot đáp "tớ không được nói ở đây" chính là đang nói.
+    const nhanhTat = src.slice(iTat, iKenh);
+    assert.ok(/return;/.test(nhanhTat), 'Nhánh AI-tắt phải return');
+    assert.ok(!/message.reply/.test(nhanhTat),
+        'Nhánh AI-tắt KHÔNG được trả lời — đó là quyết định có chủ ý của admin');
+
+    // Sai kênh -> phải chỉ đường
+    const nhanhKenh = src.slice(iKenh, iKenh + 1400);
+    assert.ok(/ai_wrong_channel/.test(nhanhKenh), 'Sai kênh phải dùng chuỗi chỉ đường trong locale');
+    assert.ok(/nhacKenhCD/.test(nhanhKenh), 'Phải có tiết chế — không thì @mention liên tục sẽ bị dội lại liên tục');
+    assert.ok(/channels.cache.get/.test(nhanhKenh),
+        'Phải kiểm kênh còn tồn tại — kênh đã xoá thì chỉ đường ra link hỏng, thà im lặng');
+    assert.ok(/allowedMentions/.test(nhanhKenh), 'Phải chặn mention để không bị mồi tag hàng loạt');
+});
+
+test('sai kênh: chuỗi chỉ đường có chỗ chèn kênh và đúng xưng hô', () => {
+    for (const [ten, loc] of [['vi', vi], ['en', en]]) {
+        const s = loc.common?.ai_wrong_channel;
+        assert.ok(s && s.trim(), `${ten}.json thiếu common.ai_wrong_channel`);
+        assert.ok(s.includes('{channel}'), `${ten}: thiếu {channel} thì người ta không biết đi đâu`);
+    }
+    assert.ok(!chuaTu(vi.common.ai_wrong_channel, ['tớ', 'tôi']), 'Sai xưng hô canon');
+    // Dùng chuaTu (đã xử lý đúng tiếng Việt + không phân biệt hoa thường) thay cho regex tay:
+    // bản đầu viết /mình/ THIẾU cờ i nên không khớp chữ "Mình" viết hoa.
+    assert.ok(chuaTu(vi.common.ai_wrong_channel, ['mình']), 'Phải xưng "mình"');
+});

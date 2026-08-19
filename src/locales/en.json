@@ -2,6 +2,7 @@
   "common": {
     "ai_quota_exceeded": "You have used all **{cap}** of your chat limits with me today 🥺 — upgrade to `/premium` for more 💎",
     "ai_quota_global": "I have been chatting a lot today and I am getting a little tired... 🥺 Let me rest a bit, and we can talk again tomorrow~ 🌸",
+    "ai_wrong_channel": "I am only allowed to chat over in {channel}~ Come find me there and we can talk 🌸",
     "banned": "You have been banned from using the bot~ Contact the admin if there is any mistake.",
     "btn": {
       "confirm": "Confirm",

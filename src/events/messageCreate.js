@@ -60,10 +60,16 @@ const PREFIX_ALIASES = {
     no: { cmd: 'vay', sub: 'so' },
 };
 
+// Nhắc "sai kênh" — mỗi người mỗi server chỉ nhắc lại sau 10 phút. Không có nó thì người
+// @mention liên tục sẽ bị dội lại liên tục, biến một lời chỉ đường thành phiền nhiễu.
+const nhacKenhCD = new Map(); // `${guildId}:${userId}` -> hết cooldown (ms)
+const NHAC_KENH_MS = 10 * 60 * 1000;
+
 // Dọn rác cooldown định kỳ (tránh phình RAM). .unref() để không giữ tiến trình sống.
 setInterval(() => {
     const now = Date.now();
     for (const [uid, exp] of chatCD) if (exp < now) chatCD.delete(uid);
+    for (const [k, exp] of nhacKenhCD) if (exp < now) nhacKenhCD.delete(k);
 }, 30 * 60 * 1000).unref();
 
 const rand = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
@@ -274,8 +280,37 @@ module.exports = {
 
             // Cấu hình AI theo server (admin đặt qua /config ai)
             const gs = await db.getGuildSettings(message.guild.id);
-            if (gs.ai_enabled === '0') return;                                   // AI bị tắt ở server này
-            if (gs.ai_channel && gs.ai_channel !== message.channelId) return;    // chỉ trả lời ở kênh chỉ định
+            // AI bị admin tắt ở server này -> im lặng CÓ CHỦ Ý. Đó là quyết định của admin;
+            // một con bot cứ đáp "tớ không được phép nói chuyện ở đây" thì chính nó đang nói
+            // chuyện, tức phá đúng thứ admin vừa tắt.
+            if (gs.ai_enabled === '0') return;
+
+            // Sai kênh -> CHỈ ĐƯỜNG, đừng im lặng.
+            //
+            // Đo 2026-08-19: 75/374 lượt tham gia server nằm ở server giới hạn AI vào một kênh.
+            // Trước đây họ @mention Waguri ở kênh thường và không nhận được GÌ CẢ — đọc như bot
+            // hỏng hoặc như cô ấy phớt lờ. Chỉ đường vừa tôn trọng ý admin (gom AI về một kênh)
+            // vừa xoá chỗ mơ hồ.
+            if (gs.ai_channel && gs.ai_channel !== message.channelId) {
+                // Kênh đã bị xoá -> setting cũ, chỉ đường sẽ ra link hỏng. Thà im lặng.
+                const kenhAI = message.guild.channels.cache.get(gs.ai_channel);
+                if (!kenhAI) return;
+
+                const khoaNhac = `${message.guild.id}:${message.author.id}`;
+                if (Date.now() < (nhacKenhCD.get(khoaNhac) || 0)) return;
+                nhacKenhCD.set(khoaNhac, Date.now() + NHAC_KENH_MS);
+
+                const localeNhac = await getInteractionLanguage({
+                    guildId: message.guildId,
+                    user: message.author,
+                    guildLocale: message.guild?.preferredLocale,
+                });
+                message.reply({
+                    content: t(localeNhac, 'common.ai_wrong_channel', { channel: `<#${gs.ai_channel}>` }),
+                    allowedMentions: { parse: [] },
+                }).catch(() => {});
+                return;
+            }
 
             if (onCooldown(message.author.id)) return;
             await message.channel.sendTyping().catch(() => {});

@@ -2,6 +2,7 @@
   "common": {
     "ai_quota_exceeded": "Cậu đã dùng hết **{cap}** lượt chat với mình hôm nay rồi 🥺 — nâng cấp `/premium` để có thêm nhé 💎",
     "ai_quota_global": "Hôm nay mình trò chuyện hơi nhiều nên thấm mệt rồi... 🥺 Cậu cho mình nghỉ một chút nha, mai mình lại nói chuyện với cậu nhé~ 🌸",
+    "ai_wrong_channel": "Mình chỉ được phép trò chuyện ở {channel} thôi à~ Cậu sang bên đó nhắn với mình nhé 🌸",
     "banned": "Cậu đã bị chặn sử dụng bot~ Liên hệ admin nếu có nhầm lẫn nhé.",
     "btn": {
       "confirm": "Xác nhận",
