@@ -181,3 +181,99 @@ test('prefix: role id không tồn tại -> null', async () => {
     const it = await buildPrefixInteraction(msgCoRole, cmdRole, ['dat', '<@&999>']);
     assert.strictEqual(it.options.getRole('role'), null);
 });
+
+// ============================================================
+// BA API TỪNG THIẾU — và thiếu theo ba kiểu hại khác nhau
+//
+// Kiểm thử tay ngày 20-08-2026 cho thấy phân loại ban đầu của tôi sai: tôi tưởng cả 5
+// lệnh "lô 1" đều ném lỗi TRƯỚC khi kịp trả lời. Thực tế người dùng báo "mở được embed
+// nhưng báo lỗi chung, không tương tác được với embed" — vì `fetchReply()` được gọi SAU
+// khi embed đã gửi xong, nên lệnh nhìn như chạy được mà collector không bao giờ gắn.
+//
+//   · inGuild()   — thiếu -> TypeError ngay dòng đầu execute(), không có gì hiện ra
+//                   (w!serverinfo, serverinfo.js:185).
+//   · fetchReply()— thiếu -> embed ĐÃ gửi rồi mới ném; nút chết lặng lẽ
+//                   (w!duangua, w!xocdia).
+//   · channelId   — thiếu -> không ném gì cả, chỉ là undefined, rồi thành khoá phiên
+//                   dùng chung cho MỌI server (w!noitu, w!dovui) hoặc đi thẳng vào DB
+//                   (w!bacay, w!masoi, w!market auction, w!ask).
+// ============================================================
+const fs = require('fs');
+const path = require('path');
+
+const msgCoKenh = {
+    ...fakeMessage,
+    channelId: 'kenh-123',
+    guildId: 'guild-9',
+    _daGui: null,
+    reply: async function (body) { this._daGui = { id: 'tin-1', body, edit: async () => ({}) }; return this._daGui; },
+};
+
+test('shim: channelId đi thẳng từ message, không phải undefined', async () => {
+    const it = await buildPrefixInteraction(msgCoKenh, cmd, ['ban', 'go', '10']);
+    assert.strictEqual(it.channelId, 'kenh-123',
+        'channelId undefined sẽ thành khoá phiên dùng chung cho mọi server.');
+});
+
+test('shim: inGuild() là HÀM và phản ánh đúng guildId', async () => {
+    const trong = await buildPrefixInteraction(msgCoKenh, cmd, ['ban', 'go', '10']);
+    assert.strictEqual(typeof trong.inGuild, 'function', 'thiếu hàm -> TypeError ở dòng đầu execute()');
+    assert.strictEqual(trong.inGuild(), true);
+
+    const ngoai = await buildPrefixInteraction(fakeMessage, cmd, ['ban', 'go', '10']); // guildId: null
+    assert.strictEqual(ngoai.inGuild(), false);
+});
+
+test('shim: fetchReply() trả về ĐÚNG tin nhắn đã gửi (để gắn collector lên nút)', async () => {
+    const it = await buildPrefixInteraction(msgCoKenh, cmd, ['ban', 'go', '10']);
+    assert.strictEqual(await it.fetchReply(), null, 'chưa gửi gì thì chưa có tin nhắn (state.sent khởi tạo null)');
+
+    await it.reply({ content: 'xin chào' });
+    const msg = await it.fetchReply();
+    assert.ok(msg, 'fetchReply() trả undefined -> msg.createMessageComponentCollector ném lỗi, nút chết');
+    assert.strictEqual(msg.id, 'tin-1', 'phải là chính tin nhắn vừa gửi, không phải tin khác');
+});
+
+// ── GATE: khoá bề mặt API mà lệnh được phép dùng trên đường prefix ───────────────
+// Quét thân execute() của MỌI lệnh (autocomplete/handleButton nhận interaction THẬT của
+// Discord nên không tính). Mọi `interaction.X` phải tồn tại trên shim, nếu không thì
+// `w!lệnh` vỡ — mà vỡ kiểu nào thì tuỳ vị trí, có kiểu im lặng hoàn toàn.
+const MIEN_TRU = {
+    targetUser: 'chỉ có ở context menu (chuột phải) — không gọi được bằng prefix nên không đi qua shim',
+};
+
+test('gate: mọi interaction.X trong execute() đều có trên prefixShim', async () => {
+    const shim = await buildPrefixInteraction(msgCoKenh, cmd, ['ban', 'go', '10']);
+    const coSan = new Set(Object.keys(shim));
+
+    const goc = path.join(__dirname, '..', 'src', 'commands');
+    const duyet = (d, o = []) => {
+        for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+            const p = path.join(d, e.name);
+            if (e.isDirectory()) duyet(p, o); else if (e.name.endsWith('.js')) o.push(p);
+        }
+        return o;
+    };
+    const boCmt = s => s.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:])\/\/.*$/gm, '$1');
+
+    const thieu = [];
+    for (const f of duyet(goc)) {
+        const s = boCmt(fs.readFileSync(f, 'utf8'));
+        if (/ContextMenuCommandBuilder/.test(s)) continue;   // không có đường prefix
+        const i = s.indexOf('async execute(');
+        if (i === -1) continue;
+        const moc = ['async autocomplete(', 'async handleButton(', 'handleButton(', 'async handleModal(']
+            .map(m => s.indexOf(m, i)).filter(x => x !== -1);
+        const than = s.slice(i, moc.length ? Math.min(...moc) : s.length);
+
+        for (const m of than.matchAll(/\binteraction\.([a-zA-Z_$][\w$]*)/g)) {
+            const api = m[1];
+            if (coSan.has(api) || MIEN_TRU[api]) continue;
+            const ten = path.relative(goc, f).split(path.sep).join('/');
+            thieu.push(`${ten} dùng interaction.${api}`);
+        }
+    }
+
+    assert.deepStrictEqual([...new Set(thieu)], [],
+        'Lệnh dùng API mà prefixShim không có -> w!lệnh sẽ vỡ. Thêm vào shim, hoặc vào MIEN_TRU kèm lý do thật.');
+});

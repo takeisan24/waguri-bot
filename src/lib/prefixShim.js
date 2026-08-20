@@ -145,6 +145,17 @@ async function buildPrefixInteraction(message, command, tokens) {
         client: message.client,
         commandName: data.name,
         guildId: message.guildId,
+        // Ba API dưới đây từng thiếu, và thiếu theo hai kiểu hại khác nhau:
+        //   · inGuild() — không có hàm thì ném TypeError ngay dòng đầu execute()
+        //     (w!serverinfo: người dùng chỉ thấy câu báo lỗi chung, không hiểu vì sao).
+        //   · fetchReply() — embed ĐÃ gửi xong rồi mới ném, nên nhìn như lệnh chạy được
+        //     nhưng collector không bao giờ gắn -> nút chết (w!duangua, w!xocdia).
+        //   · channelId — không ném gì cả, chỉ trả undefined rồi lặng lẽ thành khoá
+        //     phiên dùng chung cho MỌI server (w!noitu, w!dovui) hoặc ghi undefined
+        //     vào DB (w!bacay, w!masoi, w!market auction, w!ask).
+        channelId: message.channelId,
+        inGuild: () => Boolean(message.guildId),
+        fetchReply: async () => state.sent,
         locale: userLocale,
         guildLocale: null,
         get deferred() { return state.deferred; },

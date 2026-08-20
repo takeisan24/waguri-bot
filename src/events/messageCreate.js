@@ -225,25 +225,34 @@ module.exports = {
                 return;
             }
 
+            // `start` và `end` là tên chung: vừa là lệnh điều khiển phòng Loto/Bingo, vừa là
+            // lệnh onboarding `/start`. Chỉ chiếm quyền KHI kênh này đang có phòng thật; nếu
+            // không thì `w!start` phải rơi xuống lệnh /start bên dưới. Trước đây nhánh này
+            // return vô điều kiện, nên người mới gõ `w!start` nhận về câu "không có phòng
+            // game nào" — lệnh onboarding không thể gọi bằng prefix.
             if (['start', 'end'].includes(cmdName)) {
-                if (rateLimited(message.author.id)) {
-                    message.reply('Cậu thao tác hơi nhanh rồi~ chờ vài giây nhé! 🌸').catch(() => {});
+                const channelId = message.channelId;
+                const coPhong = activeLotoGames.has(channelId) || activeBingoGames.has(channelId);
+                if (coPhong || cmdName === 'end') {
+                    if (rateLimited(message.author.id)) {
+                        message.reply('Cậu thao tác hơi nhanh rồi~ chờ vài giây nhé! 🌸').catch(() => {});
+                        return;
+                    }
+                    try {
+                        if (activeLotoGames.has(channelId)) {
+                            await handleLotoPrefix(message, cmdName, tokens);
+                        } else if (activeBingoGames.has(channelId)) {
+                            await handleBingoPrefix(message, cmdName, tokens);
+                        } else {
+                            message.reply('Hiện không có phòng game Loto hay Bingo nào hoạt động ở kênh này hết á~ 🌸').catch(() => {});
+                        }
+                    } catch (error) {
+                        console.error(`Lỗi prefix ${prefix}${cmdName}:`, error);
+                        message.reply('Ơ, có lỗi rồi, cậu thử lại sau nhé~ 🌸').catch(() => {});
+                    }
                     return;
                 }
-                try {
-                    const channelId = message.channelId;
-                    if (activeLotoGames.has(channelId)) {
-                        await handleLotoPrefix(message, cmdName, tokens);
-                    } else if (activeBingoGames.has(channelId)) {
-                        await handleBingoPrefix(message, cmdName, tokens);
-                    } else {
-                        message.reply('Hiện không có phòng game Loto hay Bingo nào hoạt động ở kênh này hết á~ 🌸').catch(() => {});
-                    }
-                } catch (error) {
-                    console.error(`Lỗi prefix ${prefix}${cmdName}:`, error);
-                    message.reply('Ơ, có lỗi rồi, cậu thử lại sau nhé~ 🌸').catch(() => {});
-                }
-                return;
+                // không có phòng + cmdName === 'start' -> rơi xuống, để lệnh /start xử lý
             }
 
             const command = message.client.commands.get(cmdName);
