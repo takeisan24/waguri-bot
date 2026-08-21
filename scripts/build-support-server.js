@@ -189,14 +189,24 @@ client.once('ready', async () => {
             '**💰 Kiếm tiền & nuôi nhân vật**',
             '`/start` tạo nhân vật · `/daily` điểm danh mỗi ngày',
             '`/work` `/fish` `/mine` `/chop` kiếm tiền (tốn năng lượng)',
-            '`/eat` hồi năng lượng/sức khoẻ · `/shop` `/buy` `/sell` mua bán', '',
+            // SỬA 21-08-2026: `/shop` `/buy` `/sell` `/marry` KHÔNG tồn tại dạng slash —
+            // chúng là alias PREFIX (w!shop -> store list). Kênh hướng dẫn đang dạy bốn
+            // lệnh mà người mới gõ vào bảng gợi ý của Discord sẽ không thấy đâu.
+            '`/eat` hồi năng lượng/sức khoẻ · `/store list` `/store buy` `/store sell` mua bán', '',
             '**👤 Hồ sơ & cộng đồng**',
-            '`/profile` · `/leaderboard` · `/marry` · `/clan` · `/market`', '',
+            '`/profile` · `/leaderboard` · `/couple marry` · `/clan` · `/market`', '',
             '**🎲 Giải trí**',
             '`/taixiu` `/bacay` `/baucua` `/blackjack` `/masoi`… minigame nhiều người',
             '`/dovui` đố vui · `/boi` xem bói · `/amlich` lịch âm', '',
             '**💬 Trò chuyện AI**: tag **@Waguri** hoặc `/ask`',
             '**🎁 Thưởng**: `/vote` mỗi 12h 💝 · `/premium` xem Premium 💎', '',
+            // Đo trên prod 21-08-2026: 85 trên 134 người hoạt động CHƯA TỪNG gõ một lệnh
+            // nào — họ chỉ chat. Với nhóm đó, gõ `w!` thẳng trong khung chat là rào cản
+            // thấp hơn hẳn so với mở bảng lệnh gạch chéo, mà kênh hướng dẫn lại chưa hề
+            // nhắc tới. 49 tên gõ tắt cũng vừa được phơi ra trong `/help` cùng ngày.
+            '**⌨️ Ngại mở bảng lệnh?** Gõ thẳng trong khung chat với `w!`:',
+            '`w!daily` `w!work` `w!bal` `w!shop` `w!marry` — nhiều lệnh có tên gõ tắt riêng.',
+            'Gõ thiếu tham số thì Waguri chỉ luôn cú pháp đúng, không bắt cậu tự mò.', '',
             `📖 Tất cả lệnh: \`/help\` hoặc **${WEB}/commands**`,
         ]),
         faq: E('❓・Câu hỏi thường gặp', [
@@ -222,7 +232,12 @@ client.once('ready', async () => {
             '• Huy hiệu 💎 trong hồ sơ',
             '• Ưu tiên trải nghiệm tính năng mới', '',
             '**Bảng giá:** 1 tháng **25.000đ** · 3 tháng **60.000đ** · 6 tháng **99.000đ**', '',
-            `**Cách mua:** Vào **[trang Premium](${WEB}/dashboard/premium)**, chọn gói → **quét VietQR** chuyển khoản → kích hoạt sau khi xác nhận. Cảm ơn cậu đã ủng hộ Waguri nhiều lắm~ 🍰`,
+            // SỬA 21-08-2026: bản cũ chỉ người ta ra web để quét QR. v2.5.0 đã đưa QR vào
+            // THẲNG Discord (`/premium`, migration 0131) và duyệt bằng một nút — nội dung
+            // cũ đang thêm lại đúng bước vừa được bỏ đi, tức bắt người sắp trả tiền đi vòng.
+            '**Cách mua:** Gõ `/premium` ngay trong Discord → chọn gói → **QR hiện luôn tại chỗ** → chuyển khoản rồi bấm nút báo. Waguri sẽ kích hoạt sau khi xác nhận.',
+            `_Thích dùng web thì vẫn được: **[trang Premium](${WEB}/dashboard/premium)**._`,
+            'Cảm ơn cậu đã ủng hộ Waguri nhiều lắm~ 🍰',
         ]),
         chat: E('🗨️・Sảnh chung', 'Cứ thoải mái trò chuyện, kết bạn, khoe thành tích nhé~ Cần giúp thì ghé **#hỗ-trợ** 💕'),
         test: E('🤖・Thử lệnh bot', 'Spam thử lệnh Waguri thoải mái ở đây để khỏi làm phiền kênh khác nha~ 🌸'),
