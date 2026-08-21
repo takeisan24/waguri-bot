@@ -1,5 +1,53 @@
 [
   {
+    "date": "21/08/2026",
+    "title_vi": "Đại tu: Chống nuke, Kinh tế minh bạch & Bạn đồng hành AI",
+    "title_en": "Major: Antinuke, Transparent Economy & AI Companion",
+    "tag": "v2.5.1",
+    "tagColor": "pink",
+    "details_vi": [
+      "**Chống phá hoại server (Antinuke):** Phát hiện, chặn và tự động hoàn tác các đợt xoá kênh, xoá role hay ban hàng loạt, với ngưỡng cảnh báo cấu hình được cho từng server.",
+      "**Sổ nhật ký kinh tế:** Mọi khoản thu chi nay đều truy được nguồn, kèm thuế tài sản và cân lại phần thưởng vote. Chặn triệt để các đường in tiền qua giá âm, giá chợ và vòng chế tạo khép kín.",
+      "**Ủng hộ & Premium gộp về một chỗ:** `/premium` nay hiện mã QR ngay trong Discord và duyệt đơn bằng nút bấm, không cần rời ứng dụng.",
+      "**Bạn đồng hành AI:** Nhân vật Waguri được chỉnh lại bám nguyên tác với chuẩn xưng hô lấy từ thoại gốc; thêm đếm số ngày trò chuyện, hạn mức dùng toàn cục, và chỉ đường khi bạn nhắn sai kênh thay vì im lặng.",
+      "**Chợ & Đấu giá:** Khôi phục toàn bộ chợ P2P và đấu giá từng bị xoá nhầm, thêm giá biến động theo thời gian cùng cổng kiểm tra chặn tái phát.",
+      "**Bang hội:** Chuyển sang cơ chế mời-mới-vào-được, đồng thời bịt lỗ cày điểm bang vô hạn thông qua quỹ.",
+      "**Gõ tắt `w!` và `/help`:** Vá 9 lệnh gõ tắt bị câm và ép tham số về đúng biên của slash command. `/help` nay đọc cùng một nguồn mô tả với Discord nên không còn dạy sai cú pháp.",
+      "**Song ngữ:** Người dùng tiếng Anh không còn nhận thông báo tiếng Việt ở 8 lệnh cược; nhắc tên bot bằng tiếng nào thì được đáp bằng tiếng đó.",
+      "**Ticket & Bảo mật:** `/ticket` chuyển sang lưu trên Supabase với cơ chế staff nhận xử lý và bản ghi HTML; siết quyền bảng, ghim `search_path`, và xoá dữ liệu GDPR triệt để hơn.",
+      "**Chi tiết khác:** Waguri chúc mừng khi bạn lên cấp nhờ trò chuyện, thêm kênh tạm biệt khi thành viên rời server, sửa `/pass` vốn hỏng hoàn toàn với người chưa Premium, và trả lại dấu tiếng Việt cho 23/25 đáp án đố vui.",
+      "**`/serverinfo` soi đủ hơn:** Báo đủ 13 mục cấu hình thay vì 6, và chỉ thẳng những role thưởng cấp đang bị thiếu thay vì bỏ qua im lặng."
+    ],
+    "details_en": [
+      "**Anti-Nuke Protection:** Detects, blocks, and automatically reverts mass channel deletions, role deletions, and ban waves, with per-server configurable thresholds.",
+      "**Economy Ledger:** Every transaction is now traceable to its source, alongside a wealth tax and rebalanced vote rewards. Closed every money-printing route through negative prices, market pricing, and circular crafting.",
+      "**Donations & Premium unified:** `/premium` now shows the payment QR code directly inside Discord and approves orders with a button, without leaving the app.",
+      "**AI Companion:** Waguri’s persona was rewritten to match the source material, with pronouns taken from original dialogue; adds a conversation day counter, a global usage quota, and a gentle redirect when you message in the wrong channel instead of silence.",
+      "**Market & Auctions:** Restored the full P2P market and auction house that had been accidentally deleted, added time-based price fluctuation, and gates to prevent a recurrence.",
+      "**Clans:** Switched to invite-only membership and closed a loophole that allowed unlimited clan XP farming through the treasury.",
+      "**`w!` shortcuts and `/help`:** Fixed 9 shortcut commands that responded with silence, and coerced arguments to the exact bounds declared by the slash command. `/help` now reads the same description source as Discord, so it can no longer teach the wrong syntax.",
+      "**Bilingual:** English users no longer receive Vietnamese messages across 8 gambling commands; mention the bot in a language and it replies in that language.",
+      "**Tickets & Security:** `/ticket` moved to Supabase storage with staff claiming and HTML transcripts; tightened table grants, pinned `search_path`, and made GDPR deletion more thorough.",
+      "**Also:** Waguri congratulates you when chatting levels you up, a goodbye channel for departing members, a fix for `/pass` which was completely broken for non-Premium users, and proper Vietnamese diacritics restored to 23 of 25 quiz answers.",
+      "**Deeper `/serverinfo`:** Reports all 13 configuration entries instead of 6, and names the missing level-reward roles instead of skipping them silently."
+    ]
+  },
+  {
+    "date": "02/08/2026",
+    "title_vi": "Phòng học Pomodoro",
+    "title_en": "Pomodoro Study Room",
+    "tag": "v2.4.0",
+    "tagColor": "green",
+    "details_vi": [
+      "**`/study` — bạn đồng hành Pomodoro:** Hẹn giờ tập trung theo chu kỳ Pomodoro ngay trong Discord, ghi nhận thời gian học và trao thưởng khi bạn hoàn thành một phiên.",
+      "**Phòng học Lofi trên web:** Trang Lofi Study Room với nhạc nền, đồng hồ hẹn giờ và thống kê đồng bộ cùng bot."
+    ],
+    "details_en": [
+      "**`/study` — Pomodoro companion:** Focus timers following the Pomodoro cycle right inside Discord, tracking your study time and rewarding you for completed sessions.",
+      "**Lofi Study Room on the web:** A dedicated Lofi Study Room page with background music, a timer, and statistics synced with the bot."
+    ]
+  },
+  {
     "date": "15/07/2026",
     "title_vi": "Đợt 4: Chợ Đấu Giá Nâng Cao & Thưởng Role Cấp Độ",
     "title_en": "Phase 4: Advanced Auctions & Tiered Role Rewards",
