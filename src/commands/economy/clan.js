@@ -34,7 +34,7 @@ module.exports = {
             .addIntegerOption(o => o.setName('amount').setDescription('Số tiền').setRequired(true).setMinValue(1)))
         .addSubcommand(s => s.setName('kick').setDescription('Đuổi thành viên (chỉ trưởng bang)')
             .addUserOption(o => o.setName('user').setDescription('Thành viên').setRequired(true)))
-        .addSubcommand(s => s.setName('invite').setDescription('Mời người vào bang (chỉ trưởng bang)')
+        .addSubcommand(s => s.setName('invite').setDescription('Bảo lãnh người vào bang — họ nhận cổ tức ngay (chỉ trưởng bang)')
             .addUserOption(o => o.setName('user').setDescription('Người muốn mời').setRequired(true)))
         .addSubcommand(s => s.setName('disband').setDescription('Giải tán bang (chỉ trưởng bang)'))
         .addSubcommand(s => s.setName('war').setDescription('Khai chiến với bang khác (chỉ trưởng bang)')
@@ -70,11 +70,12 @@ module.exports = {
             const name = interaction.options.getString('name').trim();
             const r = await db.clanJoin(me.id, name);
             if (!r) return replyEmbed('error', 'join_title', 'error_generic');
-            const msgKey = { in_clan: 'err_in_clan_join', notfound: 'err_clan_not_found', no_invite: 'err_no_invite' }[r.status];
+            const msgKey = { in_clan: 'err_in_clan_join', notfound: 'err_clan_not_found' }[r.status];
             if (msgKey) return replyEmbed('error', 'join_title', msgKey, { name: r.name || name });
             // CHỈ 'ok' mới là thành công — xem ghi chú ở nhánh withdraw.
             if (r.status !== 'ok') return replyEmbed('error', 'join_title', 'error_generic');
-            return replyEmbed('success', 'join_title', 'join_success', { name: r.name });
+            // Được trưởng bang mời thì ăn cổ tức ngay; tự vào thì phải chờ đủ thâm niên.
+            return replyEmbed('success', 'join_title', r.vouched ? 'join_success_vouched' : 'join_success', { name: r.name });
         }
 
         if (sub === 'invite') {

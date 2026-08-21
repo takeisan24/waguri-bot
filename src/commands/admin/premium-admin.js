@@ -3,6 +3,7 @@ const db = require('../../database.js');
 const { isOwner } = require('../../lib/owner');
 const { buildWaguriEmbed } = require('../../lib/embed');
 const { getInteractionLanguage, t } = require('../../lib/i18n');
+const { approveAndThank } = require('../../lib/premiumOrders');
 
 const fmt = (n, locale) => Number(n).toLocaleString(locale?.startsWith('en') ? 'en-US' : 'vi-VN');
 
@@ -63,7 +64,8 @@ module.exports = {
 
         if (sub === 'duyet') {
             const code = interaction.options.getString('ma').trim().toUpperCase();
-            const r = await db.approvePremiumOrder(code, `manual:${interaction.user.id}`);
+            // Dùng chung đường duyệt với NÚT trong DM: một nguồn chân lý cho "duyệt + cảm ơn".
+            const r = await approveAndThank(interaction.client, code, `manual:${interaction.user.id}`);
             if (!r?.ok) {
                 const msg = r?.reason === 'not_found'
                     ? t(locale, 'commands.premium-admin.duyet_fail_not_found', { code })
@@ -76,18 +78,11 @@ module.exports = {
                     description: t(locale, 'commands.premium-admin.duyet_already', { code, time: untilTime }) })] });
             }
 
-            // DM cảm ơn buyer
-            try {
-                const buyer = await interaction.client.users.fetch(String(r.user_id));
-                const untilText = r.until ? (isEn ? ` Expires ${untilTime}.` : ` Hết hạn ${untilTime}.`) : '';
-                await buyer.send(
-                    t(locale, 'commands.premium-admin.dm_buyer_thanks', { months: r.months, until: untilText })
-                );
-            } catch { /* buyer blocked DMs -> ignore */ }
-
+            // (DM cảm ơn người mua đã do approveAndThank lo — xem lib/premiumOrders.js)
             const embed = buildWaguriEmbed(interaction, 'success', {
                 title: t(locale, 'commands.premium-admin.duyet_success_title'),
                 description: t(locale, 'commands.premium-admin.duyet_success_desc', { months: r.months, user: r.user_id, code, time: untilTime })
+                    + (r.dmSent ? '' : '\n' + t(locale, 'lib.premiumOrders.dm_failed'))
             });
             return interaction.editReply({ embeds: [embed] });
         }

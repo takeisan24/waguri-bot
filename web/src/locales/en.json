@@ -203,7 +203,9 @@
     "benefit_ai_chat_desc": "10x the free limit — chat with Waguri to your heart's content.",
     "benefit_income_desc": "Boosts earnings from /work, /fish, /mine, and /chop commands.",
     "benefit_badge_desc": "Standout Premium badge displayed on your web profile & Discord.",
-    "benefit_early_access_desc": "Test new features early before public release."
+    "benefit_early_access_desc": "Test new features early before public release.",
+    "error_too_many_pending": "⚠️ You have too many unpaid orders (max 5 per 24 hours). Please finish paying an existing one, or try again tomorrow~",
+    "error_order": "⚠️ Oops, I couldn't create the order right now 🥺 Please try again in a few minutes — if it keeps failing, ping the owner!"
   },
   "study": {
     "back_home": "← Home",
@@ -488,7 +490,7 @@
     "warning_msg": "⚠️ You MUST keep the exact message {code} for reference. Once transferred, click the button below to notify me!",
     "claimed_status": "✅ Transfer notified! I will verify & activate Premium shortly (usually within a few minutes). This page will auto-update when done 💕",
     "transferred_btn": "✅ I have transferred the money",
-    "waiting": "Waiting for payment… auto-detected once received",
-    "waiting_long": " (taking a while — please double-check your transfer message)"
+    "waiting": "Waiting for the owner to confirm… this page updates automatically",
+    "waiting_long": " (taking a while — the owner may be asleep; don't worry, your order is recorded!)"
   }
 }

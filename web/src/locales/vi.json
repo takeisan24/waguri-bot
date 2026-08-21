@@ -203,7 +203,9 @@
     "benefit_ai_chat_desc": "Gấp 10 lần gói miễn phí — tâm sự với Waguri thả ga.",
     "benefit_income_desc": "Mọi lệnh /work /fish /mine /chop đều cộng thêm.",
     "benefit_badge_desc": "Huy hiệu Premium nổi bật trong hồ sơ web & Discord.",
-    "benefit_early_access_desc": "Trải nghiệm sớm trước khi ra mắt rộng rãi."
+    "benefit_early_access_desc": "Trải nghiệm sớm trước khi ra mắt rộng rãi.",
+    "error_too_many_pending": "⚠️ Cậu đang có quá nhiều đơn chưa thanh toán (tối đa 5 đơn trong 24 giờ). Thanh toán nốt một đơn cũ, hoặc đợi hôm sau rồi thử lại nhé~",
+    "error_order": "⚠️ Ối, mình không tạo được đơn lúc này 🥺 Cậu thử lại sau vài phút giúp mình nhé — nếu vẫn lỗi thì nhắn owner nha!"
   },
   "study": {
     "back_home": "← Trang chủ",
@@ -488,7 +490,7 @@
     "warning_msg": "⚠️ Bắt buộc giữ đúng nội dung {code} để đối chiếu. Chuyển xong, bấm nút bên dưới để báo cho mình nhé!",
     "claimed_status": "✅ Đã ghi nhận! Mình sẽ kiểm tra & kích hoạt Premium sớm nhất (thường trong ít phút). Trang này tự cập nhật khi xong 💕",
     "transferred_btn": "✅ Tôi đã chuyển khoản xong",
-    "waiting": "Đang chờ thanh toán… tự nhận khi tiền vào",
-    "waiting_long": " (đã chờ hơi lâu — kiểm tra lại nội dung CK nhé)"
+    "waiting": "Đang chờ owner xác nhận… trang này tự cập nhật khi xong",
+    "waiting_long": " (hơi lâu rồi — owner có thể đang ngủ, cứ yên tâm đơn của cậu đã được ghi nhận nhé!)"
   }
 }

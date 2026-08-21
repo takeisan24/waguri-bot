@@ -208,7 +208,11 @@ module.exports = {
             baker: { emoji: '🍰', cost: 80000, name_vi: 'Vua Bánh Gekka', name_en: 'Gekka Bakery King' },
             prestige_1: { emoji: '⭐', cost: 0, name_vi: 'Chuyển Sinh I', name_en: 'Prestige I' },
             prestige_2: { emoji: '🌟', cost: 0, name_vi: 'Chuyển Sinh II', name_en: 'Prestige II' },
-            prestige_3: { emoji: '✨', cost: 0, name_vi: 'Chuyển Sinh III', name_en: 'Prestige III' }
+            prestige_3: { emoji: '✨', cost: 0, name_vi: 'Chuyển Sinh III', name_en: 'Prestige III' },
+            // cost: 0 -> `/cosmetic badge-buy` tự từ chối (nó chặn cost <= 0). Huy hiệu này
+            // CHỈ đến từ việc ủng hộ tiền thật, không mua được bằng xu trong game — đó là
+            // toàn bộ ý nghĩa của nó. Cấp bởi RPC `approve_donation` (migration 0131).
+            supporter: { emoji: '💝', cost: 0, name_vi: 'Người Ủng Hộ', name_en: 'Supporter' }
         }
     },
 
@@ -245,6 +249,8 @@ module.exports = {
     // Quyền lợi Premium trong game (ngoài quota AI): +% thu nhập lao động
     PREMIUM: {
         INCOME_BONUS: 0.10,
+        // Huy hiệu cảm ơn người ủng hộ tuỳ tâm (KHÔNG kèm quyền lợi nào — xem 0131).
+        SUPPORTER_BADGE: 'supporter',
         // Gói bán qua VietQR (VCB) + Casso. key = plan id, dùng CHUNG với web (web/src/lib/premium.ts).
         PLANS: {
             m1: { months: 1, amount: 25000, label: '1 tháng' },

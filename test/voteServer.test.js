@@ -5,6 +5,7 @@ const http = require('node:http');
 // Thiết lập env dummy cho test. Dùng port cụ thể không phải 0 để tránh falsy check trong startVoteServer
 process.env.TOPGG_WEBHOOK_AUTH = 'test_topgg_secret';
 process.env.CASSO_WEBHOOK_TOKEN = 'test_casso_token';
+process.env.BOT_NOTIFY_SECRET = 'test_notify_secret';
 process.env.PORT = '19999';
 
 const { startVoteServer } = require('../src/lib/voteServer');
@@ -111,5 +112,28 @@ describe('HTTP Vote & Stats Server Integration Tests', () => {
             body: JSON.stringify({ type: 'test' })
         });
         assert.strictEqual(res.status, 200);
+    });
+
+    // --- /premium/notify: web báo bot "có người bấm đã chuyển khoản" ---
+    // Endpoint này dẫn tới việc CẤP HÀNG ĐÃ TRẢ TIỀN, nên phần đáng test nhất là các cửa
+    // TỪ CHỐI: thiếu secret, sai secret, mã rác. Nhánh thành công cần DB + Discord thật
+    // nên để cho kiểm thử tay.
+    const NOTIFY = 'http://127.0.0.1:19999/premium/notify';
+    const postNotify = (headers, body) =>
+        fetch(NOTIFY, { method: 'POST', headers: { 'Content-Type': 'application/json', ...headers }, body });
+
+    test('POST /premium/notify tra 401 khi thieu secret', async () => {
+        const res = await postNotify({}, JSON.stringify({ code: 'WAGURI0123ABCD' }));
+        assert.strictEqual(res.status, 401);
+    });
+
+    test('POST /premium/notify tra 401 khi secret sai', async () => {
+        const res = await postNotify({ 'x-waguri-secret': 'sai_bet_roi' }, JSON.stringify({ code: 'WAGURI0123ABCD' }));
+        assert.strictEqual(res.status, 401);
+    });
+
+    test('POST /premium/notify tra 400 khi ma don khong dung dinh dang', async () => {
+        const res = await postNotify({ 'x-waguri-secret': 'test_notify_secret' }, JSON.stringify({ code: 'khong-phai-ma' }));
+        assert.strictEqual(res.status, 400);
     });
 });

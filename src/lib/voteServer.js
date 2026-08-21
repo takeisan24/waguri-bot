@@ -15,6 +15,8 @@ const { computeVoteReward } = require('./voteReward');
 const { getProgress, getLevelFromExp } = require('./leveling');
 const { tierOf } = require('./ai/persona');
 const { extractPremiumCode } = require('./paymatch');
+// Vòng đời đơn Premium (duyệt + cảm ơn + báo owner) nằm ở một chỗ duy nhất.
+const { dmPremiumThanks, notifyOwnersOfClaim } = require('./premiumOrders');
 const { getInteractionLanguage, t } = require('./i18n');
 
 // Trước đây ghim cứng 'vi-VN' nên người dùng EN đọc "1.000.000" thay vì "1,000,000".
@@ -221,35 +223,61 @@ async function grantVoteReward(client, userId, isWeekend) {
 // Body Casso V2: { data: {...} } | legacy: { data: [ {...} ] }. Mỗi giao dịch có
 // description (nội dung CK chứa mã WAGURI), amount, tid/reference. Idempotent ở tầng RPC.
 
-// DM cảm ơn sau khi kích hoạt Premium (dùng chung mọi cổng thanh toán).
-async function dmPremiumThanks(client, r) {
-    try {
-        const user = await client.users.fetch(String(r.user_id));
-        const until = r.until ? Math.floor(new Date(r.until).getTime() / 1000) : null;
-        const locale = await getInteractionLanguage({ user: { id: String(r.user_id) } });
-        await user.send(t(locale, 'lib.voteServer.dm_premium_thanks', {
-            months: r.months,
-            until: until ? t(locale, 'lib.voteServer.dm_premium_until', { time: until }) : '',
-        }));
-    } catch { /* user tắt DM -> bỏ qua */ }
+// Cảnh báo owner về một giao dịch KHÔNG tự xử lý được.
+//
+// VÌ SAO PHẢI CÓ: mọi nhánh hỏng dưới đây đều là "tiền đã VÀO tài khoản nhưng Premium
+// KHÔNG được kích hoạt". Trước đây tất cả chỉ `console.log` — tức là im lặng với cả hai
+// bên: người mua ngồi chờ, owner không biết gì. Người vừa trả tiền là người dễ mất niềm
+// tin nhất, nên đây là loại lỗi đắt nhất trong cả luồng.
+//
+// Dùng lại LOG_WEBHOOK_URL (kênh log nhà phát triển) — logError đã có throttle + gộp trùng.
+async function canhBaoTienLe(tieuDe, chiTiet) {
+    console.warn(`[THANH TOÁN] ${tieuDe} — ${chiTiet}`);
+    await logError(`💸 ${tieuDe}`, chiTiet, {});
 }
 
-// Xử lý webhook Casso (đã xác thực token): khớp đơn theo MÃ trong nội dung CK.
+// Xử lý webhook cổng thanh toán (đã xác thực token): khớp đơn theo MÃ trong nội dung CK.
 async function grantCassoPremium(client, payload) {
     // Casso V2: payload.data là object; legacy: là mảng giao dịch.
     const list = Array.isArray(payload?.data) ? payload.data : (payload?.data ? [payload.data] : []);
     for (const tx of list) {
         const amount = Math.round(Number(tx?.amount || 0));
         if (amount <= 0) continue; // chỉ xử lý tiền VÀO
-        const code = extractPremiumCode(tx?.description || tx?.content || '');
-        if (!code) { console.log('[CASSO] Giao dịch không có mã đơn, bỏ qua.'); continue; }
+        const noiDung = String(tx?.description || tx?.content || '');
         const ref = String(tx?.tid || tx?.reference || tx?.id || '');
+        const code = extractPremiumCode(noiDung);
+
+        // Không có mã trong nội dung CK — trường hợp THƯỜNG GẶP NHẤT: người chuyển tự sửa
+        // nội dung, hoặc app ngân hàng cắt bớt. Tiền đã vào, phải đối soát bằng tay.
+        if (!code) {
+            await canhBaoTienLe('Tiền vào KHÔNG có mã đơn — cần đối soát tay', [
+                `Số tiền: ${amount.toLocaleString('vi-VN')}đ`,
+                `Nội dung CK: "${noiDung}"`,
+                `Ref: ${ref}`,
+                'Tìm đơn tương ứng bằng `/premium-admin cho` rồi duyệt bằng `/premium-admin duyet`.',
+            ].join('\n'));
+            continue;
+        }
 
         const r = await db.redeemPremiumOrderByCode(code, amount, ref);
-        if (!r?.ok) { console.log(`[CASSO] Đơn ${code} không khớp:`, r?.reason); continue; }
-        if (r.already) { console.log(`[CASSO] Đơn ${code} đã xử lý trước đó (idempotent).`); continue; }
+        if (r?.already) { console.log(`[THANH TOÁN] Đơn ${code} đã xử lý trước đó (idempotent).`); continue; }
 
-        console.log(`[CASSO] ✅ Premium +${r.months} tháng cho ${r.user_id} (đơn ${code}).`);
+        if (!r?.ok) {
+            // `amount` = chuyển thiếu tiền; `not_found` = mã đúng định dạng nhưng không có đơn.
+            const vi = r?.reason === 'amount'
+                ? `Chuyển THIẾU tiền: cần ${Number(r.need).toLocaleString('vi-VN')}đ, nhận ${Number(r.got).toLocaleString('vi-VN')}đ.`
+                : `Không khớp đơn nào (lý do: ${r?.reason}).`;
+            await canhBaoTienLe('Tiền vào nhưng KHÔNG kích hoạt được', [
+                `Đơn: ${code}`,
+                vi,
+                `Nội dung CK: "${noiDung}"`,
+                `Ref: ${ref}`,
+                'Quyết định bằng tay: duyệt (`/premium-admin duyet`) hoặc hoàn tiền.',
+            ].join('\n'));
+            continue;
+        }
+
+        console.log(`[THANH TOÁN] ✅ Premium +${r.months} tháng cho ${r.user_id} (đơn ${code}).`);
         await dmPremiumThanks(client, r);
     }
 }
@@ -259,6 +287,7 @@ function startVoteServer(client) {
 
     const auth = process.env.TOPGG_WEBHOOK_AUTH;
     const cassoToken = process.env.CASSO_WEBHOOK_TOKEN; // Secure-Token cấu hình ở Casso
+    const notifySecret = process.env.BOT_NOTIFY_SECRET; // chuỗi bí mật dùng chung với web
     const port = Number(process.env.PORT || process.env.SERVER_PORT || 0);
     if (!port) {
         console.log('[VOTE] Bỏ qua HTTP server (chưa có PORT/SERVER_PORT).');
@@ -269,6 +298,8 @@ function startVoteServer(client) {
     if (!auth) console.log('[VOTE] Chưa có TOPGG_WEBHOOK_AUTH -> webhook tạm tắt (/stats + health vẫn chạy).');
     if (!cassoToken) console.log('[CASSO] Chưa có CASSO_WEBHOOK_TOKEN -> webhook thanh toán tạm tắt.');
     else console.log('[CASSO] Webhook thanh toán Premium sẵn sàng ở /casso/webhook.');
+    if (!notifySecret) console.log('[PREMIUM] Chưa có BOT_NOTIFY_SECRET -> web không báo được đơn mới (owner phải tự gõ /premium-admin cho).');
+    else console.log('[PREMIUM] Sẵn sàng nhận báo đơn ở /premium/notify -> DM owner kèm nút duyệt.');
     // Khi chạy sharding: chỉ shard 0 bind cổng (tránh nhiều process tranh cùng port).
     if (client.shard && !client.shard.ids.includes(0)) return;
 
@@ -348,7 +379,12 @@ function startVoteServer(client) {
         }
         const isVote = req.url.startsWith('/topgg/vote');
         const isCasso = req.url.startsWith('/casso/webhook');
-        if (req.method !== 'POST' || (!isVote && !isCasso)) {
+        // Web (Vercel) báo sang: có người vừa bấm "Tôi đã chuyển khoản".
+        // Phải đi qua BOT chứ không phải webhook Discord thuần, vì webhook thuần KHÔNG gắn
+        // được nút bấm — chỉ ứng dụng mới gắn được. Mà nút chính là điểm mấu chốt: nó là
+        // khác biệt giữa "owner duyệt được từ điện thoại trong 2 chạm" và "phải mở máy gõ lệnh".
+        const isClaim = req.url.startsWith('/premium/notify');
+        if (req.method !== 'POST' || (!isVote && !isCasso && !isClaim)) {
             res.writeHead(404); res.end(); return;
         }
 
@@ -360,6 +396,20 @@ function startVoteServer(client) {
         });
         req.on('end', () => {
             if (aborted) return;
+
+            // --- Web báo có người đã chuyển khoản -> DM owner kèm nút duyệt ---
+            if (isClaim) {
+                if (!notifySecret) { res.writeHead(503); res.end(); return; }
+                if (!safeEqual(req.headers['x-waguri-secret'], notifySecret)) { res.writeHead(401); res.end(); return; }
+                let payload;
+                try { payload = JSON.parse(body || '{}'); } catch { res.writeHead(400); res.end(); return; }
+                // Chỉ nhận MÃ ĐƠN. Số tiền/tháng luôn đọc lại từ DB — không tin dữ liệu gửi tới.
+                const code = extractPremiumCode(payload?.code || '');
+                if (!code) { res.writeHead(400, JSONH); res.end('{"error":"bad_code"}'); return; }
+                res.writeHead(200, JSONH); res.end('{"ok":true}');
+                notifyOwnersOfClaim(client, code).catch(e => logError('premium claim notify', e));
+                return;
+            }
 
             // --- Casso webhook (thanh toán Premium) ---
             if (isCasso) {

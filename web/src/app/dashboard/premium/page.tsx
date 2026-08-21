@@ -20,7 +20,15 @@ export async function generateMetadata() {
   };
 }
 
-export default async function PremiumPage() {
+export default async function PremiumPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  // Server action `createPremiumOrder` redirect kèm `?error=...` khi từ chối tạo đơn.
+  // Trước đây trang KHÔNG hề đọc searchParams -> bấm "Mua" bị từ chối thì người dùng
+  // quay về đúng trang cũ, không một chữ nào giải thích. Họ chỉ có thể kết luận "web hỏng".
+  const { error: loi } = await searchParams;
   const locale = await getLocaleServer();
   const supabase = await createClient();
   const {
@@ -64,6 +72,15 @@ export default async function PremiumPage() {
       </header>
 
       <main className="flex-1 w-full max-w-3xl mx-auto px-6 py-6 space-y-7">
+        {loi ? (
+          <div className="glass-panel rounded-2xl p-4 border border-amber-400/40 bg-amber-500/5 text-sm text-amber-200">
+            {t(
+              loi === "too_many_pending" ? "premium.error_too_many_pending" : "premium.error_order",
+              locale
+            )}
+          </div>
+        ) : null}
+
         <div className="text-center">
           <h1 className="text-3xl font-black text-white">
             Waguri <span className="text-pink-300">{t("premium.title_premium", locale)}</span> 💎

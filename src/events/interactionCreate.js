@@ -10,6 +10,10 @@ const { logError, skipLog } = require('../lib/logger');
 const db = require('../database.js');
 const config = require('../config');
 const { getInteractionLanguage, t } = require('../lib/i18n');
+const { isOwner } = require('../lib/owner');
+// Duyệt đơn Premium từ nút trong DM (VCB cá nhân không có webhook -> duyệt tay là vĩnh viễn).
+const { approveAndThank } = require('../lib/premiumOrders');
+const { handlePayButton } = require('../lib/payButtons');
 
 // Ack lỗi cho handler nút: cố gắng phản hồi ephemeral để interaction không chết im lặng
 // ("This interaction failed"). Nuốt 10062 (hết hạn) / 40060 (đã ack) — không thể phản hồi thêm.
@@ -155,6 +159,68 @@ module.exports = {
                     });
                 } catch (error) {
                     logError('vote_remind_off', error);
+                }
+                return;
+            }
+
+            // Nút của /premium (ủng hộ / mua gói / báo đã chuyển khoản).
+            if (interaction.customId.startsWith('pay:')) {
+                try {
+                    await handlePayButton(interaction, locale);
+                } catch (error) {
+                    logError('pay_button', error, { customId: interaction.customId, user: interaction.user.id });
+                    await ackButtonError(interaction, locale);
+                }
+                return;
+            }
+
+            // Nút "✅ Kích hoạt" trong DM báo đơn Premium -> duyệt một chạm từ điện thoại.
+            //
+            // Vì sao tồn tại: tài khoản nhận tiền là VCB cá nhân, không có webhook biến động
+            // số dư, nên MỌI đơn đều phải owner xác nhận bằng tay. Nút này là toàn bộ khác
+            // biệt giữa "duyệt trong 2 chạm lúc đang đi đường" và "phải mở máy gõ lệnh".
+            if (interaction.customId.startsWith('padm:ok:')) {
+                const code = interaction.customId.slice('padm:ok:'.length);
+                try {
+                    // Nút nằm trong DM riêng của owner, nhưng vẫn kiểm quyền: customId có thể
+                    // bị dựng lại từ nơi khác, và đây là nút CẤP HÀNG ĐÃ TRẢ TIỀN.
+                    if (!await isOwner(interaction.client, interaction.user.id)) {
+                        return interaction.reply({
+                            content: t(locale, 'commands.premium-admin.only_owner'),
+                            flags: MessageFlags.Ephemeral,
+                        });
+                    }
+                    await interaction.deferUpdate();
+                    const r = await approveAndThank(interaction.client, code, `button:${interaction.user.id}`);
+
+                    if (!r?.ok) {
+                        const msg = r?.reason === 'not_found'
+                            ? t(locale, 'commands.premium-admin.duyet_fail_not_found', { code })
+                            : t(locale, 'commands.premium-admin.duyet_fail_generic');
+                        return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'error', { locale, description: msg })], components: [] });
+                    }
+
+                    const untilTime = r.until ? `<t:${Math.floor(new Date(r.until).getTime() / 1000)}:R>` : '';
+                    if (r.already) {
+                        return interaction.editReply({
+                            embeds: [buildWaguriEmbed(interaction, 'warning', { locale, description: t(locale, 'commands.premium-admin.duyet_already', { code, time: untilTime }) })],
+                            components: [],
+                        });
+                    }
+
+                    // Gỡ nút sau khi duyệt: tin nhắn trở thành BIÊN LAI, không còn là việc-cần-làm.
+                    return interaction.editReply({
+                        embeds: [buildWaguriEmbed(interaction, 'success', {
+                            locale,
+                            title: t(locale, 'commands.premium-admin.duyet_success_title'),
+                            description: t(locale, 'commands.premium-admin.duyet_success_desc', { months: r.months, user: r.user_id, code, time: untilTime })
+                                + (r.dmSent ? '' : '\n' + t(locale, 'lib.premiumOrders.dm_failed')),
+                        })],
+                        components: [],
+                    });
+                } catch (error) {
+                    logError('padm:ok', error, { user: interaction.user.id });
+                    await ackButtonError(interaction, locale);
                 }
                 return;
             }

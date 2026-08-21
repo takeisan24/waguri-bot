@@ -33,7 +33,10 @@ module.exports = {
                     { name: '🍰 Vua Bánh Gekka', value: 'baker' },
                     { name: '⭐ Chuyển Sinh I', value: 'prestige_1' },
                     { name: '🌟 Chuyển Sinh II', value: 'prestige_2' },
-                    { name: '✨ Chuyển Sinh III', value: 'prestige_3' }
+                    { name: '✨ Chuyển Sinh III', value: 'prestige_3' },
+                    // Chỉ có được bằng cách ủng hộ tiền thật (RPC approve_donation, 0131).
+                    // KHÔNG thêm vào `badge-buy`: nó không mua được bằng xu, đó là điểm chính.
+                    { name: '💝 Người Ủng Hộ', value: 'supporter' }
                 ))
             .addIntegerOption(o => o.setName('slot').setDescription('Vị trí trưng bày (1..6)').setRequired(true).setMinValue(1).setMaxValue(6))),
     async execute(interaction) {

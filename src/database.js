@@ -2192,6 +2192,110 @@ async function getPendingPremiumOrders(limit = 15) {
     }
 }
 
+/** Tạo đơn ỦNG HỘ tuỳ tâm (kind='donate'). amount=0 -> người ủng hộ tự điền số tiền. */
+async function createDonationOrder(userId, amount = 0) {
+    try {
+        const { data, error } = await supabase.rpc('create_donation_order', {
+            p_user: userId, p_amount: Math.max(0, Math.round(Number(amount) || 0)),
+        });
+        if (error) throw error;
+        return data || null;
+    } catch (error) {
+        console.error('[DATABASE ERROR] createDonationOrder:', error);
+        return null;
+    }
+}
+
+/** Tạo đơn MUA Premium (dùng chung RPC với web). */
+async function createPremiumOrder(userId, plan, months, amount) {
+    try {
+        const { data, error } = await supabase.rpc('create_premium_order', {
+            p_user: userId, p_plan: plan, p_months: months, p_amount: amount,
+        });
+        if (error) throw error;
+        return data || null;
+    } catch (error) {
+        console.error('[DATABASE ERROR] createPremiumOrder:', error);
+        return null;
+    }
+}
+
+/** Owner duyệt 1 đơn ỦNG HỘ -> cấp huy hiệu, KHÔNG đụng premium_until. Idempotent. */
+async function approveDonation(code, ref = 'manual', badgeId = 'supporter') {
+    try {
+        const { data, error } = await supabase.rpc('approve_donation', {
+            p_code: code, p_ref: ref, p_badge_id: badgeId,
+        });
+        if (error) throw error;
+        return data;
+    } catch (error) {
+        console.error('[DATABASE ERROR] approveDonation:', error);
+        return { ok: false, reason: 'db_error' };
+    }
+}
+
+/** Đánh dấu người mua đã bấm "tôi đã chuyển khoản". Chỉ đổi được MỘT LẦN (chống báo trùng).
+ *  @returns đơn vừa đổi trạng thái, hoặc null nếu không có gì đổi (sai chủ / đã báo / đã trả). */
+async function claimOrderOnce(code, userId) {
+    try {
+        const { data, error } = await supabase
+            .from('premium_orders')
+            .update({ claimed_at: new Date().toISOString() })
+            .eq('code', code)
+            .eq('user_id', userId)
+            .eq('status', 'pending')
+            .is('claimed_at', null)
+            .select('code, kind, plan, months, amount')
+            .maybeSingle();
+        if (error) throw error;
+        return data || null;
+    } catch (error) {
+        console.error('[DATABASE ERROR] claimOrderOnce:', error);
+        return null;
+    }
+}
+
+/** Danh sách người đã ủng hộ (đơn donate ĐÃ duyệt), gộp theo người, nhiều nhất trước.
+ *  Gộp ở tầng JS: dữ liệu cỡ vài chục dòng, không đáng thêm một RPC để nuôi. */
+async function getSupporters(limit = 10) {
+    try {
+        const { data, error } = await supabase
+            .from('premium_orders')
+            .select('user_id, amount, paid_at')
+            .eq('kind', 'donate')
+            .eq('status', 'paid')
+            .order('paid_at', { ascending: false })
+            .limit(200);
+        if (error) throw error;
+        const gop = new Map();
+        for (const o of data || []) {
+            const cu = gop.get(o.user_id) || { user_id: o.user_id, total: 0, last: o.paid_at };
+            cu.total += Number(o.amount) || 0;
+            gop.set(o.user_id, cu);
+        }
+        return [...gop.values()].sort((a, b) => b.total - a.total).slice(0, limit);
+    } catch (error) {
+        console.error('[DATABASE ERROR] getSupporters:', error);
+        return [];
+    }
+}
+
+/** Lấy 1 đơn Premium theo mã (để dựng thông báo duyệt). null nếu không có. */
+async function getPremiumOrder(code) {
+    try {
+        const { data, error } = await supabase
+            .from('premium_orders')
+            .select('code, user_id, plan, months, amount, status, claimed_at, created_at')
+            .eq('code', code)
+            .maybeSingle();
+        if (error) throw error;
+        return data || null;
+    } catch (error) {
+        console.error('[DATABASE ERROR] getPremiumOrder:', error);
+        return null;
+    }
+}
+
 /** Owner duyệt thủ công 1 đơn theo mã (không kiểm tra số tiền). Idempotent. */
 async function approvePremiumOrder(code, ref = 'manual') {
     try {
@@ -2328,6 +2432,12 @@ module.exports = {
     updateUserLocale,
     redeemPremiumOrderByCode,
     getPendingPremiumOrders,
+    getPremiumOrder,
+    createDonationOrder,
+    createPremiumOrder,
+    approveDonation,
+    claimOrderOnce,
+    getSupporters,
     approvePremiumOrder,
     claimWelcomeBonus,
     claimSupportGift,

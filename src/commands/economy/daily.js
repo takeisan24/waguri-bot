@@ -60,6 +60,11 @@ module.exports = {
         }
         if (r.clan_dividend && Number(r.clan_dividend) > 0) {
             rewardsDesc += t(locale, 'commands.daily.dividend', { amount: fmt(r.clan_dividend, locale), currency: config.CURRENCY });
+        } else if (r.clan_dividend_wait && r.clan_dividend_at) {
+            // Nói rõ còn bao lâu, thay vì im lặng bỏ qua dòng cổ tức khiến người mới
+            // vào bang tưởng hệ thống hỏng. Ceil để "còn 0 ngày" không bao giờ hiện.
+            const days = Math.max(1, Math.ceil((new Date(r.clan_dividend_at).getTime() - Date.now()) / 86400000));
+            rewardsDesc += t(locale, 'commands.daily.dividend_wait', { days });
         }
 
         // Cộng XP Battle Pass (+100 XP)
