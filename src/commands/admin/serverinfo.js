@@ -140,19 +140,83 @@ function buildReport(guild, me, settings, locale) {
     const gambleVal = s.gambling === '0' ? (isEn ? '🔴 Disabled' : '🔴 Tắt') : (isEn ? '🟢 Enabled' : '🟢 Bật');
     const timeoutVal = s.police_jail === '0' ? (isEn ? '🔴 Disabled' : '🔴 Tắt') : (isEn ? '🟢 Enabled' : '🟢 Bật');
     
-    push(isEn 
+    // BÁO ĐỦ 13 MỤC mà `/config` đặt được.
+    //
+    // Trước 21-08-2026 chỗ này chỉ in 6 mục (ai, ai_channel, pvp, gambling, police_jail,
+    // confession) rồi nhảy thẳng sang phần quyền. Bảy mục còn lại — welcome_channel,
+    // goodbye_channel, welcome_role, announcement_channel, staff_role_id, language,
+    // levelup — không xuất hiện ở đâu cả. Người dùng lệnh này để RÀ SOÁT server, nên mục
+    // không được in ra là mục không ai kiểm được: chủ server không có cách nào biết kênh
+    // chào mừng đã cấu hình chưa. Chính điều đó đã chặn một lượt polish server hôm nay.
+    //
+    // Báo cáo xuất ra FILE .md nên không vướng trần 1024 ký tự của field embed — in đủ
+    // không phải đánh đổi gì.
+    const levelupVal = s.levelup === '0' ? (isEn ? '🔴 Disabled' : '🔴 Tắt') : (isEn ? '🟢 Enabled' : '🟢 Bật');
+    const chuaDat = isEn ? '(not set)' : '(chưa đặt)';
+    const kenh = (id) => (id ? `<#${id}>` : chuaDat);
+    const role = (id) => (id ? `<@&${id}>` : chuaDat);
+
+    push(isEn ? '### Chat & AI' : '### Trò chuyện & AI');
+    push(isEn
         ? `- AI Chat: ${aiVal} · AI Channel: ${s.ai_channel ? `<#${s.ai_channel}>` : '(all channels)'}`
         : `- AI trò chuyện: ${aiVal} · Kênh AI: ${s.ai_channel ? `<#${s.ai_channel}>` : '(mọi kênh)'}`);
+    push(isEn
+        ? `- Level-up announce (from chat): ${levelupVal}`
+        : `- Báo lên cấp khi chat: ${levelupVal}`);
+    push(isEn
+        ? `- Language: ${s.language ? s.language : `${chuaDat} — falls back to the server locale`}`
+        : `- Ngôn ngữ: ${s.language ? s.language : `${chuaDat} — dùng ngôn ngữ của server`}`);
+
+    push(isEn ? '### Games' : '### Trò chơi');
     push(isEn
         ? `- PvP (rob/steal): ${pvpVal}`
         : `- PvP (cướp/trộm): ${pvpVal}`);
     push(isEn
         ? `- Gambling Games: ${gambleVal} · Jail (Timeout): ${timeoutVal}`
         : `- Trò may rủi: ${gambleVal} · Tạm giam: ${timeoutVal}`);
+
+    push(isEn ? '### Channels' : '### Kênh');
+    push(isEn ? `- Confession: ${kenh(s.confession_channel)}` : `- Confession: ${kenh(s.confession_channel)}`);
+    push(isEn ? `- Welcome: ${kenh(s.welcome_channel)}` : `- Chào mừng: ${kenh(s.welcome_channel)}`);
+    push(isEn ? `- Goodbye: ${kenh(s.goodbye_channel)}` : `- Tạm biệt: ${kenh(s.goodbye_channel)}`);
+    push(isEn ? `- Update announcements: ${kenh(s.announcement_channel)}` : `- Thông báo cập nhật: ${kenh(s.announcement_channel)}`);
+
+    push(isEn ? '### Roles' : '### Role');
     push(isEn
-        ? `- Confession Channel: ${s.confession_channel ? `<#${s.confession_channel}>` : '(not set)'}`
-        : `- Kênh confession: ${s.confession_channel ? `<#${s.confession_channel}>` : '(chưa đặt)'}`);
+        ? `- Auto-assign on join: ${role(s.welcome_role)}`
+        : `- Role tự gán khi vào: ${role(s.welcome_role)}`);
+    push(isEn
+        ? `- Staff (ticket access): ${s.staff_role_id ? `<@&${s.staff_role_id}>` : `${chuaDat} — auto-detected by permission`}`
+        : `- Role Staff xem ticket: ${s.staff_role_id ? `<@&${s.staff_role_id}>` : `${chuaDat} — tự dò theo quyền`}`);
     push('');
+
+    // --- Role thưởng cấp: chỉ có nghĩa ở server support ---
+    //
+    // VÌ SAO KIỂM Ở ĐÂY: `supportReward.js` làm `roles.cache.get(milestone.roleId)` rồi
+    // `if (role && …)`. Role không tồn tại -> điều kiện false -> BỎ QUA IM LẶNG. Không
+    // lỗi, không log. Ngày 21-08 phát hiện cả 5 role đều không có trong server, nghĩa là
+    // hệ thưởng theo cấp chưa từng chạy — mà không ai biết vì nó không kêu.
+    const cfg = require('../../config');
+    if (guild.id === cfg.ROLE_REWARDS?.SUPPORT_GUILD_ID) {
+        push(isEn ? '## 🎖️ Level milestone roles (support server)' : '## 🎖️ Role thưởng cấp (server support)');
+        let thieu = 0;
+        for (const m of cfg.ROLE_REWARDS.MILESTONES || []) {
+            const co = guild.roles.cache.has(String(m.roleId));
+            if (!co) thieu++;
+            const ten = isEn ? m.name_en : m.name_vi;
+            push(co
+                ? `- ✅ Lv${m.level} — ${ten}`
+                : (isEn
+                    ? `- ❌ Lv${m.level} — ${ten} · role ID \`${m.roleId}\` DOES NOT EXIST, the bot skips it silently`
+                    : `- ❌ Lv${m.level} — ${ten} · role ID \`${m.roleId}\` KHÔNG TỒN TẠI, bot bỏ qua im lặng`));
+        }
+        if (thieu) {
+            push(isEn
+                ? `> ${thieu}/${cfg.ROLE_REWARDS.MILESTONES.length} milestone roles are missing — that part of the reward system does nothing.`
+                : `> Thiếu ${thieu}/${cfg.ROLE_REWARDS.MILESTONES.length} role — phần thưởng theo cấp đó đang không làm gì cả.`);
+        }
+        push('');
+    }
 
     // --- Quyền của bot ---
     push(t(locale, 'commands.serverinfo.report_waguri_perms'));
