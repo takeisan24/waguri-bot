@@ -3,6 +3,7 @@ const config = require('../config');
 const db = require('../database.js');
 const { getInteractionLanguage, t, detectVietnamese } = require('../lib/i18n');
 const { buildPrefixInteraction } = require('../lib/prefixShim');
+const { logError } = require('../lib/logger');
 const { chatWithWaguri, onCooldown } = require('../lib/ai');
 const { handleMessage: handleNoiTu } = require('../lib/noitu');
 const { announceLevelUp } = require('../lib/levelAnnounce');
@@ -108,6 +109,7 @@ module.exports = {
                 const level = getLevelFromExp(Number(user.exp || 0));
                 syncSupportGuildRoles(message.member, level).catch(e => {
                     console.error('[ROLE SYNC ERROR] messageCreate:', e);
+                    logError('Lỗi đồng bộ role', e, { guild: message.guildId });
                 });
             }
         }
@@ -165,6 +167,7 @@ module.exports = {
                     }, hvlLocale);
                 } catch (error) {
                     console.error('[EASTER EGG ERROR] w!hvl:', error);
+                    logError('Lỗi easter egg w!hvl', error, { user: `<@${message.author.id}>`, guild: message.guildId });
                 }
                 return;
             }
@@ -179,6 +182,7 @@ module.exports = {
                     await handlePigPrefix(message, cmdName, tokens);
                 } catch (error) {
                     console.error(`Lỗi prefix ${prefix}${cmdName}:`, error);
+                    logError('Lỗi lệnh prefix', error, { command: `${prefix}${cmdName}`, user: `<@${message.author.id}>`, guild: message.guildId });
                     message.reply('Ơ, có lỗi rồi, cậu thử lại sau nhé~ 🌸').catch(() => {});
                 }
                 return;
@@ -194,6 +198,7 @@ module.exports = {
                     await handlePlantPrefix(message, cmdName, tokens);
                 } catch (error) {
                     console.error(`Lỗi prefix ${prefix}${cmdName}:`, error);
+                    logError('Lỗi lệnh prefix', error, { command: `${prefix}${cmdName}`, user: `<@${message.author.id}>`, guild: message.guildId });
                     message.reply('Ơ, có lỗi rồi, cậu thử lại sau nhé~ 🌸').catch(() => {});
                 }
                 return;
@@ -212,6 +217,7 @@ module.exports = {
                     await handleLotoPrefix(message, cmdName, tokens);
                 } catch (error) {
                     console.error(`Lỗi prefix ${prefix}${cmdName}:`, error);
+                    logError('Lỗi lệnh prefix', error, { command: `${prefix}${cmdName}`, user: `<@${message.author.id}>`, guild: message.guildId });
                     message.reply('Ơ, có lỗi rồi, cậu thử lại sau nhé~ 🌸').catch(() => {});
                 }
                 return;
@@ -226,6 +232,7 @@ module.exports = {
                     await handleBingoPrefix(message, cmdName, tokens);
                 } catch (error) {
                     console.error(`Lỗi prefix ${prefix}${cmdName}:`, error);
+                    logError('Lỗi lệnh prefix', error, { command: `${prefix}${cmdName}`, user: `<@${message.author.id}>`, guild: message.guildId });
                     message.reply('Ơ, có lỗi rồi, cậu thử lại sau nhé~ 🌸').catch(() => {});
                 }
                 return;
@@ -254,6 +261,7 @@ module.exports = {
                         }
                     } catch (error) {
                         console.error(`Lỗi prefix ${prefix}${cmdName}:`, error);
+                        logError('Lỗi lệnh prefix', error, { command: `${prefix}${cmdName}`, user: `<@${message.author.id}>`, guild: message.guildId });
                         message.reply('Ơ, có lỗi rồi, cậu thử lại sau nhé~ 🌸').catch(() => {});
                     }
                     return;
@@ -283,6 +291,7 @@ module.exports = {
                 await command.execute(shim);
             } catch (error) {
                 console.error(`Lỗi prefix ${prefix}${cmdName}:`, error);
+                logError('Lỗi lệnh prefix', error, { command: `${prefix}${cmdName}`, user: `<@${message.author.id}>`, guild: message.guildId });
                 message.reply('Ơ, có lỗi rồi, cậu thử lại sau nhé~ 🌸').catch(() => {});
             }
             return;
