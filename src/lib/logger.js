@@ -10,13 +10,41 @@ function throttled() {
     return false;
 }
 
+// GỘP TRÙNG — vì sao cần: throttle ở trên chặn theo TỔNG (15 log/phút), nên một lệnh
+// hỏng mà 50 người gõ sẽ ngốn sạch hạn mức và che mất mọi lỗi khác. Ở đây gộp theo
+// (tiêu đề + dòng đầu của lỗi): lần đầu báo ngay, các lần sau im trong GOP_MS rồi báo
+// kèm số lần đã dồn. Kết quả: kênh log cho biết lỗi nào ĐANG lặp, thay vì trôi mất.
+const GOP_MS = 10 * 60_000;
+const goiTrung = new Map(); // khoá -> { dồn: số lần chưa báo, mocGui: lần gửi gần nhất }
+
+function khoaCua(title, err) {
+    const dong1 = String(err?.message || err || '').split('\n')[0].slice(0, 120);
+    return `${title}|${dong1}`;
+}
+
+/** @returns {number|null} số lần đã dồn nếu ĐƯỢC gửi, hoặc null nếu phải im vì trùng. */
+function chotGop(khoa, now = Date.now()) {
+    const cu = goiTrung.get(khoa);
+    if (cu && now - cu.mocGui < GOP_MS) { cu.don++; return null; }
+    const don = cu ? cu.don : 0;
+    goiTrung.set(khoa, { don: 0, mocGui: now });
+    if (goiTrung.size > 300) {
+        for (const [k, v] of goiTrung) if (now - v.mocGui > GOP_MS * 2) goiTrung.delete(k);
+    }
+    return don;
+}
+
 /** Gửi lỗi về webhook log. title: tiêu đề ngắn; err: Error/chuỗi; meta: {command,user,guild}. */
 async function logError(title, err, meta = {}) {
     const url = process.env.LOG_WEBHOOK_URL;
-    if (!url || throttled()) return;
+    if (!url) return;
+    const don = chotGop(khoaCua(title, err));
+    if (don === null) return;          // trùng — đã cộng dồn, báo ở lần sau
+    if (throttled()) return;
     try {
         const body = String(err?.stack || err?.message || err || 'unknown').slice(0, 1500);
         const desc = [
+            don > 0 ? `⚠️ **Đã lặp thêm ${don} lần** trong ${GOP_MS / 60000} phút qua.` : null,
             meta.command ? `**Lệnh:** \`${meta.command}\`` : null,
             meta.user ? `**User:** ${meta.user}` : null,
             meta.guild ? `**Guild:** \`${meta.guild}\`` : null,
@@ -37,4 +65,9 @@ function skipLog(reason, ctx = {}) {
     console.warn(`${tag} ${reason}${extra ? ' — ' + extra : ''}`);
 }
 
-module.exports = { logError, skipLog };
+module.exports = {
+    logError, skipLog,
+    // Lộ ra cho test: logic gộp trùng là phần dễ hỏng thầm lặng nhất ở đây
+    // (gộp quá tay -> mất lỗi thật; gộp hụt -> kênh log bị nhấn chìm).
+    _gop: { khoaCua, chotGop, GOP_MS, xoaHet: () => goiTrung.clear() },
+};

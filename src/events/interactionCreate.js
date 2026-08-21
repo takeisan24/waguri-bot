@@ -38,6 +38,13 @@ module.exports = {
                 await command.autocomplete(interaction);
             } catch (error) {
                 console.error(`Lỗi autocomplete ${interaction.commandName}:`, error);
+                // Autocomplete chạy lại mỗi phím gõ -> một lệnh hỏng sinh hàng chục lỗi
+                // mỗi giây. An toàn vì logError gộp theo (tiêu đề + dòng đầu của lỗi).
+                logError('Lỗi autocomplete', error, {
+                    command: `/${interaction.commandName}`,
+                    user: `<@${interaction.user.id}>`,
+                    guild: interaction.guildId,
+                });
             }
             return;
         }
