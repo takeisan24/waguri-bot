@@ -64,7 +64,13 @@
       "title": "🌸・Chào mừng thành viên mới!",
       "desc": "**Xin chào {user}** — tớ là **Waguri Kaoruko**, quản lý tiệm bánh Gekka! 🍰\n\nTớ rất vui vì cậu đã ghé thăm **{guild}** đó~ Cậu sẽ thích ở đây mà!\n\n**Bắt đầu nhé:**\n> 📜 Hãy làm quen với các kênh của server nha.\n> 🎁 Gõ `/start` để nhận **quà chào mừng** và bắt đầu hành trình! 🌸\n\n*Chúc cậu có những giây phút thật ngọt ngào bên mọi người~* 💕"
     },
-    "welcome_age_error": "⚠️ Tài khoản Discord của cậu phải được tạo từ ít nhất **7 ngày** trước mới nhận được quà chào mừng chống clone nha~ 🌸"
+    "welcome_age_error": "⚠️ Tài khoản Discord của cậu phải được tạo từ ít nhất **7 ngày** trước mới nhận được quà chào mừng chống clone nha~ 🌸",
+    "levelup": {
+      "text": "🎉 Cậu vừa lên **cấp {level}** rồi đó! Tớ vẫn âm thầm cộng điểm mỗi lần cậu trò chuyện đấy~",
+      "cta_daily": "Thử gõ `/daily` xem — điểm danh mỗi ngày là có quà nhé 🎁",
+      "cta_profile": "Gõ `/profile` để xem hồ sơ của cậu đã lớn tới đâu rồi 🌸",
+      "cta_work": "Cậu đủ cấp để đi làm rồi đó — thử `/work` xem sao 💼"
+    }
   },
   "disease": {
     "sick_active_note": "🤒 Cậu đang bị bệnh — thu nhập giảm {pct}% & mất {loss} máu. Tới `/hospital` chữa nhé!",
@@ -1578,7 +1584,9 @@
       "status_enabled_emoji": "🟢 Bật",
       "status_disabled_emoji": "🔴 Tắt",
       "staff_role_success": "✅ Đã đặt <@&{role}> làm role Staff xem ticket hỗ trợ nhen~ 🌸",
-      "staff_role_cleared": "✅ Đã xoá cấu hình role Staff. Tớ sẽ tự dò theo **quyền Quản lý luồng** thay vì theo tên role nhen~ 🌸"
+      "staff_role_cleared": "✅ Đã xoá cấu hình role Staff. Tớ sẽ tự dò theo **quyền Quản lý luồng** thay vì theo tên role nhen~ 🌸",
+      "levelup_success": "Đã {status} thông báo lên cấp trong kênh chat.",
+      "field_levelup": "Báo lên cấp"
     },
     "craft": {
       "cost_fee": " + {fee} {currency} tiền công",

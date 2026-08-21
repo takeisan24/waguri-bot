@@ -64,7 +64,13 @@
       "title": "🌸・Welcome new member!",
       "desc": "**Hello {user}** — I'm **Waguri Kaoruko**, the manager of Gekka Bakery! 🍰\n\nI'm so glad you visited **{guild}**~ You will love it here!\n\n**Let's get started:**\n> 📜 Get to know the server channels.\n> 🎁 Type `/start` to claim your **welcome gift** and begin your journey! 🌸\n\n*Wishing you sweet moments with everyone~* 💕"
     },
-    "welcome_age_error": "⚠️ Your Discord account must be at least **7 days** old to claim the welcome gift (anti-clone measure)~ 🌸"
+    "welcome_age_error": "⚠️ Your Discord account must be at least **7 days** old to claim the welcome gift (anti-clone measure)~ 🌸",
+    "levelup": {
+      "text": "🎉 You just reached **level {level}**! I've been quietly counting every message you send~",
+      "cta_daily": "Try `/daily` — there is a gift every day you check in 🎁",
+      "cta_profile": "Type `/profile` to see how far your profile has come 🌸",
+      "cta_work": "You are high enough level to work now — give `/work` a try 💼"
+    }
   },
   "disease": {
     "sick_active_note": "🤒 You are sick — income reduced by {pct}% & lost {loss} health. Use `/hospital` to cure it!",
@@ -1578,7 +1584,9 @@
       "status_enabled_emoji": "🟢 Enabled",
       "status_disabled_emoji": "🔴 Disabled",
       "staff_role_success": "✅ <@&{role}> is now the staff role for support tickets~ 🌸",
-      "staff_role_cleared": "✅ Staff role cleared. I will detect staff by the **Manage Threads permission** instead of by role name~ 🌸"
+      "staff_role_cleared": "✅ Staff role cleared. I will detect staff by the **Manage Threads permission** instead of by role name~ 🌸",
+      "levelup_success": "Level-up announcements have been turned {status}.",
+      "field_levelup": "Level-up notice"
     },
     "craft": {
       "cost_fee": " + {fee} {currency} crafting fee",

@@ -20,6 +20,8 @@ module.exports = {
             .addBooleanOption(o => o.setName('enabled').setDescription('Bật tạm giam?').setRequired(true)))
         .addSubcommand(s => s.setName('gambling').setDescription('Bật/tắt trò may rủi (bài cào, tài xỉu, xóc đĩa…)')
             .addBooleanOption(o => o.setName('enabled').setDescription('Bật trò may rủi?').setRequired(true)))
+        .addSubcommand(s => s.setName('levelup').setDescription('Bật/tắt lời chúc mừng khi thành viên lên cấp nhờ chat')
+            .addBooleanOption(o => o.setName('enabled').setDescription('Bật báo lên cấp?').setRequired(true)))
         .addSubcommand(s => s.setName('welcome-channel').setDescription('Đặt kênh chào mừng thành viên mới (bỏ trống để tắt)')
             .addChannelOption(o => o.setName('channel').setDescription('Kênh text').addChannelTypes(ChannelType.GuildText)))
         .addSubcommand(s => s.setName('welcome-role').setDescription('Đặt role tự động gán khi có người tham gia (bỏ trống để tắt)')
@@ -114,6 +116,17 @@ module.exports = {
             return interaction.editReply({ embeds: [embed] });
         }
 
+        if (sub === 'levelup') {
+            const enabled = interaction.options.getBoolean('enabled');
+            await db.setGuildSetting(gid, 'levelup', enabled ? '1' : '0');
+            const embed = buildWaguriEmbed(interaction, 'success', {
+                description: t(locale, 'commands.config.levelup_success', {
+                    status: enabled ? t(locale, 'commands.config.status_on') : t(locale, 'commands.config.status_off')
+                })
+            });
+            return interaction.editReply({ embeds: [embed] });
+        }
+
         if (sub === 'welcome-channel') {
             const ch = interaction.options.getChannel('channel');
             await db.setGuildSetting(gid, 'welcome_channel', ch ? ch.id : '');
@@ -183,6 +196,7 @@ module.exports = {
                 fields: [
                     { name: t(locale, 'commands.config.field_confession_channel'), value: s.confession_channel ? `<#${s.confession_channel}>` : t(locale, 'commands.config.val_not_set') },
                     { name: t(locale, 'commands.config.field_ai_enabled'), value: s.ai_enabled === '0' ? t(locale, 'commands.config.status_disabled_emoji') : t(locale, 'commands.config.status_enabled_emoji'), inline: true },
+                    { name: t(locale, 'commands.config.field_levelup'), value: s.levelup === '0' ? t(locale, 'commands.config.status_disabled_emoji') : t(locale, 'commands.config.status_enabled_emoji'), inline: true },
                     { name: t(locale, 'commands.config.field_ai_channel'), value: s.ai_channel ? `<#${s.ai_channel}>` : t(locale, 'commands.config.val_all_channels'), inline: true },
                     { name: t(locale, 'commands.config.field_pvp'), value: s.pvp === '0' ? t(locale, 'commands.config.status_disabled_emoji') : t(locale, 'commands.config.status_enabled_emoji'), inline: true },
                     { name: t(locale, 'commands.config.field_gambling'), value: s.gambling === '0' ? t(locale, 'commands.config.status_disabled_emoji') : t(locale, 'commands.config.status_enabled_emoji'), inline: true },

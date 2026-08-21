@@ -23,4 +23,11 @@ async function gamblingEnabled(guildId) {
     return s.gambling !== '0';
 }
 
-module.exports = { pvpEnabled, policeJailEnabled, gamblingEnabled };
+/** Waguri báo khi thành viên lên cấp nhờ chat. Tắt -> im lặng, thưởng vẫn cộng như cũ. */
+async function levelUpEnabled(guildId) {
+    if (!guildId) return false;   // DM: không có kênh chung để báo, và không có admin để tắt
+    const s = await db.getGuildSettings(guildId);
+    return s.levelup !== '0';
+}
+
+module.exports = { pvpEnabled, policeJailEnabled, gamblingEnabled, levelUpEnabled };

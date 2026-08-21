@@ -5,6 +5,7 @@ const { getInteractionLanguage, t, detectVietnamese } = require('../lib/i18n');
 const { buildPrefixInteraction } = require('../lib/prefixShim');
 const { chatWithWaguri, onCooldown } = require('../lib/ai');
 const { handleMessage: handleNoiTu } = require('../lib/noitu');
+const { announceLevelUp } = require('../lib/levelAnnounce');
 const { rateLimited } = require('../lib/ratelimit');
 const { isBanned } = require('../lib/bans');
 const { isBlocked, getJail } = require('../lib/jail');
@@ -83,7 +84,12 @@ async function grantChatReward(message) {
     // Cap ngày ở DB (atomic, đếm theo ngày) -> -1 nghĩa là đã chạm cap hôm nay.
     if (await db.claimDailyCounter(uid, 'chat', config.CHAT.DAILY_CAP) === -1) return;
     db.addMoney(uid, rand(config.CHAT.MIN_COINS, config.CHAT.MAX_COINS), 'wallet');
-    db.updateExp(uid, rand(config.CHAT.MIN_EXP, config.CHAT.MAX_EXP));
+
+    // EXP: giữ lại giá trị trả về thay vì vứt đi. Trước đây dòng này là fire-and-forget nên
+    // KHÔNG AI từng được báo là mình lên cấp — xem src/lib/levelAnnounce.js.
+    const gained = rand(config.CHAT.MIN_EXP, config.CHAT.MAX_EXP);
+    const newExp = await db.updateExp(uid, gained);
+    await announceLevelUp(message, newExp, gained);
 }
 
 module.exports = {
