@@ -229,10 +229,34 @@ async function plantStatus(userId, locale) {
 // ---- Prefix dispatcher (w!muagiong, w!tuoinuoc, ...) ----
 const PLANT_CMDS = new Set(['cay', 'muagiong', 'tuoinuoc', 'bonphan', 'thuhoach', 'hoisinh', 'phacay', 'trom', 'plantbox']);
 
+// Cùng vấn đề với `lib/pig.js`: tên gõ tắt của cây khác tên subcommand của `/trongcay`
+// (`/trongcay tuoi` <-> `w!tuoinuoc`). `w!cay tuoi` trước đây trả trạng thái, nuốt token.
+// *Bất đối xứng cần biết:* `trongcay` KHÔNG nằm trong `PLANT_CMDS`, nên `w!trongcay tuoi`
+// đi qua prefixShim và vốn đã chạy đúng. Chỉ đường `w!cay <sub>` là hỏng.
+const SUB_SANG_TAT = {
+    info: 'cay', muagiong: 'muagiong', tuoi: 'tuoinuoc', bonphan: 'bonphan',
+    thuhoach: 'thuhoach', hoisinh: 'hoisinh', phacay: 'phacay', trom: 'trom', box: 'plantbox',
+};
+
 async function handlePlantPrefix(message, cmd, tokens) {
     const userId = message.author.id;
     const targetUser = message.mentions.users.first() || null;
     const locale = message.locale || 'vi';
+
+    if (cmd === 'cay' && tokens && tokens.length) {
+        const sub = String(tokens[0]).toLowerCase();
+        if (SUB_SANG_TAT[sub]) {
+            cmd = SUB_SANG_TAT[sub];
+        } else {
+            const e = buildWaguriEmbed(message, 'warning', {
+                locale,
+                description: t(locale, 'common.sub_khong_biet', { sub, ds: Object.keys(SUB_SANG_TAT).join(', ') }),
+            });
+            await message.reply({ embeds: [e] }).catch(() => {});
+            return;
+        }
+    }
+
     let r;
     switch (cmd) {
         case 'cay': r = await plantStatus(userId, locale); break;

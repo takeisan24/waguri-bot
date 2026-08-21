@@ -109,16 +109,10 @@ const CATEGORIES = [
     ] },
 ];
 
-const fmtOpt = o => (o.required ? `<${o.name}>` : `[${o.name}]`);
-
-function buildUsage(json) {
-    const opts = json.options || [];
-    const subs = opts.filter(o => o.type === ApplicationCommandOptionType.Subcommand);
-    if (subs.length) {
-        return subs.map(s => `/${json.name} ${s.name}${(s.options || []).map(o => ' ' + fmtOpt(o)).join('')}`).join('\n');
-    }
-    return `/${json.name}${opts.map(o => ' ' + fmtOpt(o)).join('')}`;
-}
+// Chữ ký lệnh nay dựng ở `lib/cuPhap.js` — dùng CHUNG với đường prefix, nên dòng
+// "Cách dùng" và dòng "Prefix" không thể lệch nhau nữa. Xem chú thích ở file đó.
+const { buildUsage } = require('../../lib/cuPhap');
+const { tenTatCua } = require('../../lib/prefixTen');
 
 module.exports = {
     CATEGORIES,
@@ -157,8 +151,16 @@ module.exports = {
                 title: t(locale, 'commands.help.detail_title', { name: json.name }),
                 description: t(locale, `commands.help.commands.${json.name}`) || json.description || t(locale, 'commands.help.no_desc'),
                 fields: [
-                    { name: t(locale, 'commands.help.usage_title'), value: '```\n' + buildUsage(json) + '\n```' },
-                    { name: t(locale, 'commands.help.prefix_title'), value: t(locale, 'commands.help.prefix_desc', { prefix: config.PREFIX, name: json.name }) }
+                    { name: t(locale, 'commands.help.usage_title'), value: '```\n' + buildUsage(json, '/', true) + '\n```' },
+                    // Dòng prefix phải mang ĐỦ tham số như dòng trên. Trước đây nó chỉ in
+                    // `w!<tên>`, tức chỉ đường tới đúng cách gọi sẽ thiếu tham số rồi nổ.
+                    { name: t(locale, 'commands.help.prefix_title'), value: '```\n' + buildUsage(json, config.PREFIX, true) + '\n```' },
+                    // Tên gõ tắt: 24 tên chạy được nhưng trước đây không xuất hiện ở đâu cả.
+                    // Chỉ hiện khi lệnh thật sự có — không thêm field rỗng làm rối embed.
+                    ...(tenTatCua(json.name).length ? [{
+                        name: t(locale, 'commands.help.tentat_title'),
+                        value: tenTatCua(json.name).map(x => `\`${config.PREFIX}${x}\``).join(' · '),
+                    }] : []),
                 ]
             });
             embed.setFooter({

@@ -3,6 +3,7 @@ const config = require('../config');
 const db = require('../database.js');
 const { getInteractionLanguage, t, detectVietnamese } = require('../lib/i18n');
 const { buildPrefixInteraction } = require('../lib/prefixShim');
+const { PREFIX_ALIASES } = require('../lib/prefixTen');
 const { logError } = require('../lib/logger');
 const { chatWithWaguri, onCooldown } = require('../lib/ai');
 const { handleMessage: handleNoiTu } = require('../lib/noitu');
@@ -18,49 +19,8 @@ const { recordMembership } = require('../lib/membership');
 // (qua claimDailyCounter) -> không farm được qua restart hay nhiều shard.
 const chatCD = new Map(); // userId -> hết cooldown (ms)
 
-// Alias prefix cũ -> lệnh mới (giữ người quen tay không hụt lệnh sau khi đổi tên / gộp lệnh).
-// Giá trị: chuỗi = đổi tên (w!ngu -> nghingoi); {cmd,sub} = gộp vào lệnh con (w!trano -> vay tra).
-const PREFIX_ALIASES = {
-    // 1. Ảnh
-    cat: { cmd: 'image', sub: 'cat' },
-    dog: { cmd: 'image', sub: 'dog' },
-    waifu: { cmd: 'image', sub: 'waifu' },
-
-    // 2. Tương tác
-    hug: { cmd: 'action', sub: 'hug' },
-    kiss: { cmd: 'action', sub: 'kiss' },
-    pat: { cmd: 'action', sub: 'pat' },
-    poke: { cmd: 'action', sub: 'poke' },
-    slap: { cmd: 'action', sub: 'slap' },
-
-    // 3. Hôn nhân
-    marry: { cmd: 'couple', sub: 'marry' },
-    divorce: { cmd: 'couple', sub: 'divorce' },
-    relationship: { cmd: 'couple', sub: 'status' },
-
-    // 4. Cửa hàng
-    shop: { cmd: 'store', sub: 'list' },
-    buy: { cmd: 'store', sub: 'buy' },
-    sell: { cmd: 'store', sub: 'sell' },
-
-    // 5. Tài chính & Ngân hàng
-    balance: { cmd: 'bank', sub: 'balance' },
-    bal: { cmd: 'bank', sub: 'balance' },
-    deposit: { cmd: 'bank', sub: 'gui' },
-    withdraw: { cmd: 'bank', sub: 'rut' },
-
-    // 6. Bot
-    ping: { cmd: 'bot', sub: 'ping' },
-    about: { cmd: 'bot', sub: 'about' },
-    support: { cmd: 'bot', sub: 'support' },
-    invite: { cmd: 'bot', sub: 'invite' },
-
-    // Giữ nguyên các alias cũ khác
-    ngu: 'nghingoi',
-    trano: { cmd: 'vay', sub: 'tra' },
-    donno: { cmd: 'vay', sub: 'doi' },
-    no: { cmd: 'vay', sub: 'so' },
-};
+// Bảng gõ tắt nay ở `lib/prefixTen.js` — dùng CHUNG với `/help`, nên danh sách hiện
+// ra cho người dùng không thể lệch với danh sách thật sự định tuyến được.
 
 // Nhắc "sai kênh" — mỗi người mỗi server chỉ nhắc lại sau 10 phút. Không có nó thì người
 // @mention liên tục sẽ bị dội lại liên tục, biến một lời chỉ đường thành phiền nhiễu.
@@ -288,6 +248,25 @@ module.exports = {
 
             try {
                 const shim = await buildPrefixInteraction(message, command, tokens);
+
+                // CỬA CHẶN: thiếu tham số BẮT BUỘC thì chỉ đường, đừng để lệnh tự nổ.
+                //
+                // Discord ép tham số bắt buộc ở phía client cho slash; đường prefix không
+                // đi qua Discord nên không ai ép. Trước cửa này, `w!eco-admin trace` (thiếu
+                // mention) làm `getUser()` trả null rồi `who.id` ném TypeError, và người
+                // dùng chỉ nhận một câu báo lỗi chung — không biết mình thiếu gì.
+                // Quét ngày 21-08: 88/209 đơn vị có tham số bắt buộc, 4 chỗ deref null.
+                if (shim.thieuBatBuoc && shim.thieuBatBuoc.length) {
+                    const { cuPhapDonVi } = require('../lib/cuPhap');
+                    const locale = await getInteractionLanguage(shim);
+                    const cp = cuPhapDonVi(command.data.toJSON(), shim.options.getSubcommand(), prefix);
+                    await message.reply(t(locale, 'common.thieu_tham_so', {
+                        thieu: shim.thieuBatBuoc.map(n => `\`<${n}>\``).join(', '),
+                        cuphap: cp,
+                    })).catch(() => {});
+                    return;
+                }
+
                 await command.execute(shim);
             } catch (error) {
                 console.error(`Lỗi prefix ${prefix}${cmdName}:`, error);

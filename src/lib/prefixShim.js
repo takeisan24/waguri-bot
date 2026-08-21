@@ -107,7 +107,9 @@ async function parseOptions(message, commandData, tokens) {
                 strings[def.name] = raw;
         }
     }
-    return { subcommand, strings, integers, booleans, users, members, channels, roles };
+    // Trả kèm `optionDefs` (đã phân giải theo subcommand) để bên ngoài đối chiếu được
+    // option nào BẮT BUỘC mà parse ra rỗng — xem `thieuBatBuoc()` ở lib/cuPhap.js.
+    return { subcommand, strings, integers, booleans, users, members, channels, roles, optionDefs };
 }
 
 /**
@@ -156,6 +158,11 @@ async function buildPrefixInteraction(message, command, tokens) {
         channelId: message.channelId,
         inGuild: () => Boolean(message.guildId),
         fetchReply: async () => state.sent,
+        // Tên các option BẮT BUỘC mà người dùng gõ thiếu. Discord ép chúng ở phía client
+        // cho slash; đường prefix không đi qua Discord nên KHÔNG ai ép — thiếu token thì
+        // `getUser()` trả null rồi lệnh deref là nổ (đã xảy ra thật: w!eco-admin trace).
+        // `messageCreate` đọc trường này và trả CÚ PHÁP ĐÚNG thay vì gọi execute().
+        thieuBatBuoc: require('./cuPhap').thieuBatBuoc(parsed.optionDefs, parsed),
         locale: userLocale,
         guildLocale: null,
         get deferred() { return state.deferred; },

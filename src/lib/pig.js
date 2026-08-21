@@ -250,10 +250,36 @@ async function pigStatus(userId, locale) {
 // ---- Prefix dispatcher (w!muaheo, w!heoan, ...) ----
 const PIG_CMDS = new Set(['heo', 'muaheo', 'heoan', 'tamheo', 'heongu', 'banheo', 'chuabenh', 'tromheo', 'pigbox']);
 
+// Từ vựng prefix của heo KHÔNG trùng tên subcommand của `/heo`: `/heo mua` <-> `w!muaheo`.
+// Trước đây `w!heo mua` rơi vào `case 'heo'` và trả TRẠNG THÁI, token `mua` bị nuốt im lặng
+// — kiểu vỡ đắt nhất, vì không lỗi, không cảnh báo, chỉ làm sai việc. Mà `/help` thì hiện
+// `/heo mua` ngay bên trên dòng "cũng gõ được w!heo", nên người dùng thử `w!heo mua` là
+// chuyện hoàn toàn hợp lý. Bảng này cho hai bên nói cùng một thứ tiếng.
+const SUB_SANG_TAT = {
+    info: 'heo', mua: 'muaheo', an: 'heoan', tam: 'tamheo', ngu: 'heongu',
+    ban: 'banheo', chuabenh: 'chuabenh', trom: 'tromheo', box: 'pigbox',
+};
+
 async function handlePigPrefix(message, cmd, tokens) {
     const userId = message.author.id;
     const targetUser = message.mentions.users.first() || null;
     const locale = message.locale || 'vi';
+
+    // `w!heo <sub>` -> tên gõ tắt tương ứng. Token lạ thì GỢI Ý, đừng lặng lẽ trả trạng thái.
+    if (cmd === 'heo' && tokens && tokens.length) {
+        const sub = String(tokens[0]).toLowerCase();
+        if (SUB_SANG_TAT[sub]) {
+            cmd = SUB_SANG_TAT[sub];
+        } else {
+            const e = buildWaguriEmbed(message, 'warning', {
+                locale,
+                description: t(locale, 'common.sub_khong_biet', { sub, ds: Object.keys(SUB_SANG_TAT).join(', ') }),
+            });
+            await message.reply({ embeds: [e] }).catch(() => {});
+            return;
+        }
+    }
+
     let r;
     switch (cmd) {
         case 'heo': r = await pigStatus(userId, locale); break;

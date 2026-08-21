@@ -28,6 +28,8 @@
     "error_title": "❌ Error",
     "game_timeout_cancelled": "The {game} game was cancelled due to timeout~ 🌸",
     "generic_error": "An error occurred while executing this command! 🥺",
+    "thieu_tham_so": "Missing parameter {thieu}~ 🌸\nCorrect usage: `{cuphap}`",
+    "sub_khong_biet": "There is no `{sub}` option~ 🌸\nTry one of: {ds}",
     "generic_error_title": "💥・An error occurred!",
     "guild_create": {
       "support_link": "\n> 🛟 **Need help?** [Join Support Server]({url})!",
@@ -1236,6 +1238,7 @@
       "no_desc": "No description available.",
       "usage_title": "📝 Usage",
       "prefix_title": "⌨️ Prefix",
+      "tentat_title": "⚡ Shortcuts",
       "prefix_desc": "Can also use: `{prefix}{name}`",
       "footer_usage": "<required> · [optional] • {original}",
       "sub_cmds_title": "🔸 Subcommands",

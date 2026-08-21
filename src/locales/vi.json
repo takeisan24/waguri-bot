@@ -28,6 +28,8 @@
     "error_title": "❌ Lỗi",
     "game_timeout_cancelled": "Ván {game} đã bị huỷ do quá thời gian chờ~ 🌸",
     "generic_error": "Đã có lỗi xảy ra khi thực thi lệnh này! 🥺",
+    "thieu_tham_so": "Thiếu tham số {thieu} rồi cậu ơi~ 🌸\nCú pháp đúng: `{cuphap}`",
+    "sub_khong_biet": "Không có kiểu `{sub}` đâu cậu~ 🌸\nThử một trong: {ds}",
     "generic_error_title": "💥・Có lỗi xảy ra!",
     "guild_create": {
       "support_link": "\n> 🛟 **Cần giúp đỡ?** [Vào server hỗ trợ]({url}) nha!",
@@ -1236,6 +1238,7 @@
       "no_desc": "Không có mô tả.",
       "usage_title": "📝 Cách dùng",
       "prefix_title": "⌨️ Prefix",
+      "tentat_title": "⚡ Gõ tắt",
       "prefix_desc": "Cũng gõ được: `{prefix}{name}`",
       "footer_usage": "<bắt buộc> · [tuỳ chọn] • {original}",
       "sub_cmds_title": "🔸 Lệnh con",
