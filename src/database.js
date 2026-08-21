@@ -2285,7 +2285,11 @@ async function getPremiumOrder(code) {
     try {
         const { data, error } = await supabase
             .from('premium_orders')
-            .select('code, user_id, plan, months, amount, status, claimed_at, created_at')
+            // `kind` là BẮT BUỘC: `approveAndThank` và `notifyOwnersOfClaim` định tuyến
+            // theo nó. Thiếu cột -> `order.kind` là undefined -> MỌI đơn ủng hộ bị đẩy
+            // sang đường Premium (RPC 0131 chặn lại bằng `wrong_kind`, nên hậu quả là
+            // "không ai duyệt được đơn ủng hộ" chứ không phải cấp nhầm Premium).
+            .select('code, user_id, plan, months, amount, status, claimed_at, created_at, kind')
             .eq('code', code)
             .maybeSingle();
         if (error) throw error;
