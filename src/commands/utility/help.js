@@ -113,6 +113,7 @@ const CATEGORIES = [
 // "Cách dùng" và dòng "Prefix" không thể lệch nhau nữa. Xem chú thích ở file đó.
 const { buildUsage } = require('../../lib/cuPhap');
 const { tenTatCua } = require('../../lib/prefixTen');
+const { moTaLenh, moTaSub } = require('../../lib/commandLocalizer');
 
 module.exports = {
     CATEGORIES,
@@ -149,7 +150,12 @@ module.exports = {
             const embed = buildWaguriEmbed(interaction, 'info', {
                 locale,
                 title: t(locale, 'commands.help.detail_title', { name: json.name }),
-                description: t(locale, `commands.help.commands.${json.name}`) || json.description || t(locale, 'commands.help.no_desc'),
+                // Thứ tự nguồn: khoá /help (bản dài, giải thích) -> localizer (bản Discord
+                // đang hiện, ĐÚNG ngôn ngữ người đọc) -> builder (dự phòng cuối, vốn đã bị
+                // localizeCommandJSON ghi đè trước khi tới Discord nên gần như không ai thấy).
+                description: t(locale, `commands.help.commands.${json.name}`)
+                    || moTaLenh(json.name, locale, json.description)
+                    || t(locale, 'commands.help.no_desc'),
                 fields: [
                     { name: t(locale, 'commands.help.usage_title'), value: '```\n' + buildUsage(json, '/', true) + '\n```' },
                     // Dòng prefix phải mang ĐỦ tham số như dòng trên. Trước đây nó chỉ in
@@ -171,7 +177,13 @@ module.exports = {
             const opts = json.options || [];
             const subs = opts.filter(o => o.type === ApplicationCommandOptionType.Subcommand);
             if (subs.length) {
-                embed.addFields({ name: t(locale, 'commands.help.sub_cmds_title'), value: subs.map(s => `\`${s.name}\` — ${s.description}`).join('\n') });
+                // `s.description` là chuỗi BUILDER, luôn tiếng Việt — người dùng tiếng Anh
+                // trước đây đọc mô tả sub bằng tiếng Việt ngay trong /help, dù bản `en`
+                // đã có sẵn đủ 157/157 sub trong localizer.
+                embed.addFields({
+                    name: t(locale, 'commands.help.sub_cmds_title'),
+                    value: subs.map(s => `\`${s.name}\` — ${moTaSub(json.name, s.name, locale, s.description)}`).join('\n'),
+                });
             } else if (opts.length) {
                 embed.addFields({ name: t(locale, 'commands.help.params_title'), value: opts.map(o => `\`${o.name}\`${o.required ? t(locale, 'commands.help.param_req') : ''} — ${o.description}`).join('\n') });
             }

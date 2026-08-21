@@ -294,8 +294,11 @@ const COMMAND_DESCRIPTIONS = {
         en: "Premium administration (Owner only) ⚙️"
     },
     "serverinfo": {
-        vi: "Xem thông tin chi tiết về máy chủ hiện tại 📊",
-        en: "View detailed information of the current server 📊"
+        // SỬA 21-08-2026: hai chuỗi cũ ("Xem thông tin chi tiết về máy chủ") mô tả SAI việc
+        // lệnh làm. Nó xuất báo cáo cấu trúc để rà soát VÀ đòi quyền Quản lý Server — người
+        // thường đọc bảng gợi ý rồi gõ vào sẽ bị từ chối mà không hiểu vì sao.
+        vi: "Xuất báo cáo cấu trúc server để rà soát 📊 (cần quyền Quản lý Server)",
+        en: "Export a server structure report for auditing 📊 (needs Manage Server)"
     },
     "setup": {
         vi: "Thiết lập nhanh các kênh hệ thống cho máy chủ ⚙️",
@@ -821,9 +824,48 @@ function localizeOption(parentName, opt) {
     }
 }
 
+// ============================================================
+// TRA CỨU THEO NGÔN NGỮ — để `/help` đọc CÙNG nguồn với bảng gợi ý Discord.
+//
+// VÌ SAO CÓ: `localizeCommandJSON` GHI ĐÈ `cmd.description` bằng bản localizer trước khi
+// đăng ký lên Discord, nhưng `help.js` lại đọc thẳng `command.data.toJSON()` — tức bản
+// BUILDER, chưa qua localizer. Hệ quả đo được ngày 21-08-2026:
+//   · 68 lệnh và 51 subcommand có hai chuỗi mô tả khác nhau ở hai nơi
+//   · người dùng tiếng Anh đọc mô tả subcommand bằng TIẾNG VIỆT trong `/help`,
+//     dù bản `en` đã có sẵn đủ 157/157 sub ở bảng dưới
+//
+// Hai hàm này cho `/help` đọc đúng bảng đó, đúng ngôn ngữ người đọc. Mô tả builder lùi về
+// vai trò dự phòng — nó vốn đã bị ghi đè trước khi tới Discord.
+// ============================================================
+
+/** 'en-US' / 'en-GB' / 'en' -> 'en'; còn lại -> 'vi'. */
+const nganNgu = (locale) => (String(locale || '').toLowerCase().startsWith('en') ? 'en' : 'vi');
+
+/**
+ * Mô tả của một LỆNH theo ngôn ngữ người đọc.
+ * @param {string} ten tên lệnh
+ * @param {string} locale
+ * @param {string} duPhong dùng khi bảng chưa có mục (mô tả builder)
+ */
+function moTaLenh(ten, locale, duPhong = '') {
+    const m = COMMAND_DESCRIPTIONS[ten];
+    return (m && m[nganNgu(locale)]) || duPhong;
+}
+
+/**
+ * Mô tả của một SUBCOMMAND theo ngôn ngữ người đọc.
+ * @param {string} ten tên lệnh · @param {string} sub tên subcommand
+ */
+function moTaSub(ten, sub, locale, duPhong = '') {
+    const m = SUBCOMMAND_DESCRIPTIONS[`${ten}.${sub}`];
+    return (m && m[nganNgu(locale)]) || duPhong;
+}
+
 module.exports = {
     localizeCommandJSON,
     COMMAND_DESCRIPTIONS,
     SUBCOMMAND_DESCRIPTIONS,
-    OPTION_DESCRIPTIONS
+    OPTION_DESCRIPTIONS,
+    moTaLenh,
+    moTaSub,
 };

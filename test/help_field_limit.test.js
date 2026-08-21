@@ -37,11 +37,19 @@ function duyet(dir, out = []) {
     return out;
 }
 
-/** Dựng ĐÚNG chuỗi mà help.js nối cho field danh sách sub. */
-function chuoiSub(d) {
+const { moTaSub } = require('../src/lib/commandLocalizer');
+
+/**
+ * Dựng ĐÚNG chuỗi mà help.js nối cho field danh sách sub.
+ *
+ * Từ 21-08-2026 help.js đọc mô tả từ localizer theo ngôn ngữ người đọc, KHÔNG còn dùng
+ * `s.description` (chuỗi builder, luôn tiếng Việt). Nên phải đo CẢ HAI ngôn ngữ rồi lấy
+ * bản dài hơn — bản `en` của một số lệnh dài hơn `vi` (vd /clan: 574 so với 530).
+ */
+function chuoiSub(d, locale) {
     const subs = (d.options || []).filter(o => o.type === 1);
     if (!subs.length) return null;
-    return subs.map(s => `\`${s.name}\` — ${s.description}`).join('\n');
+    return subs.map(s => `\`${s.name}\` — ${moTaSub(d.name, s.name, locale, s.description)}`).join('\n');
 }
 
 function doTatCa() {
@@ -51,9 +59,17 @@ function doTatCa() {
         try { mod = require(f); } catch { continue; }
         if (!mod?.data?.toJSON) continue;
         const d = mod.data.toJSON();
-        const chuoi = chuoiSub(d);
-        if (chuoi === null) continue;
-        ra.push({ ten: d.name, soSub: (d.options || []).filter(o => o.type === 1).length, dai: chuoi.length });
+        const vi = chuoiSub(d, 'vi');
+        if (vi === null) continue;
+        const en = chuoiSub(d, 'en');
+        // Lấy bản DÀI HƠN: người đọc nào cũng có thể chạm trần, và bản `en` của một số
+        // lệnh dài hơn `vi` (đo 21-08: /clan en=574 so với vi=530).
+        ra.push({
+            ten: d.name,
+            soSub: (d.options || []).filter(o => o.type === 1).length,
+            dai: Math.max(vi.length, en.length),
+            ngonNgu: vi.length >= en.length ? 'vi' : 'en',
+        });
     }
     return ra.sort((a, b) => b.dai - a.dai);
 }
@@ -77,9 +93,14 @@ test('help: vẫn dựng field đó theo đúng cách test này giả định', 
     // Nếu help.js đổi cách nối (thêm emoji, đổi dấu gạch, bọc thêm ký tự) thì con số đo
     // được ở trên lệch với thực tế, và gate thành bù nhìn — xanh trong khi đã vỡ.
     const src = fs.readFileSync(path.join(CMD_DIR, 'utility', 'help.js'), 'utf8');
-    assert.match(src, /subs\.map\(s => `\\`\$\{s\.name\}\\` — \$\{s\.description\}`\)\.join\('\\n'\)/,
+    assert.match(src, /subs\.map\(s => `\\`\$\{s\.name\}\\` — \$\{moTaSub\(json\.name, s\.name, locale, s\.description\)\}`\)\.join\('\\n'\)/,
         'help.js đã đổi cách dựng field danh sách sub — cập nhật hàm chuoiSub() trong test này ' +
         'cho khớp, nếu không phép đo mất ý nghĩa.');
+
+    // Và phải đọc từ localizer chứ không phải chuỗi builder: nếu quay lại `s.description`
+    // thì người dùng tiếng Anh lại đọc mô tả sub bằng tiếng Việt như trước 21-08.
+    assert.ok(src.includes("require('../../lib/commandLocalizer')"),
+        'help.js không còn nạp commandLocalizer — mô tả sub sẽ lại chỉ có tiếng Việt.');
 });
 
 test('help: báo cho biết lệnh nào đang sát ngưỡng nhất', () => {
@@ -90,4 +111,46 @@ test('help: báo cho biết lệnh nào đang sát ngưỡng nhất', () => {
     console.log(`      [help] sát ngưỡng nhất: /${top.ten} — ${top.dai}/${GIOI_HAN_DISCORD} ` +
         `(${Math.round(top.dai / GIOI_HAN_DISCORD * 100)}%), còn ${NGUONG - top.dai} ký tự trước ngưỡng ${NGUONG}`);
     assert.ok(top.dai <= GIOI_HAN_DISCORD, `/${top.ten} ĐÃ vượt giới hạn cứng của Discord.`);
+});
+
+// ============================================================
+// ĐỢT 4 — localizer phải phủ HẾT, vì /help nay đọc từ đó
+//
+// Đo 21-08-2026 trước khi sửa: 68 lệnh và 51 sub có hai chuỗi mô tả khác nhau giữa builder
+// và localizer; 0/77 lệnh nhất quán trên cả ba nguồn. Nguyên nhân: `localizeCommandJSON`
+// GHI ĐÈ `cmd.description` trước khi đăng ký Discord, còn `help.js` đọc thẳng
+// `data.toJSON()` — hai bề mặt, hai chuỗi.
+//
+// Nay `/help` đọc localizer. Nên thiếu một mục ở đó là chuỗi builder (luôn tiếng Việt)
+// lọt ra, và người dùng tiếng Anh lại đọc tiếng Việt.
+// ============================================================
+const { COMMAND_DESCRIPTIONS, SUBCOMMAND_DESCRIPTIONS } = require('../src/lib/commandLocalizer');
+
+// Lệnh CỐ Ý không có mục localizer, kèm lý do thật.
+const KHONG_CAN_LOC = {
+    'Xem hồ sơ Waguri': 'context menu (chuột phải) — Discord không hiện mô tả cho loại này',
+};
+
+test('gate: mọi lệnh và subcommand đều có mô tả localizer đủ vi + en', () => {
+    const thieu = [];
+    for (const f of duyet(CMD_DIR)) {
+        let mod; try { mod = require(f); } catch { continue; }
+        if (!mod?.data?.toJSON) continue;
+        const d = mod.data.toJSON();
+        if (!d.name) continue;
+
+        if (!KHONG_CAN_LOC[d.name]) {
+            const m = COMMAND_DESCRIPTIONS[d.name];
+            if (!m) thieu.push(`/${d.name} — chưa có mục localizer`);
+            else if (!m.vi || !m.en) thieu.push(`/${d.name} — thiếu bản ${!m.vi ? 'vi' : 'en'}`);
+        }
+        for (const s of (d.options || []).filter(o => o.type === 1)) {
+            const m = SUBCOMMAND_DESCRIPTIONS[`${d.name}.${s.name}`];
+            if (!m) thieu.push(`/${d.name} ${s.name} — chưa có mục localizer`);
+            else if (!m.vi || !m.en) thieu.push(`/${d.name} ${s.name} — thiếu bản ${!m.vi ? 'vi' : 'en'}`);
+        }
+    }
+    assert.deepStrictEqual(thieu, [],
+        'Thiếu mô tả localizer -> chuỗi builder (luôn tiếng Việt) lọt vào /help của người ' +
+        'dùng tiếng Anh. Thêm vào commandLocalizer.js, hoặc vào KHONG_CAN_LOC kèm lý do thật.');
 });
