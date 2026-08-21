@@ -17,6 +17,94 @@ const isConnectPhaseError = (err) => {
     return code === 'UND_ERR_CONNECT_TIMEOUT' || code === 'ECONNREFUSED'
         || code === 'ENOTFOUND' || code === 'EAI_AGAIN';
 };
+// ── TÁCH LỖI MẠNG RA KHỎI LỖI DB ────────────────────────────────────────────
+// Trước đây MỌI truy vấn hỏng đều in `[DATABASE ERROR]` kèm nguyên stack. Một cú rớt
+// DNS 2 giây (EAI_AGAIN) vì thế trông y hệt DB hỏng thật. Vòng lặp đấu giá chạy mỗi
+// 60s nên nó là cái kêu to nhất → dễ đi soi nhầm đấu giá trong khi lỗi nằm ở mạng.
+//
+// Ở đây tách đôi, và ĐIỀU KIỆN BẮT BUỘC là không được nuốt thông tin:
+//   · lỗi mạng chập chờn -> 1 dòng [NET] gọn, gộp trùng theo mã lỗi (không phải theo
+//     từng hàm, kẻo một cú rớt mạng đẻ ra 20 dòng của 20 hàm khác nhau);
+//   · mất kết nối kéo dài quá LEO_THANG_MS -> TỰ leo thang, in lại đầy đủ cả stack;
+//   · kết nối trở lại -> in một dòng tổng kết (mất bao lâu, hỏng bao nhiêu lượt);
+//   · MỌI lỗi khác (PGRST*, ràng buộc SQL, lỗi logic RPC...) -> giữ NGUYÊN hành vi cũ.
+const { chotGop } = require('./lib/logger');
+const NET_LEO_THANG_MS = Number(process.env.SUPABASE_NET_ESCALATE_MS) || 2 * 60_000;
+const MA_MANG = new Set([
+    'UND_ERR_CONNECT_TIMEOUT', 'UND_ERR_SOCKET', 'UND_ERR_HEADERS_TIMEOUT', 'UND_ERR_BODY_TIMEOUT',
+    'ECONNREFUSED', 'ENOTFOUND', 'EAI_AGAIN', 'ECONNRESET', 'ETIMEDOUT', 'EPIPE',
+    'ENETUNREACH', 'EHOSTUNREACH', 'ABORT_ERR',
+]);
+
+/** Lỗi này là do MẠNG (chưa chạm tới Postgres) hay do DB trả về? */
+function laLoiMang(err) {
+    if (!err) return false;
+    const ma = err?.cause?.code || err?.code;
+    if (typeof ma === 'string' && MA_MANG.has(ma)) return true;
+    if (err?.name === 'AbortError' || err?.cause?.name === 'AbortError') return true;
+    // Vài chỗ gọi truyền sẵn `error?.message || error` (chuỗi thuần) nên không còn
+    // `.code` để soi — phải nhận diện bằng văn bản. Cố ý KHÔNG bắt chữ "timeout" trần:
+    // "canceling statement due to statement timeout" là lỗi DB thật, phải kêu to.
+    const van = String(err?.message || err || '');
+    // `EAI_AGAIN` đứng đầu thay vì `fetch failed` là CỐ Ý, không phải ngẫu nhiên: cổng
+    // `check-command-refs` quét chữ dạng `/tên` để bắt hướng dẫn nhắc lệnh không tồn tại, và
+    // nó chưa loại trừ regex literal — mở đầu bằng `/fetch ` là bị báo "lệnh /fetch không
+    // tồn tại". Thứ tự nhánh không ảnh hưởng `.test()`, nên đảo chỗ là cách rẻ nhất.
+    return /EAI_AGAIN|fetch failed|ENOTFOUND|ECONNRESET|ECONNREFUSED|ETIMEDOUT|socket hang up|network error|terminated/i.test(van);
+}
+
+/** Mã ngắn gọn để hiển thị & làm khoá gộp. */
+function maLoiMang(err) {
+    return err?.cause?.code || err?.code || err?.cause?.name || err?.name
+        || String(err?.message || err || 'unknown').split('\n')[0].slice(0, 60);
+}
+
+let mang = { hong: 0, tu: 0, daLeoThang: false };
+const datLaiMang = () => { mang = { hong: 0, tu: 0, daLeoThang: false }; };
+
+/**
+ * Quyết định in gì cho một lỗi. Nhận `now` để test khỏi phụ thuộc đồng hồ thật.
+ * @returns {{kieu:'day-du'|'gon'|'leo-thang'|'im'}} kèm dữ liệu cho từng kiểu.
+ */
+function quyetDinhLog(err, now = Date.now()) {
+    if (!laLoiMang(err)) return { kieu: 'day-du' };
+    if (!mang.hong) mang.tu = now;
+    mang.hong++;
+    const keo = now - mang.tu;
+    if (!mang.daLeoThang && keo >= NET_LEO_THANG_MS) {
+        mang.daLeoThang = true;
+        return { kieu: 'leo-thang', giay: Math.round(keo / 1000), luot: mang.hong };
+    }
+    const don = chotGop(`NET|${maLoiMang(err)}`, now);
+    return don === null ? { kieu: 'im' } : { kieu: 'gon', don, ma: maLoiMang(err) };
+}
+
+/** Rút tên hàm ra khỏi nhãn `[DATABASE ERROR] Lỗi getUser(123):` -> `Lỗi getUser(123)`. */
+const tenHam = (nhan) => String(nhan).replace(/^\[DATABASE ERROR\]\s*/, '').replace(/:\s*$/, '');
+
+/** Thay chỗ cho console.error ở toàn bộ file này. Nhận NGUYÊN dạng tham số cũ
+ *  (nhãn đã chứa sẵn `[DATABASE ERROR] tênHàm():`) nên 168 chỗ gọi không phải sửa gì. */
+function logDbError(nhan, err, ...them) {
+    const qd = quyetDinhLog(err);
+    if (qd.kieu === 'im') return;
+    if (qd.kieu === 'day-du') { console.error(nhan, err, ...them); return; }
+    if (qd.kieu === 'leo-thang') {
+        logDbError(`[DATABASE ERROR] MẤT KẾT NỐI Supabase ${qd.giay}s liên tục `
+            + `(${qd.luot} lượt gọi hỏng, gần nhất: ${tenHam(nhan)}) — không còn là chập chờn:`, err, ...them);
+        return;
+    }
+    console.warn(`[NET] Không gọi được Supabase (${qd.ma}) tại ${tenHam(nhan)}`
+        + `${qd.don ? ` — đã dồn thêm ${qd.don} lượt cùng loại` : ''}. Đang tự thử lại.`);
+}
+
+/** Gọi khi một request đi lọt: nếu vừa có đợt mất kết nối thì tổng kết một dòng. */
+function ghiNhanMangOk(now = Date.now()) {
+    if (!mang.hong) return;
+    const giay = Math.max(0, Math.round((now - mang.tu) / 1000));
+    console.warn(`[NET] Đã kết nối lại Supabase — hỏng ${mang.hong} lượt gọi trong ${giay}s.`);
+    datLaiMang();
+}
+
 const resilientFetch = async (url, options = {}) => {
     if (supabaseUrl?.includes('dummy')) {
         throw new Error('Dummy CI Supabase URL provided');
@@ -31,9 +119,15 @@ const resilientFetch = async (url, options = {}) => {
         }
     };
     try {
-        return await runOnce();
+        const res = await runOnce();
+        ghiNhanMangOk();          // đi lọt -> khép lại đợt mất kết nối (nếu đang có)
+        return res;
     } catch (err) {
-        if (isConnectPhaseError(err)) return await runOnce();
+        if (isConnectPhaseError(err)) {
+            const res = await runOnce();
+            ghiNhanMangOk();
+            return res;
+        }
         throw err;
     }
 };
@@ -61,7 +155,7 @@ const supabase = new Proxy({}, {
 
 function logError(method, err, extra = {}) {
     if (supabaseUrl?.includes('dummy')) return;
-    console.error(`[DATABASE ERROR] in ${method}:`, err, extra);
+    logDbError(`[DATABASE ERROR] in ${method}:`, err, extra);
 }
 
 /**
@@ -93,7 +187,7 @@ async function getUser(userId) {
         return data;
 
     } catch (error) {
-        console.error(`[DATABASE ERROR] Lỗi getUser(${userId}):`, error);
+        logDbError(`[DATABASE ERROR] Lỗi getUser(${userId}):`, error);
         return null;
     }
 }
@@ -157,7 +251,7 @@ async function addMoney(userId, amount, type = 'wallet') {
         return data !== null;
 
     } catch (error) {
-        console.error(`[DATABASE ERROR] Lỗi addMoney(${userId}):`, error);
+        logDbError(`[DATABASE ERROR] Lỗi addMoney(${userId}):`, error);
         // TRẢ `null`, KHÔNG phải `false`. Hai chuyện khác hẳn nhau: `false` = người dùng
         // thật sự không đủ, `null` = KHÔNG BIẾT vì DB lỗi. Gộp chung thì lúc Supabase
         // chập chờn, người chơi bị báo sai về tài sản của CHÍNH HỌ.
@@ -178,7 +272,7 @@ async function chargeAssets(userId, amount) {
         if (error) throw error;
         return Number(data) || 0;
     } catch (error) {
-        console.error('[DATABASE ERROR] chargeAssets():', error);
+        logDbError('[DATABASE ERROR] chargeAssets():', error);
         return 0;
     }
 }
@@ -197,7 +291,7 @@ async function stakeCollect(sessionId, game, channelId, userId, amount) {
                 // chập chờn, người chơi bị báo sai về tài sản của CHÍNH HỌ.
                 // Mọi nơi gọi đều dùng `if (!x)` nên `null` giữ NGUYÊN hành vi cũ; chỗ nào muốn
                 // tách mới kiểm `=== null`. Đổi dần từng chỗ, không cần một đợt sửa lớn.
-    } catch (error) { console.error('[DATABASE ERROR] stakeCollect():', error); return null; }
+    } catch (error) { logDbError('[DATABASE ERROR] stakeCollect():', error); return null; }
 }
 /** Ván xong bình thường: xoá dòng cược (cược đã thành pot & trả thưởng). */
 async function stakeSettle(sessionId) {
@@ -209,7 +303,7 @@ async function stakeSettle(sessionId) {
             if (error) throw error;
             return true;
         } catch (error) {
-            console.error(`[DATABASE ERROR] stakeSettle() lần ${attempt}:`, error);
+            logDbError(`[DATABASE ERROR] stakeSettle() lần ${attempt}:`, error);
             if (attempt === 2) {
                 console.error(`[CRITICAL] stakeSettle THẤT BẠI session=${sessionId} — cần dọn dòng cược thủ công để tránh hoàn cược trùng.`);
                 // TRẢ `null` = "không biết, DB lỗi" — phân biệt với các giá trị khác.
@@ -223,12 +317,12 @@ async function stakeSettle(sessionId) {
 /** Huỷ ván: hoàn cược cho mọi người chơi rồi xoá. Trả tổng đã hoàn. */
 async function stakeRefundSession(sessionId) {
     try { const { data, error } = await supabase.rpc('stake_refund_session', { p_session: sessionId }); if (error) throw error; return Number(data) || 0; }
-    catch (error) { console.error('[DATABASE ERROR] stakeRefundSession():', error); return 0; }
+    catch (error) { logDbError('[DATABASE ERROR] stakeRefundSession():', error); return 0; }
 }
 /** Khởi động bot: hoàn mọi cược còn sót (ván chết do restart). Trả { count, total }. */
 async function stakeRefundOrphans() {
     try { const { data, error } = await supabase.rpc('stake_refund_orphans'); if (error) throw error; return data || { count: 0, total: 0 }; }
-    catch (error) { console.error('[DATABASE ERROR] stakeRefundOrphans():', error); return { count: 0, total: 0 }; }
+    catch (error) { logDbError('[DATABASE ERROR] stakeRefundOrphans():', error); return { count: 0, total: 0 }; }
 }
 
 /**
@@ -247,7 +341,7 @@ async function transferMoney(fromUserId, toUserId, amount) {
         return data === true;
 
     } catch (error) {
-        console.error(`[DATABASE ERROR] Lỗi transferMoney(${fromUserId} -> ${toUserId}):`, error);
+        logDbError(`[DATABASE ERROR] Lỗi transferMoney(${fromUserId} -> ${toUserId}):`, error);
         return false;
     }
 }
@@ -268,7 +362,7 @@ async function transferMoneyWithTax(fromUserId, toUserId, amount, taxPct) {
         return data === true;
 
     } catch (error) {
-        console.error(`[DATABASE ERROR] Lỗi transferMoneyWithTax(${fromUserId} -> ${toUserId}):`, error);
+        logDbError(`[DATABASE ERROR] Lỗi transferMoneyWithTax(${fromUserId} -> ${toUserId}):`, error);
         // TRẢ `null`, KHÔNG phải `false`. Hai chuyện khác hẳn nhau: `false` = người dùng
         // thật sự không đủ, `null` = KHÔNG BIẾT vì DB lỗi. Gộp chung thì lúc Supabase
         // chập chờn, người chơi bị báo sai về tài sản của CHÍNH HỌ.
@@ -293,7 +387,7 @@ async function updateExp(userId, expAmount) {
         return data === null ? null : Number(data);
 
     } catch (error) {
-        console.error(`[DATABASE ERROR] Lỗi updateExp():`, error);
+        logDbError(`[DATABASE ERROR] Lỗi updateExp():`, error);
         return null;
     }
 }
@@ -324,7 +418,7 @@ async function checkCooldown(userId, command) {
         return false;
 
     } catch (error) {
-        console.error(`[DATABASE ERROR] Lỗi checkCooldown():`, error);
+        logDbError(`[DATABASE ERROR] Lỗi checkCooldown():`, error);
         return false;
     }
 }
@@ -352,7 +446,7 @@ async function claimCooldown(userId, command, durationSeconds) {
         return new Date(data).getTime();
 
     } catch (error) {
-        console.error(`[DATABASE ERROR] Lỗi claimCooldown():`, error);
+        logDbError(`[DATABASE ERROR] Lỗi claimCooldown():`, error);
         // Fail-open: nếu DB lỗi, không chặn user (tránh khóa cứng do sự cố hạ tầng)
         return false;
     }
@@ -379,7 +473,7 @@ async function setCooldown(userId, command, durationMinutes) {
         return true;
 
     } catch (error) {
-        console.error(`[DATABASE ERROR] Lỗi setCooldown():`, error);
+        logDbError(`[DATABASE ERROR] Lỗi setCooldown():`, error);
         return false;
     }
 }
@@ -428,7 +522,7 @@ async function getJobs() {
             if (error) throw error;
             return data || [];
         } catch (error) {
-            console.error('[DATABASE ERROR] getJobs():', error);
+            logDbError('[DATABASE ERROR] getJobs():', error);
             return [];
         }
     });
@@ -440,7 +534,7 @@ async function getJob(jobId) {
         if (error && error.code !== 'PGRST116') throw error;
         return data || null;
     } catch (error) {
-        console.error('[DATABASE ERROR] getJob():', error);
+        logDbError('[DATABASE ERROR] getJob():', error);
         return null;
     }
 }
@@ -452,7 +546,7 @@ async function setUserJob(userId, jobId) {
         if (error) throw error;
         return true;
     } catch (error) {
-        console.error('[DATABASE ERROR] setUserJob():', error);
+        logDbError('[DATABASE ERROR] setUserJob():', error);
         return false;
     }
 }
@@ -467,7 +561,7 @@ async function getItems() {
             if (error) throw error;
             return data || [];
         } catch (error) {
-            console.error('[DATABASE ERROR] getItems():', error);
+            logDbError('[DATABASE ERROR] getItems():', error);
             return [];
         }
     });
@@ -479,7 +573,7 @@ async function getItem(itemId) {
         if (error && error.code !== 'PGRST116') throw error;
         return data || null;
     } catch (error) {
-        console.error('[DATABASE ERROR] getItem():', error);
+        logDbError('[DATABASE ERROR] getItem():', error);
         return null;
     }
 }
@@ -501,7 +595,7 @@ async function discoverItem(userId, itemId) {
     } catch (error) {
         // Nuốt lỗi trùng khoá chính (đã phát hiện từ trước)
         if (error?.message?.includes('duplicate key') || error?.code === '23505') return true;
-        console.error('[DATABASE ERROR] discoverItem():', error);
+        logDbError('[DATABASE ERROR] discoverItem():', error);
         return false;
     }
 }
@@ -516,7 +610,7 @@ async function getDiscoveries(userId) {
         if (error) throw error;
         return new Set((data || []).map(r => r.item_id));
     } catch (error) {
-        console.error('[DATABASE ERROR] getDiscoveries():', error);
+        logDbError('[DATABASE ERROR] getDiscoveries():', error);
         return new Set();
     }
 }
@@ -538,7 +632,7 @@ async function getClaimedCollectionSets(userId) {
         if (error) throw error;
         return new Set((data || []).map(r => r.set_id));
     } catch (error) {
-        console.error('[DATABASE ERROR] getClaimedCollectionSets():', error);
+        logDbError('[DATABASE ERROR] getClaimedCollectionSets():', error);
         return new Set();
     }
 }
@@ -558,7 +652,7 @@ async function claimCollectionReward(userId, setId, requiredItems, rewardCoins, 
         if (error) throw error;
         return data;
     } catch (error) {
-        console.error('[DATABASE ERROR] claimCollectionReward():', error);
+        logDbError('[DATABASE ERROR] claimCollectionReward():', error);
         return 'error';
     }
 }
@@ -577,7 +671,7 @@ async function buyItem(userId, itemId, quantity = 1) {
         if (error) throw error;
         return data;
     } catch (error) {
-        console.error('[DATABASE ERROR] buyItem():', error);
+        logDbError('[DATABASE ERROR] buyItem():', error);
         return 'error';
     }
 }
@@ -595,7 +689,7 @@ async function getInventory(userId) {
         if (error) throw error;
         return data || [];
     } catch (error) {
-        console.error('[DATABASE ERROR] getInventory():', error);
+        logDbError('[DATABASE ERROR] getInventory():', error);
         return [];
     }
 }
@@ -608,7 +702,7 @@ async function hasItem(userId, itemId) {
         if (error && error.code !== 'PGRST116') throw error;
         return !!(data && data.quantity > 0);
     } catch (error) {
-        console.error('[DATABASE ERROR] hasItem():', error);
+        logDbError('[DATABASE ERROR] hasItem():', error);
         return false;
     }
 }
@@ -625,7 +719,7 @@ async function useInsurance(userId, itemId) {
         if (error) throw error;
         return data === true;
     } catch (error) {
-        console.error(`[DATABASE ERROR] Lỗi useInsurance(${userId}, ${itemId}):`, error);
+        logDbError(`[DATABASE ERROR] Lỗi useInsurance(${userId}, ${itemId}):`, error);
         return false;
     }
 }
@@ -642,7 +736,7 @@ async function useTool(userId, itemId) {
         if (error) throw error;
         return data;
     } catch (error) {
-        console.error(`[DATABASE ERROR] Lỗi useTool(${userId}, ${itemId}):`, error);
+        logDbError(`[DATABASE ERROR] Lỗi useTool(${userId}, ${itemId}):`, error);
         return null;
     }
 }
@@ -660,7 +754,7 @@ async function repairTool(userId, itemId, cost) {
         if (error) throw error;
         return data;
     } catch (error) {
-        console.error(`[DATABASE ERROR] Lỗi repairTool(${userId}, ${itemId}):`, error);
+        logDbError(`[DATABASE ERROR] Lỗi repairTool(${userId}, ${itemId}):`, error);
         return 'error';
     }
 }
@@ -677,7 +771,7 @@ async function hospitalHeal(userId) {
         if (error) throw error;
         return data;
     } catch (error) {
-        console.error(`[DATABASE ERROR] Lỗi hospitalHeal(${userId}):`, error);
+        logDbError(`[DATABASE ERROR] Lỗi hospitalHeal(${userId}):`, error);
         return null;
     }
 }
@@ -694,7 +788,7 @@ async function useVehicle(userId) {
         if (error) throw error;
         return data;
     } catch (error) {
-        console.error(`[DATABASE ERROR] Lỗi useVehicle(${userId}):`, error);
+        logDbError(`[DATABASE ERROR] Lỗi useVehicle(${userId}):`, error);
         return null;
     }
 }
@@ -712,7 +806,7 @@ async function addHealth(userId, amount) {
         if (error) throw error;
         return data; // sức khỏe mới (int)
     } catch (error) {
-        console.error(`[DATABASE ERROR] Lỗi addHealth(${userId}):`, error);
+        logDbError(`[DATABASE ERROR] Lỗi addHealth(${userId}):`, error);
         return null;
     }
 }
@@ -724,7 +818,7 @@ async function setSick(userId, value) {
         if (error) throw error;
         return data;
     } catch (error) {
-        console.error(`[DATABASE ERROR] Lỗi setSick(${userId}):`, error);
+        logDbError(`[DATABASE ERROR] Lỗi setSick(${userId}):`, error);
         return null;
     }
 }
@@ -742,7 +836,7 @@ async function spendEnergy(userId, cost) {
         if (error) throw error;
         return Number(data);
     } catch (error) {
-        console.error('[DATABASE ERROR] spendEnergy():', error);
+        logDbError('[DATABASE ERROR] spendEnergy():', error);
         return -1;
     }
 }
@@ -763,7 +857,7 @@ async function consumeItem(userId, itemId) {
         if (error) throw error;
         return data;
     } catch (error) {
-        console.error('[DATABASE ERROR] consumeItem():', error);
+        logDbError('[DATABASE ERROR] consumeItem():', error);
         return 'error';
     }
 }
@@ -780,7 +874,7 @@ async function takeItem(userId, itemId, qty = 1) {
         // báo "cậu không có món này" dù kho đầy — giao diện nói sai sự thật, đúng hạng lỗi
         // mà đợt này đang vá. Mọi nơi gọi đều dùng `if (!taken)` nên `null` giữ nguyên hành
         // vi cũ; chỉ nơi nào MUỐN tách mới kiểm `=== null` (xem /pet feed).
-        console.error('[DATABASE ERROR] takeItem():', error);
+        logDbError('[DATABASE ERROR] takeItem():', error);
         return null;
     }
 }
@@ -792,7 +886,7 @@ async function transferItem(fromId, toId, itemId, qty = 1) {
         if (error) throw error;
         return data === true;
     } catch (error) {
-        console.error('[DATABASE ERROR] transferItem():', error);
+        logDbError('[DATABASE ERROR] transferItem():', error);
         // TRẢ `null`, KHÔNG phải `false`. Hai chuyện khác hẳn nhau: `false` = người dùng
         // thật sự không đủ, `null` = KHÔNG BIẾT vì DB lỗi. Gộp chung thì lúc Supabase
         // chập chờn, người chơi bị báo sai về tài sản của CHÍNH HỌ.
@@ -816,7 +910,7 @@ async function aiOverview() {
         if (error) throw error;
         return data || null;
     } catch (error) {
-        console.error('[DATABASE ERROR] aiOverview():', error?.message || error);
+        logDbError('[DATABASE ERROR] aiOverview():', error?.message || error);
         return null;
     }
 }
@@ -838,7 +932,7 @@ async function claimAiGlobalQuota(key, max) {
         if (error) throw error;
         return typeof data === 'number' ? data : null;
     } catch (error) {
-        console.error('[DATABASE ERROR] claimAiGlobalQuota():', error?.message || error);
+        logDbError('[DATABASE ERROR] claimAiGlobalQuota():', error?.message || error);
         return null; // không đếm được -> nơi gọi tự quyết định (đang là cho qua)
     }
 }
@@ -849,7 +943,7 @@ async function claimDailyCounter(userId, key, max) {
         if (error) throw error;
         return data;
     } catch (error) {
-        console.error('[DATABASE ERROR] claimDailyCounter():', error);
+        logDbError('[DATABASE ERROR] claimDailyCounter():', error);
         return -1;
     }
 }
@@ -861,7 +955,7 @@ async function bumpPoliceHeat(userId, decayMs) {
         if (error) throw error;
         return Number(data) || 0;
     } catch (error) {
-        console.error('[DATABASE ERROR] bumpPoliceHeat():', error);
+        logDbError('[DATABASE ERROR] bumpPoliceHeat():', error);
         return 0;
     }
 }
@@ -875,7 +969,7 @@ async function resetPoliceHeat(userId) {
         if (error) throw error;
         return true;
     } catch (error) {
-        console.error('[DATABASE ERROR] resetPoliceHeat():', error);
+        logDbError('[DATABASE ERROR] resetPoliceHeat():', error);
         return false;
     }
 }
@@ -890,7 +984,7 @@ async function claimDaily(userId) {
         if (error) throw error;
         return data;
     } catch (error) {
-        console.error('[DATABASE ERROR] claimDaily():', error);
+        logDbError('[DATABASE ERROR] claimDaily():', error);
         return null;
     }
 }
@@ -904,7 +998,7 @@ async function transferBank(userId, amount, toBank) {
         if (error) throw error;
         return data === true;
     } catch (error) {
-        console.error('[DATABASE ERROR] transferBank():', error);
+        logDbError('[DATABASE ERROR] transferBank():', error);
         // TRẢ `null`, KHÔNG phải `false`. Hai chuyện khác hẳn nhau: `false` = người dùng
         // thật sự không đủ, `null` = KHÔNG BIẾT vì DB lỗi. Gộp chung thì lúc Supabase
         // chập chờn, người chơi bị báo sai về tài sản của CHÍNH HỌ.
@@ -921,7 +1015,7 @@ async function getLeaderboard(sort, limit = 10) {
         if (error) throw error;
         return data || [];
     } catch (error) {
-        console.error('[DATABASE ERROR] getLeaderboard():', error);
+        logDbError('[DATABASE ERROR] getLeaderboard():', error);
         return [];
     }
 }
@@ -950,7 +1044,7 @@ async function sellItem(userId, itemId, quantity = 1) {
         }
         return data;
     } catch (error) {
-        console.error('[DATABASE ERROR] sellItem():', error);
+        logDbError('[DATABASE ERROR] sellItem():', error);
         return null;
     }
 }
@@ -965,7 +1059,7 @@ async function questIncr(userId, key, amount) {
         if (error) throw error;
         return true;
     } catch (error) {
-        console.error('[DATABASE ERROR] questIncr():', error);
+        logDbError('[DATABASE ERROR] questIncr():', error);
         return false;
     }
 }
@@ -977,7 +1071,7 @@ async function newbieQuestIncr(userId, key, amount) {
         if (error) throw error;
         return data;
     } catch (error) {
-        console.error('[DATABASE ERROR] newbieQuestIncr():', error);
+        logDbError('[DATABASE ERROR] newbieQuestIncr():', error);
         return null;
     }
 }
@@ -989,7 +1083,7 @@ async function claimBankruptcyRelief(userId, amount) {
         if (error) throw error;
         return data;
     } catch (error) {
-        console.error('[DATABASE ERROR] claimBankruptcyRelief():', error);
+        logDbError('[DATABASE ERROR] claimBankruptcyRelief():', error);
         return 'error';
     }
 }
@@ -1004,7 +1098,7 @@ async function getQuestRow(userId) {
         if (error && error.code !== 'PGRST116') throw error;
         return { counters: data?.counters || {}, claimed: data?.claimed || {} };
     } catch (error) {
-        console.error('[DATABASE ERROR] getQuestRow():', error);
+        logDbError('[DATABASE ERROR] getQuestRow():', error);
         return { counters: {}, claimed: {} };
     }
 }
@@ -1019,7 +1113,7 @@ async function questClaim(userId, quest) {
         if (error) throw error;
         return data;
     } catch (error) {
-        console.error('[DATABASE ERROR] questClaim():', error);
+        logDbError('[DATABASE ERROR] questClaim():', error);
         return 'error';
     }
 }
@@ -1034,7 +1128,7 @@ async function getAchievements(userId) {
         if (error) throw error;
         return new Set((data || []).map(r => r.achievement_id));
     } catch (error) {
-        console.error('[DATABASE ERROR] getAchievements():', error);
+        logDbError('[DATABASE ERROR] getAchievements():', error);
         return new Set();
     }
 }
@@ -1082,7 +1176,7 @@ async function unlockAchievements(userId, ids) {
         if (error) throw error;
         return (data || []).map(r => r.achievement_id);
     } catch (error) {
-        console.error('[DATABASE ERROR] unlockAchievements():', error);
+        logDbError('[DATABASE ERROR] unlockAchievements():', error);
         return [];
     }
 }
@@ -1097,7 +1191,7 @@ async function marryUsers(a, b) {
         if (error) throw error;
         return data;
     } catch (error) {
-        console.error('[DATABASE ERROR] marryUsers():', error);
+        logDbError('[DATABASE ERROR] marryUsers():', error);
         return 'error';
     }
 }
@@ -1117,7 +1211,7 @@ async function incrAffection(userId, amount) {
             capped: Boolean(data.capped)
         };
     } catch (error) {
-        console.error('[DATABASE ERROR] incrAffection():', error);
+        logDbError('[DATABASE ERROR] incrAffection():', error);
         return null;
     }
 }
@@ -1129,7 +1223,7 @@ async function divorceUser(userId) {
         if (error) throw error;
         return data;
     } catch (error) {
-        console.error('[DATABASE ERROR] divorceUser():', error);
+        logDbError('[DATABASE ERROR] divorceUser():', error);
         return 'error';
     }
 }
@@ -1143,7 +1237,7 @@ async function getPet(userId) {
         if (error && error.code !== 'PGRST116') throw error;
         return data || null;
     } catch (error) {
-        console.error('[DATABASE ERROR] getPet():', error);
+        logDbError('[DATABASE ERROR] getPet():', error);
         return null;
     }
 }
@@ -1165,7 +1259,7 @@ async function adoptPet(userId, species, name) {
         if (error) throw error;
         return data?.status || 'error';
     } catch (error) {
-        console.error('[DATABASE ERROR] adoptPet():', error);
+        logDbError('[DATABASE ERROR] adoptPet():', error);
         return 'error';
     }
 }
@@ -1206,7 +1300,7 @@ async function renamePet(userId, name) {
         if (error) throw error;
         return true;
     } catch (error) {
-        console.error('[DATABASE ERROR] renamePet():', error);
+        logDbError('[DATABASE ERROR] renamePet():', error);
         return false;
     }
 }
@@ -1218,7 +1312,7 @@ async function feedPet(userId, exp) {
         if (error) throw error;
         return data === null ? null : Number(data);
     } catch (error) {
-        console.error('[DATABASE ERROR] feedPet():', error);
+        logDbError('[DATABASE ERROR] feedPet():', error);
         return null;
     }
 }
@@ -1230,7 +1324,7 @@ async function feedPetWithFee(userId, exp, cost) {
         if (error) throw error;
         return data === null ? null : Number(data);
     } catch (error) {
-        console.error('[DATABASE ERROR] feedPetWithFee():', error);
+        logDbError('[DATABASE ERROR] feedPetWithFee():', error);
         return null;
     }
 }
@@ -1245,7 +1339,7 @@ async function getGuildSettings(guildId) {
         if (error && error.code !== 'PGRST116') throw error;
         return data?.settings || {};
     } catch (error) {
-        console.error('[DATABASE ERROR] getGuildSettings():', error);
+        logDbError('[DATABASE ERROR] getGuildSettings():', error);
         return {};
     }
 }
@@ -1258,7 +1352,7 @@ async function setGuildSetting(guildId, key, value) {
         if (error) throw error;
         return true;
     } catch (error) {
-        console.error('[DATABASE ERROR] setGuildSetting():', error);
+        logDbError('[DATABASE ERROR] setGuildSetting():', error);
         return false;
     }
 }
@@ -1285,7 +1379,7 @@ async function logConfession(guildId, userId, confessionNum, content) {
         if (error) throw error;
         return true;
     } catch (error) {
-        console.error('[DATABASE ERROR] logConfession():', error);
+        logDbError('[DATABASE ERROR] logConfession():', error);
         return false;
     }
 }
@@ -1302,7 +1396,7 @@ async function consumeAiQuota(userId, freeCap, premiumCap) {
         if (error) throw error;
         return data;
     } catch (error) {
-        console.error('[DATABASE ERROR] consumeAiQuota():', error);
+        logDbError('[DATABASE ERROR] consumeAiQuota():', error);
         return null;
     }
 }
@@ -1318,7 +1412,7 @@ async function refundAiQuota(userId) {
         if (error) throw error;
         return true;
     } catch (error) {
-        console.error('[DATABASE ERROR] refundAiQuota():', error);
+        logDbError('[DATABASE ERROR] refundAiQuota():', error);
         return false;
     }
 }
@@ -1333,7 +1427,7 @@ async function claimSupportGift(userId, rewardCoins) {
         if (error) throw error;
         return data; // trả về boolean từ Postgres
     } catch (error) {
-        console.error('[DATABASE ERROR] claimSupportGift():', error);
+        logDbError('[DATABASE ERROR] claimSupportGift():', error);
         return null;
     }
 }
@@ -1350,7 +1444,7 @@ async function updateAiMemory(userId, key, value) {
         if (error) throw error;
         return data;
     } catch (error) {
-        console.error('[DATABASE ERROR] updateAiMemory():', error);
+        logDbError('[DATABASE ERROR] updateAiMemory():', error);
         return null;
     }
 }
@@ -1365,7 +1459,7 @@ async function deleteUserData(userId) {
         if (error) throw error;
         return data;
     } catch (error) {
-        console.error('[DATABASE ERROR] deleteUserData():', error);
+        logDbError('[DATABASE ERROR] deleteUserData():', error);
         return 'error';
     }
 }
@@ -1385,7 +1479,7 @@ async function chargeWealthTax() {
         if (error) throw error;
         return data;
     } catch (error) {
-        console.error('[DATABASE ERROR] chargeWealthTax():', error?.message || error);
+        logDbError('[DATABASE ERROR] chargeWealthTax():', error?.message || error);
         return null;
     }
 }
@@ -1396,7 +1490,7 @@ async function snapshotEconomy() {
         if (error) throw error;
         return Array.isArray(data) ? data[0] : data; // hàm trả composite -> chuẩn hoá về object
     } catch (error) {
-        console.error('[DATABASE ERROR] snapshotEconomy():', error);
+        logDbError('[DATABASE ERROR] snapshotEconomy():', error);
         return null;
     }
 }
@@ -1439,7 +1533,7 @@ async function getEconomySnapshots(days = 14) {
         if (error) throw error;
         return data || [];
     } catch (error) {
-        console.error('[DATABASE ERROR] getEconomySnapshots():', error);
+        logDbError('[DATABASE ERROR] getEconomySnapshots():', error);
         return [];
     }
 }
@@ -1457,7 +1551,7 @@ async function getLedgerUser(userId, limit = 20) {
         const { data, error } = await supabase.rpc('ledger_user', { p_user: String(userId), p_limit: Number(limit) });
         if (error) throw error;
         return data || [];
-    } catch (error) { console.error('[DATABASE ERROR] getLedgerUser():', error); return []; }
+    } catch (error) { logDbError('[DATABASE ERROR] getLedgerUser():', error); return []; }
 }
 
 /** Ai nhận nhiều tiền ròng nhất trong N giờ — dùng để soi exploit. */
@@ -1466,7 +1560,7 @@ async function getLedgerTopGainers(hours = 24, limit = 10) {
         const { data, error } = await supabase.rpc('ledger_top_gainers', { p_hours: Number(hours), p_limit: Number(limit) });
         if (error) throw error;
         return data || [];
-    } catch (error) { console.error('[DATABASE ERROR] getLedgerTopGainers():', error); return []; }
+    } catch (error) { logDbError('[DATABASE ERROR] getLedgerTopGainers():', error); return []; }
 }
 
 /** Dòng tiền vào/ra theo NGUỒN (tên RPC) — thấy ngay nguồn nào đang bơm tiền. */
@@ -1475,7 +1569,7 @@ async function getLedgerFlow(hours = 24, limit = 12) {
         const { data, error } = await supabase.rpc('ledger_flow', { p_hours: Number(hours), p_limit: Number(limit) });
         if (error) throw error;
         return data || [];
-    } catch (error) { console.error('[DATABASE ERROR] getLedgerFlow():', error); return []; }
+    } catch (error) { logDbError('[DATABASE ERROR] getLedgerFlow():', error); return []; }
 }
 
 /** Số người hoạt động theo từng ngày (thay `last_seen` — cột đó CHỈ /daily ghi). */
@@ -1484,7 +1578,7 @@ async function getActivityByDay(days = 7) {
         const { data, error } = await supabase.rpc('activity_by_day', { p_days: Number(days) });
         if (error) throw error;
         return data || [];
-    } catch (error) { console.error('[DATABASE ERROR] getActivityByDay():', error); return []; }
+    } catch (error) { logDbError('[DATABASE ERROR] getActivityByDay():', error); return []; }
 }
 
 /** Dọn nhật ký cũ hơn N ngày — giữ DB free-tier gọn. Trả số dòng đã xoá. */
@@ -1493,7 +1587,7 @@ async function pruneEconomyLedger(days = 30) {
         const { data, error } = await supabase.rpc('prune_economy_ledger', { p_days: Number(days) });
         if (error) throw error;
         return Number(data) || 0;
-    } catch (error) { console.error('[DATABASE ERROR] pruneEconomyLedger():', error); return 0; }
+    } catch (error) { logDbError('[DATABASE ERROR] pruneEconomyLedger():', error); return 0; }
 }
 
 /** Cấp/gia hạn Premium thêm số ngày. Trả mốc hết hạn mới (ISO) hoặc null. */
@@ -1503,7 +1597,7 @@ async function grantPremium(userId, days) {
         if (error) throw error;
         return data;
     } catch (error) {
-        console.error('[DATABASE ERROR] grantPremium():', error);
+        logDbError('[DATABASE ERROR] grantPremium():', error);
         return null;
     }
 }
@@ -1523,7 +1617,7 @@ async function getBattlePass(userId, seasonId) {
         if (error) throw error;
         return data || null;
     } catch (error) {
-        console.error('[DATABASE ERROR] getBattlePass():', error);
+        logDbError('[DATABASE ERROR] getBattlePass():', error);
         return null;
     }
 }
@@ -1545,7 +1639,7 @@ async function addPassXp(userId, seasonId, xpAmount, xpPerLevel) {
             levelUp: data[0].new_level > data[0].old_level
         } : null;
     } catch (error) {
-        console.error('[DATABASE ERROR] addPassXp():', error);
+        logDbError('[DATABASE ERROR] addPassXp():', error);
         return null;
     }
 }
@@ -1570,7 +1664,7 @@ async function addAiChatPassXp(userId, seasonId, xpAmount, xpPerLevel, maxDailyX
             levelUp: data[0].success && (data[0].new_level > data[0].old_level)
         } : null;
     } catch (error) {
-        console.error('[DATABASE ERROR] addAiChatPassXp():', error);
+        logDbError('[DATABASE ERROR] addAiChatPassXp():', error);
         return null;
     }
 }
@@ -1585,7 +1679,7 @@ async function buyPremiumPass(userId, seasonId, cost) {
         if (error) throw error;
         return data; // 'ok', 'user_not_found', 'insufficient_funds', 'already_premium'
     } catch (error) {
-        console.error('[DATABASE ERROR] buyPremiumPass():', error);
+        logDbError('[DATABASE ERROR] buyPremiumPass():', error);
         return null;
     }
 }
@@ -1605,7 +1699,7 @@ async function claimPassRewardsBulk(userId, seasonId, freeLevels, premiumLevels,
         if (error) throw error;
         return data; // 'ok', 'pass_not_found', 'already_claimed', 'level_locked', 'premium_locked'
     } catch (error) {
-        console.error('[DATABASE ERROR] claimPassRewardsBulk():', error);
+        logDbError('[DATABASE ERROR] claimPassRewardsBulk():', error);
         return null;
     }
 }
@@ -1621,7 +1715,7 @@ async function getJail(userId) {
         if (error) throw error;
         return data;
     } catch (error) {
-        console.error('[DATABASE ERROR] getJail():', error);
+        logDbError('[DATABASE ERROR] getJail():', error);
         return null;
     }
 }
@@ -1648,7 +1742,7 @@ async function jailOrFine(userId, fine, jailHours, reason) {
         if (error) throw error;
         return data;
     } catch (error) {
-        console.error('[DATABASE ERROR] jailOrFine():', error);
+        logDbError('[DATABASE ERROR] jailOrFine():', error);
         return { result: 'error' };
     }
 }
@@ -1660,7 +1754,7 @@ async function halveJail(userId) {
         if (error) throw error;
         return true;
     } catch (error) {
-        console.error('[DATABASE ERROR] halveJail():', error);
+        logDbError('[DATABASE ERROR] halveJail():', error);
         return false;
     }
 }
@@ -1670,27 +1764,27 @@ async function halveJail(userId) {
 // ============================================================
 async function getPig(userId) {
     try { const { data, error } = await supabase.from('pigs').select('*').eq('user_id', userId).maybeSingle(); if (error) throw error; return data; }
-    catch (e) { console.error('[DATABASE ERROR] getPig():', e); return null; }
+    catch (e) { logDbError('[DATABASE ERROR] getPig():', e); return null; }
 }
 async function pigBuy(userId, cost) {
     try { const { data, error } = await supabase.rpc('pig_buy', { p_user_id: userId, p_cost: cost }); if (error) throw error; return data; }
-    catch (e) { console.error('[DATABASE ERROR] pigBuy():', e); return 'error'; }
+    catch (e) { logDbError('[DATABASE ERROR] pigBuy():', e); return 'error'; }
 }
 async function pigMature(userId, cost) {
     try { const { data, error } = await supabase.rpc('pig_mature', { p_user_id: userId, p_cost: cost }); if (error) throw error; return data; }
-    catch (e) { console.error('[DATABASE ERROR] pigMature():', e); return { result: 'error' }; }
+    catch (e) { logDbError('[DATABASE ERROR] pigMature():', e); return { result: 'error' }; }
 }
 async function pigHeal(userId, cost) {
     try { const { data, error } = await supabase.rpc('pig_heal', { p_user_id: userId, p_cost: cost }); if (error) throw error; return data; }
-    catch (e) { console.error('[DATABASE ERROR] pigHeal():', e); return 'error'; }
+    catch (e) { logDbError('[DATABASE ERROR] pigHeal():', e); return 'error'; }
 }
 async function pigClaimSale(userId, minAgeSecs) {
     try { const { data, error } = await supabase.rpc('pig_claim_sale', { p_user_id: userId, p_min_age_secs: minAgeSecs }); if (error) throw error; return data; }
-    catch (e) { console.error('[DATABASE ERROR] pigClaimSale():', e); return { result: 'error' }; }
+    catch (e) { logDbError('[DATABASE ERROR] pigClaimSale():', e); return { result: 'error' }; }
 }
 async function pigStealFail(userId) {
     try { const { data, error } = await supabase.rpc('pig_steal_fail', { p_user_id: userId }); if (error) throw error; return data; }
-    catch (e) { console.error('[DATABASE ERROR] pigStealFail():', e); return 0; }
+    catch (e) { logDbError('[DATABASE ERROR] pigStealFail():', e); return 0; }
 }
 /** Cho ăn lần 1: dùng cám tặng (baby + cam>0 -> fed). Trả true nếu thành công. */
 async function pigFeed1(userId) {
@@ -1699,7 +1793,7 @@ async function pigFeed1(userId) {
             .update({ stage: 'fed', cam: 0, last_action_at: new Date().toISOString() })
             .eq('user_id', userId).eq('stage', 'baby').eq('sick', false).gt('cam', 0).select('user_id');
         if (error) throw error; return !!(data && data.length);
-    } catch (e) { console.error('[DATABASE ERROR] pigFeed1():', e); return false; }
+    } catch (e) { logDbError('[DATABASE ERROR] pigFeed1():', e); return false; }
 }
 /** Chuyển stage có điều kiện (chống race + chặn khi bệnh). Trả true nếu đổi được. */
 async function pigSetStage(userId, fromStage, toStage) {
@@ -1708,13 +1802,13 @@ async function pigSetStage(userId, fromStage, toStage) {
             .update({ stage: toStage, last_action_at: new Date().toISOString() })
             .eq('user_id', userId).eq('stage', fromStage).eq('sick', false).select('user_id');
         if (error) throw error; return !!(data && data.length);
-    } catch (e) { console.error('[DATABASE ERROR] pigSetStage():', e); return false; }
+    } catch (e) { logDbError('[DATABASE ERROR] pigSetStage():', e); return false; }
 }
 async function pigSetType(userId, type) {
-    try { await supabase.from('pigs').update({ type }).eq('user_id', userId); } catch (e) { console.error('[DATABASE ERROR] pigSetType():', e); }
+    try { await supabase.from('pigs').update({ type }).eq('user_id', userId); } catch (e) { logDbError('[DATABASE ERROR] pigSetType():', e); }
 }
 async function pigSetSick(userId) {
-    try { await supabase.from('pigs').update({ sick: true }).eq('user_id', userId); } catch (e) { console.error('[DATABASE ERROR] pigSetSick():', e); }
+    try { await supabase.from('pigs').update({ sick: true }).eq('user_id', userId); } catch (e) { logDbError('[DATABASE ERROR] pigSetSick():', e); }
 }
 
 // ============================================================
@@ -1722,41 +1816,41 @@ async function pigSetSick(userId) {
 // ============================================================
 async function getPlant(userId) {
     try { const { data, error } = await supabase.from('plants').select('*').eq('user_id', userId).maybeSingle(); if (error) throw error; return data; }
-    catch (e) { console.error('[DATABASE ERROR] getPlant():', e); return null; }
+    catch (e) { logDbError('[DATABASE ERROR] getPlant():', e); return null; }
 }
 async function plantBuy(userId, cost, type, tier, flower) {
     try { const { data, error } = await supabase.rpc('plant_buy', { p_user_id: userId, p_cost: cost, p_type: type, p_tier: tier, p_flower: flower }); if (error) throw error; return data; }
-    catch (e) { console.error('[DATABASE ERROR] plantBuy():', e); return 'error'; }
+    catch (e) { logDbError('[DATABASE ERROR] plantBuy():', e); return 'error'; }
 }
 async function plantWater(userId, intervalSecs) {
     try { const { data, error } = await supabase.rpc('plant_water', { p_user_id: userId, p_interval_secs: intervalSecs }); if (error) throw error; return data; }
-    catch (e) { console.error('[DATABASE ERROR] plantWater():', e); return { result: 'error' }; }
+    catch (e) { logDbError('[DATABASE ERROR] plantWater():', e); return { result: 'error' }; }
 }
 async function plantFertilize(userId, cost) {
     try { const { data, error } = await supabase.rpc('plant_fertilize', { p_user_id: userId, p_cost: cost }); if (error) throw error; return data; }
-    catch (e) { console.error('[DATABASE ERROR] plantFertilize():', e); return { result: 'error' }; }
+    catch (e) { logDbError('[DATABASE ERROR] plantFertilize():', e); return { result: 'error' }; }
 }
 async function plantWaterHelp(helperId, ownerId) {
     try { const { data, error } = await supabase.rpc('plant_water_help', { p_helper: helperId, p_owner: ownerId }); if (error) throw error; return data; }
-    catch (e) { console.error('[DATABASE ERROR] plantWaterHelp():', e); return { result: 'error' }; }
+    catch (e) { logDbError('[DATABASE ERROR] plantWaterHelp():', e); return { result: 'error' }; }
 }
 async function plantClaim(userId, minAge, maxAge) {
     try { const { data, error } = await supabase.rpc('plant_claim', { p_user_id: userId, p_min_age: minAge, p_max_age: maxAge }); if (error) throw error; return data; }
-    catch (e) { console.error('[DATABASE ERROR] plantClaim():', e); return { result: 'error' }; }
+    catch (e) { logDbError('[DATABASE ERROR] plantClaim():', e); return { result: 'error' }; }
 }
 async function plantRevive(userId, cost) {
     try { const { data, error } = await supabase.rpc('plant_revive', { p_user_id: userId, p_cost: cost }); if (error) throw error; return data; }
-    catch (e) { console.error('[DATABASE ERROR] plantRevive():', e); return 'error'; }
+    catch (e) { logDbError('[DATABASE ERROR] plantRevive():', e); return 'error'; }
 }
 async function plantStealFail(userId) {
     try { const { data, error } = await supabase.rpc('plant_steal_fail', { p_user_id: userId }); if (error) throw error; return data; }
-    catch (e) { console.error('[DATABASE ERROR] plantStealFail():', e); return 0; }
+    catch (e) { logDbError('[DATABASE ERROR] plantStealFail():', e); return 0; }
 }
 async function plantSetDead(userId) {
-    try { await supabase.from('plants').update({ stage: 'dead' }).eq('user_id', userId).eq('stage', 'growing'); } catch (e) { console.error('[DATABASE ERROR] plantSetDead():', e); }
+    try { await supabase.from('plants').update({ stage: 'dead' }).eq('user_id', userId).eq('stage', 'growing'); } catch (e) { logDbError('[DATABASE ERROR] plantSetDead():', e); }
 }
 async function deletePlant(userId) {
-    try { await supabase.from('plants').delete().eq('user_id', userId); } catch (e) { console.error('[DATABASE ERROR] deletePlant():', e); }
+    try { await supabase.from('plants').delete().eq('user_id', userId); } catch (e) { logDbError('[DATABASE ERROR] deletePlant():', e); }
 }
 
 // ============================================================
@@ -1770,7 +1864,7 @@ async function setCosmetic(userId, field, value) {
         if (error) throw error;
         return true;
     } catch (error) {
-        console.error('[DATABASE ERROR] setCosmetic():', error);
+        logDbError('[DATABASE ERROR] setCosmetic():', error);
         return false;
     }
 }
@@ -1788,7 +1882,7 @@ async function setCosmeticWithFee(userId, field, value, cost) {
         if (error) throw error;
         return !!data;
     } catch (error) {
-        console.error('[DATABASE ERROR] setCosmeticWithFee():', error);
+        logDbError('[DATABASE ERROR] setCosmeticWithFee():', error);
         // TRẢ `null`, KHÔNG phải `false`. Hai chuyện khác hẳn nhau: `false` = người dùng
         // thật sự không đủ, `null` = KHÔNG BIẾT vì DB lỗi. Gộp chung thì lúc Supabase
         // chập chờn, người chơi bị báo sai về tài sản của CHÍNH HỌ.
@@ -1849,7 +1943,7 @@ async function loanCreate(lenderId, borrowerId, principal) {
         });
         if (error) throw error;
         return data;
-    } catch (error) { console.error('[DATABASE ERROR] loanCreate():', error); return null; }
+    } catch (error) { logDbError('[DATABASE ERROR] loanCreate():', error); return null; }
 }
 
 /** Borrower trả nợ cho lender (tối đa amount). Trả {status,...} hoặc null. */
@@ -1858,7 +1952,7 @@ async function loanRepay(borrowerId, lenderId, amount) {
         const { data, error } = await supabase.rpc('loan_repay', { p_borrower: borrowerId, p_lender: lenderId, p_amount: amount });
         if (error) throw error;
         return data;
-    } catch (error) { console.error('[DATABASE ERROR] loanRepay():', error); return null; }
+    } catch (error) { logDbError('[DATABASE ERROR] loanRepay():', error); return null; }
 }
 
 /** Lãi phạt cho MỌI khoản quá hạn (chạy nền 12h/lần). Tính theo mốc thời gian nên gọi
@@ -1898,7 +1992,7 @@ async function loanCollect(lenderId, borrowerId) {
         const { data, error } = await supabase.rpc('loan_collect', { p_lender: lenderId, p_borrower: borrowerId });
         if (error) throw error;
         return data;
-    } catch (error) { console.error('[DATABASE ERROR] loanCollect():', error); return null; }
+    } catch (error) { logDbError('[DATABASE ERROR] loanCollect():', error); return null; }
 }
 
 /** Lấy các chỉ số nợ xấu và quy mô Quỹ Tín Dụng Kikyo (cho báo cáo daily checklist). */
@@ -1993,7 +2087,7 @@ async function donTelemetryLenh(keepDays = 180) {
 const { CLAN } = config;
 const clanRpc = async (fn, args) => {
     try { const { data, error } = await supabase.rpc(fn, args); if (error) throw error; return data; }
-    catch (error) { console.error(`[DATABASE ERROR] ${fn}():`, error); return null; }
+    catch (error) { logDbError(`[DATABASE ERROR] ${fn}():`, error); return null; }
 };
 const clanCreate = (userId, name) => clanRpc('clan_create', { p_user: userId, p_name: name, p_cost: CLAN.CREATE_COST });
 const clanJoin = (userId, name) => clanRpc('clan_join', { p_user: userId, p_name: name });
@@ -2017,7 +2111,7 @@ async function setClanWarCooldown(clanId, untilMs) {
         const { error } = await supabase.from('clans').update({ war_cd_until: new Date(untilMs).toISOString() }).eq('id', clanId);
         if (error) throw error;
         return true;
-    } catch (error) { console.error('[DATABASE ERROR] setClanWarCooldown():', error?.message || error); return false; }
+    } catch (error) { logDbError('[DATABASE ERROR] setClanWarCooldown():', error?.message || error); return false; }
 }
 async function clanMembers(clanId) {
     try { const { data } = await supabase.from('users').select('user_id').eq('clan_id', clanId); return (data || []).map(r => r.user_id); }
@@ -2032,7 +2126,7 @@ async function clanList(limit = 20) {
 /** Top cặp đôi theo điểm tình cảm. */
 async function getTopLove(limit = 20) {
     try { const { data } = await supabase.from('users').select('user_id, love, partner_id').gt('love', 0).not('partner_id', 'is', null).order('love', { ascending: false }).limit(limit); return data || []; }
-    catch (error) { console.error('[DATABASE ERROR] getTopLove():', error); return []; }
+    catch (error) { logDbError('[DATABASE ERROR] getTopLove():', error); return []; }
 }
 
 /** EXP của các thành viên 1 bang (để tính sức mạnh chiến tranh). */
@@ -2053,33 +2147,33 @@ async function marketList(sellerId, itemId, qty, price) {
         const { data, error } = await supabase.rpc('market_list', { p_seller: sellerId, p_item: itemId, p_qty: qty, p_price: price });
         if (error) throw error;
         return data;
-    } catch (error) { console.error('[DATABASE ERROR] marketList():', error); return null; }
+    } catch (error) { logDbError('[DATABASE ERROR] marketList():', error); return null; }
 }
 async function marketBuy(buyerId, listingId) {
     try {
         const { data, error } = await supabase.rpc('market_buy', { p_buyer: buyerId, p_listing: listingId, p_fee: MARKET.FEE_PCT });
         if (error) throw error;
         return data;
-    } catch (error) { console.error('[DATABASE ERROR] marketBuy():', error); return null; }
+    } catch (error) { logDbError('[DATABASE ERROR] marketBuy():', error); return null; }
 }
 async function marketCancel(sellerId, listingId) {
     try {
         const { data, error } = await supabase.rpc('market_cancel', { p_seller: sellerId, p_listing: listingId });
         if (error) throw error;
         return data;
-    } catch (error) { console.error('[DATABASE ERROR] marketCancel():', error); return null; }
+    } catch (error) { logDbError('[DATABASE ERROR] marketCancel():', error); return null; }
 }
 async function marketActive(limit = 25) {
     try {
         const { data } = await supabase.from('market_listings').select('*').eq('status', 'active').order('created_at', { ascending: false }).limit(limit);
         return data || [];
-    } catch (error) { console.error('[DATABASE ERROR] marketActive():', error); return []; }
+    } catch (error) { logDbError('[DATABASE ERROR] marketActive():', error); return []; }
 }
 async function marketMine(sellerId) {
     try {
         const { data } = await supabase.from('market_listings').select('*').eq('seller_id', sellerId).eq('status', 'active').order('created_at');
         return data || [];
-    } catch (error) { console.error('[DATABASE ERROR] marketMine():', error); return []; }
+    } catch (error) { logDbError('[DATABASE ERROR] marketMine():', error); return []; }
 }
 
 // ============================================================
@@ -2100,7 +2194,7 @@ async function createAuction(sellerId, itemId, qty, startingBid, minIncrement, h
         });
         if (error) throw error;
         return data;
-    } catch (error) { console.error('[DATABASE ERROR] createAuction():', error); return null; }
+    } catch (error) { logDbError('[DATABASE ERROR] createAuction():', error); return null; }
 }
 
 async function placeBid(bidderId, auctionId, amount) {
@@ -2112,7 +2206,7 @@ async function placeBid(bidderId, auctionId, amount) {
         });
         if (error) throw error;
         return data;
-    } catch (error) { console.error('[DATABASE ERROR] placeBid():', error); return null; }
+    } catch (error) { logDbError('[DATABASE ERROR] placeBid():', error); return null; }
 }
 
 async function cancelAuction(sellerId, auctionId) {
@@ -2123,7 +2217,7 @@ async function cancelAuction(sellerId, auctionId) {
         });
         if (error) throw error;
         return data;
-    } catch (error) { console.error('[DATABASE ERROR] cancelAuction():', error); return null; }
+    } catch (error) { logDbError('[DATABASE ERROR] cancelAuction():', error); return null; }
 }
 
 async function getActiveAuctions(limit = 25) {
@@ -2134,7 +2228,7 @@ async function getActiveAuctions(limit = 25) {
             .order('ends_at', { ascending: true }) // sắp xếp kết thúc sớm nhất xếp trước
             .limit(limit);
         return data || [];
-    } catch (error) { console.error('[DATABASE ERROR] getActiveAuctions():', error); return []; }
+    } catch (error) { logDbError('[DATABASE ERROR] getActiveAuctions():', error); return []; }
 }
 
 async function getMyAuctions(userId) {
@@ -2145,7 +2239,7 @@ async function getMyAuctions(userId) {
             .eq('status', 'active')
             .order('created_at');
         return data || [];
-    } catch (error) { console.error('[DATABASE ERROR] getMyAuctions():', error); return []; }
+    } catch (error) { logDbError('[DATABASE ERROR] getMyAuctions():', error); return []; }
 }
 
 async function resolveExpiredAuctions(taxRate = config.AUCTION.TAX_PCT) {
@@ -2155,7 +2249,7 @@ async function resolveExpiredAuctions(taxRate = config.AUCTION.TAX_PCT) {
         });
         if (error) throw error;
         return data || [];
-    } catch (error) { console.error('[DATABASE ERROR] resolveExpiredAuctions():', error); return []; }
+    } catch (error) { logDbError('[DATABASE ERROR] resolveExpiredAuctions():', error); return []; }
 }
 
 /** Tăng điểm tình cảm cặp đôi (cả hai vợ chồng). Trả {status, love, partner} hoặc null. */
@@ -2164,18 +2258,18 @@ async function coupleLove(userId, amount) {
         const { data, error } = await supabase.rpc('couple_love', { p_user: userId, p_amount: amount });
         if (error) throw error;
         return data;
-    } catch (error) { console.error('[DATABASE ERROR] coupleLove():', error); return null; }
+    } catch (error) { logDbError('[DATABASE ERROR] coupleLove():', error); return null; }
 }
 
 /** Lấy cấu hình sự kiện hiện tại (1 dòng). */
 async function getGameEvent() {
     try { const { data } = await supabase.from('game_event').select('*').eq('id', 1).single(); return data; }
-    catch (error) { console.error('[DATABASE ERROR] getGameEvent():', error); return null; }
+    catch (error) { logDbError('[DATABASE ERROR] getGameEvent():', error); return null; }
 }
 /** Đặt sự kiện (multiplier, ends_at ISO|null, name). */
 async function setGameEvent(multiplier, endsAt, name) {
     try { const { error } = await supabase.from('game_event').update({ multiplier, ends_at: endsAt, name }).eq('id', 1); if (error) throw error; return true; }
-    catch (error) { console.error('[DATABASE ERROR] setGameEvent():', error); return false; }
+    catch (error) { logDbError('[DATABASE ERROR] setGameEvent():', error); return false; }
 }
 
 /** Chặn/bỏ chặn user. */
@@ -2184,7 +2278,7 @@ async function setBanned(userId, val) {
         const { error } = await supabase.from('users').upsert({ user_id: userId, banned: val });
         if (error) throw error;
         return true;
-    } catch (error) { console.error('[DATABASE ERROR] setBanned():', error); return false; }
+    } catch (error) { logDbError('[DATABASE ERROR] setBanned():', error); return false; }
 }
 
 /** Danh sách user_id đang bị ban (nạp vào RAM lúc khởi động). */
@@ -2192,7 +2286,7 @@ async function getBannedIds() {
     try {
         const { data } = await supabase.from('users').select('user_id').eq('banned', true);
         return (data || []).map(r => r.user_id);
-    } catch (error) { console.error('[DATABASE ERROR] getBannedIds():', error); return []; }
+    } catch (error) { logDbError('[DATABASE ERROR] getBannedIds():', error); return []; }
 }
 
 /** Chế tạo: tiêu nguyên liệu + tiền -> tạo thành phẩm. Trả {status} hoặc null. */
@@ -2206,7 +2300,7 @@ async function craftItem(userId, recipe) {
             await discoverItem(userId, recipe.result);
         }
         return data;
-    } catch (error) { console.error('[DATABASE ERROR] craftItem():', error); return null; }
+    } catch (error) { logDbError('[DATABASE ERROR] craftItem():', error); return null; }
 }
 
 /** Danh sách nợ của user: {owing:[...], owed:[...]} (khoản đang active). */
@@ -2217,7 +2311,7 @@ async function loansOf(userId) {
             supabase.from('loans').select('*').eq('lender_id', userId).eq('status', 'active').order('created_at'),
         ]);
         return { owing: owing.data || [], owed: owed.data || [] };
-    } catch (error) { console.error('[DATABASE ERROR] loansOf():', error); return { owing: [], owed: [] }; }
+    } catch (error) { logDbError('[DATABASE ERROR] loansOf():', error); return { owing: [], owed: [] }; }
 }
 
 // ============================================================
@@ -2232,7 +2326,7 @@ async function setBalance(userId, field, amount) {
         if (error) throw error;
         return true;
     } catch (error) {
-        console.error('[DATABASE ERROR] setBalance():', error);
+        logDbError('[DATABASE ERROR] setBalance():', error);
         return false;
     }
 }
@@ -2245,7 +2339,7 @@ async function setExp(userId, value) {
         if (error) throw error;
         return true;
     } catch (error) {
-        console.error('[DATABASE ERROR] setExp():', error);
+        logDbError('[DATABASE ERROR] setExp():', error);
         return false;
     }
 }
@@ -2260,7 +2354,7 @@ async function setEnergy(userId, value) {
         if (error) throw error;
         return true;
     } catch (error) {
-        console.error('[DATABASE ERROR] setEnergy():', error);
+        logDbError('[DATABASE ERROR] setEnergy():', error);
         return false;
     }
 }
@@ -2272,7 +2366,7 @@ async function giveItemAdmin(userId, itemId, qty = 1) {
         if (error) throw error;
         return data === true;
     } catch (error) {
-        console.error('[DATABASE ERROR] giveItemAdmin():', error);
+        logDbError('[DATABASE ERROR] giveItemAdmin():', error);
         return false;
     }
 }
@@ -2314,7 +2408,7 @@ async function resetUser(userId) {
         if (error) throw error;
         return true;
     } catch (error) {
-        console.error('[DATABASE ERROR] resetUser() xóa users:', error);
+        logDbError('[DATABASE ERROR] resetUser() xóa users:', error);
         return false;
     }
 }
@@ -2329,7 +2423,7 @@ async function recordGuildMember(guildId, userId) {
             .upsert({ guild_id: guildId, user_id: userId }, { onConflict: 'guild_id,user_id', ignoreDuplicates: true });
         if (error) throw error;
         return true;
-    } catch (error) { console.error('[DATABASE ERROR] recordGuildMember():', error); return false; }
+    } catch (error) { logDbError('[DATABASE ERROR] recordGuildMember():', error); return false; }
 }
 
 /** BXH giới hạn trong 1 guild (sort='level'|'networth'). */
@@ -2338,7 +2432,7 @@ async function getLeaderboardGuild(sort, limit, guildId) {
         const { data, error } = await supabase.rpc('leaderboard_rows_guild', { p_sort: sort, p_limit: limit, p_guild: guildId });
         if (error) throw error;
         return data || [];
-    } catch (error) { console.error('[DATABASE ERROR] getLeaderboardGuild():', error); return []; }
+    } catch (error) { logDbError('[DATABASE ERROR] getLeaderboardGuild():', error); return []; }
 }
 
 /**
@@ -2354,7 +2448,7 @@ async function bumpVoteStreak(userId, graceSeconds) {
         if (error) throw error;
         return Number(data) || 1;
     } catch (error) {
-        console.error('[DATABASE ERROR] bumpVoteStreak:', error);
+        logDbError('[DATABASE ERROR] bumpVoteStreak:', error);
         return 1;
     }
 }
@@ -2374,7 +2468,7 @@ async function getVoteReminderCandidates(limit = 40) {
         if (error) throw error;
         return (data || []).map(r => r.user_id);
     } catch (error) {
-        console.error('[DATABASE ERROR] getVoteReminderCandidates:', error);
+        logDbError('[DATABASE ERROR] getVoteReminderCandidates:', error);
         return [];
     }
 }
@@ -2386,7 +2480,7 @@ async function markVoteReminded(userIds) {
         const { error } = await supabase.from('users').update({ vote_reminded: true }).in('user_id', userIds);
         if (error) throw error;
     } catch (error) {
-        console.error('[DATABASE ERROR] markVoteReminded:', error);
+        logDbError('[DATABASE ERROR] markVoteReminded:', error);
     }
 }
 
@@ -2404,7 +2498,7 @@ async function setVoteReminder(userId, on) {
         if (error) throw error;
         return true;
     } catch (error) {
-        console.error('[DATABASE ERROR] setVoteReminder:', error);
+        logDbError('[DATABASE ERROR] setVoteReminder:', error);
         return false;
     }
 }
@@ -2416,7 +2510,7 @@ async function claimWelcomeBonus(userId, amount) {
         if (error) throw error;
         return Number(data) || 0;
     } catch (error) {
-        console.error('[DATABASE ERROR] claimWelcomeBonus:', error);
+        logDbError('[DATABASE ERROR] claimWelcomeBonus:', error);
         return 0;
     }
 }
@@ -2428,7 +2522,7 @@ async function touchLastSeen(userId) {
         if (error) throw error;
         return data ? new Date(data).getTime() : null;
     } catch (error) {
-        console.error('[DATABASE ERROR] touchLastSeen:', error);
+        logDbError('[DATABASE ERROR] touchLastSeen:', error);
         return null;
     }
 }
@@ -2440,7 +2534,7 @@ async function getPublicProfile(userId) {
         if (error) throw error;
         return data || null;
     } catch (error) {
-        console.error('[DATABASE ERROR] getPublicProfile:', error);
+        logDbError('[DATABASE ERROR] getPublicProfile:', error);
         return null;
     }
 }
@@ -2452,7 +2546,7 @@ async function setProfilePublic(userId, isPublic) {
         if (error) throw error;
         return true;
     } catch (error) {
-        console.error('[DATABASE ERROR] setProfilePublic:', error);
+        logDbError('[DATABASE ERROR] setProfilePublic:', error);
         return false;
     }
 }
@@ -2470,7 +2564,7 @@ async function getPendingPremiumOrders(limit = 15) {
         if (error) throw error;
         return data || [];
     } catch (error) {
-        console.error('[DATABASE ERROR] getPendingPremiumOrders:', error);
+        logDbError('[DATABASE ERROR] getPendingPremiumOrders:', error);
         return [];
     }
 }
@@ -2484,7 +2578,7 @@ async function createDonationOrder(userId, amount = 0) {
         if (error) throw error;
         return data || null;
     } catch (error) {
-        console.error('[DATABASE ERROR] createDonationOrder:', error);
+        logDbError('[DATABASE ERROR] createDonationOrder:', error);
         return null;
     }
 }
@@ -2498,7 +2592,7 @@ async function createPremiumOrder(userId, plan, months, amount) {
         if (error) throw error;
         return data || null;
     } catch (error) {
-        console.error('[DATABASE ERROR] createPremiumOrder:', error);
+        logDbError('[DATABASE ERROR] createPremiumOrder:', error);
         return null;
     }
 }
@@ -2512,7 +2606,7 @@ async function approveDonation(code, ref = 'manual', badgeId = 'supporter') {
         if (error) throw error;
         return data;
     } catch (error) {
-        console.error('[DATABASE ERROR] approveDonation:', error);
+        logDbError('[DATABASE ERROR] approveDonation:', error);
         return { ok: false, reason: 'db_error' };
     }
 }
@@ -2533,7 +2627,7 @@ async function claimOrderOnce(code, userId) {
         if (error) throw error;
         return data || null;
     } catch (error) {
-        console.error('[DATABASE ERROR] claimOrderOnce:', error);
+        logDbError('[DATABASE ERROR] claimOrderOnce:', error);
         return null;
     }
 }
@@ -2558,7 +2652,7 @@ async function getSupporters(limit = 10) {
         }
         return [...gop.values()].sort((a, b) => b.total - a.total).slice(0, limit);
     } catch (error) {
-        console.error('[DATABASE ERROR] getSupporters:', error);
+        logDbError('[DATABASE ERROR] getSupporters:', error);
         return [];
     }
 }
@@ -2578,7 +2672,7 @@ async function getPremiumOrder(code) {
         if (error) throw error;
         return data || null;
     } catch (error) {
-        console.error('[DATABASE ERROR] getPremiumOrder:', error);
+        logDbError('[DATABASE ERROR] getPremiumOrder:', error);
         return null;
     }
 }
@@ -2590,7 +2684,7 @@ async function approvePremiumOrder(code, ref = 'manual') {
         if (error) throw error;
         return data;
     } catch (error) {
-        console.error('[DATABASE ERROR] approvePremiumOrder:', error);
+        logDbError('[DATABASE ERROR] approvePremiumOrder:', error);
         return { ok: false, reason: 'db_error' };
     }
 }
@@ -2605,7 +2699,7 @@ async function redeemPremiumOrderByCode(code, amount, ref) {
         if (error) throw error;
         return data;
     } catch (error) {
-        console.error('[DATABASE ERROR] redeemPremiumOrderByCode:', error);
+        logDbError('[DATABASE ERROR] redeemPremiumOrderByCode:', error);
         return { ok: false, reason: 'db_error' };
     }
 }
@@ -2635,7 +2729,7 @@ async function updateUserLocale(userId, locale) {
         try { require('./lib/i18n').invalidateLocaleCache(userId); } catch { /* ignore */ }
         return true;
     } catch (error) {
-        console.error(`[DATABASE ERROR] Lỗi updateUserLocale(${userId}, ${locale}):`, error);
+        logDbError(`[DATABASE ERROR] Lỗi updateUserLocale(${userId}, ${locale}):`, error);
         return false;
     }
 }
@@ -2673,47 +2767,47 @@ async function setUserLocaleChoice(userId, lua) {
 // ============================================================
 async function getBakery(userId) {
     try { const { data, error } = await supabase.from('bakeries').select('*').eq('user_id', userId).maybeSingle(); if (error) throw error; return data; }
-    catch (e) { console.error('[DATABASE ERROR] getBakery():', e); return null; }
+    catch (e) { logDbError('[DATABASE ERROR] getBakery():', e); return null; }
 }
 /** Mở tiệm. Trả 'ok'|'has'|'no_tool'|'poor'|'no_user'|'error'. */
 async function bakeryOpen(userId, cost, tool) {
     try { const { data, error } = await supabase.rpc('bakery_open', { p_user_id: userId, p_cost: cost, p_tool: tool }); if (error) throw error; return data; }
-    catch (e) { console.error('[DATABASE ERROR] bakeryOpen():', e); return 'error'; }
+    catch (e) { logDbError('[DATABASE ERROR] bakeryOpen():', e); return 'error'; }
 }
 /** Nạp nguyên liệu (trừ item + cộng stock). Trả 'ok'|'no_item'|'no_bakery'|'bad_qty'|'error'. */
 async function bakeryStock(userId, itemId, qty, gain) {
     try { const { data, error } = await supabase.rpc('bakery_stock', { p_user_id: userId, p_item_id: itemId, p_qty: qty, p_gain: gain }); if (error) throw error; return data; }
-    catch (e) { console.error('[DATABASE ERROR] bakeryStock():', e); return 'error'; }
+    catch (e) { logDbError('[DATABASE ERROR] bakeryStock():', e); return 'error'; }
 }
 /** Thu doanh thu (lazy). Trả {result:'ok',revenue,cakes,stock_left,capped}|{result:'empty'|'no_bakery'|'error'}. */
 async function bakeryCollect(userId, rate, cap, cakeEvery) {
     try { const { data, error } = await supabase.rpc('bakery_collect', { p_user_id: userId, p_rate: rate, p_cap: cap, p_cake_every: cakeEvery }); if (error) throw error; return data; }
-    catch (e) { console.error('[DATABASE ERROR] bakeryCollect():', e); return { result: 'error' }; }
+    catch (e) { logDbError('[DATABASE ERROR] bakeryCollect():', e); return { result: 'error' }; }
 }
 /** Nâng cấp tiệm. Trả 'ok'|'poor'|'no_mats'|'max'|'no_bakery'|'error'. */
 async function bakeryUpgrade(userId, cost, mats, maxLevel) {
     try { const { data, error } = await supabase.rpc('bakery_upgrade', { p_user_id: userId, p_cost: cost, p_mats: mats, p_max_level: maxLevel }); if (error) throw error; return data; }
-    catch (e) { console.error('[DATABASE ERROR] bakeryUpgrade():', e); return 'error'; }
+    catch (e) { logDbError('[DATABASE ERROR] bakeryUpgrade():', e); return 'error'; }
 }
 /** Thu doanh thu v2 (trừ lương nhân viên). */
 async function bakeryCollectV2(userId, rate, cap, cakeEvery, wagePct) {
     try { const { data, error } = await supabase.rpc('bakery_collect_v2', { p_user_id: userId, p_rate: rate, p_cap: cap, p_cake_every: cakeEvery, p_wage_pct: wagePct }); if (error) throw error; return data; }
-    catch (e) { console.error('[DATABASE ERROR] bakeryCollectV2():', e); return { result: 'error' }; }
+    catch (e) { logDbError('[DATABASE ERROR] bakeryCollectV2():', e); return { result: 'error' }; }
 }
 /** Thuê nhân viên. Trả 'ok'|'no_bakery'|'already_hired'|'limit_reached'|'poor'|'error'. */
 async function bakeryHire(userId, staffId, cost, maxStaff) {
     try { const { data, error } = await supabase.rpc('bakery_hire', { p_user_id: userId, p_staff_id: staffId, p_cost: cost, p_max_staff: maxStaff }); if (error) throw error; return data; }
-    catch (e) { console.error('[DATABASE ERROR] bakeryHire():', e); return 'error'; }
+    catch (e) { logDbError('[DATABASE ERROR] bakeryHire():', e); return 'error'; }
 }
 /** Sa thải nhân viên. Trả 'ok'|'no_bakery'|'not_hired'|'error'. */
 async function bakeryFire(userId, staffId) {
     try { const { data, error } = await supabase.rpc('bakery_fire', { p_user_id: userId, p_staff_id: staffId }); if (error) throw error; return data; }
-    catch (e) { console.error('[DATABASE ERROR] bakeryFire():', e); return 'error'; }
+    catch (e) { logDbError('[DATABASE ERROR] bakeryFire():', e); return 'error'; }
 }
 /** Trang trí tiệm bánh. Trả 'ok'|'no_bakery'|'no_item'|'error'. */
 async function bakeryDecorate(userId, itemId) {
     try { const { data, error } = await supabase.rpc('bakery_decorate', { p_user_id: userId, p_item_id: itemId }); if (error) throw error; return data; }
-    catch (e) { console.error('[DATABASE ERROR] bakeryDecorate():', e); return 'error'; }
+    catch (e) { logDbError('[DATABASE ERROR] bakeryDecorate():', e); return 'error'; }
 }
 /** Giao đơn hàng VIP tiệm bánh. Trả { success: true, reward_coins, reward_exp, reward_rep, new_wallet, new_exp, new_reputation } hoặc { success: false, error, ... } */
 async function deliverBakeryOrder(userId, orderDate, orderId, requiredItems, rewardCoins, rewardExp, rewardRep, cakeProgress) {
@@ -2760,7 +2854,7 @@ async function recordDiscovery(userId, itemId) {
         if (error && error.code !== '23505') throw error; // Ignore duplicate key constraint
         return data || null;
     } catch (e) {
-        console.error('[DATABASE ERROR] recordDiscovery():', e);
+        logDbError('[DATABASE ERROR] recordDiscovery():', e);
         return null;
     }
 }
@@ -2772,7 +2866,7 @@ async function getUserDiscoveries(userId) {
         if (error) throw error;
         return data || [];
     } catch (e) {
-        console.error('[DATABASE ERROR] getUserDiscoveries():', e);
+        logDbError('[DATABASE ERROR] getUserDiscoveries():', e);
         return [];
     }
 }
@@ -2867,6 +2961,9 @@ async function listRedeemCodes(limit = 20) {
 }
 
 module.exports = {
+    // Lộ ra cho test: phân loại mạng-hay-DB là chỗ dễ hỏng thầm lặng nhất ở đây
+    // (bắt hụt -> log lại ngập như cũ; bắt quá tay -> NUỐT MẤT lỗi DB thật).
+    _log: { laLoiMang, quyetDinhLog, logDbError, ghiNhanMangOk, datLaiMang, NET_LEO_THANG_MS },
     supabase,
     redeemCode,
     createRedeemCode,

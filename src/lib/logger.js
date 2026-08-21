@@ -79,6 +79,9 @@ function skipLog(reason, ctx = {}) {
 
 module.exports = {
     logError, skipLog,
+    // Dùng lại ở database.js để gộp log lỗi MẠNG (cùng một cú rớt DNS đang làm hỏng
+    // hàng chục truy vấn thì chỉ nên thấy một dòng, không phải hàng chục).
+    chotGop,
     // Lộ ra cho test: logic gộp trùng là phần dễ hỏng thầm lặng nhất ở đây
     // (gộp quá tay -> mất lỗi thật; gộp hụt -> kênh log bị nhấn chìm).
     _gop: { khoaCua, chotGop, GOP_MS, SKIP_GOP_MS, xoaHet: () => goiTrung.clear() },
