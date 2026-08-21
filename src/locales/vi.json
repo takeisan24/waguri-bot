@@ -1147,9 +1147,9 @@
       "requested_by": "Yêu cầu bởi {user} • {original}"
     },
     "premium": {
-      "title": "💎 Waguri Premium",
+      "title": "💝 Ủng hộ Waguri",
       "active_desc": "Cậu đang là **Premium** 💎 — hết hạn <t:{time}:R>. Cảm ơn cậu nhiều nha~ 🌸\nMuốn gia hạn? Ghé **[trang Premium]({url})** nhé 💕",
-      "free_desc": "Cậu đang dùng gói **Miễn phí**. Nâng cấp Premium để trò chuyện với mình thoải mái hơn nhé~ 💕\n👉 Mua tại **[trang Premium]({url})** — quét VietQR, kích hoạt **tự động** trong vài giây!",
+      "free_desc": "Cậu đang dùng gói **Miễn phí**. Nâng cấp Premium để trò chuyện với mình thoải mái hơn nhé~ 💕\n👉 Mua tại **[trang Premium]({url})** — quét VietQR, rồi bấm \"Tôi đã chuyển khoản\". Owner sẽ kiểm tra & kích hoạt thủ công (thường trong ngày) 🌸",
       "field_ai_quota": "💬 Lượt chat AI hôm nay",
       "field_benefits": "🎁 Quyền lợi Premium",
       "benefits_desc": "• **{ai_quota} lượt** chat AI/ngày (gấp 10 lần)\n• **+{income_bonus}% thu nhập** khi /work /fish /mine /chop\n• Huy hiệu 💎 trong hồ sơ\n• Được ưu tiên trải nghiệm tính năng mới",
@@ -1159,7 +1159,34 @@
         "m1": "1 tháng",
         "m3": "3 tháng",
         "m6": "6 tháng"
-      }
+      },
+      "hub_desc": "Waguri chạy bằng tiền túi của **một người** thôi 🌸 Mọi đồng cậu gửi đều đi thẳng vào tiền máy chủ & API để mình được sống tiếp bên các cậu~\n\nChọn một trong hai cách bên dưới nhé — **cách nào cũng quý như nhau** 💕",
+      "hub_desc_active": "Cậu đang là **Premium** 💎 — hết hạn <t:{time}:R>. Cảm ơn cậu nhiều lắm 🌸\n\nMuốn gia hạn hay ủng hộ thêm thì bấm nút bên dưới nha~ 💕",
+      "field_donate": "☕ Ủng hộ tuỳ tâm",
+      "donate_desc": "Bao nhiêu cũng quý, kể cả 10k~ **Không nhận quyền lợi gì trong game cả** — mình chỉ tặng cậu huy hiệu {emoji} **Người Ủng Hộ** vĩnh viễn và ghi tên cậu ngay dưới đây thôi 🌸",
+      "field_premium": "💎 Waguri Premium",
+      "premium_desc": "Có quyền lợi hẳn hoi, tính theo tháng:\n• **{ai_quota}** lượt chat AI/ngày (thường chỉ có {free_quota})\n• **+{income_bonus}%** thu nhập khi đi làm\n• Huy hiệu 💎 trên hồ sơ + dùng thử tính năng mới sớm\n\n{prices}",
+      "field_supporters": "🌸 Những người đã ủng hộ Waguri",
+      "currency": "đ",
+      "amount_freeform": "**Tuỳ tâm** (cậu tự điền trong app ngân hàng)",
+      "btn_donate": "Ủng hộ tuỳ tâm",
+      "btn_buy_m1": "💎 1 tháng",
+      "btn_buy_m3": "💎 3 tháng",
+      "btn_buy_m6": "💎 6 tháng",
+      "btn_claimed": "✅ Tôi đã chuyển khoản",
+      "qr_donate_title": "💝 Quét mã để ủng hộ Waguri",
+      "qr_premium_title": "💎 Quét mã để mua Waguri Premium",
+      "qr_desc": "Mở app ngân hàng, quét mã bên dưới là xong~\n\n⚠️ **Giữ nguyên nội dung chuyển khoản `{code}`** nhé — đó là cách duy nhất mình biết tiền đó là của cậu. Chuyển xong nhớ bấm nút bên dưới để báo mình 🌸",
+      "qr_bank": "Ngân hàng",
+      "qr_account": "Số tài khoản",
+      "qr_holder": "Chủ tài khoản",
+      "qr_amount": "Số tiền",
+      "qr_memo": "📋 Nội dung chuyển khoản (bắt buộc)",
+      "claim_ok_title": "🌸 Mình nhận được rồi nè!",
+      "claim_ok_desc": "Cảm ơn cậu nhiều lắm 💕 Mình đã báo cho chủ bot đơn `{code}` rồi.\n\nChủ bot sẽ tự đối chiếu với app ngân hàng rồi kích hoạt cho cậu — thường trong ngày. Xong là mình nhắn riêng cho cậu ngay nha~ (cứ yên tâm đi chơi tiếp 🌸)",
+      "claim_already": "Đơn này cậu báo rồi (hoặc đã được xử lý xong) nha~ Chờ chủ bot xác nhận chút xíu nhé 🌸",
+      "order_failed": "Ối, mình không tạo được đơn lúc này 🥺 Cậu thử lại sau vài phút giúp mình nhé!",
+      "not_configured": "Chủ bot chưa cấu hình tài khoản nhận ủng hộ nên tính năng này đang tạm nghỉ 🌸"
     },
     "profile_ctx": {
       "err_bot": "Bot thì không có hồ sơ người chơi đâu nha~ 🌸",
@@ -2030,6 +2057,17 @@
       "dm_vote_streak_bonus": " (thưởng chuỗi +{amount} {currency})",
       "dm_premium_thanks": "🌸 Cảm ơn cậu đã nâng cấp **Waguri Premium** 💎!\nMình đã kích hoạt **+{months} tháng** cho cậu rồi nè~{until}\nGõ `/premium` để xem quyền lợi nha 💕",
       "dm_premium_until": " Hết hạn <t:{time}:R>."
+    },
+    "premiumOrders": {
+      "claim_title": "💸 Có người vừa báo đã chuyển khoản!",
+      "claim_desc": "**{name}** (<@{user}>) báo đã chuyển tiền cho đơn Premium.\n\n**Mã đơn:** `{code}`\n**Số tiền:** {amount}đ · gói {plan} ({months} tháng)\n\nMở app ngân hàng, kiểm tra có giao dịch đúng số tiền với nội dung `{code}` chưa. Đúng rồi thì bấm nút bên dưới — mình sẽ kích hoạt và DM cảm ơn họ giúp cậu 🌸",
+      "btn_approve": "✅ Kích hoạt Premium",
+      "dm_failed": "⚠️ *Không DM được cho họ (chắc họ tắt tin nhắn riêng) — Premium vẫn đã kích hoạt bình thường.*",
+      "claim_donate_title": "💝 Có người vừa ủng hộ cậu!",
+      "claim_donate_desc": "**{name}** (<@{user}>) báo đã chuyển tiền ỦNG HỘ (không mua Premium).\n\n**Mã đơn:** `{code}`\n**Số tiền:** {amount}\n\nMở app ngân hàng xem có giao dịch nào nội dung `{code}` chưa. Có rồi thì bấm nút bên dưới — mình cấp huy hiệu 💝 và nhắn cảm ơn họ giúp cậu 🌸",
+      "btn_approve_donate": "💝 Xác nhận & cấp huy hiệu",
+      "amount_freeform": "Tuỳ tâm (họ tự điền)",
+      "dm_donate_thanks": "🌸 Cảm ơn cậu đã ủng hộ Waguri 💝!\nChủ bot đã xác nhận rồi nè~ Mình vừa tặng cậu huy hiệu **💝 Người Ủng Hộ** vĩnh viễn, và tên cậu giờ nằm trong `/premium` rồi đó 💕\nGõ `/cosmetic badge-equip` để trưng nó lên hồ sơ nha~"
     }
   },
   "data": {
