@@ -11,6 +11,9 @@ const norm = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').repla
 const active = new Set(); // channelId đang có ván đố
 
 module.exports = {
+    // Lộ ra cho test/quiz_dau.test.js: gate về dấu phải dùng ĐÚNG hàm chuẩn hoá này,
+    // không phải bản sao — bản sao lệch một ký tự là gate mất tác dụng mà vẫn xanh.
+    _norm: norm,
     data: new SlashCommandBuilder()
         .setName('dovui')
         .setDescription('Đố vui 🧠 — trả lời nhanh & đúng nhất trong chat để thắng thưởng'),
