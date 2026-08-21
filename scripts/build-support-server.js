@@ -36,15 +36,22 @@ const SET_PERMS = !has('--no-perms');   // đặt quyền category (THÔNG TIN �
 const ENABLE_COMMUNITY = !has('--no-community'); // bật Community + verification Medium + AFK + system channel.
 const HARDEN_ROLES = has('--harden');   // ⚠️ gỡ @everyone khỏi Helper/Voter.
 const CLEANUP_CLUTTER = has('--cleanup'); // ⚠️ XOÁ kênh trong CLUTTER_NAMES.
-const CLUTTER_NAMES = ['general', 'waguri-test'];
+// `waguri-test` ĐÃ BỊ GỠ khỏi danh sách rác: chính script này ghép nó thành kênh `test`
+// (xem USE_EXISTING/aliases bên dưới), nên để ở cả hai nơi là tự mâu thuẫn — lần xem
+// trước 21-08-2026 in ra "test -> #waguri-test" rồi ngay dòng sau xếp nó vào diện rác.
+const CLUTTER_NAMES = ['general'];
 
 // ID kênh CÓ SẴN (ép dùng). Để trống = tự dò theo tên alias.
+//
+// `support`, `bug`, `test` ĐỂ TRỐNG: ba ID cũ ở đây trỏ vào kênh không còn tồn tại, nên
+// lần dò ép buộc trượt và kênh bị coi như thiếu. Dò theo alias hoạt động tốt — lần xem
+// trước nhận đúng 20/22 kênh dù tên dùng ký tự trang trí.
 const USE_EXISTING = {
     rules: '1517931374953238600', announce: '1517931376865710120', guide: '1517931380405698621',
-    links: '1517931382570221659', chat: '1517931385434935419', support: '1517931393878065283',
-    bug: '1517931395958313044', suggest: '1517936322881523944', logs: '1517931401150730303',
-    changelog: '', welcome: '', faq: '', premium: '', confession: '', test: '', showoff: '', events: '',
-    backup: '',
+    links: '1517931382570221659', chat: '1517931385434935419', support: '',
+    bug: '', suggest: '1517936322881523944', logs: '1517931401150730303',
+    changelog: '', welcome: '1518587140680847591', faq: '1518602899079430164', premium: '1518602900736053328', confession: '1518587143180779590', test: '', showoff: '1517931390186815611', events: '1518602902552318152',
+    backup: '1517954451145621534',
 };
 // =======================================================
 
@@ -71,18 +78,33 @@ const TARGETS = {
     welcome: { name: '👋・chào-mừng', aliases: ['chào-mừng', 'chao-mung', 'welcome'], cat: 'info', type: 'text', create: true, pin: true },
     rules: { name: '📜・nội-quy', aliases: ['luật', 'luat', 'rule', 'nội-quy', 'noi-quy'], cat: 'info', type: 'text', pin: true },
     announce: { name: '📢・thông-báo', aliases: ['thông-báo', 'thong-bao', 'announce'], cat: 'info', type: 'text' },
-    changelog: { name: '🆕・cập-nhật', aliases: ['changelog', 'cập-nhật', 'cap-nhat', 'update'], cat: 'info', type: 'text', create: true },
+    // Bỏ alias trần `'update'`: nó bắt trúng #mod-updates — kênh log kiểm duyệt của staff,
+    // không phải changelog công khai. Lần xem trước 21-08-2026 ghép nhầm đúng như vậy.
+    changelog: { name: '🆕・cập-nhật', aliases: ['changelog', 'cập-nhật', 'cap-nhat'], cat: 'info', type: 'text', create: true },
     guide: { name: '🌸・hướng-dẫn', aliases: ['hướng-dẫn', 'huong-dan', 'guide'], cat: 'info', type: 'text', pin: true },
     faq: { name: '❓・faq', aliases: ['faq', 'câu-hỏi', 'cau-hoi'], cat: 'info', type: 'text', create: true, pin: true },
     links: { name: '🔗・liên-kết', aliases: ['liên-kết', 'lien-ket', 'link'], cat: 'info', type: 'text', pin: true },
     premium: { name: '💎・premium', aliases: ['premium', 'vip', 'ủng-hộ', 'ung-ho'], cat: 'info', type: 'text', create: true, pin: true },
     chat: { name: '🗨️・chat-chung', aliases: ['chat-chung', 'general', 'chung', 'sảnh'], cat: 'community', type: 'text' },
-    test: { name: '🤖・thử-lệnh-bot', aliases: ['thử-lệnh', 'thu-lenh', 'spam-bot', 'bot-command', 'thử-bot'], cat: 'community', type: 'text', create: true },
+    // KHÔNG dò `spam-bot` nữa, và KHÔNG tự tạo.
+    //
+    // Alias đó khớp cả `spam-bot-2/3/4` và script bốc lấy cái nào tuỳ thứ tự cache — lần
+    // chạy 21-08-2026 nó chọn `spam-bot-3`, hoàn toàn ngẫu nhiên. `--apply` sẽ đổi tên và
+    // dời đúng kênh đó đi, không đoán trước được.
+    //
+    // Server hiện có NĂM kênh thử bot (lam-viec, spam-bot-2/3/4, waguri-test) cho 17
+    // thành viên. Gộp lại là việc nên làm, nhưng chọn giữ cái nào là quyết định của chủ
+    // server — script bốc bừa thì tệ hơn là không đụng. Muốn ghim thì điền ID vào
+    // USE_EXISTING.test.
+    test: { name: '🤖・thử-lệnh-bot', aliases: ['thử-lệnh', 'thu-lenh', 'bot-command', 'thử-bot'], cat: 'community', type: 'text' },
     showoff: { name: '🖼️・khoe-đồ', aliases: ['khoe-đồ', 'khoe-do', 'showoff', 'flex'], cat: 'community', type: 'text', create: true },
     confession: { name: '💌・tâm-sự', aliases: ['confession', 'tâm-sự', 'tam-su'], cat: 'community', type: 'text', create: true, pin: true },
     events: { name: '🎉・sự-kiện', aliases: ['sự-kiện', 'su-kien', 'event', 'giveaway'], cat: 'community', type: 'text', create: true, pin: true },
-    support: { name: '❓・hỗ-trợ', aliases: ['hỗ-trợ', 'ho-tro', 'support', 'help'], cat: 'support', type: 'text', pin: true },
-    bug: { name: '🐛・báo-lỗi', aliases: ['báo-lỗi', 'bao-loi', 'bug', 'report'], cat: 'support', type: 'text', pin: true },
+    // `create: true` — thiếu cờ này nên hai kênh báo "(thiếu, bỏ qua)" ở lần xem trước
+    // 21-08-2026: nhóm 🛟・HỖ TRỢ của server chỉ có mỗi forum Feedback, không có đường
+    // nào để mở ticket, dù `/ticket` đã sẵn sàng với lưu trữ DB và transcript HTML.
+    support: { name: '❓・hỗ-trợ', aliases: ['hỗ-trợ', 'ho-tro', 'support', 'help'], cat: 'support', type: 'text', pin: true, create: true },
+    bug: { name: '🐛・báo-lỗi', aliases: ['báo-lỗi', 'bao-loi', 'bug', 'report'], cat: 'support', type: 'text', pin: true, create: true },
     suggest: { name: '💡・góp-ý', aliases: ['góp-ý', 'gop-y', 'suggest', 'feedback'], cat: 'support', type: 'forum' },
     logs: { name: '📋・logs', aliases: ['log', 'nhật-ký', 'nhat-ky'], cat: 'staff', type: 'text' },
     backup: { name: '💾・backup-db', aliases: ['backup', 'sao-lưu', 'sao-luu'], cat: 'staff', type: 'text' },
@@ -93,11 +115,31 @@ const TARGETS = {
 };
 
 // ---------- Role bổ sung (tạo nếu thiếu — reuse theo tên) ----------
+// Màu tăng dần theo mốc, để nhìn danh sách role là thấy được thứ bậc.
+const MAU_MOC = { 5: 0x95A5A6, 15: 0x3498DB, 30: 0xE91E63, 50: 0x9B59B6, 100: 0xF1C40F };
+
 const ROLE_DEFS = [
     { name: 'Premium', color: 0xF1C40F, perms: [], mentionable: false, hoist: true },
     { name: 'Voter', color: 0xFEE75C, perms: [], mentionable: false, hoist: false },
     { name: '📢 Thông báo', color: 0x5865F2, perms: [], mentionable: true, hoist: false },
     { name: '🎉 Sự kiện', color: 0xEB459E, perms: [], mentionable: true, hoist: false },
+
+    // 5 ROLE THƯỞNG CẤP — sinh từ `config.ROLE_REWARDS.MILESTONES` chứ không chép tay,
+    // để tên role ở đây và tên bot đi tìm lúc chạy chỉ có MỘT nguồn.
+    //
+    // VÌ SAO THÊM: `supportReward.js` làm `roles.cache.get(milestone.roleId)` rồi
+    // `if (role && …)`. Role không tồn tại -> điều kiện false -> BỎ QUA IM LẶNG, không
+    // lỗi, không log. Ngày 21-08-2026 đối chiếu 16 role thật của server support với 5 ID
+    // trong cấu hình: KHÔNG cái nào trùng. Toàn bộ hệ thưởng theo cấp chưa từng chạy —
+    // mà mã gọi nó từ BỐN chỗ (lúc vào server, lúc chat, lúc dùng lệnh, lúc nhận quà).
+    // Tạo 5 role này là bật đèn cho cả bốn đường, không phải viết thêm tính năng.
+    ...(config.ROLE_REWARDS?.MILESTONES || []).map(m => ({
+        name: m.name_vi,
+        color: MAU_MOC[m.level] || PINK,
+        perms: [], mentionable: false, hoist: true,
+        moc: m.level,          // đánh dấu để in ra dòng .env sau khi tạo
+        envKey: `ROLE_LV${m.level}`,
+    })),
 ];
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
@@ -219,15 +261,32 @@ client.once('ready', async () => {
         for (const r of guild.roles.cache.values()) {
             if (/owner|admin|mod|helper|developer|kaoruko/i.test(r.name) && !r.managed && r.id !== guild.id) staffRoleIds.push(r.id);
         }
+        // Role thưởng cấp phải được ghi ID vào .env thì bot mới tìm thấy. Gom lại ở đây —
+        // dù role vừa TẠO hay đã CÓ SẴN — rồi in nguyên khối để dán, đỡ phải bấm chuột
+        // phải từng role lấy ID.
+        const dongEnv = [];
+        const ghiNhan = (rd, role) => { if (rd.envKey && role) dongEnv.push(`${rd.envKey}=${role.id}`); };
+
         for (const rd of ROLE_DEFS) {
             const exist = guild.roles.cache.find(r => norm(r.name) === norm(rd.name));
-            if (exist) { console.log(`  ✓ role ${rd.name} (đã có)`); continue; }
+            if (exist) { console.log(`  ✓ role ${rd.name} (đã có)`); ghiNhan(rd, exist); continue; }
             if (!CREATE_MISSING) { console.log(`  – role ${rd.name} (thiếu, bỏ qua)`); continue; }
-            if (DRY_RUN) { console.log(`  + role ${rd.name} (sẽ TẠO)`); continue; }
+            if (DRY_RUN) {
+                console.log(`  + role ${rd.name} (sẽ TẠO)${rd.envKey ? `  -> sẽ cần ${rd.envKey} trong .env` : ''}`);
+                continue;
+            }
             try {
-                await guild.roles.create({ name: rd.name, color: rd.color, permissions: rd.perms, mentionable: rd.mentionable, hoist: rd.hoist, reason: 'Waguri setup' });
+                const moi = await guild.roles.create({ name: rd.name, color: rd.color, permissions: rd.perms, mentionable: rd.mentionable, hoist: rd.hoist, reason: 'Waguri setup' });
                 console.log(`  + Đã tạo role ${rd.name}`);
+                ghiNhan(rd, moi);
             } catch (e) { console.warn(`  ! không tạo được role ${rd.name}: ${e.message}`); }
+        }
+
+        if (dongEnv.length) {
+            console.log('\n🔑 DÁN KHỐI NÀY VÀO .env (cả máy bạn LẪN Wispbyte), rồi restart bot:');
+            for (const d of dongEnv) console.log('   ' + d);
+            console.log('   → Thiếu bước này thì role vừa tạo vẫn nằm im: bot tìm theo ID,');
+            console.log('     không tìm theo tên, và ID mặc định trong mã là của server cũ.');
         }
 
         // ===== 2) CATEGORIES + CHANNELS =====
@@ -312,10 +371,47 @@ client.once('ready', async () => {
                 try { await guild.edit({ ...patch, reason: 'Waguri setup' }); console.log('\n⚙️ Đã cấu hình Community/verification/system/AFK.'); }
                 catch (e) { console.warn('\n! cấu hình server:', e.message); }
             }
-            if (resolved.confession) {
-                try { require('../src/database.js').setGuildSetting(guild.id, 'confession_channel', resolved.confession.id); console.log(`= confession -> #${resolved.confession.name}`); }
-                catch (e) { console.warn('! confession setting:', e.message); }
+            // PHẢI `await`. `setGuildSetting` là hàm async, và cuối script có
+            // `client.destroy(); process.exit(0)` — gọi mà không chờ thì tiến trình chết
+            // trong lúc lệnh ghi còn đang bay, cái nào kịp thì trúng.
+            //
+            // Đã xảy ra thật ở lần chạy 21-08-2026: cùng một khối, `staff_role_id` về đích
+            // còn `announcement_channel` mất hút, và báo cáo /serverinfo sau đó vẫn ghi
+            // "(chưa đặt)". `try/catch` quanh lời gọi không await cũng không bắt được gì —
+            // promise bị từ chối không ném ra đồng bộ.
+            //
+            // `setGuildSetting` còn NUỐT lỗi bên trong (trả false thay vì ném), nên phải
+            // kiểm giá trị trả về, không thì hỏng vẫn im.
+            const dat = async (khoa, giaTri, nhan) => {
+                try {
+                    const ok = await require('../src/database.js').setGuildSetting(guild.id, khoa, giaTri);
+                    console.log(ok === false ? `! ${khoa}: DB từ chối ghi` : `= ${khoa} -> ${nhan}`);
+                } catch (e) { console.warn(`! ${khoa}:`, e.message); }
+            };
+
+            if (resolved.confession) await dat('confession_channel', resolved.confession.id, `#${resolved.confession.name}`);
+
+            // announcement_channel — `/announcement auto` gửi thông báo cập nhật qua khoá này.
+            // Chưa đặt thì hệ thông báo không có nơi để gửi. Báo cáo /serverinfo ngày 21-08
+            // ghi "(chưa đặt)" trong khi server đã có sẵn kênh thông báo.
+            const kenhTB = resolved.changelog || resolved.announce;
+            if (kenhTB) await dat('announcement_channel', kenhTB.id, `#${kenhTB.name}`);
+
+            // staff_role_id — `/ticket` chưa đặt khoá này thì rơi xuống tầng dò tự động:
+            // lấy mọi role CÓ quyền ManageThreads. Ở server support hiện tại, `Mod` chỉ có
+            // MentionEveryone còn `Helper`/`Hỗ Trợ` trống quyền, nên tầng đó chỉ tìm ra
+            // Admin — người hỗ trợ KHÔNG mở được ticket nào.
+            //
+            // Chọn role hỗ trợ đúng nghĩa thay vì role quyền cao nhất: mục đích là mở
+            // quyền xem ticket cho người trực, không phải thu hẹp về admin.
+            const uuTien = ['hỗ trợ', 'ho tro', 'support', 'helper', 'staff', 'mod'];
+            let roleStaff = null;
+            for (const key of uuTien) {
+                roleStaff = guild.roles.cache.find(r => !r.managed && r.id !== guild.id && norm(r.name).includes(norm(key)));
+                if (roleStaff) break;
             }
+            if (roleStaff) await dat('staff_role_id', roleStaff.id, `@${roleStaff.name}`);
+            else console.log('! staff_role_id: không tìm thấy role hỗ trợ nào — đặt tay bằng /config staff-role');
         }
 
         // ===== 5) NỘI DUNG (xoá tin Waguri cũ -> đăng lại) =====
@@ -327,13 +423,13 @@ client.once('ready', async () => {
                 if (REWRITE_CONTENT) {
                     const msgs = await ch.messages.fetch({ limit: 50 }).catch(() => null);
                     const mine = msgs ? [...msgs.values()].filter(m => m.author.id === botId) : [];
-                    for (const m of mine) await m.delete().catch(() => {});
+                    for (const m of mine) await m.delete().catch(() => { });
                 } else {
                     const recent = await ch.messages.fetch({ limit: 1 });
                     if (recent.size > 0) { console.log(`  = #${ch.name} có tin -> giữ`); continue; }
                 }
                 const msg = await ch.send({ embeds: [embed] });
-                if (TARGETS[key]?.pin) await msg.pin().catch(() => {});
+                if (TARGETS[key]?.pin) await msg.pin().catch(() => { });
                 console.log(`  ✎ #${ch.name}`);
             } catch (e) { console.warn(`  ! #${ch.name}: ${e.message}`); }
         }
