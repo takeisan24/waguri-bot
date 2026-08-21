@@ -1727,6 +1727,7 @@ const clanLeave = (userId) => clanRpc('clan_leave', { p_user: userId });
 const clanDeposit = (userId, amount) => clanRpc('clan_deposit', { p_user: userId, p_amount: amount });
 const clanWithdraw = (userId, amount) => clanRpc('clan_withdraw', { p_user: userId, p_amount: amount });
 const clanKick = (leaderId, targetId) => clanRpc('clan_kick', { p_leader: leaderId, p_target: targetId });
+const clanInvite = (leaderId, targetId) => clanRpc('clan_invite', { p_leader: leaderId, p_target: targetId });
 const clanDisband = (userId) => clanRpc('clan_disband', { p_user: userId });
 async function clanById(id) {
     try { const { data } = await supabase.from('clans').select('*').eq('id', id).single(); return data; }
@@ -2499,6 +2500,7 @@ module.exports = {
     clanDeposit,
     clanWithdraw,
     clanKick,
+    clanInvite,
     clanDisband,
     clanById,
     clanByName,

@@ -59,6 +59,7 @@
     "deposit",
     "disband",
     "info",
+    "invite",
     "join",
     "kick",
     "leave",

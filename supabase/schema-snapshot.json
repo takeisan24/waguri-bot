@@ -56,6 +56,7 @@
     "clan_deposit(p_user text, p_amount bigint)",
     "clan_deposit_resource(p_clan_id bigint, p_item_id text, p_amount bigint)",
     "clan_disband(p_user text)",
+    "clan_invite(p_leader text, p_target text)",
     "clan_join(p_user text, p_name text)",
     "clan_kick(p_leader text, p_target text)",
     "clan_leave(p_user text)",
@@ -164,6 +165,7 @@
     "bakeries_pkey",
     "bakery_likes_pkey",
     "battle_pass_users_pkey",
+    "clan_invites_pkey",
     "clan_upgrades_pkey",
     "clans_name_key",
     "clans_pkey",
@@ -179,6 +181,7 @@
     "idx_antinuke_actions_incident",
     "idx_antinuke_incidents_guild",
     "idx_auctions_active",
+    "idx_clan_invites_user",
     "idx_game_stakes_session",
     "idx_guild_members_guild",
     "idx_ledger_at",
@@ -306,6 +309,13 @@
       "updated_at:timestamp with time zone",
       "user_id:text",
       "xp:integer"
+    ],
+    "clan_invites": [
+      "clan_id:bigint",
+      "created_at:timestamp with time zone",
+      "expires_at:timestamp with time zone",
+      "invited_by:text",
+      "user_id:text"
     ],
     "clan_upgrades": [
       "clan_id:bigint",

@@ -34,6 +34,8 @@ module.exports = {
             .addIntegerOption(o => o.setName('amount').setDescription('Số tiền').setRequired(true).setMinValue(1)))
         .addSubcommand(s => s.setName('kick').setDescription('Đuổi thành viên (chỉ trưởng bang)')
             .addUserOption(o => o.setName('user').setDescription('Thành viên').setRequired(true)))
+        .addSubcommand(s => s.setName('invite').setDescription('Mời người vào bang (chỉ trưởng bang)')
+            .addUserOption(o => o.setName('user').setDescription('Người muốn mời').setRequired(true)))
         .addSubcommand(s => s.setName('disband').setDescription('Giải tán bang (chỉ trưởng bang)'))
         .addSubcommand(s => s.setName('war').setDescription('Khai chiến với bang khác (chỉ trưởng bang)')
             .addStringOption(o => o.setName('clan').setDescription('Tên bang đối thủ').setRequired(true)))
@@ -68,9 +70,25 @@ module.exports = {
             const name = interaction.options.getString('name').trim();
             const r = await db.clanJoin(me.id, name);
             if (!r) return replyEmbed('error', 'join_title', 'error_generic');
-            const msgKey = { in_clan: 'err_in_clan_join', notfound: 'err_clan_not_found' }[r.status];
-            if (msgKey) return replyEmbed('error', 'join_title', msgKey);
+            const msgKey = { in_clan: 'err_in_clan_join', notfound: 'err_clan_not_found', no_invite: 'err_no_invite' }[r.status];
+            if (msgKey) return replyEmbed('error', 'join_title', msgKey, { name: r.name || name });
+            // CHỈ 'ok' mới là thành công — xem ghi chú ở nhánh withdraw.
+            if (r.status !== 'ok') return replyEmbed('error', 'join_title', 'error_generic');
             return replyEmbed('success', 'join_title', 'join_success', { name: r.name });
+        }
+
+        if (sub === 'invite') {
+            const target = interaction.options.getUser('user');
+            if (target.bot) return replyEmbed('error', 'invite_title', 'err_invite_bot');
+            const r = await db.clanInvite(me.id, target.id);
+            if (!r) return replyEmbed('error', 'invite_title', 'error_generic');
+            const msgKey = {
+                not_in: 'err_not_in_clan', not_leader: 'err_not_leader', self: 'err_invite_self',
+                already_member: 'err_invite_already_member', in_other_clan: 'err_invite_in_other_clan',
+            }[r.status];
+            if (msgKey) return replyEmbed('error', 'invite_title', msgKey, { user: target.id });
+            if (r.status !== 'ok') return replyEmbed('error', 'invite_title', 'error_generic');
+            return replyEmbed('success', 'invite_title', 'invite_success', { user: target.id, name: r.clan });
         }
 
         if (sub === 'leave') {

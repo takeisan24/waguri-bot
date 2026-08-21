@@ -517,6 +517,7 @@ const SUBCOMMAND_DESCRIPTIONS = {
     "clan.deposit": { vi: "Góp tiền hoặc tài nguyên vào quỹ bang", en: "Deposit money or resources to clan treasury" },
     "clan.withdraw": { vi: "Rút quỹ bang (chỉ trưởng bang)", en: "Withdraw from clan treasury (leader only)" },
     "clan.kick": { vi: "Đuổi thành viên (chỉ trưởng bang)", en: "Kick a member from clan (leader only)" },
+    "clan.invite": { vi: "Mời người vào bang (chỉ trưởng bang)", en: "Invite someone to the clan (leader only)" },
     "clan.disband": { vi: "Giải tán bang (chỉ trưởng bang)", en: "Disband the clan (leader only)" },
     "clan.war": { vi: "Khai chiến với bang khác (chỉ trưởng bang)", en: "Declare war on another clan (leader only)" },
     "clan.shrine": { vi: "Xây dựng và nâng cấp Đền thờ bang hội để nhận buff EXP 🏛️", en: "Build and upgrade Clan Shrine for EXP buffs 🏛️" },
