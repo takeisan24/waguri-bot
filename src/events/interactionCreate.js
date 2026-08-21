@@ -7,6 +7,7 @@ const { isBlocked, getJailForAck } = require('../lib/jail');
 const { buildWaguriEmbed } = require('../lib/embed');
 const { recordMembership } = require('../lib/membership');
 const { logError, skipLog } = require('../lib/logger');
+const { theoDoiAck, kiemAutocomplete } = require('../lib/canhAck');
 const db = require('../database.js');
 const config = require('../config');
 const { getInteractionLanguage, t } = require('../lib/i18n');
@@ -40,6 +41,10 @@ module.exports = {
             if (!command || typeof command.autocomplete !== 'function') return;
             try {
                 await command.autocomplete(interaction);
+                // Autocomplete ack bằng respond(), không phải reply/defer. Không respond
+                // thì bảng gợi ý treo ở "Loading options…" cho tới khi Discord bỏ cuộc —
+                // người dùng không thấy lỗi nào, chỉ thấy nó không bao giờ hiện ra.
+                kiemAutocomplete(interaction, `/${interaction.commandName}`);
             } catch (error) {
                 console.error(`Lỗi autocomplete ${interaction.commandName}:`, error);
                 // Autocomplete chạy lại mỗi phím gõ -> một lệnh hỏng sinh hàng chục lỗi
@@ -124,9 +129,15 @@ module.exports = {
                 return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
             }
 
+            // Theo dõi ack: quét tĩnh KHÔNG kết luận được lệnh nào quên trả lời (ack hay
+            // nằm trong hàm lồng nhau — xem chú thích ở lib/canhAck.js). Đo lúc chạy thì
+            // không có dương tính giả, và bắt được cả nhánh chỉ vỡ với dữ liệu thật.
+            const canh = theoDoiAck(interaction, `/${interaction.commandName}`);
             try {
                 await command.execute(interaction);
+                canh.xong(false);
             } catch (error) {
+                canh.xong(true);   // lỗi đã được log riêng ngay dưới, đừng báo trùng
                 console.error(`Lỗi khi thực thi lệnh ${interaction.commandName}:`, error);
                 logError('Lỗi thực thi lệnh', error, { command: interaction.commandName, user: `<@${interaction.user.id}>`, guild: interaction.guildId });
                 // Interaction đã hết hạn (10062) / đã ack (40060) do mạng chậm -> không thể phản hồi nữa, bỏ qua tránh lỗi dây chuyền.
