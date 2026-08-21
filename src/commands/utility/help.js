@@ -18,8 +18,6 @@ const CATEGORIES = [
         ['pet', 'thú cưng: nhận nuôi / cho ăn / xem 🐾'],
         ['tiembanh', 'tiệm bánh Gekka 🍰 (kinh doanh thụ động: xem·mo·nhapnl·thu·nangcap)'],
         ['study', 'học bài Pomodoro cùng Waguri 📚 (start·status·stop·leaderboard)'],
-        ['heo', 'nuôi heo 🐷 (info·mua·an·tam·ngu·ban·chuabenh·trom·box)'],
-        ['trongcay', 'trồng cây 🌱 (info·muagiong·tuoi·bonphan·thuhoach·hoisinh·phacay·trom·box)'],
         ['prestige', 'chuyển sinh — làm lại từ đầu để nhận đặc quyền vĩnh viễn 🌟'],
     ] },
     { name: '🏪 Cửa hàng & Kho', cmds: [
@@ -43,18 +41,28 @@ const CATEGORIES = [
         ['tangdo', 'tặng vật phẩm trong kho cho người khác 🎁'],
         ['cuutro', 'nhận trợ cấp phá sản khi ví và ngân hàng hết sạch 🌸'],
     ] },
-    { name: '🎲 Minigame', cmds: [
-        ['coinflip', 'tung đồng xu'],
+    // Tách "chơi được ngay" khỏi "phải đặt cược" (2026-08-21). Trước đây mục Minigame gom 11
+    // trò cược lại, còn bốn trò CÓ người chơi thật thì nằm rải ở mục khác: nối từ và đố vui ở
+    // "Vui & Cộng đồng", heo và trồng cây ở "Kinh tế & Nghề" — dù file của chúng nằm ngay
+    // trong src/commands/games/. Tức mục Trò chơi đang giấu trò sống và trưng trò chết.
+    { name: '🎲 Trò chơi', cmds: [
+        ['noitu', 'chơi nối từ tiếng Việt 🔤'],
+        ['dovui', 'đố vui 🧠 (trả lời nhanh trong chat, thắng thưởng)'],
+        ['trongcay', 'trồng cây 🌱 (info·muagiong·tuoi·bonphan·thuhoach·hoisinh·phacay·trom·box)'],
+        ['heo', 'nuôi heo 🐷 (info·mua·an·tam·ngu·ban·chuabenh·trom·box)'],
+        ['crate', 'mở rương bí ẩn 🎁'],
+    ] },
+    { name: '🎰 Cược & may rủi', cmds: [
         ['taixiu', 'tài xỉu'],
         ['baucua', 'bầu cua tôm cá'],
-        ['bacay', 'ba cây 🃏 (nhiều người, đặt cửa)'],
         ['blackjack', 'xì dách'],
-        ['crate', 'mở rương bí ẩn 🎁'],
-        ['bingo', 'bingo 🎱 (nhiều người, gọi số tự động)'],
-        ['loto', 'loto 🔢 (mua vé 5 số 01-90, vào voice)'],
-        ['masoi', 'ma sói 🐺 (4-15 người, suy luận, có vai bí mật)'],
+        ['coinflip', 'tung đồng xu'],
+        ['bacay', 'ba cây 🃏 (nhiều người, đặt cửa)'],
         ['xocdia', 'xóc đĩa 🥢 (nhiều người đặt Chẵn/Lẻ)'],
         ['duangua', 'đua ngựa 🐎 (đặt cửa 1 con, đua trực tiếp)'],
+        ['masoi', 'ma sói 🐺 (4-15 người, suy luận, có vai bí mật)'],
+        ['bingo', 'bingo 🎱 (nhiều người, gọi số tự động)'],
+        ['loto', 'loto 🔢 (mua vé 5 số 01-90, vào voice)'],
     ] },
     { name: '💬 Trò chuyện', cmds: [
         ['ask', 'trò chuyện với Waguri (hoặc @tag Waguri)'],
@@ -70,8 +78,6 @@ const CATEGORIES = [
         ['action', 'tương tác: ôm / ôm hôn / xoa đầu / chọc / tát yêu (hug · kiss · pat · poke · slap)'],
         ['date', 'rủ người ấy đi hẹn hò 💑'],
         ['confession', 'gửi confession ẩn danh 🤫'],
-        ['noitu', 'chơi nối từ tiếng Việt 🔤'],
-        ['dovui', 'đố vui 🧠 (trả lời nhanh trong chat, thắng thưởng)'],
     ] },
     { name: '🖼️ Ảnh & Tiện ích', cmds: [
         ['image', 'ảnh mèo 🐱, cún 🐶, hoặc waifu 🌸'],

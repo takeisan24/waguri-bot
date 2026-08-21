@@ -1233,24 +1233,27 @@
           "name": "💸 Giao dịch & Ngân hàng"
         },
         "3": {
-          "name": "🎲 Minigame"
+          "name": "🎲 Trò chơi"
         },
         "4": {
-          "name": "💬 Trò chuyện"
+          "name": "🎰 Cược & may rủi"
         },
         "5": {
-          "name": "🎀 Vui & Cộng đồng"
+          "name": "💬 Trò chuyện"
         },
         "6": {
-          "name": "🖼️ Ảnh & Tiện ích"
+          "name": "🎀 Vui & Cộng đồng"
         },
         "7": {
-          "name": "⚙️ Quản trị (cần quyền)"
+          "name": "🖼️ Ảnh & Tiện ích"
         },
         "8": {
-          "name": "🏰 Bang hội"
+          "name": "⚙️ Quản trị (cần quyền)"
         },
         "9": {
+          "name": "🏰 Bang hội"
+        },
+        "10": {
           "name": "🏆 Khác"
         }
       },

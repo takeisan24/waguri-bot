@@ -1233,24 +1233,27 @@
           "name": "💸 Transactions & Banking"
         },
         "3": {
-          "name": "🎲 Minigames"
+          "name": "🎲 Games"
         },
         "4": {
-          "name": "💬 Conversation"
+          "name": "🎰 Betting & Luck"
         },
         "5": {
-          "name": "🎀 Fun & Community"
+          "name": "💬 Conversation"
         },
         "6": {
-          "name": "🖼️ Media & Utilities"
+          "name": "🎀 Fun & Community"
         },
         "7": {
-          "name": "⚙️ Administration (Requires Perms)"
+          "name": "🖼️ Media & Utilities"
         },
         "8": {
-          "name": "🏰 Clan System"
+          "name": "⚙️ Administration (Requires Perms)"
         },
         "9": {
+          "name": "🏰 Clan System"
+        },
+        "10": {
           "name": "🏆 Miscellaneous"
         }
       },
