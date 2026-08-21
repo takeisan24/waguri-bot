@@ -1,0 +1,5 @@
+# Ảnh chụp schema do scripts/db-snapshot.js sinh ra và được `--check` so bằng CHUỖI THÔ
+# (`readFileSync(...) === noiDung`). Trên Windows `core.autocrlf=true` đổi LF -> CRLF lúc
+# checkout, trong khi script luôn ghi LF -> phép so lệch đúng 1 byte/dòng và gate báo
+# "ảnh chụp khác DB prod" dù nội dung y hệt. Ghim eol=lf để gate chỉ kêu khi CÓ drift thật.
+supabase/schema-snapshot.json text eol=lf
