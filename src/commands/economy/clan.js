@@ -132,8 +132,11 @@ module.exports = {
             const amount = interaction.options.getInteger('amount');
             const r = await db.clanWithdraw(me.id, amount);
             if (!r) return replyEmbed('error', 'withdraw_title', 'error_generic');
-            const msgKey = { not_in: 'err_not_in_clan', not_leader: 'err_not_leader', poor_clan: 'err_poor_clan' }[r.status];
+            const msgKey = { not_in: 'err_not_in_clan', not_leader: 'err_not_leader', poor_clan: 'err_poor_clan', bad_amount: 'err_bad_amount' }[r.status];
             if (msgKey) return replyEmbed('error', 'withdraw_title', msgKey, { bank: fmt(r.bank, locale), currency: C });
+            // CHỈ 'ok' mới là thành công. Trước đây mọi status không có trong bảng trên
+            // rơi thẳng xuống nhánh dưới -> báo "đã rút" dù RPC từ chối (thành công giả).
+            if (r.status !== 'ok') return replyEmbed('error', 'withdraw_title', 'error_generic');
             return replyEmbed('success', 'withdraw_title', 'withdraw_success', { amount: fmt(amount, locale), currency: C });
         }
 

@@ -204,3 +204,43 @@ test('KINH TẾ #6 — Hệ số nhân luôn nằm trong biên đã công bố',
         }
     }
 });
+
+// ------------------------------------------------------------
+test('KINH TẾ #9 — XP bang không farm được bằng vòng lặp nạp/rút', () => {
+    // BỐI CẢNH: `clan_deposit` (0034) cộng CẢ bank LẪN xp. Nếu `clan_withdraw`
+    // chỉ trả bank mà giữ xp thì nạp-rồi-rút là vòng lặp chi phí ròng = 0 đẩy xp
+    // lên vô hạn, mà cấp bang = floor(sqrt(xp/10000)) + 1 quyết định cổ tức
+    // `cấp * 100`/người/ngày rút ra khỏi quỹ bang (claim_daily, 0081) và hiện ở
+    // /clan info, /clan list, /status. Vá ở 0128 — gate này giữ nó không tái phát.
+    const migDir = path.join(ROOT, 'supabase', 'migrations');
+    const files = fs.readdirSync(migDir).filter(f => f.endsWith('.sql')).sort();
+
+    // Hàm được CREATE OR REPLACE nhiều lần -> chỉ bản ở file số CAO NHẤT là bản sống.
+    const bodyOf = (fnName) => {
+        let live = null;
+        for (const f of files) {
+            const sql = fs.readFileSync(path.join(migDir, f), 'utf8');
+            const re = new RegExp(
+                'create\\s+or\\s+replace\\s+function\\s+(?:public\\.)?' + fnName +
+                '\\s*\\([\\s\\S]*?\\$(\\w*)\\$([\\s\\S]*?)\\$\\1\\$', 'gi');
+            let m;
+            while ((m = re.exec(sql)) !== null) live = { file: f, body: m[2] };
+        }
+        return live;
+    };
+
+    const dep = bodyOf('clan_deposit');
+    const wit = bodyOf('clan_withdraw');
+    assert.ok(dep, 'Không tìm thấy định nghĩa clan_deposit nào trong migrations');
+    assert.ok(wit, 'Không tìm thấy định nghĩa clan_withdraw nào trong migrations');
+
+    const depAddsXp = /\bxp\s*=\s*xp\s*\+/i.test(dep.body);
+    const witCutsXp = /\bxp\s*=\s*(greatest\s*\([^)]*)?xp\s*-/i.test(wit.body);
+
+    // Bất biến: hễ nạp CÓ sinh xp thì rút PHẢI tiêu xp. Nếu sau này ai đó tách xp
+    // khỏi tiền (nạp không cộng xp nữa) thì vế trái sai -> gate tự nhường, không cản.
+    assert.ok(!depAddsXp || witCutsXp,
+        `clan_deposit (${dep.file}) cộng xp nhưng clan_withdraw (${wit.file}) KHÔNG trừ xp ` +
+        '-> nạp rồi rút là vòng lặp farm cấp bang miễn phí. ' +
+        'Hoặc bỏ `xp = xp + ...` ở deposit, hoặc thêm `xp = greatest(0, xp - ...)` ở withdraw.');
+});

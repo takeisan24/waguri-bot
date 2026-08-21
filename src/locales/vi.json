@@ -562,6 +562,7 @@
       "deposit_success": "Cậu đã góp **{amount}** {currency} vào quỹ bang. Quỹ hiện có: **{bank}** {currency}.",
       "err_not_leader": "Chỉ trưởng bang mới thực hiện được thao tác này nhé~",
       "err_poor_clan": "Quỹ bang chỉ còn **{bank}** {currency}, không đủ~",
+      "err_bad_amount": "Số tiền không hợp lệ — hãy nhập một số lớn hơn 0 nhé~",
       "withdraw_success": "Đã rút **{amount}** {currency} từ quỹ bang về ví của cậu.",
       "err_kick_self": "Không tự đuổi mình được đâu~ 😄",
       "err_kick_not_member": "<@{user}> không ở trong bang của cậu~",

@@ -562,6 +562,7 @@
       "deposit_success": "You donated **{amount}** {currency} to the clan funds. Total funds: **{bank}** {currency}.",
       "err_not_leader": "Only the clan leader can perform this action~",
       "err_poor_clan": "The clan funds only have **{bank}** {currency}, which is not enough~",
+      "err_bad_amount": "Invalid amount — please enter a number greater than 0~",
       "withdraw_success": "Withdrew **{amount}** {currency} from clan funds to your wallet.",
       "err_kick_self": "You cannot kick yourself~ 😄",
       "err_kick_not_member": "<@{user}> is not a member of your clan~",
