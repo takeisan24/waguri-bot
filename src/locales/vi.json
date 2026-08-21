@@ -56,6 +56,10 @@
     "retry_later": "Ơ, có lỗi rồi, cậu thử lại sau nhé~ 🌸",
     "success_title": "✅ Thành công",
     "warning_title": "⚠️ Cảnh báo",
+    "goodbye": {
+      "title": "🍂・Tạm biệt một người bạn...",
+      "desc": "**{user}** vừa rời khỏi **{guild}** rồi... 🥺\n\nTiệm bánh Gekka lại vắng thêm một chỗ ngồi. Tớ sẽ giữ lại phần bánh của cậu ấy, lỡ đâu một ngày nào đó cậu ấy quay lại nhỉ~ 🍰\n\n*Server mình còn **{count}** thành viên. Cảm ơn cậu vì đã từng ở đây~* 💕"
+    },
     "welcome": {
       "title": "🌸・Chào mừng thành viên mới!",
       "desc": "**Xin chào {user}** — tớ là **Waguri Kaoruko**, quản lý tiệm bánh Gekka! 🍰\n\nTớ rất vui vì cậu đã ghé thăm **{guild}** đó~ Cậu sẽ thích ở đây mà!\n\n**Bắt đầu nhé:**\n> 📜 Hãy làm quen với các kênh của server nha.\n> 🎁 Gõ `/start` để nhận **quà chào mừng** và bắt đầu hành trình! 🌸\n\n*Chúc cậu có những giây phút thật ngọt ngào bên mọi người~* 💕"
@@ -1547,6 +1551,8 @@
       "welcome_channel_removed": "✅ Đã tắt tính năng chào mừng thành viên mới.",
       "welcome_role_set": "✅ Đã đặt auto-role khi tham gia là <@&{roleId}>.",
       "welcome_role_removed": "✅ Đã tắt tự động gán role khi tham gia.",
+      "goodbye_channel_set": "✅ Đã đặt kênh tạm biệt là <#{channelId}>.",
+      "goodbye_channel_removed": "✅ Đã tắt tính năng tạm biệt thành viên rời server.",
       "announcement_channel_set": "✅ Đã đặt kênh nhận thông báo cập nhật tự động là <#{channelId}>.",
       "announcement_channel_removed": "✅ Đã tắt nhận thông báo cập nhật tự động.",
       "language_success_en": "✅ Server language has been set to **English** 🇬🇧.",
@@ -1560,11 +1566,13 @@
       "field_police_jail": "Tạm giam (trò may rủi)",
       "field_welcome_channel": "Kênh chào mừng",
       "field_welcome_role": "Auto-role gán tự động",
+      "field_goodbye_channel": "Kênh tạm biệt",
       "field_language": "Ngôn ngữ / Language",
       "field_announcement_channel": "Kênh nhận thông báo cập nhật",
       "val_not_set": "*(chưa đặt)*",
       "val_all_channels": "*(mọi kênh)*",
       "val_disabled_welcome": "*(tắt chào mừng)*",
+      "val_disabled_goodbye": "*(tắt tạm biệt)*",
       "val_disabled_role": "*(tắt auto-role)*",
       "val_disabled_announcement": "*(tắt thông báo)*",
       "status_enabled_emoji": "🟢 Bật",

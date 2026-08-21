@@ -24,6 +24,8 @@ module.exports = {
             .addChannelOption(o => o.setName('channel').setDescription('Kênh text').addChannelTypes(ChannelType.GuildText)))
         .addSubcommand(s => s.setName('welcome-role').setDescription('Đặt role tự động gán khi có người tham gia (bỏ trống để tắt)')
             .addRoleOption(o => o.setName('role').setDescription('Role gán tự động')))
+        .addSubcommand(s => s.setName('goodbye-channel').setDescription('Đặt kênh tạm biệt thành viên rời server (bỏ trống để tắt)')
+            .addChannelOption(o => o.setName('channel').setDescription('Kênh text').addChannelTypes(ChannelType.GuildText)))
         .addSubcommand(s => s.setName('announcement-channel').setDescription('Đặt kênh nhận thông báo cập nhật tự động của Waguri (bỏ trống để tắt)')
             .addChannelOption(o => o.setName('channel').setDescription('Kênh text').addChannelTypes(ChannelType.GuildText)))
         .addSubcommand(s => s.setName('language').setDescription('Đặt ngôn ngữ hiển thị cho bot (Set server language)')
@@ -130,6 +132,15 @@ module.exports = {
             return interaction.editReply({ embeds: [embed] });
         }
 
+        if (sub === 'goodbye-channel') {
+            const ch = interaction.options.getChannel('channel');
+            await db.setGuildSetting(gid, 'goodbye_channel', ch ? ch.id : '');
+            const embed = buildWaguriEmbed(interaction, 'success', {
+                description: ch ? t(locale, 'commands.config.goodbye_channel_set', { channelId: ch.id }) : t(locale, 'commands.config.goodbye_channel_removed')
+            });
+            return interaction.editReply({ embeds: [embed] });
+        }
+
         if (sub === 'announcement-channel') {
             const ch = interaction.options.getChannel('channel');
             await db.setGuildSetting(gid, 'announcement_channel', ch ? ch.id : '');
@@ -178,6 +189,7 @@ module.exports = {
                     { name: t(locale, 'commands.config.field_police_jail'), value: s.police_jail === '0' ? t(locale, 'commands.config.status_disabled_emoji') : t(locale, 'commands.config.status_enabled_emoji'), inline: true },
                     { name: t(locale, 'commands.config.field_welcome_channel'), value: s.welcome_channel ? `<#${s.welcome_channel}>` : t(locale, 'commands.config.val_disabled_welcome'), inline: true },
                     { name: t(locale, 'commands.config.field_welcome_role'), value: s.welcome_role ? `<@&${s.welcome_role}>` : t(locale, 'commands.config.val_disabled_role'), inline: true },
+                    { name: t(locale, 'commands.config.field_goodbye_channel'), value: s.goodbye_channel ? `<#${s.goodbye_channel}>` : t(locale, 'commands.config.val_disabled_goodbye'), inline: true },
                     { name: t(locale, 'commands.config.field_language'), value: s.language === 'en' ? '🇬🇧 English' : '🇻🇳 Tiếng Việt', inline: true },
                     { name: t(locale, 'commands.config.field_announcement_channel'), value: s.announcement_channel ? `<#${s.announcement_channel}>` : t(locale, 'commands.config.val_disabled_announcement'), inline: false }
                 ]

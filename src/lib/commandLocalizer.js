@@ -396,6 +396,7 @@ const SUBCOMMAND_DESCRIPTIONS = {
     "config.gambling": { vi: "Bật/tắt trò may rủi (bài cào, tài xỉu, xóc đĩa…)", en: "Toggle gambling minigames" },
     "config.welcome-channel": { vi: "Đặt kênh chào mừng thành viên mới (bỏ trống để tắt)", en: "Set welcome channel (empty to disable)" },
     "config.welcome-role": { vi: "Đặt role tự động gán khi gia nhập (bỏ trống để tắt)", en: "Set auto-join role (empty to disable)" },
+    "config.goodbye-channel": { vi: "Đặt kênh tạm biệt thành viên rời server (bỏ trống để tắt)", en: "Set goodbye channel (empty to disable)" },
     "config.announcement-channel": { vi: "Đặt kênh nhận thông báo cập nhật", en: "Set update announcements channel" },
     "config.language": { vi: "Đặt ngôn ngữ hiển thị cho bot", en: "Set bot display language" },
     "config.view": { vi: "Xem cấu hình hiện tại của máy chủ", en: "View current server configuration" },

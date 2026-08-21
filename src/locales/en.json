@@ -56,6 +56,10 @@
     "retry_later": "Oops, an error occurred, please try again later~ 🌸",
     "success_title": "✅ Success",
     "warning_title": "⚠️ Warning",
+    "goodbye": {
+      "title": "🍂・Farewell, dear friend...",
+      "desc": "**{user}** has just left **{guild}**... 🥺\n\nOne more empty seat at Gekka Bakery. I will keep their slice of cake warm, just in case they come back someday~ 🍰\n\n*We still have **{count}** members here. Thank you for the time you spent with us~* 💕"
+    },
     "welcome": {
       "title": "🌸・Welcome new member!",
       "desc": "**Hello {user}** — I'm **Waguri Kaoruko**, the manager of Gekka Bakery! 🍰\n\nI'm so glad you visited **{guild}**~ You will love it here!\n\n**Let's get started:**\n> 📜 Get to know the server channels.\n> 🎁 Type `/start` to claim your **welcome gift** and begin your journey! 🌸\n\n*Wishing you sweet moments with everyone~* 💕"
@@ -1547,6 +1551,8 @@
       "welcome_channel_removed": "✅ Disabled welcome message for new members.",
       "welcome_role_set": "✅ Set auto-role for new members to <@&{roleId}>.",
       "welcome_role_removed": "✅ Disabled auto-role for new members.",
+      "goodbye_channel_set": "✅ Set goodbye channel to <#{channelId}>.",
+      "goodbye_channel_removed": "✅ Disabled goodbye message for leaving members.",
       "announcement_channel_set": "✅ Set auto-announcement channel to <#{channelId}>.",
       "announcement_channel_removed": "✅ Disabled auto-announcements.",
       "language_success_en": "✅ Server language has been set to **English** 🇬🇧.",
@@ -1560,11 +1566,13 @@
       "field_police_jail": "Jail (Gambling Timeout)",
       "field_welcome_channel": "Welcome Channel",
       "field_welcome_role": "Auto-assign Role",
+      "field_goodbye_channel": "Goodbye Channel",
       "field_language": "Language / Ngôn ngữ",
       "field_announcement_channel": "Update Announcement Channel",
       "val_not_set": "*(not configured)*",
       "val_all_channels": "*(all channels)*",
       "val_disabled_welcome": "*(disabled welcome)*",
+      "val_disabled_goodbye": "*(disabled goodbye)*",
       "val_disabled_role": "*(disabled auto-role)*",
       "val_disabled_announcement": "*(disabled update announcements)*",
       "status_enabled_emoji": "🟢 Enabled",
