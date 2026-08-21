@@ -1147,10 +1147,10 @@
       "requested_by": "Requested by {user} • {original}"
     },
     "premium": {
-      "title": "💝 Support Waguri",
+      "title": "💎 Waguri Premium",
       "active_desc": "You are currently a **Premium** member 💎 — expires <t:{time}:R>. Thank you so much~ 🌸\nWant to renew? Visit the **[Premium Page]({url})** 💕",
-      "free_desc": "You're on the **Free** plan. Upgrade to Premium to chat with me more freely~ 💕\n👉 Buy at the **[Premium page]({url})** — scan the VietQR, then press \"I have transferred\". The owner verifies & activates manually (usually same day) 🌸",
-      "field_ai_quota": "💬 AI chats today",
+      "free_desc": "You are currently on the **Free** plan. Upgrade to Premium to chat with me more freely~ 💕\n👉 Purchase at the **[Premium Page]({url})** — scan VietQR, activated **automatically** within seconds!",
+      "field_ai_quota": "💬 Daily AI Chat Quota",
       "field_benefits": "🎁 Premium Benefits",
       "benefits_desc": "• **{ai_quota} messages**/day (10x more)\n• **+{income_bonus}% income** when /work /fish /mine /chop\n• Profile badge 💎\n• Priority access to new features",
       "field_pricing": "💰 Pricing Plans",
@@ -1159,34 +1159,7 @@
         "m1": "1 month",
         "m3": "3 months",
         "m6": "6 months"
-      },
-      "hub_desc": "Waguri runs on **one person's** own pocket money 🌸 Everything you send goes straight to server & API bills so I can stay here with you~\n\nPick either way below — **both mean just as much to me** 💕",
-      "hub_desc_active": "You're a **Premium** member 💎 — expires <t:{time}:R>. Thank you so much 🌸\n\nWant to renew or chip in again? Just press a button below~ 💕",
-      "field_donate": "☕ Free-amount support",
-      "donate_desc": "Any amount means a lot, even 10k~ **You get no in-game perks at all** — just a permanent {emoji} **Supporter** badge and your name listed right below 🌸",
-      "field_premium": "💎 Waguri Premium",
-      "premium_desc": "Real perks, billed monthly:\n• **{ai_quota}** AI chats/day (normally only {free_quota})\n• **+{income_bonus}%** income from work\n• 💎 badge on your profile + early access to new features\n\n{prices}",
-      "field_supporters": "🌸 People who supported Waguri",
-      "currency": " VND",
-      "amount_freeform": "**Up to you** (type it in your banking app)",
-      "btn_donate": "Support (any amount)",
-      "btn_buy_m1": "💎 1 month",
-      "btn_buy_m3": "💎 3 months",
-      "btn_buy_m6": "💎 6 months",
-      "btn_claimed": "✅ I have transferred",
-      "qr_donate_title": "💝 Scan to support Waguri",
-      "qr_premium_title": "💎 Scan to buy Waguri Premium",
-      "qr_desc": "Open your banking app and scan the code below~\n\n⚠️ **Keep the transfer message `{code}` exactly as is** — it's the only way I can tell the money is yours. Once you've sent it, press the button below to let me know 🌸",
-      "qr_bank": "Bank",
-      "qr_account": "Account number",
-      "qr_holder": "Account holder",
-      "qr_amount": "Amount",
-      "qr_memo": "📋 Transfer message (required)",
-      "claim_ok_title": "🌸 Got it, thank you!",
-      "claim_ok_desc": "Thank you so much 💕 I've notified the bot owner about order `{code}`.\n\nThey'll check their banking app and activate it for you — usually the same day. I'll DM you the moment it's done~ (go have fun in the meantime 🌸)",
-      "claim_already": "You've already reported this order (or it's been handled)~ Just hang tight for the owner 🌸",
-      "order_failed": "Oops, I couldn't create the order right now 🥺 Please try again in a few minutes!",
-      "not_configured": "The bot owner hasn't set up a receiving account yet, so this is taking a little nap 🌸"
+      }
     },
     "profile_ctx": {
       "err_bot": "Bots do not have player profiles~ 🌸",
@@ -2616,17 +2589,6 @@
       "dm_vote_streak_bonus": " (streak bonus +{amount} {currency})",
       "dm_premium_thanks": "🌸 Thank you for upgrading to **Waguri Premium** 💎!\nI have activated **+{months} months** for you~{until}\nType `/premium` to see your perks 💕",
       "dm_premium_until": " Expires <t:{time}:R>."
-    },
-    "premiumOrders": {
-      "claim_title": "💸 Someone just reported a transfer!",
-      "claim_desc": "**{name}** (<@{user}>) reported paying for a Premium order.\n\n**Order code:** `{code}`\n**Amount:** {amount} VND · {plan} plan ({months} months)\n\nOpen your banking app and check for a transaction of that exact amount with the message `{code}`. If it's there, press the button below — I'll activate it and DM them a thank-you for you 🌸",
-      "btn_approve": "✅ Activate Premium",
-      "dm_failed": "⚠️ *Couldn't DM them (their DMs are probably closed) — Premium was still activated normally.*",
-      "claim_donate_title": "💝 Someone just supported you!",
-      "claim_donate_desc": "**{name}** (<@{user}>) reported a SUPPORT transfer (not a Premium purchase).\n\n**Order code:** `{code}`\n**Amount:** {amount}\n\nCheck your banking app for a transaction with the message `{code}`. If it's there, press the button below — I'll grant the 💝 badge and thank them for you 🌸",
-      "btn_approve_donate": "💝 Confirm & grant badge",
-      "amount_freeform": "Their choice (free amount)",
-      "dm_donate_thanks": "🌸 Thank you for supporting Waguri 💝!\nThe owner just confirmed it~ I've given you the permanent **💝 Supporter** badge, and your name is now listed in `/premium` 💕\nType `/cosmetic badge-equip` to show it off on your profile~"
     }
   },
   "species": {

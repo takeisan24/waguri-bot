@@ -394,7 +394,7 @@ const SUBCOMMAND_DESCRIPTIONS = {
     "config.pvp": { vi: "Bật/tắt PvP: cướp /rob + trộm heo/cây", en: "Toggle PvP: rob / thievery" },
     "config.police-jail": { vi: "Bật/tắt tạm giam khi gặp công an", en: "Toggle Discord timeout for police check" },
     "config.gambling": { vi: "Bật/tắt trò may rủi (bài cào, tài xỉu, xóc đĩa…)", en: "Toggle gambling minigames" },
-    "config.levelup": { vi: "Bật/tắt lời chúc mừng khi thành viên lên cấp nhờ chat", en: "Toggle the congratulation message when members level up from chatting" },
+    "config.levelup": { vi: "Bật/tắt báo lên cấp khi trò chuyện", en: "Toggle level-up notices in chat" },
     "config.welcome-channel": { vi: "Đặt kênh chào mừng thành viên mới (bỏ trống để tắt)", en: "Set welcome channel (empty to disable)" },
     "config.welcome-role": { vi: "Đặt role tự động gán khi gia nhập (bỏ trống để tắt)", en: "Set auto-join role (empty to disable)" },
     "config.goodbye-channel": { vi: "Đặt kênh tạm biệt thành viên rời server (bỏ trống để tắt)", en: "Set goodbye channel (empty to disable)" },
