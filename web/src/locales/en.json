@@ -79,7 +79,11 @@
       "minigames_title": "🎲 Fun Minigames",
       "minigames_desc": "Test your luck with Loto, Bingo, Dice, Fish-Prawn-Crab, and intense card games right inside your Discord server.",
       "clans_title": "🏰 Clans & Bakeries",
-      "clans_desc": "Form clans to grind, distribute clan dividends, manage Gekka Bakery together, and hire NPC staff to get rich collectively."
+      "clans_desc": "Form clans to grind, distribute clan dividends, manage Gekka Bakery together, and hire NPC staff to get rich collectively.",
+      "antinuke_title": "🛡️ Anti-Nuke Protection",
+      "antinuke_desc": "Detects mass channel deletions, role wipes and ban waves, blocks them instantly and reverts the damage, with per-server thresholds.",
+      "study_title": "📚 Pomodoro Study Room",
+      "study_desc": "Focus timers following the Pomodoro cycle right inside Discord, tracking your study hours, with a Lofi study room on the web."
     },
     "stats": {
       "servers": "Active Servers",

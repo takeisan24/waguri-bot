@@ -34,7 +34,7 @@
     "guild_create": {
       "support_link": "\n> 🛟 **Cần giúp đỡ?** [Vào server hỗ trợ]({url}) nha!",
       "welcome_title": "🌸・Xin chào, mình là Waguri!",
-      "welcome_desc": "*Hân hạnh được chào đón các quý khách ghé thăm tiệm bánh Gekka!* 🍰\n\nCảm ơn cậu rất nhiều vì đã mời tớ ghé thăm **{guild}**! Tớ sẽ là người bạn đồng hành kiêm \"quản lý tiệm bánh\" siêu năng nổ của cậu đó~\n\n**✨ Các Dịch Vụ Tại Tiệm:**\n> 🎁 **Người mới bắt đầu từ đây:** Gõ `/start` để nhận **quà chào mừng** & hướng dẫn nhanh nha!\n> 💬 **Trò chuyện cùng Waguri:** Gõ `/ask` hoặc tag tớ để tớ chia sẻ chuyện học ở Kikyo hay làm bánh cùng Rintaro nha!\n> 💼 **Lao động & Kinh tế:** Kiếm tiền mua bánh ngọt qua `/work`, nhận trợ cấp `/daily`, mua sắm `/store`.\n> 🎲 **Giải trí cùng bạn bè:** Thử sức với `/taixiu`, `/blackjack`, `/masoi` cực kỳ kịch tính.\n> 📜 **Sổ tay hướng dẫn:** Gõ `/help` để tớ chỉ dẫn chi tiết cách dùng các lệnh nhé!{supportLink}\n\n*Hy vọng chúng mình sẽ có những kỷ niệm thật ngọt ngào bên nhau!* 🌸",
+      "welcome_desc": "*Hân hạnh được chào đón các quý khách ghé thăm tiệm bánh Gekka!* 🍰\n\nCảm ơn cậu rất nhiều vì đã mời tớ ghé thăm **{guild}**! Tớ sẽ là người bạn đồng hành kiêm \"quản lý tiệm bánh\" siêu năng nổ của cậu đó~\n\n**✨ Các Dịch Vụ Tại Tiệm:**\n> 🎁 **Người mới bắt đầu từ đây:** Gõ `/start` để nhận **quà chào mừng** & hướng dẫn nhanh nha!\n> 💬 **Trò chuyện cùng Waguri:** Gõ `/ask` hoặc tag tớ để tớ chia sẻ chuyện học ở Kikyo hay làm bánh cùng Rintaro nha!\n> 💼 **Lao động & Kinh tế:** Kiếm tiền mua bánh ngọt qua `/work`, nhận trợ cấp `/daily`, mua sắm `/store`.\n> 🎲 **Giải trí cùng bạn bè:** Thử sức với `/taixiu`, `/blackjack`, `/masoi` cực kỳ kịch tính.\n> ⚙️ **Dành cho chủ server:** Gõ `/config` để đặt kênh chào mừng, kênh thông báo cập nhật và bật tắt tính năng nha!\n> 📜 **Sổ tay hướng dẫn:** Gõ `/help` để tớ chỉ dẫn chi tiết cách dùng các lệnh nhé!{supportLink}\n\n*Hy vọng chúng mình sẽ có những kỷ niệm thật ngọt ngào bên nhau!* 🌸",
       "welcome_footer": "Hỗ trợ cả tiền tố {prefix} (ví dụ: {prefix}help) • Cùng chơi vui vẻ nha!",
       "game_timeout_cancelled": "Ván {game} đã bị tự động hủy và hoàn vé do không có hoạt động nào trong 10 phút qua! ⏰🌸"
     },
@@ -1229,7 +1229,8 @@
       "success_title": "📢 Gửi thông báo thành công!",
       "success_desc": "Đã phát thông báo cập nhật tới **{sent}** server/kênh và đã lưu trữ thông báo để xem qua `/announcement view`.\n❌ Thất bại: **{fail}** server.",
       "clear_success_title": "🗑️ Dọn dẹp thông báo thành công!",
-      "clear_success_desc": "Đã xóa toàn bộ thông báo cũ trên hệ thống và reset lịch sử commit. Bạn có thể tự do tạo thông báo mới bằng `/announcement auto`!"
+      "clear_success_desc": "Đã xóa toàn bộ thông báo cũ trên hệ thống và reset lịch sử commit. Bạn có thể tự do tạo thông báo mới bằng `/announcement auto`!",
+      "nhac_kenh": "-# ⚙️ Chủ server ơi, chạy `/config announcement-channel` để tin cập nhật sau vào đúng kênh cậu muốn nhé!"
     },
     "help": {
       "err_title": "🔎・Không tìm thấy lệnh",

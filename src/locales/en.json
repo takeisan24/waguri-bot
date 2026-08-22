@@ -34,7 +34,7 @@
     "guild_create": {
       "support_link": "\n> 🛟 **Need help?** [Join Support Server]({url})!",
       "welcome_title": "🌸・Hello, I'm Waguri!",
-      "welcome_desc": "*A warm welcome to Gekka Bakery!* 🍰\n\nThank you so much for inviting me to **{guild}**! I'll be your energetic companion and \"bakery manager\"~\n\n**✨ Our Services:**\n> 🎁 **New to the shop?** Type `/start` to claim your **welcome gift** & quick guide!\n> 💬 **Chat with Waguri:** Type `/ask` or tag me to chat about my studies at Kikyo or baking with Rintaro!\n> 💼 **Work & Economy:** Earn money for sweets via `/work`, claim daily allowance via `/daily`, shop via `/store`.\n> 🎲 **Fun with friends:** Test your luck with `/taixiu`, `/blackjack`, `/masoi` (Werewolf).\n> 📜 **Help Guide:** Type `/help` for detailed command instructions!{supportLink}\n\n*Hope we'll create sweet memories together!* 🌸",
+      "welcome_desc": "*A warm welcome to Gekka Bakery!* 🍰\n\nThank you so much for inviting me to **{guild}**! I'll be your energetic companion and \"bakery manager\"~\n\n**✨ Our Services:**\n> 🎁 **New to the shop?** Type `/start` to claim your **welcome gift** & quick guide!\n> 💬 **Chat with Waguri:** Type `/ask` or tag me to chat about my studies at Kikyo or baking with Rintaro!\n> 💼 **Work & Economy:** Earn money for sweets via `/work`, claim daily allowance via `/daily`, shop via `/store`.\n> 🎲 **Fun with friends:** Test your luck with `/taixiu`, `/blackjack`, `/masoi` (Werewolf).\n> ⚙️ **For server owners:** Type `/config` to set the welcome channel, the update announcement channel, and toggle features!\n> 📜 **Help Guide:** Type `/help` for detailed command instructions!{supportLink}\n\n*Hope we'll create sweet memories together!* 🌸",
       "welcome_footer": "Prefix {prefix} is also supported (e.g. {prefix}help) • Have fun playing!",
       "game_timeout_cancelled": "The {game} game has been automatically cancelled and refunded due to inactivity in the last 10 minutes! ⏰🌸"
     },
@@ -1229,7 +1229,8 @@
       "success_title": "📢 Announcement sent successfully!",
       "success_desc": "Broadcasted update announcement to **{sent}** servers/channels and saved the announcement to be viewed via `/announcement view`.\n❌ Failed: **{fail}** servers.",
       "clear_success_title": "🗑️ Announcement cleared successfully!",
-      "clear_success_desc": "Cleared all old announcements from system and reset commit history. You can now generate a fresh announcement using `/announcement auto`!"
+      "clear_success_desc": "Cleared all old announcements from system and reset commit history. You can now generate a fresh announcement using `/announcement auto`!",
+      "nhac_kenh": "-# ⚙️ Server owner: run `/config announcement-channel` so future updates land in the channel you want!"
     },
     "help": {
       "err_title": "🔎・Command Not Found",

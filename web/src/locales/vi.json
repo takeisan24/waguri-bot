@@ -79,7 +79,11 @@
       "minigames_title": "🎲 Minigames Giải Trí",
       "minigames_desc": "Thử thách vận may cùng Loto, Bingo, Tài Xỉu, Bầu Cua, và các ván bài kịch tính ngay trong Discord server.",
       "clans_title": "🏰 Bang Hội & Tiệm Bánh",
-      "clans_desc": "Lập bang cày cuốc, chia cổ tức bang hội, cùng quản lý Tiệm Bánh Gekka, thuê NPC làm việc để làm giàu tập thể."
+      "clans_desc": "Lập bang cày cuốc, chia cổ tức bang hội, cùng quản lý Tiệm Bánh Gekka, thuê NPC làm việc để làm giàu tập thể.",
+      "antinuke_title": "🛡️ Chống Phá Hoại Server",
+      "antinuke_desc": "Phát hiện xoá kênh, xoá role hay ban hàng loạt, chặn ngay lập tức rồi tự hoàn tác, với ngưỡng cảnh báo riêng cho từng server.",
+      "study_title": "📚 Phòng Học Pomodoro",
+      "study_desc": "Hẹn giờ tập trung theo chu kỳ Pomodoro ngay trong Discord, ghi nhận giờ học của cậu, kèm phòng nhạc Lofi ở trên web."
     },
     "stats": {
       "servers": "Server hoạt động",

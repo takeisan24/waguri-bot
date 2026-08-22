@@ -158,16 +158,22 @@ module.exports = {
                 try {
                     const s = await db.getGuildSettings(gid);
                     let channel = null;
+                    let luiVeMacDinh = false;
 
                     if (s?.announcement_channel) {
                         channel = await guild.channels.fetch(s.announcement_channel).catch(() => null);
                     } else if (guild.systemChannel && guild.members.me.permissionsIn(guild.systemChannel).has(PermissionFlagsBits.SendMessages)) {
                         // Chỉ fallback duy nhất vào systemChannel của server, không tự tiện gửi vào chat tổng
                         channel = guild.systemChannel;
+                        luiVeMacDinh = true;
                     }
 
                     if (channel) {
-                        await channel.send({ embeds: [embed] });
+                        // Server chưa đặt kênh thì kèm một dòng nhắc admin. Nhắc đúng lúc, không
+                        // tốn thêm tin nhắn nào — và server đã đặt rồi sẽ không thấy dòng này.
+                        await channel.send(luiVeMacDinh
+                            ? { content: t(locale, 'commands.announcement.nhac_kenh'), embeds: [embed] }
+                            : { embeds: [embed] });
                         sentCount++;
                     } else {
                         failCount++;
