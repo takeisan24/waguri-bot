@@ -1230,7 +1230,8 @@
       "success_desc": "Đã phát thông báo cập nhật tới **{sent}** server/kênh và đã lưu trữ thông báo để xem qua `/announcement view`.\n❌ Thất bại: **{fail}** server.",
       "clear_success_title": "🗑️ Dọn dẹp thông báo thành công!",
       "clear_success_desc": "Đã xóa toàn bộ thông báo cũ trên hệ thống và reset lịch sử commit. Bạn có thể tự do tạo thông báo mới bằng `/announcement auto`!",
-      "nhac_kenh": "-# ⚙️ Chủ server ơi, chạy `/config announcement-channel` để tin cập nhật sau vào đúng kênh cậu muốn nhé!"
+      "nhac_kenh": "-# ⚙️ Chủ server ơi, chạy `/config announcement-channel` để tin cập nhật sau vào đúng kênh cậu muốn nhé!",
+      "nhac_kenh_hong": "-# ⚠️ Kênh thông báo cậu đặt không gửi được nữa (bị xoá, hoặc mình mất quyền gửi ở đó), nên tin này vào tạm đây. Chạy `/config announcement-channel` để đặt lại nha!"
     },
     "help": {
       "err_title": "🔎・Không tìm thấy lệnh",
