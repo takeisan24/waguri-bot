@@ -33,11 +33,16 @@ async function getBoard(type: "wealth" | "level" | "bakery", guild?: string): Pr
     const rows: Row[] = [];
 
     if (type === "bakery") {
-      const { data } = await admin
-        .from("bakeries")
-        .select("user_id, bakery_score, level, likes_count")
-        .order("bakery_score", { ascending: false })
-        .limit(10);
+      // Bản sao y hệt lỗi đã vá ở api/leaderboard/route.ts — cùng một truy vấn sai được
+      // chép ra hai nơi, nên vá một chỗ là còn nguyên chỗ kia.
+      //
+      // `bakeries` KHÔNG có cột `bakery_score`; điểm số được TÍNH trong RPC
+      // (level*1000 + likes*50 + số nhân viên*100). Select cột ma -> PostgREST trả lỗi ->
+      // `data` null -> bảng LUÔN rỗng, trông y như "chưa ai mở tiệm".
+      //
+      // RPC còn lọc `profile_public` và `exclude_from_economy`, thứ truy vấn thẳng không có.
+      const { data, error } = await admin.rpc("get_bakery_leaderboard", { p_limit: 10, p_offset: 0 });
+      if (error) console.error("[leaderboard] bakery RPC lỗi:", error.message);
       if (data) {
         for (const r of data) {
           rows.push({

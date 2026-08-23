@@ -38,20 +38,25 @@ export default async function BattlePassPage() {
   const [userRes, bpRes, itemsRes] = await Promise.all([
     admin.from("users").select("wallet").eq("user_id", id).maybeSingle(),
     admin.from("battle_pass_users").select("*").eq("user_id", id).eq("season_id", seasonId).maybeSingle(),
-    admin.from("items").select("id, name, emoji"),
+    // KHÔNG select `emoji`: bảng `items` không có cột đó (cột thật: id, name, price,
+    // category, type, rarity, description, season, shop_hidden, effect_*). Select cột ma
+    // làm PostgREST trả lỗi cho CẢ truy vấn, `data` thành null, `itemMap` rỗng, và trang
+    // hiện MÃ vật phẩm thô (`banh_mi`) thay vì tên đẹp ("Bánh Mì").
+    admin.from("items").select("id, name"),
   ]);
+  if (itemsRes?.error) console.error("[pass] không tải được danh mục vật phẩm:", itemsRes.error.message);
 
   const wallet = Number(userRes?.data?.wallet || 0);
   const bp = bpRes?.data ?? null;
 
   // Tạo map tra cứu vật phẩm để hiển thị tên đẹp và emoji
+  // `emoji` giữ trong kiểu vì BattlePassClient vẫn nhận trường đó, nhưng DB không có nguồn
+  // emoji cho vật phẩm nên nó luôn undefined — trước đây cũng vậy, chỉ khác là trước đây
+  // CẢ tên cũng mất theo vì truy vấn hỏng.
   const itemMap: { [id: string]: { name: string; emoji?: string } } = {};
   if (itemsRes?.data) {
     for (const item of itemsRes.data) {
-      itemMap[item.id] = {
-        name: item.name,
-        emoji: item.emoji || undefined,
-      };
+      itemMap[item.id] = { name: item.name };
     }
   }
 
