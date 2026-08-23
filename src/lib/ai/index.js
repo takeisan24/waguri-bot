@@ -164,7 +164,7 @@ function onCooldown(userId) {
  * Trò chuyện với Waguri.
  * Trả object: {ok:true, reply} | {ok:false, reason:'quota', used, cap, premium} | {ok:false, reason:'error'}
  */
-async function chatWithWaguri(channelId, userId, userName, userText, locale) {
+async function chatWithWaguri(channelId, userId, userName, userText, locale, anh = null) {
     // Quota AI hằng ngày (Premium nhiều lượt hơn).
     // FAIL-CLOSED: DB lỗi (q == null) -> KHÔNG gọi AI, tránh rò rỉ chi phí / lạm dụng khi quota
     // không đếm được. (Khác cooldown game vốn fail-open vì không tốn tiền.)
@@ -297,13 +297,13 @@ async function chatWithWaguri(channelId, userId, userName, userText, locale) {
     const modelToUse = q.premium ? config.AI.GEMINI_PREMIUM_MODEL : config.AI.GEMINI_MODEL;
     let reply;
     try {
-        reply = await provider.chat(systemPrompt, history, framed, { model: modelToUse });
+        reply = await provider.chat(systemPrompt, history, framed, { model: modelToUse, anh });
     } catch (error) {
         console.error('[AI ERROR] Gemini API failed:', error.message);
         if (q.premium && modelToUse !== config.AI.GEMINI_MODEL) {
             console.warn(`[AI WARNING] Premium model ${modelToUse} failed, falling back to base model:`, error.message);
             try {
-                reply = await provider.chat(systemPrompt, history, framed, { model: config.AI.GEMINI_MODEL });
+                reply = await provider.chat(systemPrompt, history, framed, { model: config.AI.GEMINI_MODEL, anh });
             } catch (fallbackError) {
                 console.error('[AI ERROR] Both Premium and Fallback base model failed:', fallbackError.message);
                 await db.refundAiQuota(userId);

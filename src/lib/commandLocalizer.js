@@ -576,6 +576,7 @@ const SUBCOMMAND_DESCRIPTIONS = {
 };
 
 const OPTION_DESCRIPTIONS = {
+    "ask.anh": { vi: "Gửi kèm một tấm ảnh cho Waguri xem (tuỳ chọn)", en: "Attach an image for Waguri to look at (optional)" },
     "antinuke.mode.mode": { vi: "Chế độ", en: "Mode" },
     "antinuke.lockdown.state": { vi: "Khoá hay mở", en: "Lock or unlock" },
     "antinuke.enable.enabled": { vi: "Bật lá chắn?", en: "Enable the shield?" },

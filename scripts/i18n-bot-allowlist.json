@@ -32,6 +32,7 @@
     "src/lib/noitu.js": "Từ điển trò Nối Từ — trò chơi tiếng Việt theo bản chất, không dịch được.",
     "src/lib/owner.js": "Log nội bộ.",
     "src/lib/season.js": "Tên mùa/lễ tiếng Việt (Tết Nguyên Đán…) — danh từ riêng.",
-    "src/lib/ai/dauVao.js": "Chuỗi là NHÃN GỬI CHO MODEL, không phải chữ người dùng đọc. Model nhận nhãn tiếng Việt rồi trả lời theo ngôn ngữ mà chỉ thị [Ngôn ngữ] trong systemPrompt ép — người dùng EN vẫn nhận câu trả lời tiếng Anh. Dịch nhãn sang EN chỉ tốn thêm token mà không đổi gì cho người đọc, vì persona vốn đã thuần tiếng Việt."
+    "src/lib/ai/dauVao.js": "Chuỗi là NHÃN GỬI CHO MODEL, không phải chữ người dùng đọc. Model nhận nhãn tiếng Việt rồi trả lời theo ngôn ngữ mà chỉ thị [Ngôn ngữ] trong systemPrompt ép — người dùng EN vẫn nhận câu trả lời tiếng Anh. Dịch nhãn sang EN chỉ tốn thêm token mà không đổi gì cho người đọc, vì persona vốn đã thuần tiếng Việt.",
+    "src/lib/ai/taiAnh.js": "Hai chuỗi là console.warn cho NGƯỜI VẬN HÀNH (bỏ ảnh host lạ, không tải được), không hiện ra Discord. Người dùng chỉ thấy Waguri trả lời bằng chữ; lý do bỏ ảnh nằm ở nhãn do dauVao.js sinh, và nhãn đó đi qua model rồi ra ngôn ngữ đúng."
   }
 }

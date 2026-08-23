@@ -176,6 +176,13 @@ async function buildPrefixInteraction(message, command, tokens) {
             getBoolean: (n) => (parsed.booleans[n] === undefined ? null : parsed.booleans[n]),
             getUser: (n) => (parsed.users[n] ?? null),
             getMember: (n) => (parsed.members[n] ?? null),
+            // Đường prefix không có ô chọn tệp như slash, nên người ta ĐÍNH KÈM THẲNG vào
+            // tin nhắn: `w!ask cái này là gì` + kéo ảnh vào. Trả đính kèm đầu tiên của tin,
+            // bất kể tên option — người gõ w! không biết option tên gì và cũng không cần biết.
+            //
+            // Thiếu hàm này thì `/ask anh:` xem được ảnh còn `w!ask` thì nuốt im lặng, tức
+            // đúng loại chênh lệch âm thầm giữa hai lối gọi mà đợt sửa w! ở 68e0ff3 vừa dọn.
+            getAttachment: () => (message.attachments?.first?.() ?? null),
             getChannel: (n) => (parsed.channels[n] ?? null),
             getRole: (n) => (parsed.roles[n] ?? null),
             getSubcommand: () => parsed.subcommand,

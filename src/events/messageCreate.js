@@ -7,6 +7,7 @@ const { PREFIX_ALIASES } = require('../lib/prefixTen');
 const { logError } = require('../lib/logger');
 const { chatWithWaguri, onCooldown } = require('../lib/ai');
 const { dungDauVao, ghep } = require('../lib/ai/dauVao');
+const { taiAnh } = require('../lib/ai/taiAnh');
 const { handleMessage: handleNoiTu } = require('../lib/noitu');
 const { announceLevelUp } = require('../lib/levelAnnounce');
 const { rateLimited } = require('../lib/ratelimit');
@@ -353,7 +354,11 @@ module.exports = {
                 guildLocale: message.guild?.preferredLocale
             });
 
-            const res = await chatWithWaguri(message.channelId, message.author.id, message.author.username, text, locale);
+            // Tải ảnh NGAY tại đây: URL đính kèm của Discord kèm chữ ký ?ex=&is=&hm= và sẽ
+            // hết hạn, nên không được để dành. Hỏng ảnh trả null và lượt chat vẫn chạy bằng chữ.
+            const anhGui = dv.anh ? await taiAnh(dv.anh) : null;
+
+            const res = await chatWithWaguri(message.channelId, message.author.id, message.author.username, text, locale, anhGui);
             if (!res.ok) {
                 if (res.reason === 'quota_global') {
                     // Ngân sách CHUNG cạn — lỗi không thuộc về người này, đừng nói "cậu hết lượt".

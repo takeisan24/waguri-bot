@@ -3,17 +3,33 @@ const { buildWaguriEmbed } = require('../../lib/embed');
 const { chatWithWaguri } = require('../../lib/ai');
 const config = require('../../config');
 const { getInteractionLanguage, t } = require('../../lib/i18n');
+const { dungDauVao, ghep } = require('../../lib/ai/dauVao');
+const { taiAnh } = require('../../lib/ai/taiAnh');
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('ask')
         .setDescription('Trò chuyện với Waguri 🌸')
-        .addStringOption(o => o.setName('message').setDescription('Cậu muốn nói gì với Waguri?').setRequired(true)),
+        .addStringOption(o => o.setName('message').setDescription('Cậu muốn nói gì với Waguri?').setRequired(true))
+        .addAttachmentOption(o => o.setName('anh').setDescription('Gửi kèm một tấm ảnh cho Waguri xem (tuỳ chọn)')),
     async execute(interaction) {
         await interaction.deferReply();
-        const text = interaction.options.getString('message');
+        const goc = interaction.options.getString('message');
         const locale = await getInteractionLanguage(interaction);
-        const res = await chatWithWaguri(interaction.channelId, interaction.user.id, interaction.user.username, text, locale);
+
+        // Dựng đầu vào qua CÙNG một đường với @mention, để hai lối gọi không lệch nhau.
+        const dinhKem = interaction.options.getAttachment?.('anh');
+        const dv = dungDauVao({
+            content: goc,
+            attachments: dinhKem ? new Map([['0', dinhKem]]) : new Map(),
+            stickers: new Map(),
+            author: interaction.user
+        });
+        const text = ghep(dv.text, dv.nhan);
+
+        // Tải ngay: URL đính kèm Discord có chữ ký hết hạn, không để dành được.
+        const anhGui = dv.anh ? await taiAnh(dv.anh) : null;
+        const res = await chatWithWaguri(interaction.channelId, interaction.user.id, interaction.user.username, text, locale, anhGui);
         if (!res.ok) {
             // Hết ngân sách CHUNG của cả dự án — không phải lỗi của riêng người này, nên
             // thông điệp cũng không nên đổ cho họ. Waguri nói là mình mệt, không nói "cậu hết lượt".

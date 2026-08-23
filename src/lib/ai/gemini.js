@@ -107,7 +107,17 @@ async function chat(systemPrompt, history, userText, options = {}) {
             role: m.role === 'assistant' ? 'model' : 'user',
             parts: [{ text: m.content }]
         }));
-        contents.push({ role: 'user', parts: [{ text: userText }] });
+        // Ảnh (nếu có) đứng TRƯỚC chữ: model đọc theo thứ tự, nhìn ảnh rồi mới đọc câu hỏi
+        // về nó thì bám sát hơn là ngược lại.
+        //
+        // `options.anh` là {mimeType, data} đã qua src/lib/ai/taiAnh.js. Không truyền thì
+        // parts y hệt bản cũ — announcement.js:108 và mọi lời gọi cũ không suy suyển.
+        const partsNguoiDung = [];
+        if (options.anh?.data && options.anh?.mimeType) {
+            partsNguoiDung.push({ inlineData: { mimeType: options.anh.mimeType, data: options.anh.data } });
+        }
+        partsNguoiDung.push({ text: userText });
+        contents.push({ role: 'user', parts: partsNguoiDung });
 
         const safetySettings = [
             { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' },
