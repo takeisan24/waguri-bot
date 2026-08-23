@@ -156,7 +156,10 @@
     "user_wealth_rank(p_user text)"
   ],
   "ham_ghi_cot_khong_ton_tai": [],
-  "ham_goi_bang_khong_ton_tai": [],
+  "ham_goi_bang_khong_ton_tai": [
+    "create_premium_order -> amount",
+    "create_premium_order -> months"
+  ],
   "indexes": [
     "achievements_pkey",
     "antinuke_actions_pkey",
@@ -212,6 +215,7 @@
     "police_heat_pkey",
     "premium_orders_code_key",
     "premium_orders_pkey",
+    "premium_plans_pkey",
     "quest_progress_pkey",
     "tickets_channel_id_key",
     "tickets_pkey",
@@ -509,6 +513,13 @@
       "ref:text",
       "status:text",
       "user_id:text"
+    ],
+    "premium_plans": [
+      "amount:integer",
+      "con_ban:boolean",
+      "months:integer",
+      "plan:text",
+      "sua_luc:timestamp with time zone"
     ],
     "quest_progress": [
       "claimed:jsonb",
