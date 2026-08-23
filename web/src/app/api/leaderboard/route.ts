@@ -20,11 +20,21 @@ export async function GET(request: Request) {
     const rows: Array<{ id: string; username: string; avatar: string | null; value: number; level?: number; likes?: number }> = [];
 
     if (type === "bakery") {
-      const { data } = await admin
-        .from("bakeries")
-        .select("user_id, bakery_score, level, likes_count")
-        .order("bakery_score", { ascending: false })
-        .limit(limit);
+      // Dùng RPC chứ KHÔNG truy vấn thẳng bảng, vì hai lý do đều đã đo được:
+      //
+      //  1. `bakeries` KHÔNG có cột `bakery_score` — nó được TÍNH trong RPC
+      //     (level*1000 + likes*50 + số nhân viên*100). Bản cũ select và order theo cột đó
+      //     nên PostgREST trả "column bakeries.bakery_score does not exist", `data` thành
+      //     null, và vì mã chỉ lấy `data` mà bỏ `error` nên lỗi bị nuốt sạch: bảng xếp hạng
+      //     tiệm bánh LUÔN rỗng, im lặng, không ai biết.
+      //  2. RPC lọc `COALESCE(u.profile_public, true)` — truy vấn thẳng thì không, tức người
+      //     đã chọn ẩn hồ sơ vẫn lộ ra (kèm nguyên user_id) như hai bảng xếp hạng kia đã
+      //     tránh được từ lâu.
+      const { data, error } = await admin.rpc("get_bakery_leaderboard", {
+        p_limit: limit,
+        p_offset: 0,
+      });
+      if (error) console.error("[leaderboard] bakery RPC lỗi:", error.message);
 
       if (data && data.length > 0) {
         for (const r of data) {
@@ -39,13 +49,14 @@ export async function GET(request: Request) {
         }
       }
     } else if (type === "level") {
-      const { data } = await admin
+      const { data, error } = await admin
         .from("users")
         .select("user_id, exp, username, avatar")
         .not("profile_public", "is", false) // tôn trọng hồ sơ ẩn (true/null = hiện, false = ẩn)
         .not("exclude_from_economy", "is", true) // ẩn tài khoản vận hành (0099)
         .order("exp", { ascending: false })
         .limit(limit);
+      if (error) console.error("[leaderboard] level lỗi:", error.message);
 
       if (data && data.length > 0) {
         for (const r of data) {
@@ -72,13 +83,14 @@ export async function GET(request: Request) {
           });
         }
       } else {
-        const { data: usersData } = await admin
+        const { data: usersData, error: usersErr } = await admin
           .from("users")
           .select("user_id, wallet, bank, username, avatar")
           .not("profile_public", "is", false) // tôn trọng hồ sơ ẩn
           .not("exclude_from_economy", "is", true) // ẩn tài khoản vận hành (0099)
           .order("wallet", { ascending: false })
           .limit(limit);
+        if (usersErr) console.error("[leaderboard] wealth dự phòng lỗi:", usersErr.message);
 
         if (usersData && usersData.length > 0) {
           for (const r of usersData) {
