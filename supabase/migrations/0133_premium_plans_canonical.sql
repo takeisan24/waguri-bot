@@ -56,7 +56,16 @@ BEGIN
     IF NOT v_plan.con_ban THEN
         RAISE EXCEPTION 'goi % da ngung ban', p_plan;
     END IF;
-    IF p_months IS DISTINCT FROM v_plan.months OR p_amount IS DISTINCT FROM v_plan.amount THEN
+    -- Chặn NULL riêng rồi so bằng `<>`, KHÔNG dùng `IS DISTINCT FROM`.
+    --
+    -- Lý do không phải thẩm mỹ: cổng vân tay schema_fingerprint() (0127) dò tham chiếu bảng
+    -- bằng regex bắt mọi thứ đứng sau từ khoá FROM. Cụm `IS DISTINCT FROM v_plan.months`
+    -- khiến nó tưởng `v_plan` là bảng không tồn tại và báo động giả. Viết tường minh vừa
+    -- tránh điểm mù đó, vừa nói rõ NULL là đầu vào SAI chứ không phải "khác giá".
+    IF p_months IS NULL OR p_amount IS NULL THEN
+        RAISE EXCEPTION 'thieu so thang hoac so tien khi tao don goi %', p_plan;
+    END IF;
+    IF p_months <> v_plan.months OR p_amount <> v_plan.amount THEN
         RAISE EXCEPTION 'don lech gia: goi % phai la % thang / % dong, ben goi dua % thang / % dong',
             p_plan, v_plan.months, v_plan.amount, p_months, p_amount;
     END IF;

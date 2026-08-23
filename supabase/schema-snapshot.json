@@ -156,10 +156,7 @@
     "user_wealth_rank(p_user text)"
   ],
   "ham_ghi_cot_khong_ton_tai": [],
-  "ham_goi_bang_khong_ton_tai": [
-    "create_premium_order -> amount",
-    "create_premium_order -> months"
-  ],
+  "ham_goi_bang_khong_ton_tai": [],
   "indexes": [
     "achievements_pkey",
     "antinuke_actions_pkey",
