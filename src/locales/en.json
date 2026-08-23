@@ -1798,7 +1798,7 @@
       "err_min": "Borrow at least **{min}** {currency}~",
       "err_max": "You can only borrow up to **{max}** {currency} at a time~",
       "proposal_title": "🤝・Loan Proposal",
-      "proposal_desc": "<@{me}> wants to borrow **{amount}** {currency} from <@{lender}>.\nInterest **{interest}%** → must repay **{due}** {currency} within **{days} days**.\n*(If overdue, the lender has the right to force-collect via `/vay doi` from both wallet and bank account!)*\n\n<@{lender}>, do you agree to this loan?",
+      "proposal_desc": "<@{me}> wants to borrow **{amount}** {currency} from <@{lender}>.\nInterest **{interest}%** → <@{me}> repays **{due}** {currency} within **{days} days**.\n\n💸 **The lender pays {lenderPays}** {currency} — including a **{fee}** {currency} contract fee ({feePct}%, burned).\n📈 Gets back {due} → **profit {profit}** {currency}.\n*(If overdue, the lender may use `/vay doi` to seize both wallet and bank!)*\n\n<@{lender}>, do you agree to lend?",
       "btn_yes": "Lend 💸",
       "btn_no": "Decline",
       "err_not_lender": "This loan proposal is not for you~ 😊",
@@ -1808,7 +1808,7 @@
       "err_system": "Oops, a loan system error occurred, please try again later~",
       "error_title": "🤝・Loan Error",
       "success_title": "🤝・Loan Successful!",
-      "success_desc": "<@{lender}> lent **{amount}** {currency} to <@{me}>.\n<@{me}> needs to repay **{remaining}** {currency} before <t:{ts}:R> (use `/vay tra`).",
+      "success_desc": "<@{lender}> lent <@{me}> **{amount}** {currency}.\n*(The lender paid {lenderPaid} {currency}, of which {fee} {currency} was the contract fee.)*\n<@{me}> must repay **{remaining}** {currency} before <t:{ts}:R> (use `/vay tra`).",
       "timeout_title": "🤝・Loan Proposal Expired",
       "timeout_desc": "<@{lender}> didn't reply in time~ Try again later.",
       "err_not_owing": "You don't owe <@{lender}> anything~ 🌸",
@@ -1832,7 +1832,8 @@
       "no_lends": "*(you haven't lent money to anyone)*",
       "title_book": "🧾 Your Debt Ledger",
       "book_footer": "Repay: /vay tra · Collect overdue: /vay doi",
-      "err_invalid_sub": "Invalid subcommand~ Try `/vay muon`, `/vay tra`, `/vay doi`, or `/vay so`!"
+      "err_invalid_sub": "Invalid subcommand~ Try `/vay muon`, `/vay tra`, `/vay doi`, or `/vay so`!",
+      "repay_fail_title": "💸 Couldn't repay"
     },
     "eco-admin": {
       "only_owner": "This command is only for the bot owner~ 🌸",

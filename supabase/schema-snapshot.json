@@ -94,6 +94,7 @@
     "like_bakery(p_liker_id text, p_bakery_owner_id text)",
     "loan_collect(p_lender text, p_borrower text)",
     "loan_create(p_lender text, p_borrower text, p_principal bigint, p_interest numeric, p_days integer)",
+    "loan_create(p_lender text, p_borrower text, p_principal bigint, p_interest numeric, p_days integer, p_fee_pct numeric)",
     "loan_repay(p_borrower text, p_lender text, p_amount bigint)",
     "log_item_change()",
     "log_money_change()",

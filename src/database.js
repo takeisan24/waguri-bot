@@ -1689,6 +1689,10 @@ async function loanCreate(lenderId, borrowerId, principal) {
         const { data, error } = await supabase.rpc('loan_create', {
             p_lender: lenderId, p_borrower: borrowerId, p_principal: principal,
             p_interest: LOAN.INTEREST_PCT, p_days: LOAN.DUE_DAYS,
+            // Truyền cả tỉ lệ phí để RPC và màn hình đề nghị dùng CHUNG một nguồn (config).
+            // Trước đây phí ghi cứng 5% trong SQL còn JS không biết -> chủ nợ đồng ý cho vay
+            // 10.000 nhưng ví tụt 10.500, không một chữ nào giải thích.
+            p_fee_pct: LOAN.FEE_PCT,
         });
         if (error) throw error;
         return data;

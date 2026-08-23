@@ -240,7 +240,17 @@ module.exports = {
     PARTY: { HOUSE_CUT: 0.05, JOIN_SECONDS: 30 },
 
     // Vay/đòi nợ giữa người chơi (P2P): lãi cố định, hạn trả, quá hạn bị cưỡng chế thu
-    LOAN: { INTEREST_PCT: 0.10, DUE_DAYS: 7, MIN: 100, MAX: 1_000_000 },
+    // FEE_PCT: phí lập khế ước, CHỦ NỢ trả và bị ĐỐT. Nó tồn tại để chặn hai tài khoản phụ
+    // chuyển tiền cho nhau qua vay–trả nhằm né thuế của /give.
+    //
+    // Phải nằm ở đây chứ không ghi cứng trong SQL: chủ nợ cần thấy con số này TRƯỚC khi bấm
+    // đồng ý, nên JS và RPC bắt buộc dùng chung một nguồn. Ghi cứng hai nơi là kiểu lệch giá
+    // mà cổng bảng giá Premium đã phải sinh ra để chặn.
+    //
+    // Lưu ý khi chỉnh: lãi 10% KHÔNG phải lợi nhuận của chủ nợ. Cho vay 10.000 thì họ bỏ ra
+    // 10.500, thu về 11.000 — lời thật 500, tức ~4,76% trong 7 ngày. FEE_PCT >= INTEREST_PCT
+    // sẽ làm việc cho vay LỖ và không ai cho vay nữa.
+    LOAN: { INTEREST_PCT: 0.10, FEE_PCT: 0.05, DUE_DAYS: 7, MIN: 100, MAX: 1_000_000 },
 
     // Đố vui (chơi vui + thưởng nhẹ, đẩy tương tác cộng đồng)
     QUIZ: { REWARD: 300, EXP: 5, TIME_MS: 20000 },

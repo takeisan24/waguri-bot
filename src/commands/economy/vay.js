@@ -40,6 +40,17 @@ async function subMuon(interaction, locale) {
     if (amount > config.LOAN.MAX) return err(t(locale, 'commands.vay.err_max', { max: fmt(config.LOAN.MAX, locale), currency: config.CURRENCY }));
 
     const due = Math.floor(amount * (1 + config.LOAN.INTEREST_PCT));
+
+    // Chủ nợ phải thấy SỐ HỌ THẬT SỰ BỎ RA trước khi bấm đồng ý.
+    //
+    // `loan_create` thu thêm phí lập khế ước của chủ nợ rồi đốt. Bản cũ không hề nhắc tới nó:
+    // người đồng ý cho vay 10.000 thấy ví tụt 10.500 mà không có lời giải thích nào. Và câu
+    // "Lãi 10%" còn gây hiểu nhầm ngược — lời thật của họ chỉ là 500 trên 10.500 bỏ ra,
+    // tức ~4,76%, chưa bằng một nửa con số in trên màn hình.
+    const phi = Math.floor(amount * config.LOAN.FEE_PCT);
+    const chuNoBoRa = amount + phi;
+    const loiThat = due - chuNoBoRa;
+
     const embed = buildWaguriEmbed(interaction, 'info', {
         locale,
         title: t(locale, 'commands.vay.proposal_title'),
@@ -50,7 +61,11 @@ async function subMuon(interaction, locale) {
             currency: config.CURRENCY,
             interest: Math.round(config.LOAN.INTEREST_PCT * 100),
             due: fmt(due, locale),
-            days: config.LOAN.DUE_DAYS
+            days: config.LOAN.DUE_DAYS,
+            feePct: Math.round(config.LOAN.FEE_PCT * 100),
+            fee: fmt(phi, locale),
+            lenderPays: fmt(chuNoBoRa, locale),
+            profit: fmt(loiThat, locale)
         })
     });
     const row = (dis = false) => new ActionRowBuilder().addComponents(
@@ -102,6 +117,10 @@ async function subMuon(interaction, locale) {
                     amount: fmt(amount, locale),
                     currency: config.CURRENCY,
                     remaining: fmt(r.remaining, locale),
+                    // Lấy phí và số thật sự trừ TỪ RPC, không tính lại ở JS — nếu hai bên có
+                    // lệch thì con số hiện ra vẫn là con số đã thật sự xảy ra.
+                    fee: fmt(Number(r.fee || 0), locale),
+                    lenderPaid: fmt(Number(r.lender_paid || amount), locale),
                     ts
                 })
             })],
@@ -150,7 +169,10 @@ async function subTra(interaction, locale) {
     if (r.status === 'poor') return interaction.editReply({
         embeds: [buildWaguriEmbed(interaction, 'error', {
             locale,
-            title: t(locale, 'commands.vay.repay_success_title'), // Dùng chung hoặc title khác
+            // Nhánh này là TRẢ NỢ THẤT BẠI (không đủ tiền), nên không được mang tiêu đề
+            // "Trả nợ thành công". Embed đã màu đỏ nhưng chữ lại nói ngược — người đọc lướt
+            // chỉ thấy tiêu đề.
+            title: t(locale, 'commands.vay.repay_fail_title'),
             description: t(locale, 'commands.vay.err_poor_borrower', { lender: lender.id, remaining: fmt(r.remaining, locale), currency: config.CURRENCY })
         })]
     });

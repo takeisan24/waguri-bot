@@ -1798,7 +1798,7 @@
       "err_min": "Vay tối thiểu **{min}** {currency} nhé~",
       "err_max": "Mỗi lần vay tối đa **{max}** {currency} thôi nhé~",
       "proposal_title": "🤝・Lời đề nghị vay tiền",
-      "proposal_desc": "<@{me}> muốn vay <@{lender}> **{amount}** {currency}.\nLãi **{interest}%** → phải trả **{due}** {currency} trong **{days} ngày**.\n*(Quá hạn, chủ nợ có quyền `/vay doi` cưỡng chế thu cả ví lẫn ngân hàng!)*\n\n<@{lender}> ơi, cậu có đồng ý cho vay không?",
+      "proposal_desc": "<@{me}> muốn vay <@{lender}> **{amount}** {currency}.\nLãi **{interest}%** → <@{me}> phải trả **{due}** {currency} trong **{days} ngày**.\n\n💸 **Chủ nợ bỏ ra {lenderPays}** {currency} — gồm phí lập khế ước **{fee}** {currency} ({feePct}%, bị đốt).\n📈 Thu về {due} → **lời {profit}** {currency}.\n*(Quá hạn, chủ nợ có quyền `/vay doi` cưỡng chế thu cả ví lẫn ngân hàng!)*\n\n<@{lender}> ơi, cậu có đồng ý cho vay không?",
       "btn_yes": "Cho vay 💸",
       "btn_no": "Từ chối",
       "err_not_lender": "Lời đề nghị này không dành cho cậu~ 😊",
@@ -1808,7 +1808,7 @@
       "err_system": "Ơ, có lỗi khi lập khế ước, thử lại sau nhé~",
       "error_title": "🤝・Lỗi vay tiền",
       "success_title": "🤝・Đã cho vay!",
-      "success_desc": "<@{lender}> đã cho <@{me}> vay **{amount}** {currency}.\n<@{me}> cần trả **{remaining}** {currency} trước <t:{ts}:R> (dùng `/vay tra`).",
+      "success_desc": "<@{lender}> đã cho <@{me}> vay **{amount}** {currency}.\n*(Chủ nợ bỏ ra {lenderPaid} {currency}, trong đó {fee} {currency} là phí lập khế ước.)*\n<@{me}> cần trả **{remaining}** {currency} trước <t:{ts}:R> (dùng `/vay tra`).",
       "timeout_title": "🤝・Lời đề nghị vay tiền hết hạn",
       "timeout_desc": "<@{lender}> chưa trả lời kịp~ Thử lại sau nhé.",
       "err_not_owing": "Cậu không nợ <@{lender}> đồng nào cả~ 🌸",
@@ -1832,7 +1832,8 @@
       "no_lends": "*(chưa cho ai vay)*",
       "title_book": "🧾 Sổ nợ của cậu",
       "book_footer": "Trả nợ: /vay tra · Đòi nợ quá hạn: /vay doi",
-      "err_invalid_sub": "Lệnh con không hợp lệ~ Thử `/vay muon`, `/vay tra`, `/vay doi`, hoặc `/vay so` nhé!"
+      "err_invalid_sub": "Lệnh con không hợp lệ~ Thử `/vay muon`, `/vay tra`, `/vay doi`, hoặc `/vay so` nhé!",
+      "repay_fail_title": "💸 Chưa trả được nợ"
     },
     "eco-admin": {
       "only_owner": "Lệnh này chỉ dành cho owner thôi nhé~ 🌸",
