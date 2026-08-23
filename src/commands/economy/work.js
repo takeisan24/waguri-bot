@@ -170,7 +170,23 @@ module.exports = {
             const dz = await applyDisease(db, userId, user, locale);
             if (dz.incomeMult !== 1 && earnedMoney > 0) earnedMoney = Math.round(earnedMoney * dz.incomeMult);
 
-            await db.addMoney(userId, earnedMoney, 'wallet');
+            // GIỮ kết quả, đừng bỏ.
+            //
+            // `increment_balance` chặn ví âm bằng cách trừ ĐÚNG 0 ĐỒNG rồi trả NULL — không
+            // phải trừ một phần. Nên khi ví không đủ để chịu khoản lỗ, người chơi mất 0 xu.
+            // Bản cũ bỏ giá trị trả về và vẫn in ra số tiền "đã mất", nên tin nhắn nói một
+            // đằng còn ví làm một nẻo.
+            //
+            // Chứng minh trên prod 2026-08-24: ví 0 / bank 50.000, lỗ 300 -> RPC trả NULL,
+            // ví giữ 0, bank nguyên vẹn, sổ cái KHÔNG ghi dòng nào.
+            //
+            // KHÔNG đổi luật ở đây (không trừ sang bank như /rob). Lý do là số liệu chứ không
+            // phải khẩu vị: khoản lỗ chỉ chiếm 1,8% dòng tiền của /work (≈0,2% toàn cục),
+            // trong khi /work là BƯỚC 2 của onboarding mà bước 1 đã chặn 91,5% người dùng.
+            // Siết độ khó ở đó để đổi lấy 0,2% là món hời tồi. Khi phễu thông thì đổi sang
+            // `chargeAssets` như /rob và /police — hàm đó đã nằm sẵn.
+            const daTru = await db.addMoney(userId, earnedMoney, 'wallet');
+            const loBiChan = earnedMoney < 0 && !daTru;
             const userAfter = await db.getUser(userId);
             const newWallet = userAfter ? Number(userAfter.wallet) : (Number(user.wallet) + earnedMoney);
             const currentHealth = userAfter && userAfter.health !== undefined ? userAfter.health : 100;
@@ -182,9 +198,19 @@ module.exports = {
 
             const displayJobName = t(locale, `data.jobs.${jobKey}.name`) || jobName;
             const amtStr = `${fmt(Math.abs(earnedMoney), locale)} ${config.CURRENCY}`;
-            let resultMessage = pickLine(jobKey, category, locale)
-                .replace(/\{amount\}/g, amtStr)
-                .replace(/\{job\}/g, displayJobName);
+            let resultMessage;
+            if (loBiChan) {
+                // Nói thật, nhưng KHÔNG nêu con số và KHÔNG giải thích vì sao thoát.
+                //
+                // Câu "suýt mất X xu nhưng ví trống nên thoát" vừa đúng vừa là một bài hướng
+                // dẫn khai thác — mà repo này công khai, không cần dạy thêm. Người chơi biết
+                // chính xác điều đã xảy ra với mình là đủ.
+                resultMessage = t(locale, 'commands.work.lo_khong_mat_gi', { job: displayJobName });
+            } else {
+                resultMessage = pickLine(jobKey, category, locale)
+                    .replace(/\{amount\}/g, amtStr)
+                    .replace(/\{job\}/g, displayJobName);
+            }
             if (buffActive && earnedMoney > 0) resultMessage += ` *(buff +${Math.round((buffMult - 1) * 100)}%)*`;
             if (premium && earnedMoney > 0) resultMessage += ` *(Premium +${Math.round(config.PREMIUM.INCOME_BONUS * 100)}% 💎)*`;
             if (eventMult > 1 && earnedMoney > 0) {

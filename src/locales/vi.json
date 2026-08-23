@@ -295,7 +295,8 @@
       "health_lost": "\n💔 Sức khỏe: **{health}/100** (-{loss} ❤️)",
       "vehicle_used": "\n🚗 Sử dụng **{name}** di chuyển (Năng lượng tiêu hao: {cost} ⚡, độ bền còn: {durability}%)",
       "vehicle_broken": "\n💥 Xe **{name}** của cậu đã bị hỏng do hết độ bền! Cậu cần dùng `/repair` để sửa xe trước khi sử dụng lại nhé~ 😟",
-      "err_not_owner": "Nút này của người khác nha~ Gõ `/work` để tự đi làm nhé! 🌸"
+      "err_not_owner": "Nút này của người khác nha~ Gõ `/work` để tự đi làm nhé! 🌸",
+      "lo_khong_mat_gi": "Cậu làm hỏng việc ở **{job}** mất rồi... 😅 May là lần này chẳng có gì để mất cả!"
     },
     "fish": {
       "success_title": "🎣・Câu cá thành công",

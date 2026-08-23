@@ -18,8 +18,13 @@ async function applyPolice(userId) {
         fine = Math.round(fine * 0.5); // Giảm 50% tiền phạt
     }
     await db.resetPoliceHeat(userId); // bị bắt rồi thì reset
-    if (fine > 0) await db.chargeAssets(userId, fine); // trừ ví trước, thiếu thì bank
-    return { fine, usedIns };
+    // Trả về số ĐÃ TRỪ chứ không phải số ĐỊNH TRỪ.
+    //
+    // `charge_assets` cắt khoản phạt theo tài sản đang có rồi trả về số thật sự lấy đi. Bản
+    // cũ trả `fine` (số định phạt), nên nơi hiển thị sẽ báo một con số không có thật với
+    // người ít tiền — đúng lỗi vừa vá ở /rob, chỉ khác chỗ.
+    const phatThat = fine > 0 ? await db.chargeAssets(userId, fine) : 0;
+    return { fine: phatThat, usedIns };
 }
 
 module.exports = { applyPolice };

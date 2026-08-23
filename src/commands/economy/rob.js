@@ -143,11 +143,19 @@ module.exports = {
             if (usedIns) {
                 fine = Math.round(fine * 0.5); // Giảm 50% tiền phạt
             }
-            if (fine > 0) await db.chargeAssets(robberId, fine); // trừ ví trước, thiếu thì bank
+            // GIỮ số ĐÃ TRỪ, đừng hiển thị số ĐỊNH TRỪ.
+            //
+            // `charge_assets` cắt khoản phạt theo tài sản đang có (`least(p_amount, ví+bank)`)
+            // rồi TRẢ VỀ số thật sự lấy đi. Bản cũ bỏ giá trị đó và in ra `fine`, nên người
+            // chỉ còn 100 xu bị phạt 500 sẽ đọc "bị phạt 500" trong khi thực tế mất 100.
+            //
+            // Số dư ở dòng dưới vốn đã đọc lại từ DB nên vẫn đúng — chỉ riêng con số tiền
+            // phạt là bịa. Đó là kiểu sai khó thấy nhất: một nửa màn hình nói thật.
+            const phatThat = fine > 0 ? await db.chargeAssets(robberId, fine) : 0;
             const robberAfter = await db.getUser(robberId);
-            const displayBal = robberAfter ? Number(robberAfter.wallet) : (Number(robber.wallet) - fine);
-            
-            let desc = t(locale, 'commands.rob.fail_desc_base', { fine: fmt(fine, locale), currency: config.CURRENCY });
+            const displayBal = robberAfter ? Number(robberAfter.wallet) : (Number(robber.wallet) - phatThat);
+
+            let desc = t(locale, 'commands.rob.fail_desc_base', { fine: fmt(phatThat, locale), currency: config.CURRENCY });
             if (usedIns) {
                 desc += `\n` + t(locale, 'commands.rob.fail_insurance');
             }

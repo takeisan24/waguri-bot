@@ -295,7 +295,8 @@
       "health_lost": "\n💔 Health: **{health}/100** (-{loss} ❤️)",
       "vehicle_used": "\n🚗 Used **{name}** to travel (Energy cost: {cost} ⚡, durability left: {durability}%)",
       "vehicle_broken": "\n💥 Your **{name}** broke due to zero durability! You need to `/repair` it before using again~ 😟",
-      "err_not_owner": "This button belongs to someone else~ Type `/work` to head off to work yourself! 🌸"
+      "err_not_owner": "This button belongs to someone else~ Type `/work` to head off to work yourself! 🌸",
+      "lo_khong_mat_gi": "You messed up at **{job}**... 😅 Luckily there was nothing to lose this time!"
     },
     "fish": {
       "success_title": "🎣・Fishing Success",
