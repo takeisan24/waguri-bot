@@ -43,7 +43,13 @@ module.exports = {
             }
 
             if (!channel) {
-                skipLog('Không tìm thấy kênh chào mừng (welcome_channel chưa cấu hình hoặc không có systemChannel)', { source: 'guildMemberAdd', guildId: member.guild.id });
+                // CHƯA CẤU HÌNH là trạng thái BÌNH THƯỜNG của phần lớn server -> im lặng.
+                // Trước đây log mọi lượt vào, một server có người ra/vào liên tục đẩy ra hàng
+                // trăm dòng y hệt nhau và nhấn chìm log thật.
+                // Chỉ báo khi cấu hình TRỎ VÀO KÊNH KHÔNG CÒN — cái này chủ server sửa được.
+                if (s.welcome_channel) {
+                    skipLog('Kênh chào mừng đã cấu hình nhưng không còn tồn tại — chủ server cần đặt lại /setup', { source: 'guildMemberAdd', guildId: member.guild.id, channelId: s.welcome_channel });
+                }
                 return;
             }
 

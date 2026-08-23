@@ -15,7 +15,7 @@
 const test = require('node:test');
 const assert = require('node:assert');
 const { _gop } = require('../src/lib/logger');
-const { khoaCua, chotGop, GOP_MS, xoaHet } = _gop;
+const { khoaCua, chotGop, GOP_MS, SKIP_GOP_MS, xoaHet } = _gop;
 
 const T0 = 1_700_000_000_000; // mốc thời gian cố định — không dùng Date.now() để test ổn định
 
@@ -76,7 +76,35 @@ test('khoá: chỉ lấy DÒNG ĐẦU của stack — cùng lỗi ở stack khá
 test('gộp: Map có trần, không phình vô hạn khi bot chạy dài ngày', () => {
     xoaHet();
     for (let i = 0; i < 400; i++) chotGop('k' + i, T0);
-    // Vượt quá GOP_MS*2 thì các khoá cũ phải bị dọn ở lần chốt kế tiếp.
-    chotGop('moi', T0 + GOP_MS * 2 + 1);
-    assert.ok(_gop.chotGop('moi2', T0 + GOP_MS * 2 + 2) === 0, 'vẫn hoạt động sau khi dọn');
+    // Dọn theo cửa sổ DÀI NHẤT (SKIP_GOP_MS), không phải GOP_MS.
+    const gia = Math.max(GOP_MS, SKIP_GOP_MS) * 2;
+    chotGop('moi', T0 + gia + 1);
+    assert.ok(_gop.chotGop('moi2', T0 + gia + 2) === 0, 'vẫn hoạt động sau khi dọn');
+});
+
+// ------------------------------------------------------------------
+// SKIP dùng CHUNG bộ gộp nhưng cửa sổ dài hơn. Vì sao quan trọng: một "bỏ qua" phản ánh
+// TRẠNG THÁI cấu hình đứng yên hàng giờ. Server có người ra/vào liên tục từng đẩy ra hàng
+// trăm dòng y hệt nhau trong ít phút và nhấn chìm mọi log khác.
+// ------------------------------------------------------------------
+test('SKIP: cửa sổ gộp phải DÀI HƠN cửa sổ lỗi', () => {
+    assert.ok(SKIP_GOP_MS > GOP_MS, 'gộp SKIP bằng cửa sổ lỗi thì vẫn còn ngập log');
+});
+
+test('SKIP: trong cửa sổ dài chỉ ra MỘT dòng, dù lặp bao nhiêu lần', () => {
+    xoaHet();
+    assert.strictEqual(chotGop('s', T0, SKIP_GOP_MS), 0, 'lần đầu vẫn phải thấy');
+    // Ngay cả khi đã quá cửa sổ LỖI (10 phút) thì SKIP vẫn phải im.
+    assert.strictEqual(chotGop('s', T0 + GOP_MS + 1, SKIP_GOP_MS), null,
+        'SKIP không được dùng cửa sổ ngắn của logError');
+    for (let i = 1; i <= 200; i++) chotGop('s', T0 + i * 1000, SKIP_GOP_MS);
+    assert.strictEqual(chotGop('s', T0 + SKIP_GOP_MS + 1, SKIP_GOP_MS), 201,
+        'hết cửa sổ phải báo lại kèm ĐỦ số lần đã dồn — mất số đếm là mất tín hiệu tình huống đang lặp');
+});
+
+test('SKIP: guild khác nhau KHÔNG che nhau', () => {
+    xoaHet();
+    assert.strictEqual(chotGop('[SKIP:x]|lý do|guildId=1', T0, SKIP_GOP_MS), 0);
+    assert.strictEqual(chotGop('[SKIP:x]|lý do|guildId=2', T0, SKIP_GOP_MS), 0,
+        'server thứ hai gặp cùng vấn đề vẫn phải hiện ra, không bị server đầu nuốt mất');
 });

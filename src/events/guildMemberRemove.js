@@ -24,7 +24,10 @@ module.exports = {
             }
 
             if (!channel) {
-                skipLog('Không tìm thấy kênh tạm biệt (goodbye_channel chưa cấu hình hoặc không có systemChannel)', { source: 'guildMemberRemove', guildId: member.guild.id });
+                // Cùng lý do với guildMemberAdd: chưa cấu hình = bình thường, đừng log.
+                if (s.goodbye_channel) {
+                    skipLog('Kênh tạm biệt đã cấu hình nhưng không còn tồn tại — chủ server cần đặt lại /setup', { source: 'guildMemberRemove', guildId: member.guild.id, channelId: s.goodbye_channel });
+                }
                 return;
             }
 

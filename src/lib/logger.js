@@ -15,6 +15,10 @@ function throttled() {
 // (tiêu đề + dòng đầu của lỗi): lần đầu báo ngay, các lần sau im trong GOP_MS rồi báo
 // kèm số lần đã dồn. Kết quả: kênh log cho biết lỗi nào ĐANG lặp, thay vì trôi mất.
 const GOP_MS = 10 * 60_000;
+// Cửa sổ gộp cho SKIP dài hơn lỗi: một lần bỏ qua thường phản ánh TRẠNG THÁI cấu hình đứng yên
+// hàng giờ, không phải sự kiện. Server có người ra/vào liên tục từng đẩy ra hàng trăm dòng y hệt
+// nhau trong ít phút, làm trôi mất mọi dòng log khác.
+const SKIP_GOP_MS = 30 * 60_000;
 const goiTrung = new Map(); // khoá -> { dồn: số lần chưa báo, mocGui: lần gửi gần nhất }
 
 function khoaCua(title, err) {
@@ -23,13 +27,16 @@ function khoaCua(title, err) {
 }
 
 /** @returns {number|null} số lần đã dồn nếu ĐƯỢC gửi, hoặc null nếu phải im vì trùng. */
-function chotGop(khoa, now = Date.now()) {
+function chotGop(khoa, now = Date.now(), cuaSo = GOP_MS) {
     const cu = goiTrung.get(khoa);
-    if (cu && now - cu.mocGui < GOP_MS) { cu.don++; return null; }
+    if (cu && now - cu.mocGui < cuaSo) { cu.don++; return null; }
     const don = cu ? cu.don : 0;
     goiTrung.set(khoa, { don: 0, mocGui: now });
     if (goiTrung.size > 300) {
-        for (const [k, v] of goiTrung) if (now - v.mocGui > GOP_MS * 2) goiTrung.delete(k);
+        // Dọn theo cửa sổ DÀI NHẤT đang dùng — dọn theo GOP_MS sẽ xoá nhầm khoá SKIP còn hạn,
+        // làm mất số lần đã dồn và khiến nó báo lại như mới.
+        const gia = Math.max(GOP_MS, SKIP_GOP_MS) * 2;
+        for (const [k, v] of goiTrung) if (now - v.mocGui > gia) goiTrung.delete(k);
     }
     return don;
 }
@@ -62,12 +69,17 @@ async function logError(title, err, meta = {}) {
 function skipLog(reason, ctx = {}) {
     const tag = ctx.source ? `[SKIP:${ctx.source}]` : '[SKIP]';
     const extra = Object.keys(ctx).filter(k => k !== 'source').map(k => `${k}=${ctx[k]}`).join(' ');
-    console.warn(`${tag} ${reason}${extra ? ' — ' + extra : ''}`);
+    // Gộp theo (tag + lý do + ngữ cảnh): mỗi guild/kênh vẫn có tiếng nói riêng, nhưng cùng một
+    // tình huống lặp lại thì im tới hết cửa sổ rồi báo kèm số lần đã dồn.
+    const don = chotGop(`${tag}|${reason}|${extra}`, Date.now(), SKIP_GOP_MS);
+    if (don === null) return;
+    const lap = don > 0 ? ` (đã lặp thêm ${don} lần trong ${SKIP_GOP_MS / 60000} phút qua)` : '';
+    console.warn(`${tag} ${reason}${extra ? ' — ' + extra : ''}${lap}`);
 }
 
 module.exports = {
     logError, skipLog,
     // Lộ ra cho test: logic gộp trùng là phần dễ hỏng thầm lặng nhất ở đây
     // (gộp quá tay -> mất lỗi thật; gộp hụt -> kênh log bị nhấn chìm).
-    _gop: { khoaCua, chotGop, GOP_MS, xoaHet: () => goiTrung.clear() },
+    _gop: { khoaCua, chotGop, GOP_MS, SKIP_GOP_MS, xoaHet: () => goiTrung.clear() },
 };
