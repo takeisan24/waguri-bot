@@ -31,6 +31,7 @@
     "src/lib/masoi/engine.js": "Tên/mô tả 6 vai ở đây chỉ là GIÁ TRỊ DỰ PHÒNG. Mọi đường hiển thị đi qua getRoleName/getRoleDesc trong masoi.js:68-69, vốn gọi `t(locale, 'commands.masoi.roles.*')` trước; locale đã có đủ 6 vai cả vi lẫn en. Chỗ dùng thẳng chỉ là `.emoji` (không phụ thuộc ngôn ngữ).",
     "src/lib/noitu.js": "Từ điển trò Nối Từ — trò chơi tiếng Việt theo bản chất, không dịch được.",
     "src/lib/owner.js": "Log nội bộ.",
-    "src/lib/season.js": "Tên mùa/lễ tiếng Việt (Tết Nguyên Đán…) — danh từ riêng."
+    "src/lib/season.js": "Tên mùa/lễ tiếng Việt (Tết Nguyên Đán…) — danh từ riêng.",
+    "src/lib/ai/dauVao.js": "Chuỗi là NHÃN GỬI CHO MODEL, không phải chữ người dùng đọc. Model nhận nhãn tiếng Việt rồi trả lời theo ngôn ngữ mà chỉ thị [Ngôn ngữ] trong systemPrompt ép — người dùng EN vẫn nhận câu trả lời tiếng Anh. Dịch nhãn sang EN chỉ tốn thêm token mà không đổi gì cho người đọc, vì persona vốn đã thuần tiếng Việt."
   }
 }

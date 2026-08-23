@@ -2,6 +2,7 @@
 const config = require('../../config');
 const db = require('../../database.js');
 const { WAGURI_SYSTEM_PROMPT, tierOf, tenBac } = require('./persona');
+const { coNhan, HUONG_DAN_NHAN } = require('./dauVao');
 // Đặt tên `dich` chứ không phải `t`: trong hàm chat, `t` đã là BẬC THIỆN CẢM (tierOf).
 const { t: dich } = require('../i18n');
 const { getLevelFromExp } = require('../leveling');
@@ -285,6 +286,13 @@ async function chatWithWaguri(channelId, userId, userName, userText, locale) {
     } else {
         systemPrompt += `\n[Ngôn ngữ: Trả lời hoàn toàn bằng tiếng Việt chuẩn, tự nhiên, dễ thương, không pha trộn tiếng nước ngoài. Không dùng từ tiếng Anh trừ phi bắt buộc.]`;
     }
+
+    // Hướng dẫn đọc nhãn: CHỈ gắn khi tin thật sự có nhãn.
+    //
+    // Đo 2026-08-23: nhét thẳng vào persona thì mọi lượt chat đắt thêm 222 token (+15,4%),
+    // kể cả lượt chỉ có chữ thuần. Mà persona vốn đã là 96% chi phí một lượt. Gắn theo nhu
+    // cầu thì phần lớn lượt chat không phải trả đồng nào cho nó.
+    if (coNhan(framed)) systemPrompt += '\n' + HUONG_DAN_NHAN;
 
     const modelToUse = q.premium ? config.AI.GEMINI_PREMIUM_MODEL : config.AI.GEMINI_MODEL;
     let reply;

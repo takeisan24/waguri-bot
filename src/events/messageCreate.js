@@ -6,6 +6,7 @@ const { buildPrefixInteraction } = require('../lib/prefixShim');
 const { PREFIX_ALIASES } = require('../lib/prefixTen');
 const { logError } = require('../lib/logger');
 const { chatWithWaguri, onCooldown } = require('../lib/ai');
+const { dungDauVao, ghep } = require('../lib/ai/dauVao');
 const { handleMessage: handleNoiTu } = require('../lib/noitu');
 const { announceLevelUp } = require('../lib/levelAnnounce');
 const { rateLimited } = require('../lib/ratelimit');
@@ -278,8 +279,24 @@ module.exports = {
 
         // --- 2) Trò chuyện AI khi @mention Waguri ---
         if (message.mentions.has(message.client.user, { ignoreEveryone: true, ignoreRoles: true })) {
-            const text = message.content.replace(/<@!?\d+>/g, '').trim();
-            if (!text) return;
+            // Nạp tin đang được trả lời (nếu có) TRƯỚC khi dựng đầu vào — ngữ cảnh reply và
+            // ảnh trong tin đó đều lấy từ đây, nên chỉ tốn đúng một lần gọi.
+            let tinTraLoi = null;
+            if (message.reference?.messageId) {
+                tinTraLoi = await message.channel.messages
+                    .fetch(message.reference.messageId).catch(() => null);
+                // Trả lời chính Waguri thì không cần trích lại lời cô ấy — nó đã nằm trong
+                // lịch sử hội thoại rồi, trích nữa là tốn token để nói cùng một thứ hai lần.
+                if (tinTraLoi?.author?.id === message.client.user.id) tinTraLoi = null;
+            }
+
+            const dv = dungDauVao(message, tinTraLoi);
+
+            // Chỉ bỏ qua khi tin RỖNG HOÀN TOÀN. Trước đây `if (!text) return` khiến tin chỉ
+            // có ảnh bị nuốt im lặng — người dùng không phân biệt nổi với bot hỏng.
+            if (!dv.coGiDo) return;
+
+            const text = ghep(dv.text, dv.nhan);
 
             // Cấu hình AI theo server (admin đặt qua /config ai)
             const gs = await db.getGuildSettings(message.guild.id);
