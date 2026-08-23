@@ -10,6 +10,7 @@ import ShareProfileButton from "../../components/ShareProfileButton";
 import EventBanner from "../../components/EventBanner";
 import SiteHeader from "../../components/SiteHeader";
 import { getLocaleServer, t } from "../../lib/i18n";
+import { ghiLoi } from "../../lib/ghiLoi";
 
 export const dynamic = "force-dynamic";
 
@@ -46,17 +47,20 @@ export default async function Dashboard() {
   const manageGuilds = guilds.filter((g) => g.manage);
 
   const admin = createAdminClient();
-  const { data: row } = await admin.from("users").select("*").eq("user_id", id).single();
+  const { data: row, error: loi1 } = await admin.from("users").select("*").eq("user_id", id).single();
+  ghiLoi("dashboard", loi1);
 
   let jobName: string | null = null;
   let clanName: string | null = null;
   let achievements = 0;
   if (row?.job_id) {
-    const { data } = await admin.from("jobs").select("name").eq("id", row.job_id).single();
+    const { data, error: loi2 } = await admin.from("jobs").select("name").eq("id", row.job_id).single();
+    ghiLoi("dashboard", loi2);
     jobName = data?.name ?? null;
   }
   if (row?.clan_id) {
-    const { data } = await admin.from("clans").select("name").eq("id", row.clan_id).single();
+    const { data, error: loi3 } = await admin.from("clans").select("name").eq("id", row.clan_id).single();
+    ghiLoi("dashboard", loi3);
     clanName = data?.name ?? null;
   }
   {
@@ -96,12 +100,13 @@ export default async function Dashboard() {
 
   const seasonId = getCurrentSeasonId();
   const seasonLabel = getSeasonLabel(seasonId, locale);
-  const { data: bp } = await admin
+  const { data: bp, error: loi4 } = await admin
     .from("battle_pass_users")
     .select("*")
     .eq("user_id", id)
     .eq("season_id", seasonId)
     .maybeSingle();
+  ghiLoi("dashboard", loi4);
 
   const bpXp = bp?.xp ?? 0;
   const bpLevel = Math.floor(bpXp / 1000);

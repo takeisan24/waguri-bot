@@ -8,6 +8,7 @@ import { createClient } from "../../lib/supabase/server";
 import { createAdminClient } from "../../lib/supabase/admin";
 import { getDiscordIdentity } from "../../lib/discord";
 import { getLocaleServer, t } from "../../lib/i18n";
+import { ghiLoi } from "../../lib/ghiLoi";
 
 export async function generateMetadata() {
   const locale = await getLocaleServer();
@@ -56,13 +57,14 @@ async function getBoard(type: "wealth" | "level" | "bakery", guild?: string): Pr
         }
       }
     } else if (type === "level") {
-      const { data } = await admin
+      const { data, error: loi1 } = await admin
         .from("users")
         .select("user_id, exp, username, avatar")
         .not("profile_public", "is", false) // tôn trọng hồ sơ ẩn
         .not("exclude_from_economy", "is", true) // ẩn tài khoản vận hành (0099)
         .order("exp", { ascending: false })
         .limit(10);
+      ghiLoi("leaderboard", loi1);
       if (data) {
         for (const r of data) {
           const exp = Number(r.exp || 0);
@@ -87,13 +89,14 @@ async function getBoard(type: "wealth" | "level" | "bakery", guild?: string): Pr
           });
         }
       } else {
-        const { data: usersData } = await admin
+        const { data: usersData, error: loi2 } = await admin
           .from("users")
           .select("user_id, wallet, bank, username, avatar")
           .not("profile_public", "is", false) // tôn trọng hồ sơ ẩn
           .not("exclude_from_economy", "is", true) // ẩn tài khoản vận hành (0099)
           .order("wallet", { ascending: false })
           .limit(10);
+        ghiLoi("leaderboard", loi2);
         if (usersData) {
           for (const r of usersData) {
             rows.push({

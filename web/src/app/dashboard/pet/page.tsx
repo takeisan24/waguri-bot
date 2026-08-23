@@ -9,6 +9,7 @@ import SiteHeader from "../../../components/SiteHeader";
 import SiteFooter from "../../../components/SiteFooter";
 import CherryBlossom from "../../../components/CherryBlossom";
 import PetSkillTree from "../../../components/PetSkillTree";
+import { ghiLoi } from "../../../lib/ghiLoi";
 
 export const dynamic = "force-dynamic";
 
@@ -34,11 +35,12 @@ export default async function PetDashboardPage() {
   if (!id) redirect("/login");
 
   const admin = createAdminClient();
-  const { data: pet } = await admin
+  const { data: pet, error: loi } = await admin
     .from("user_pets")
     .select("*")
     .eq("user_id", id)
     .maybeSingle();
+  ghiLoi("dashboard/pet", loi);
 
   const species = pet ? findPetSpecies(pet.species || "", locale) : null;
 

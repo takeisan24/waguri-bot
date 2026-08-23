@@ -10,6 +10,7 @@ import { claimPremiumOrder } from "../../actions";
 import PayStatus from "./PayStatus";
 import CopyHint from "./CopyHint";
 import { getLocaleServer, t } from "../../../../../lib/i18n";
+import { ghiLoi } from "../../../../../lib/ghiLoi";
 
 export const dynamic = "force-dynamic";
 
@@ -35,11 +36,12 @@ export default async function PayPage({ params }: { params: Promise<{ code: stri
   if (!id) redirect("/login");
 
   const admin = createAdminClient();
-  const { data: order } = await admin
+  const { data: order, error: loi } = await admin
     .from("premium_orders")
     .select("code, user_id, months, amount, status, claimed_at")
     .eq("code", code)
     .single();
+  ghiLoi("dashboard/premium/pay/[code]", loi);
 
   // Đơn không tồn tại hoặc không phải của mình -> về trang giá.
   if (!order || order.user_id !== id) redirect("/dashboard/premium");

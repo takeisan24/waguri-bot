@@ -7,6 +7,7 @@ import { getDiscordIdentity } from "../../../../lib/discord";
 import { fmtVND } from "../../../../lib/game";
 import { isOwnerId } from "../../../../lib/owner";
 import { approvePremiumOrderWeb } from "../actions";
+import { ghiLoi } from "../../../../lib/ghiLoi";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Duyệt Premium — Waguri 🌸", robots: { index: false } };
@@ -23,13 +24,14 @@ export default async function PremiumAdmin() {
   if (!isOwnerId(id)) redirect("/dashboard"); // chỉ owner
 
   const admin = createAdminClient();
-  const { data: orders } = await admin
+  const { data: orders, error: loi } = await admin
     .from("premium_orders")
     .select("code, user_id, plan, months, amount, claimed_at, created_at")
     .eq("status", "pending")
     .order("claimed_at", { ascending: false, nullsFirst: false })
     .order("created_at", { ascending: false })
     .limit(50);
+  ghiLoi("dashboard/premium/admin", loi);
   const list = orders ?? [];
 
   return (

@@ -5,6 +5,7 @@ import { createClient } from "../../lib/supabase/server";
 import { createAdminClient } from "../../lib/supabase/admin";
 import { getDiscordIdentity } from "../../lib/discord";
 import { getLocaleServer } from "../../lib/i18n";
+import { ghiLoi } from "../../lib/ghiLoi";
 
 // Lấy Discord ID của phiên đăng nhập đã xác thực (không tin tham số từ client).
 async function sessionDiscordId(): Promise<string | null> {
@@ -15,24 +16,30 @@ async function sessionDiscordId(): Promise<string | null> {
   return getDiscordIdentity(user).id;
 }
 
-export async function toggleProfilePublic() {
+// Cả hai nút bật/tắt đi qua RPC `toggle_user_flag` (0135) — MỘT lệnh UPDATE, không đọc trước.
+//
+// Bản cũ đọc rồi ghi: `const { data } = await ...select(...)` (bỏ `error`), rồi
+// `!((data?.profile_public ?? true))`. Đọc hỏng một nhịp là `data` null, `?? true` cho ra
+// true, `next` thành false, và hồ sơ người dùng bị ghi thành ẨN — bất kể trạng thái thật.
+// Người dùng không bấm gì sai, không thấy lỗi nào, chỉ là quyền riêng tư tự đổi.
+//
+// Thêm một nhánh nữa: `.single()` ném lỗi khi chưa có dòng nào (người đăng nhập web mà chưa
+// từng dùng bot), nên nút bấm im lặng không làm gì.
+async function latCo(flag: "profile_public" | "vote_reminder") {
   const id = await sessionDiscordId();
   if (!id) return;
   const admin = createAdminClient();
-  const { data } = await admin.from("users").select("profile_public").eq("user_id", id).single();
-  const next = !((data?.profile_public ?? true) as boolean);
-  await admin.from("users").update({ profile_public: next }).eq("user_id", id);
+  const { error } = await admin.rpc("toggle_user_flag", { p_user: id, p_flag: flag });
+  if (ghiLoi(`dashboard/lat-co:${flag}`, error)) return; // hỏng thì KHÔNG revalidate — giữ nguyên màn hình cũ
   revalidatePath("/dashboard");
 }
 
+export async function toggleProfilePublic() {
+  await latCo("profile_public");
+}
+
 export async function toggleVoteReminder() {
-  const id = await sessionDiscordId();
-  if (!id) return;
-  const admin = createAdminClient();
-  const { data } = await admin.from("users").select("vote_reminder").eq("user_id", id).single();
-  const next = !((data?.vote_reminder ?? true) as boolean);
-  await admin.from("users").update({ vote_reminder: next }).eq("user_id", id);
-  revalidatePath("/dashboard");
+  await latCo("vote_reminder");
 }
 
 export async function upgradePetSkill(skillId: string) {

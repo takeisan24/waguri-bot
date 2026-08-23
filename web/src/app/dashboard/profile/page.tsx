@@ -5,6 +5,7 @@ import { createAdminClient } from "../../../lib/supabase/admin";
 import { getDiscordIdentity } from "../../../lib/discord";
 import { getLocaleServer, t } from "../../../lib/i18n";
 import ProfileForm from "./ProfileForm";
+import { ghiLoi } from "../../../lib/ghiLoi";
 
 export const dynamic = "force-dynamic";
 
@@ -27,11 +28,12 @@ export default async function ProfilePage() {
     if (!id) redirect("/login");
 
     const admin = createAdminClient();
-    const { data: userData } = await admin
+    const { data: userData, error: loi } = await admin
         .from("users")
         .select("bio")
         .eq("user_id", id)
         .maybeSingle();
+    ghiLoi("dashboard/profile", loi);
 
     const currentBio = userData?.bio || "";
 

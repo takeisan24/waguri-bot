@@ -16,6 +16,7 @@ import HeroContent from "../components/HeroContent";
 import FeaturesGrid from "../components/FeaturesGrid";
 import { getLocaleServer } from "../lib/i18n";
 import changelogs from "../data/changelogs.json";
+import { ghiLoi } from "../lib/ghiLoi";
 
 export default async function Home() {
   const locale = await getLocaleServer();
@@ -28,7 +29,8 @@ export default async function Home() {
   if (hasUrl && hasKey) {
     try {
       const supabase = createAdminClient();
-      const { data } = await supabase.from('guild_settings').select('settings').eq('guild_id', 'global').single();
+      const { data, error: loi } = await supabase.from('guild_settings').select('settings').eq('guild_id', 'global').single();
+      ghiLoi("app", loi);
       latestAnnouncement = data?.settings?.latest_announcement || "";
     } catch (err) {
       console.error('[NEXTJS DB ERROR] Fetching global announcement:', err);

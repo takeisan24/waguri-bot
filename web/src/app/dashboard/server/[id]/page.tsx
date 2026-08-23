@@ -5,6 +5,7 @@ import { createClient } from "../../../../lib/supabase/server";
 import { createAdminClient } from "../../../../lib/supabase/admin";
 import { setGuildFlag } from "./actions";
 import { getLocaleServer, t } from "../../../../lib/i18n";
+import { ghiLoi } from "../../../../lib/ghiLoi";
 
 export const dynamic = "force-dynamic";
 
@@ -65,7 +66,8 @@ export default async function ServerConfig({ params }: { params: Promise<{ id: s
   if (!guild || !guild.manage) redirect("/dashboard");
 
   const admin = createAdminClient();
-  const { data } = await admin.from("guild_settings").select("settings").eq("guild_id", id).single();
+  const { data, error: loi } = await admin.from("guild_settings").select("settings").eq("guild_id", id).single();
+  ghiLoi("dashboard/server/[id]", loi);
   const s = (data?.settings as Record<string, string>) || {};
   const aiOn = s.ai_enabled !== "0";
   const pvpOn = s.pvp !== "0";

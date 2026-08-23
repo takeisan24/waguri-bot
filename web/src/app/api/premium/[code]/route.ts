@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "../../../../lib/supabase/server";
 import { createAdminClient } from "../../../../lib/supabase/admin";
 import { getDiscordIdentity } from "../../../../lib/discord";
+import { ghiLoi } from "../../../../lib/ghiLoi";
 
 export const dynamic = "force-dynamic";
 
@@ -17,11 +18,12 @@ export async function GET(_req: Request, { params }: { params: Promise<{ code: s
   if (!id) return NextResponse.json({ status: "unauth" }, { status: 401 });
 
   const admin = createAdminClient();
-  const { data: order } = await admin
+  const { data: order, error: loi } = await admin
     .from("premium_orders")
     .select("user_id, status")
     .eq("code", code)
     .single();
+  ghiLoi("api/premium/[code]", loi);
 
   // Chỉ chủ đơn mới xem được trạng thái.
   if (!order || order.user_id !== id) return NextResponse.json({ status: "notfound" }, { status: 404 });

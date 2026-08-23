@@ -142,6 +142,7 @@
     "stake_settle(p_session uuid)",
     "sync_bakery_likes_count()",
     "take_item(p_user_id text, p_item_id text, p_qty integer)",
+    "toggle_user_flag(p_user text, p_flag text)",
     "touch_last_seen(p_user_id text)",
     "transfer_bank(p_user_id text, p_amount bigint, p_to_bank boolean)",
     "transfer_item(p_from text, p_to text, p_item_id text, p_qty integer)",

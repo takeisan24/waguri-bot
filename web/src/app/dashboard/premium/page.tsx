@@ -9,6 +9,7 @@ import { PLAN_ORDER, getLocalizedPlans } from "../../../lib/premium";
 import { isOwnerId } from "../../../lib/owner";
 import { createPremiumOrder } from "./actions";
 import { getLocaleServer, t } from "../../../lib/i18n";
+import { ghiLoi } from "../../../lib/ghiLoi";
 
 export const dynamic = "force-dynamic";
 
@@ -39,7 +40,8 @@ export default async function PremiumPage({
   if (!id) redirect("/login");
 
   const admin = createAdminClient();
-  const { data: row } = await admin.from("users").select("premium_until").eq("user_id", id).single();
+  const { data: row, error: loiDb } = await admin.from("users").select("premium_until").eq("user_id", id).single();
+  ghiLoi("dashboard/premium", loiDb);
   const until = row?.premium_until ? new Date(row.premium_until) : null;
   // eslint-disable-next-line react-hooks/purity
   const active = until ? until.getTime() > Date.now() : false;

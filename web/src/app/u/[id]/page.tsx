@@ -7,6 +7,7 @@ import { BOT_API } from "../../../lib/botApi";
 import { affectionTier } from "../../../lib/game";
 import { getLocaleServer, t } from "../../../lib/i18n";
 import { createAdminClient } from "../../../lib/supabase/admin";
+import { ghiLoi } from "../../../lib/ghiLoi";
 
 const API = BOT_API;
 const INVITE_URL =
@@ -56,11 +57,12 @@ const getProfile = cache(async (id: string): Promise<Profile | { hidden: true } 
   // 1. UƯ TIÊN TRUY VẤN SUPABASE DB TRỰC TIẾP (Tốc độ ~20ms, độc lập hoàn toàn với Bot VPS)
   try {
     const admin = createAdminClient();
-    const { data: userRow } = await admin
+    const { data: userRow, error: loi } = await admin
       .from("users")
       .select("*")
       .eq("user_id", id)
       .maybeSingle();
+    ghiLoi("u/[id]", loi);
 
     if (userRow) {
       if (userRow.profile_public === false) {
