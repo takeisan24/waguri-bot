@@ -1154,9 +1154,9 @@
       "free_desc": "Cậu đang dùng gói **Miễn phí**. Nâng cấp Premium để trò chuyện với mình thoải mái hơn nhé~ 💕\n👉 Mua tại **[trang Premium]({url})** — quét VietQR, rồi bấm \"Tôi đã chuyển khoản\". Owner sẽ kiểm tra & kích hoạt thủ công (thường trong ngày) 🌸",
       "field_ai_quota": "💬 Lượt chat AI hôm nay",
       "field_benefits": "🎁 Quyền lợi Premium",
-      "benefits_desc": "• **{ai_quota} lượt** chat AI/ngày (gấp 10 lần)\n• **+{income_bonus}% thu nhập** khi /work /fish /mine /chop\n• Huy hiệu 💎 trong hồ sơ\n• Được ưu tiên trải nghiệm tính năng mới",
+      "benefits_desc": "• **{ai_quota} lượt** chat AI/ngày (gấp 10 lần)\n• **+{income_bonus}% thu nhập** khi /work /fish /mine /chop\n• Mở nhánh Premium của `/pass` — thưởng riêng ở cả 20 mốc\n• Huy hiệu 💎 trong hồ sơ và thành tựu \"Quý Tộc\"",
       "field_pricing": "💰 Bảng giá",
-      "footer": "Quét VietQR · kích hoạt tự động 💎 • {original}",
+      "footer": "Quét VietQR · owner duyệt tay 💎 • {original}",
       "plans": {
         "m1": "1 tháng",
         "m3": "3 tháng",

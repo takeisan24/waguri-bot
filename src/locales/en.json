@@ -1154,9 +1154,9 @@
       "free_desc": "You're on the **Free** plan. Upgrade to Premium to chat with me more freely~ 💕\n👉 Buy at the **[Premium page]({url})** — scan the VietQR, then press \"I have transferred\". The owner verifies & activates manually (usually same day) 🌸",
       "field_ai_quota": "💬 AI chats today",
       "field_benefits": "🎁 Premium Benefits",
-      "benefits_desc": "• **{ai_quota} messages**/day (10x more)\n• **+{income_bonus}% income** when /work /fish /mine /chop\n• Profile badge 💎\n• Priority access to new features",
+      "benefits_desc": "• **{ai_quota} messages**/day (10x more)\n• **+{income_bonus}% income** when /work /fish /mine /chop\n• Unlocks the Premium track of `/pass` — its own reward at all 20 tiers\n• Profile badge 💎 and the \"Noble\" achievement",
       "field_pricing": "💰 Pricing Plans",
-      "footer": "Scan VietQR · automatic activation 💎 • {original}",
+      "footer": "Scan VietQR · activated by the owner 💎 • {original}",
       "plans": {
         "m1": "1 month",
         "m3": "3 months",
