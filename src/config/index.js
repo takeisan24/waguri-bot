@@ -250,7 +250,15 @@ module.exports = {
     // Lưu ý khi chỉnh: lãi 10% KHÔNG phải lợi nhuận của chủ nợ. Cho vay 10.000 thì họ bỏ ra
     // 10.500, thu về 11.000 — lời thật 500, tức ~4,76% trong 7 ngày. FEE_PCT >= INTEREST_PCT
     // sẽ làm việc cho vay LỖ và không ai cho vay nữa.
-    LOAN: { INTEREST_PCT: 0.10, FEE_PCT: 0.05, DUE_DAYS: 7, MIN: 100, MAX: 1_000_000 },
+    LOAN: {
+        INTEREST_PCT: 0.10, FEE_PCT: 0.05, DUE_DAYS: 7, MIN: 100, MAX: 1_000_000,
+        // Lãi phạt quá hạn (migration 0140). Trước đây nợ trễ KHÔNG sinh thêm gì nên nợ
+        // ngày 58 bằng đúng nợ ngày 1 — đo trên prod: 2 khoản, cả hai trễ 58 ngày, 0 lượt trả.
+        LATE_PCT_PER_DAY: 0.02,
+        // Trần BẮT BUỘC. Không trần thì nợ phình vô hạn, người vay bỏ luôn tài khoản và
+        // chủ nợ cũng mất trắng. 1.5 = nợ dừng ở 150% số phải trả ban đầu (đụng trần sau 25 ngày).
+        LATE_MAX_MULT: 1.5,
+    },
 
     // Đố vui (chơi vui + thưởng nhẹ, đẩy tương tác cộng đồng)
     QUIZ: { REWARD: 300, EXP: 5, TIME_MS: 20000 },

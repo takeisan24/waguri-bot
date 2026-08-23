@@ -1708,6 +1708,37 @@ async function loanRepay(borrowerId, lenderId, amount) {
     } catch (error) { console.error('[DATABASE ERROR] loanRepay():', error); return null; }
 }
 
+/** Lãi phạt cho MỌI khoản quá hạn (chạy nền 12h/lần). Tính theo mốc thời gian nên gọi
+ *  nhiều lần trong ngày cũng ra một kết quả — xem 0140. Trả {so_khoan, tong_phat} hoặc null. */
+async function loanApplyLateFees() {
+    try {
+        const { data, error } = await supabase.rpc('loan_apply_late_fees', {
+            p_rate: LOAN.LATE_PCT_PER_DAY, p_max_mult: LOAN.LATE_MAX_MULT,
+        });
+        if (error) throw error;
+        return data;
+    } catch (error) { console.error('[DATABASE ERROR] loanApplyLateFees():', error); return null; }
+}
+
+/** Tự thu mọi khoản quá hạn (chạy nền). Trả {so_lan_thu, tong_thu} hoặc null. */
+async function loanCollectAll() {
+    try {
+        const { data, error } = await supabase.rpc('loan_collect_all');
+        if (error) throw error;
+        return data;
+    } catch (error) { console.error('[DATABASE ERROR] loanCollectAll():', error); return null; }
+}
+
+/** Hồ sơ tín dụng của một người, để CHỦ NỢ thấy trước khi đồng ý cho vay.
+ *  Trả {da_tra, dang_no, qua_han, no_qua_han} hoặc null. */
+async function loanCredit(userId) {
+    try {
+        const { data, error } = await supabase.rpc('loan_credit', { p_user: userId });
+        if (error) throw error;
+        return data;
+    } catch (error) { console.error('[DATABASE ERROR] loanCredit():', error); return null; }
+}
+
 /** Lender đòi nợ borrower (chỉ khoản quá hạn -> cưỡng chế thu). Trả {status,...} hoặc null. */
 async function loanCollect(lenderId, borrowerId) {
     try {
@@ -2600,6 +2631,9 @@ module.exports = {
     loanCreate,
     loanRepay,
     loanCollect,
+    loanApplyLateFees,
+    loanCollectAll,
+    loanCredit,
     loansOf,
     // craft
     craftItem,

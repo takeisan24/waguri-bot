@@ -39,6 +39,31 @@ async function subMuon(interaction, locale) {
     if (!amount || amount < config.LOAN.MIN) return err(t(locale, 'commands.vay.err_min', { min: fmt(config.LOAN.MIN, locale), currency: config.CURRENCY }));
     if (amount > config.LOAN.MAX) return err(t(locale, 'commands.vay.err_max', { max: fmt(config.LOAN.MAX, locale), currency: config.CURRENCY }));
 
+    // Chặn NGAY tại đây thay vì để RPC từ chối sau khi chủ nợ đã bấm đồng ý. Chủ nợ
+    // không nên bị gọi ra chỉ để nhận một lời từ chối — và người vay biết lý do sớm hơn.
+    // (RPC vẫn giữ chốt của nó: giữa lúc hiện đề nghị và lúc bấm, nợ có thể vừa quá hạn.)
+    const hoSo = await db.loanCredit(me.id);
+    if (Number(hoSo?.no_qua_han || 0) > 0) {
+        return err(t(locale, 'commands.vay.err_borrower_overdue', {
+            me: me.id, overdue: fmt(Number(hoSo.no_qua_han), locale), currency: config.CURRENCY,
+        }));
+    }
+
+    // Chủ nợ thấy lịch sử trả nợ của người vay NGAY TRÊN màn hình quyết định. Dữ liệu này
+    // vốn đã có trong bảng `loans`, chỉ là chưa từng được đưa ra trước mặt người cần nó.
+    const daTra = Number(hoSo?.da_tra || 0);
+    const credit = Number(hoSo?.qua_han || 0) > 0
+        ? t(locale, 'commands.vay.credit_warn', {
+            overdue: fmt(Number(hoSo.no_qua_han || 0), locale), currency: config.CURRENCY })
+        : (daTra > 0
+            ? t(locale, 'commands.vay.credit_history', { paid: fmt(daTra, locale) })
+            : t(locale, 'commands.vay.credit_clean'));
+
+    const lateWarn = t(locale, 'commands.vay.late_warn', {
+        latePct: Math.round(config.LOAN.LATE_PCT_PER_DAY * 100),
+        lateMax: Math.round(config.LOAN.LATE_MAX_MULT * 100),
+    });
+
     const due = Math.floor(amount * (1 + config.LOAN.INTEREST_PCT));
 
     // Chủ nợ phải thấy SỐ HỌ THẬT SỰ BỎ RA trước khi bấm đồng ý.
@@ -65,7 +90,9 @@ async function subMuon(interaction, locale) {
             feePct: Math.round(config.LOAN.FEE_PCT * 100),
             fee: fmt(phi, locale),
             lenderPays: fmt(chuNoBoRa, locale),
-            profit: fmt(loiThat, locale)
+            profit: fmt(loiThat, locale),
+            lateWarn,
+            credit
         })
     });
     const row = (dis = false) => new ActionRowBuilder().addComponents(
@@ -95,7 +122,10 @@ async function subMuon(interaction, locale) {
         if (!r || r.status !== 'ok') {
             const txt = r?.status === 'poor'
                 ? t(locale, 'commands.vay.err_poor_lender', { lender: lender.id, amount: fmt(amount, locale), currency: config.CURRENCY })
-                : t(locale, 'commands.vay.err_system');
+                : r?.status === 'co_no_qua_han'
+                    ? t(locale, 'commands.vay.err_borrower_overdue', {
+                        me: me.id, overdue: fmt(Number(r.no_qua_han || 0), locale), currency: config.CURRENCY })
+                    : t(locale, 'commands.vay.err_system');
             await i.update({
                 embeds: [buildWaguriEmbed(interaction, 'error', {
                     locale,
@@ -121,6 +151,7 @@ async function subMuon(interaction, locale) {
                     // lệch thì con số hiện ra vẫn là con số đã thật sự xảy ra.
                     fee: fmt(Number(r.fee || 0), locale),
                     lenderPaid: fmt(Number(r.lender_paid || amount), locale),
+                    lateWarn,
                     ts
                 })
             })],

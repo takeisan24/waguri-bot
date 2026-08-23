@@ -210,6 +210,16 @@ async function runEconomySnapshot() {
 
         // Dọn sổ sự cố chống nuke (migration 0119). 90 ngày là đủ để điều tra một vụ
         // nuke; giữ lâu hơn chỉ phình DB free-tier.
+        // Vay nợ (migration 0140). Trước đây nợ quá hạn KHÔNG sinh thêm gì và việc thu
+        // hoàn toàn thủ công — chủ nợ phải tự canh `/vay doi` đúng lúc con nợ đang cầm
+        // tiền. Đo trên prod 24/08: 2 khoản vay, cả hai trễ 58 ngày, 0 lượt trả, tỉ lệ
+        // quỵt 100%. Hai bước dưới đây phải theo THỨ TỰ NÀY: phạt trước rồi mới thu, nếu
+        // không thì khoản vừa bị thu hết lại bị phạt trên phần dư của chính lượt đó.
+        const phat = await db.loanApplyLateFees();
+        if (phat?.so_khoan > 0) console.log(`[VAY] Lãi phạt quá hạn: ${phat.tong_phat} xu trên ${phat.so_khoan} khoản.`);
+        const thuNo = await db.loanCollectAll();
+        if (thuNo?.so_lan_thu > 0) console.log(`[VAY] Tự thu nợ quá hạn: ${thuNo.tong_thu} xu qua ${thuNo.so_lan_thu} lượt.`);
+
         const suCo = await db.antinukePruneIncidents(require('./src/config').ANTINUKE.INCIDENT_KEEP_DAYS);
         if (suCo > 0) console.log(`[ANTI-NUKE] Đã dọn ${suCo} dòng sự cố cũ.`);
     } catch (e) { logError('economy_snapshot', e); }
