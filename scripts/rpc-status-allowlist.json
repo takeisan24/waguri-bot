@@ -8,7 +8,8 @@
       "no_user"
     ],
     "src/commands/economy/vay.js::loan_create": [
-      "bad"
+      "bad",
+      "bad_fee"
     ],
     "src/lib/couple.js::couple_love": [
       "single"
