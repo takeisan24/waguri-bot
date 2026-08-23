@@ -44,6 +44,8 @@ if git diff --name-only "@{u}"..HEAD 2>/dev/null | grep -q '^supabase/migrations
     node scripts/db-catalog.js --check || { echo "[pre-push] ❌ Danh mục vật phẩm đã cũ — chạy 'npm run db:catalog', dịch tên món mới, rồi commit."; exit 1; }
 
     # --soft: DB test ngủ (Supabase free tier) chỉ cảnh báo, không chặn push.
+    echo "[pre-push]   · RPC ghi có bị mở cho khoá công khai không"
+    node scripts/check-rpc-anon.js --soft || { echo "[pre-push] ❌ Có RPC ghi dữ liệu mở cho anon — huỷ push. Thêm REVOKE vào migration (xem 0137)."; exit 1; }
     echo "[pre-push]   · DB test ↔ ảnh chụp prod"
     node scripts/check-db-drift.js --soft || { echo "[pre-push] ❌ DB test LỆCH prod — huỷ push. Áp migration lên CẢ HAI DB."; exit 1; }
 fi

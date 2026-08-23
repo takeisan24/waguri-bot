@@ -18,7 +18,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { bocObject, khoa } = require('./lib/sqlObjects');
+const { bocObject, khoa, demThamSo } = require('./lib/sqlObjects');
 
 const ROOT = path.join(__dirname, '..');
 const MIG_DIR = path.join(ROOT, 'supabase', 'migrations');
@@ -37,6 +37,18 @@ for (const [b, cols] of Object.entries(chup.tables || {})) {
     cotCo.set(b.toLowerCase(), new Set(cols.map(c => String(c).split(':')[0].toLowerCase())));
 }
 const hamCo = new Set((chup.functions || []).map(f => String(f).split('(')[0].toLowerCase()));
+// Tên hàm -> tập SỐ THAM SỐ đang có trong DB. Cần vì hàm được phép TRÙNG TÊN khác chữ ký:
+// khi migration xoá đích danh một bản (`drop function loan_create(text,text,bigint,numeric,integer)`)
+// mà bản khác cùng tên vẫn còn, so theo tên sẽ báo nhầm "đáng lẽ đã xoá nhưng vẫn còn".
+const hamTheoSoThamSo = new Map();
+for (const f of chup.functions || []) {
+    const chuoi = String(f);
+    const mo = chuoi.indexOf('('), dong = chuoi.lastIndexOf(')');
+    if (mo < 0 || dong < mo) continue;
+    const ten = chuoi.slice(0, mo).toLowerCase();
+    if (!hamTheoSoThamSo.has(ten)) hamTheoSoThamSo.set(ten, new Set());
+    hamTheoSoThamSo.get(ten).add(demThamSo(chuoi.slice(mo + 1, dong)));
+}
 const indexCo = new Set((chup.indexes || []).map(s => String(s).toLowerCase()));
 const etCo = new Set((chup.event_triggers || []).map(s => String(s).toLowerCase()));
 
@@ -44,7 +56,9 @@ const coTrongDb = o => {
     switch (o.loai) {
         case 'table':         return bangCo.has(o.ten);
         case 'column':        return cotCo.get(o.bang)?.has(o.ten) ?? false;
-        case 'function':      return hamCo.has(o.ten);
+        case 'function':      return o.soThamSo === undefined
+            ? hamCo.has(o.ten)
+            : (hamTheoSoThamSo.get(o.ten)?.has(o.soThamSo) ?? false);
         case 'index':         return indexCo.has(o.ten);
         case 'event_trigger': return etCo.has(o.ten);
         default:              return true;

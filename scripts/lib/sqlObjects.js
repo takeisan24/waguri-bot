@@ -30,6 +30,22 @@ const bo = s => s.replace(/^public\./i, '').replace(/["']/g, '').toLowerCase();
  *   loai: 'table' | 'column' | 'function' | 'index' | 'event_trigger'
  *   xoa : true nếu câu lệnh là DROP (kỳ vọng object VẮNG mặt)
  */
+/**
+ * Đếm số tham số trong chuỗi giữa hai ngoặc của một chữ ký hàm.
+ * Chỉ đếm dấu phẩy ở ĐỘ SÂU 0, nên `numeric(10,2)` vẫn tính là MỘT tham số.
+ */
+function demThamSo(trong) {
+    const s = String(trong || '').trim();
+    if (!s) return 0;
+    let sau = 0, n = 1;
+    for (const c of s) {
+        if (c === '(') sau++;
+        else if (c === ')') sau--;
+        else if (c === ',' && sau === 0) n++;
+    }
+    return n;
+}
+
 function bocObject(sqlThô) {
     const sql = boThanHam(boComment(sqlThô));
     const ra = [];
@@ -45,7 +61,15 @@ function bocObject(sqlThô) {
     for (const m of sql.matchAll(/\bdrop\s+table\s+(?:if\s+exists\s+)?([\w."]+)/gi)) them(m.index, 'table', m[1], true);
 
     for (const m of sql.matchAll(/\bcreate\s+(?:or\s+replace\s+)?function\s+([\w."]+)\s*\(/gi)) them(m.index, 'function', m[1]);
-    for (const m of sql.matchAll(/\bdrop\s+function\s+(?:if\s+exists\s+)?([\w."]+)/gi)) them(m.index, 'function', m[1], true);
+    // Bắt LUÔN danh sách tham số của DROP FUNCTION. Hàm có thể TRÙNG TÊN mà khác chữ ký
+    // (0136 tạo `loan_create` 6 tham số, 0137 xoá bản 5 tham số cũ). So theo tên không thôi
+    // thì cổng thấy tên vẫn còn rồi báo nhầm "đáng lẽ đã xoá". Đếm số tham số đủ để phân
+    // biệt mà không phải hiểu kiểu dữ liệu — kiểu nhiều chữ (`timestamp with time zone`)
+    // hay có ngoặc (`numeric(10,2)`) đều không làm sai phép đếm theo độ sâu ngoặc.
+    // HẠN CHẾ ĐÃ BIẾT: hai bản trùng tên CÙNG số tham số mà khác kiểu thì vẫn không phân biệt.
+    for (const m of sql.matchAll(/\bdrop\s+function\s+(?:if\s+exists\s+)?([\w."]+)\s*(\(([^;]*?)\))?/gi)) {
+        them(m.index, 'function', m[1], true, m[2] !== undefined ? { soThamSo: demThamSo(m[3]) } : {});
+    }
 
     // Bắt luôn BẢNG mà index thuộc về: xoá bảng thì index đi theo, không thì gate báo nhầm
     // `idx_market_history_item` "thiếu" sau khi `0111` xoá bảng `market_history`.
@@ -69,7 +93,13 @@ function bocObject(sqlThô) {
 
 /** Khoá định danh duy nhất của một object (để "lần nhắc cuối cùng thắng"). */
 function khoa(o) {
-    return o.loai === 'column' ? `column:${o.bang}.${o.ten}` : `${o.loai}:${o.ten}`;
+    if (o.loai === 'column') return `column:${o.bang}.${o.ten}`;
+    // Hàm vẫn khoá THEO TÊN, cố ý. Đã thử khoá kèm số tham số và nó phá luật "lần nhắc
+    // cuối cùng thắng": cặp DROP rồi CREATE LẠI cùng chữ ký ở hai migration khác nhau
+    // (0092 xoá `leaderboard_rows`, migration sau tạo lại) bị tách thành hai object, rồi
+    // cổng báo nhầm cả "đáng lẽ đã xoá" lẫn "thiếu trong DB". Số tham số chỉ dùng để
+    // TINH CHỈNH phép kiểm tồn tại ở check-db-applied.js, không dùng để định danh.
+    return `${o.loai}:${o.ten}`;
 }
 
-module.exports = { bocObject, khoa, boComment, boThanHam };
+module.exports = { bocObject, khoa, boComment, boThanHam, demThamSo };
