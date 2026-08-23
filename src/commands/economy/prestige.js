@@ -79,12 +79,13 @@ module.exports = {
             description: warningDesc
         });
 
-        const row = new ActionRowBuilder().addComponents(
-            new ButtonBuilder().setCustomId('prestige:confirm').setLabel(isEn ? 'Confirm Prestige' : 'Xác nhận Chuyển sinh').setStyle(ButtonStyle.Danger),
-            new ButtonBuilder().setCustomId('prestige:cancel').setLabel(isEn ? 'Cancel' : 'Hủy bỏ').setStyle(ButtonStyle.Secondary)
+        // Dựng lại hàng nút, `tat = true` để vô hiệu hoá khi hết giờ.
+        const dungHang = (tat = false) => new ActionRowBuilder().addComponents(
+            new ButtonBuilder().setCustomId('prestige:confirm').setLabel(isEn ? 'Confirm Prestige' : 'Xác nhận Chuyển sinh').setStyle(ButtonStyle.Danger).setDisabled(tat),
+            new ButtonBuilder().setCustomId('prestige:cancel').setLabel(isEn ? 'Cancel' : 'Hủy bỏ').setStyle(ButtonStyle.Secondary).setDisabled(tat)
         );
 
-        const msg = await interaction.editReply({ embeds: [embed], components: [row] });
+        const msg = await interaction.editReply({ embeds: [embed], components: [dungHang()] });
         const collector = msg.createMessageComponentCollector({ componentType: ComponentType.Button, time: 30000 });
         let answered = false;
 
@@ -147,6 +148,15 @@ module.exports = {
                 description: t(locale, 'common.generic_error')
             });
             return i.update({ embeds: [unknownEmbed], components: [] });
+        });
+
+        // Hết giờ mà chưa ai bấm -> TẮT nút.
+        //
+        // Thiếu nhánh này thì nút vẫn sáng sau khi collector chết, người dùng bấm vào chỉ
+        // nhận "This interaction failed" — trông y như bot hỏng. `/deletedata` (cùng kiểu
+        // màn hình xác nhận) đã làm đúng từ đầu; chỗ này bị bỏ sót.
+        collector.on('end', async () => {
+            if (!answered) await interaction.editReply({ components: [dungHang(true)] }).catch(() => {});
         });
     }
 };
