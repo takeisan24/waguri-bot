@@ -126,34 +126,45 @@ async function getInteractionLanguage(interaction) {
 // ngữ KHÔNG BAO GIỜ chạy => `users.locale` vĩnh viễn rỗng. Hai lỗi khoá nhau, phải sửa cùng
 // lúc với migration 0110 (cột `users.locale` chưa từng tồn tại trên DB).
 async function resolveInteractionLanguage(interaction, userId) {
-    // 1. Cấu hình ngôn ngữ của server do admin đặt (bọc timeout để không kẹt đường ack)
     const guildId = interaction.guildId;
-    if (guildId) {
-        try {
-            const db = require('../database');
-            const gs = await withTimeout(db.getGuildSettings(guildId), DB_LOOKUP_TIMEOUT);
-            if (gs?.language) {
-                return getLanguage(gs.language);
-            }
-        } catch (e) {
-            console.error('[i18n] Lỗi getGuildSettings:', e);
-        }
+
+    // Hai lần tra DB chạy SONG SONG, không nối tiếp.
+    //
+    // Trước 2026-08-23 chúng nối tiếp: `await getGuildSettings` rồi mới `await getUser`, mỗi
+    // cái trần 800ms -> tối đa 1600ms TRƯỚC KHI execute() được gọi, tức trước cả deferReply.
+    // Cộng vòng gọi mạng của defer thì chạm ngưỡng 3 giây của Discord, và lệnh chết câm với
+    // "The application did not respond".
+    //
+    // Đã xảy ra thật: 23-08-2026, /trongcay ở guild 1533401930024353792 — cảnh báo ack nổ ở
+    // 2500ms rồi deferReply ném 10062 Unknown interaction. Đọc mã thì trongcay vô can,
+    // deferReply là DÒNG ĐẦU của execute; chậm nằm hết ở đây.
+    //
+    // Đệm locale chỉ sống 60 giây nên đường lạnh này KHÔNG hiếm — ai chơi cách nhau vài phút
+    // là gặp lại. Chạy song song đưa trần xuống 800ms, trả lại 800ms cho ngân sách ack.
+    //
+    // Đổi lại: khi server đã đặt `gs.language` thì vẫn tốn thêm một lần đọc `getUser` mà bản
+    // nối tiếp bỏ qua được. Đáng — một lần đọc DB rẻ hơn nhiều so với một lệnh chết câm.
+    let gs = null;
+    let u = null;
+    if (guildId || userId) {
+        const db = require('../database');
+        const [rGs, rU] = await Promise.allSettled([
+            guildId ? withTimeout(db.getGuildSettings(guildId), DB_LOOKUP_TIMEOUT) : Promise.resolve(null),
+            userId ? withTimeout(db.getUser(userId), DB_LOOKUP_TIMEOUT) : Promise.resolve(null),
+        ]);
+        if (rGs.status === 'fulfilled') gs = rGs.value;
+        else console.error('[i18n] Lỗi getGuildSettings:', rGs.reason?.message || rGs.reason);
+        if (rU.status === 'fulfilled') u = rU.value;
+        else console.error('[i18n] Lỗi getUser locale:', rU.reason?.message || rU.reason);
     }
+
+    // 1. Cấu hình ngôn ngữ của server do admin đặt — vẫn thắng như cũ.
+    if (gs?.language) return getLanguage(gs.language);
 
     // 2. Ngôn ngữ của người dùng đã ghi nhớ trong DB.
     //    Đây là nguồn DUY NHẤT cho đường prefix (`w!`): interaction giả do prefixShim dựng
     //    không có `locale` lẫn `guildLocale` từ Discord.
-    if (userId) {
-        try {
-            const db = require('../database');
-            const u = await withTimeout(db.getUser(userId), DB_LOOKUP_TIMEOUT);
-            if (u?.locale) {
-                return getLanguage(u.locale);
-            }
-        } catch (e) {
-            console.error('[i18n] Lỗi getUser locale:', e);
-        }
-    }
+    if (u?.locale) return getLanguage(u.locale);
 
     // 3. Ngôn ngữ Discord của chính người dùng — và HỌC lại vào DB để lần sau
     //    (nhất là để lệnh prefix biết được, vì đường đó không có tín hiệu nào từ Discord).
