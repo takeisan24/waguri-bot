@@ -110,7 +110,20 @@ module.exports = {
         GEMINI_MODEL: process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite',
         // Trước đây là `gemini-3.1-pro-preview` — model này có hạn mức **bằng 0** trên gói
         // free (API trả thẳng `limit: 0`), tức người Premium nhận dịch vụ TỆ HƠN người thường.
-        GEMINI_PREMIUM_MODEL: process.env.GEMINI_PREMIUM_MODEL || 'gemini-3.6-flash',
+        // Người Premium dùng CHUNG model với người thường. Mặc định trỏ về GEMINI_MODEL.
+        //
+        // Trước 2026-08-23 khoá này ghim cứng 'gemini-3.6-flash', và đó là một cái bẫy:
+        // đối chiếu bảng hạn mức thật thì `gemini-3.5-flash-lite` (người thường) có RPD 500
+        // / RPM 15, còn `gemini-3.6-flash` chỉ có RPD **20** / RPM 5. Trong khi PREMIUM_DAILY
+        // hứa 150 lượt/ngày cho MỖI người, model đích chỉ chịu nổi 20 lượt/ngày cho TOÀN dự
+        // án. Tức người trả tiền nhận dịch vụ kém hơn người không trả — và vạch 24/20 trên
+        // bảng điều khiển cho thấy đường này đã chạy thật.
+        //
+        // Quyền lợi Premium là 150 lượt thay vì 15 (xem PREMIUM_DAILY). Đó là thứ đo được
+        // và không vỡ. "Model xịn hơn" là thứ người dùng không phân biệt nổi, mà lại đúng
+        // là chỗ sập. Muốn bật lại thì phải kiểm hạn mức model đó TRƯỚC — test/ai_model_premium
+        // sẽ chặn nếu trỏ sang model có hạn mức nhỏ hơn.
+        GEMINI_PREMIUM_MODEL: process.env.GEMINI_PREMIUM_MODEL || process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite',
         MAX_CONTEXT_TURNS: 6,    // số lượt hội thoại gần nhất giữ lại theo kênh
         // Lịch sử: 600 -> 2000 (2026-08-17) vì model dòng "thinking" tiêu token suy nghĩ
         // chung ngân sách này, làm cắt ngang từ. Nay 2000 -> 1200: flash-lite KHÔNG có pha

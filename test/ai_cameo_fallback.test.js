@@ -5,39 +5,74 @@ const db = require('../src/database');
 const gemini = require('../src/lib/ai/gemini');
 const { chatWithWaguri, clearUserContexts } = require('../src/lib/ai');
 
-test('AI Upgrades: Premium model fallback to Flash on failure', async () => {
+// VIẾT LẠI 2026-08-23. Bản cũ tên là "Premium model fallback to Flash on failure" và nó gác
+// một tầng lui mà nay không còn: người Premium từng bị định tuyến sang `gemini-3.6-flash`,
+// hỏng thì mới lui về model thường.
+//
+// Tầng lui đó sinh ra để chữa triệu chứng của một quyết định sai. Đối chiếu bảng hạn mức
+// thật thì `gemini-3.6-flash` có RPD 20 còn model thường có RPD 500 — người trả tiền bị đẩy
+// sang chỗ chật hơn 25 lần, rồi mỗi lượt lại tốn thêm một vòng thử-rồi-lui. Bỏ gốc thì
+// không cần tầng lui nữa.
+//
+// Nay gác điều ngược lại: người Premium phải đi CÙNG một model với người thường, ngay ở
+// đường chạy thật. `test/ai_model_premium.test.js` gác ở tầng cấu hình; cái này gác tầng
+// định tuyến trong `ai/index.js`.
+test('AI: người Premium dùng cùng model với người thường', async () => {
     const originalConsumeAiQuota = db.consumeAiQuota;
     const originalChat = gemini.chat;
 
-    let modelsAttempted = [];
+    const modelsAttempted = [];
 
-    // Mock consumeAiQuota for premium user
-    db.consumeAiQuota = async () => ({
-        allowed: true,
-        used: 1,
-        cap: 150,
-        premium: true
-    });
+    db.consumeAiQuota = async () => ({ allowed: true, used: 1, cap: 150, premium: true });
 
-    // Mock gemini chat to fail on the premium model, but succeed on the base model
     gemini.chat = async (prompt, history, text, options) => {
-        const model = options?.model;
-        modelsAttempted.push(model);
-        if (model === config.AI.GEMINI_PREMIUM_MODEL) {
-            throw new Error('Pro model rate limit/quota error');
-        }
-        return 'Fallback success response';
+        modelsAttempted.push(options?.model);
+        return 'Premium reply';
     };
 
     try {
         const res = await chatWithWaguri('channelFallback', 'userFallback', 'Tester', 'Hello', 'vi');
         assert.strictEqual(res.ok, true);
-        assert.strictEqual(res.reply, 'Fallback success response');
-        // Assert that both models were called in order: Premium, then Base
-        assert.deepStrictEqual(modelsAttempted, [config.AI.GEMINI_PREMIUM_MODEL, config.AI.GEMINI_MODEL]);
+        assert.strictEqual(res.reply, 'Premium reply');
+
+        assert.strictEqual(modelsAttempted.length, 1,
+            `Người Premium phải gọi ĐÚNG MỘT model, không thử rồi lui. Đã gọi: ${modelsAttempted.join(' -> ')}`);
+        assert.strictEqual(modelsAttempted[0], config.AI.GEMINI_MODEL,
+            `Người Premium bị đẩy sang '${modelsAttempted[0]}' thay vì model thường `
+            + `'${config.AI.GEMINI_MODEL}'. Xem chú thích ở config/index.js — model riêng cho `
+            + 'Premium từng có hạn mức nhỏ hơn 25 lần.');
     } finally {
         db.consumeAiQuota = originalConsumeAiQuota;
         gemini.chat = originalChat;
+    }
+});
+
+// Tầng lui cũ vẫn còn trong `ai/index.js` và phải giữ: ai đó đặt GEMINI_PREMIUM_MODEL qua
+// biến môi trường thì nó sống lại và là lưới an toàn. Test này gác cái lưới đó.
+test('AI: nếu ép GEMINI_PREMIUM_MODEL khác thì vẫn có lưới lui về model thường', async () => {
+    const originalConsumeAiQuota = db.consumeAiQuota;
+    const originalChat = gemini.chat;
+    const originalPremiumModel = config.AI.GEMINI_PREMIUM_MODEL;
+
+    const modelsAttempted = [];
+    config.AI.GEMINI_PREMIUM_MODEL = 'model-gia-de-thu';
+
+    db.consumeAiQuota = async () => ({ allowed: true, used: 1, cap: 150, premium: true });
+    gemini.chat = async (prompt, history, text, options) => {
+        modelsAttempted.push(options?.model);
+        if (options?.model === 'model-gia-de-thu') throw new Error('Model rate limit/quota error');
+        return 'Fallback success response';
+    };
+
+    try {
+        const res = await chatWithWaguri('channelFallback2', 'userFallback2', 'Tester', 'Hello', 'vi');
+        assert.strictEqual(res.ok, true);
+        assert.strictEqual(res.reply, 'Fallback success response');
+        assert.deepStrictEqual(modelsAttempted, ['model-gia-de-thu', config.AI.GEMINI_MODEL]);
+    } finally {
+        db.consumeAiQuota = originalConsumeAiQuota;
+        gemini.chat = originalChat;
+        config.AI.GEMINI_PREMIUM_MODEL = originalPremiumModel;
     }
 });
 

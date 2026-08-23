@@ -75,8 +75,13 @@ async function chat(systemPrompt, history, userText, options = {}) {
 
     // Thứ tự dự phòng, xếp theo ĐỘ TIN CẬY ĐO ĐƯỢC trên gói free chứ không theo "model xịn hơn":
     //   1. model chính (mặc định flash-lite — ~1,4s, chưa lần nào lỗi trong 8/8 lượt thử)
-    //   2. flash-lite bản -latest: cùng dòng, phòng khi bản ghim tạm trục trặc
-    //   3. gemini-3.6-flash: nặng hơn, hay 503, chỉ dùng khi cả hai trên đều hỏng
+    //   2. gemini-3.6-flash: nặng hơn, hay 503 — chỉ dùng khi model chính hỏng vì lý do
+    //      KHÔNG PHẢI cạn hạn mức (xem chỗ bắt lỗi bên dưới)
+    //
+    // ĐÃ BỎ `gemini-flash-lite-latest` khỏi chuỗi (2026-08-23). Nó KHÔNG phải cửa lui:
+    // hỏi thẳng API thì `modelVersion` nó trả về đúng `gemini-3.5-flash-lite`, tức cùng
+    // một model dưới hai cái tên, dùng chung một túi hạn mức. Bậc 1 dính 429 thì nó dính
+    // ngay lập tức, chỉ tổ tốn thêm 1,5 giây chờ.
     //
     // Bản cũ có `gemini-3.1-pro-preview` ở cuối — model đó có hạn mức **bằng 0** trên gói
     // free (API trả thẳng `limit: 0`), nên nhánh dự phòng cuối BẢO ĐẢM hỏng, chỉ tổ tốn thêm
@@ -85,7 +90,6 @@ async function chat(systemPrompt, history, userText, options = {}) {
     const primaryModel = options.model || config.AI.GEMINI_MODEL;
     const candidates = [
         primaryModel,
-        'gemini-flash-lite-latest',
         'gemini-3.6-flash'
     ].filter((m, i, self) => m && self.indexOf(m) === i);
 
@@ -146,6 +150,25 @@ async function chat(systemPrompt, history, userText, options = {}) {
                                  errMsg.includes('UNAVAILABLE') || errMsg.includes('high demand') ||
                                  errMsg.includes('RESOURCE_EXHAUSTED') ||
                                  errMsg.includes('not found') || errMsg.includes('not available');
+
+            // CẠN HẠN MỨC thì đừng lui sang model khác.
+            //
+            // Đo 2026-08-23 trên bảng hạn mức thật: model chính `gemini-3.5-flash-lite` có
+            // RPD 500, còn `gemini-3.6-flash` chỉ có RPD **20** — nhỏ hơn 25 lần, và đã vượt
+            // trần (24/20). Lui sang nó lúc cạn hạn mức là đổi một lỗi 429 lấy một lỗi 429
+            // khác, cộng 1,5 giây chờ vô ích, cộng việc đốt nốt hạn mức tí hon của nó.
+            //
+            // Đúng cái bẫy chú thích ở đầu hàm đã tự cảnh báo, chỉ khác con số: bản cũ có
+            // model `limit: 0` ở bậc cuối. Hạn mức 20 không bằng 0 nhưng gần như vậy.
+            //
+            // 503/404 thì lui vẫn có lý — đó là model trục trặc, không phải ta hết lượt.
+            const canHanMuc = err?.status === 429 || errMsg.includes('429') ||
+                              errMsg.includes('RESOURCE_EXHAUSTED');
+            if (canHanMuc) {
+                console.warn(`[GEMINI HẠN MỨC] '${modelName}' cạn hạn mức — không lui sang model khác vì model dự phòng có hạn mức nhỏ hơn nhiều.`);
+                throw err;
+            }
+
             if (isModelError) {
                 console.warn(`[GEMINI MODEL FALLBACK] Model '${modelName}' gặp lỗi quá tải/tạm dừng (${err?.status || '503/404'}), tự động thử lại sau 1.5s...`);
                 await new Promise(r => setTimeout(r, 1500));
