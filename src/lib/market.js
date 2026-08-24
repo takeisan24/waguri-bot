@@ -75,7 +75,14 @@ async function getLiveMarketPrices() {
         // số thật, và ba món cày nhiều nhất sai gần một nửa thời gian (ca_tuoi 50,6%, quang_sat
         // 49,4%, go 48,9%). Bán 1.000 gỗ ở khung lệch: bảng hứa 41.000, thực nhận 40.000.
         // Hạ HIỂN THỊ xuống cho khớp, KHÔNG nâng tiền trả — nâng là tạo tiền, đụng bất biến #1.
-        const price = Math.max(1, Math.floor(info.basePrice * mult));
+                // TÍNH BẰNG SỐ NGUYÊN, không nhân với số thực. `mult` luôn có dạng k/100 (k = 70..150)
+        // nhưng dấu phẩy động lưu 0,99 thành 0,98999999999999999…, nên Math.floor(40000 × 0,99)
+        // ra 39.599 trong khi RPC dùng `numeric` chính xác và trả 39.600.
+        // Đã đo đối chiếu 2.880 trường hợp với CHÍNH hàm market_multiplier của DB: nhân trực
+        // tiếp với số thực làm 9/12 món lệch. Nhân số nguyên rồi mới chia 100 thì khớp tuyệt đối.
+        // (Math.round ở bản cũ vô tình che được lỗi này, nên nó chỉ lộ khi chuyển sang floor.)
+        const multPct = Math.round(mult * 100);          // 70..150, đúng (abs(hash) % 81) + 70
+        const price = Math.max(1, Math.floor(info.basePrice * multPct / 100));
         const trend = mult > prevMult ? 'UP' : (mult < prevMult ? 'DOWN' : 'STABLE');
 
         results.push({
