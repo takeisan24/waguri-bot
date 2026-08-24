@@ -160,6 +160,12 @@ for (const file of fs.readdirSync(eventsPath).filter(f => f.endsWith('.js'))) {
 require('./src/lib/bans').loadBans()
     .then(n => console.log(`[SYSTEM] Đã nạp ${n} user bị ban.`))
     .catch(() => {});
+// Danh sách đang bị giam cũng giữ trong RAM, cùng lý do với ban: đường chặn nằm TRƯỚC ack
+// của 18 lệnh đông nhất, không được phép tra DB ở đó. Lỗi nạp -> rỗng -> fail-open (xem
+// `src/lib/jail.js`). Chỉ in khi có người, để khỏi thêm một dòng luôn-luôn-0 vào log khởi động.
+require('./src/lib/jail').loadJails()
+    .then(n => { if (n > 0) console.log(`[SYSTEM] Đã nạp ${n} user đang bị giam.`); })
+    .catch(() => {});
 require('./src/lib/event').loadEvent()
     .then(e => console.log(`[SYSTEM] Sự kiện: ${e.until && Date.now() < e.until ? `x${e.mult} (${e.name || 'không tên'})` : 'không có'}.`))
     .catch(() => {});

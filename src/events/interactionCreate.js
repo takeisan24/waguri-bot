@@ -1,9 +1,9 @@
 const { Events, MessageFlags } = require('discord.js');
 const { rateLimited } = require('../lib/ratelimit');
 const { isBanned } = require('../lib/bans');
-// `getJailForAck` chứ không phải `getJail`: cả hai nơi gọi trong file này đều nằm TRƯỚC khi
+// `isJailed` chứ không phải `getJail`: cả hai nơi gọi trong file này đều nằm TRƯỚC khi
 // lệnh kịp `deferReply()`, nên phải có trần thời gian (xem lib/jail.js).
-const { isBlocked, getJailForAck } = require('../lib/jail');
+const { isBlocked, isJailed } = require('../lib/jail');
 const { buildWaguriEmbed } = require('../lib/embed');
 const { recordMembership } = require('../lib/membership');
 const { logError, skipLog } = require('../lib/logger');
@@ -93,23 +93,6 @@ module.exports = {
                     .catch(e => console.error('[ROLE SYNC ERROR] interactionCreate:', e?.message || e));
             }
 
-            // BẮN SONG SONG hai lời tra DB trên đường trước ack.
-            //
-            // Chúng ĐỘC LẬP nhau (locale đọc `guild_settings`/`users`, jail đọc `users`) nhưng
-            // trước đây chạy NỐI TIẾP, mỗi cái có trần riêng 800ms -> tối đa 1,6s trong ngân
-            // sách 3 GIÂY của Discord. Đo thực tế (23-08) cho thấy nhánh jail đã chạm trần
-            // nhiều lần. Bắn cùng lúc rồi mới await: trần tổng trở lại còn 800ms.
-            //
-            // Chỉ khởi động nhánh jail cho 18 lệnh bị chặn — đừng thêm một vòng DB cho 100%
-            // traffic chỉ để tối ưu một nhánh nhỏ.
-            //
-            // `.catch()` là bắt buộc: giữa lúc bắn và lúc await có nhánh thoát sớm (user bị
-            // ban), khi đó promise này thành trôi nổi. Rơi về `null` = "không bị giam", đúng
-            // bằng chính sách fail-open mà `getJailForAck` đã chốt.
-            const jailPromise = isBlocked(interaction.commandName)
-                ? getJailForAck(interaction.user.id).catch(() => null)
-                : null;
-
             const locale = await getInteractionLanguage(interaction);
 
             // Chặn user bị ban
@@ -124,8 +107,9 @@ module.exports = {
             // Chặn khi đang bị giam (chỉ kiểm tra với lệnh kiếm tiền/cờ bạc/trộm).
             // Lời tra đã chạy song song với `getInteractionLanguage` ở trên — tới đây thường
             // đã xong sẵn, `await` không tốn thêm thời gian.
-            if (jailPromise) {
-                const jail = await jailPromise;
+            // Kiểm tra ĐỒNG BỘ, 0 vòng DB — xem `lib/jail.js` để biết vì sao đủ an toàn.
+            if (isBlocked(interaction.commandName)) {
+                const jail = isJailed(interaction.user.id);
                 if (jail) {
                     const time = `<t:${Math.floor(jail.until / 1000)}:R>`;
                     const embed = buildWaguriEmbed(interaction, 'error', {
@@ -184,14 +168,6 @@ module.exports = {
 
         // --- Component (button / select menu / modal) ---
         if (interaction.isButton()) {
-            // Cùng lý do với nhánh lệnh slash ở trên: nút cũng có hạn ack 3 giây, mà nhánh
-            // "work:again" trước đây await locale RỒI mới await jail (2 x 800ms nối tiếp).
-            // `customId` đọc được ngay, không cần chờ DB -> bắn trước để chạy song song.
-            // Gác bằng `startsWith` để KHÔNG thêm vòng DB nào cho mọi nút còn lại.
-            const jailPromise = interaction.customId.startsWith('work:again:') && isBlocked('work')
-                ? getJailForAck(interaction.user.id).catch(() => null)
-                : null;
-
             // Ngôn ngữ dùng chung cho MỌI handler nút (tránh ReferenceError ở các nhánh không tự khai báo).
             const locale = await getInteractionLanguage(interaction);
             // Nút "Tắt nhắc" trong DM nhắc vote -> tắt nhận nhắc cho user này.
@@ -311,8 +287,8 @@ module.exports = {
                 if (rateLimited(interaction.user.id)) {
                     return interaction.reply({ embeds: [buildWaguriEmbed(interaction, 'warning', { locale, description: t(locale, 'common.rate_limited') })], flags: MessageFlags.Ephemeral });
                 }
-                if (jailPromise) {
-                    const jail = await jailPromise;
+                if (isBlocked('work')) {
+                    const jail = isJailed(interaction.user.id);
                     if (jail) {
                         return interaction.reply({ embeds: [buildWaguriEmbed(interaction, 'error', { locale, title: t(locale, 'common.jail_title'), description: t(locale, 'common.jail_locked', { time: `<t:${Math.floor(jail.until / 1000)}:R>` }) })], flags: MessageFlags.Ephemeral });
                     }
@@ -327,7 +303,7 @@ module.exports = {
             // ACK TRƯỚC, LÀM SAU: handler này chạy HAI lời gọi DB (getUser + setProfilePublic)
             // rồi mới trả lời. Nút cũng có hạn ack 3 giây như lệnh slash, mà
             // SUPABASE_TIMEOUT_MS là 10 giây — DB chậm là nút chết với "This interaction
-            // failed". Ở đây KHÔNG bọc trần thời gian được như `getJailForAck`, vì nút cần
+            // failed". Ở đây KHÔNG né được vòng DB như chỗ chặn giam (nay đọc RAM), vì nút cần
             // biết trạng thái thật mới quyết định bật hay tắt; đoán mò sẽ ghi sai. Nên defer
             // ngay (ack trong vài mili giây, mua thêm 15 phút) rồi mới đụng DB.
             if (interaction.customId === 'profile:toggle') {

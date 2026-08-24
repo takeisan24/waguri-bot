@@ -2,7 +2,7 @@
 const db = require('../database.js');
 const config = require('../config');
 const { buildWaguriEmbed } = require('./embed');
-const { getJail } = require('./jail');
+const { getJail, refreshJail } = require('./jail');
 const { pvpEnabled } = require('./guildflags');
 const { COST, TIMINGS, STEAL, randPlant, produceId } = require('../data/plant');
 const { t } = require('./i18n');
@@ -164,7 +164,11 @@ async function stealPlant(thiefId, target, guildId, locale) {
             } else {
                 pen = t(locale, 'plant.steal_fail_jail_full', { time: STEAL.JAIL_HOURS });
             }
-        } else if (r.result === 'fined') {
+        }
+        // Đồng bộ RAM SAU KHI án đã chốt (kể cả khi bảo hiểm vừa giảm nửa) — đường chặn
+        // trước ack đọc bản đồ trong RAM, không đọc DB nữa. Thiếu dòng này thì người vừa
+        // bị giam vẫn chơi tiếp được cho tới lần khởi động sau. Xem `lib/jail.js`.
+        if (r.result === 'jailed') await refreshJail(thiefId); else if (r.result === 'fined') {
             pen = t(locale, 'plant.steal_fail_fined', { cost: fmt(STEAL.FINE, locale), currency: C });
         }
     }

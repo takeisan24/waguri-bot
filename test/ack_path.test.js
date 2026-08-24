@@ -23,7 +23,6 @@ const NGUON = path.join(__dirname, '..', 'src', 'events', 'interactionCreate.js'
 // Thêm tên vào đây = khẳng định hàm đó không thể chạy quá ~1 giây. Đừng thêm bừa.
 const CO_TRAN = {
     getInteractionLanguage: 'lib/i18n.js — cache 60s + withTimeout(ACK_LOOKUP_TIMEOUT) quanh mỗi lần đọc DB',
-    getJailForAck: 'lib/jail.js — withTimeout(ACK_LOOKUP_TIMEOUT), fail-open khi quá hạn',
 };
 
 // Hàm KHÔNG chạm DB, được phép xuất hiện trong biểu thức khởi tạo một promise chờ sẵn.
@@ -54,11 +53,13 @@ test('ack: mọi await trước command.execute() đều có trần thời gian'
     const viPham = [...new Set(goi)].filter(ten => !CO_TRAN[ten]);
 
     // ---- LỖ HỔNG ĐÃ TỪNG MỞ RA, NAY BỊT LẠI ----------------------------------------
-    // Ngày 24-08, hai lời tra DB trên đường này được cho chạy SONG SONG để hạ trần từ 1,6s
-    // xuống 800ms. Cách viết đổi từ `await getJailForAck(id)` thành:
+    // Ngày 24-08, hai lời tra DB trên đường này từng được cho chạy SONG SONG để hạ trần từ
+    // 1,6s xuống 800ms. Cách viết khi đó đổi từ `await getJailForAck(id)` thành:
     //     const jailPromise = ... ? getJailForAck(id).catch(...) : null;
     //     ...
     //     const jail = await jailPromise;
+    // (Sau đó vòng DB "giam" bị gỡ hẳn — xem test dưới — nhưng cái bẫy thì vẫn còn nguyên
+    // cho lần tới ai đó muốn bắn trước await sau, nên phần soi này ở lại.)
     // Regex ở trên chỉ bắt `await <tên>(`, nên `await jailPromise;` LỌT QUA — cổng vẫn xanh
     // trong khi nó đã thôi nhìn thấy lời gọi DB đó. Đúng kiểu mù mà chính file này sinh ra
     // để chặn. Nên soi thêm: mọi `await <biến>` trần thì biến ấy phải khởi tạo từ hàm CÓ TRẦN.
@@ -127,39 +128,25 @@ test('ack: withTimeout là helper DÙNG CHUNG, không phải hàm riêng tư', (
         `ACK_LOOKUP_TIMEOUT phải là số ms hợp lý cho ngân sách 3 giây (đang là ${ACK_LOOKUP_TIMEOUT})`);
 });
 
-test('ack: getJailForAck fail-open khi DB chậm, nhưng không nuốt kết quả thật', async () => {
-    const db = require('../src/database.js');
-    const { getJailForAck } = require('../src/lib/jail');
-    const { ACK_LOOKUP_TIMEOUT } = require('../src/lib/timeout');
+test('ack: chặn giam KHÔNG còn tra DB trên đường trước ack', () => {
+    // Đổi ngày 24-08. Trước đây chỗ này `await getJailForAck(id)` — một vòng DB nằm chắn
+    // trước ack của 18 lệnh đông nhất, và chính nó đẻ ra dòng `[JAIL] Tra cứu quá 800ms`.
+    // Đo lại thì nó canh một tính năng chưa từng chạy: `/rob` không giam ai (chỉ phạt tiền),
+    // chỉ trộm heo/cây mới giam, và tại thời điểm đo 0/391 người từng bị giam.
+    // Nay danh sách giam nằm trong RAM như `lib/bans.js`, kiểm tra ĐỒNG BỘ.
+    const jail = require('../src/lib/jail');
+    assert.strictEqual(typeof jail.isJailed, 'function', 'lib/jail.js phải export isJailed');
+    assert.strictEqual(jail.isJailed.constructor.name, 'Function',
+        'isJailed phải ĐỒNG BỘ — async ở đây là quay lại đúng vấn đề vừa gỡ');
+    assert.strictEqual(jail.getJailForAck, undefined,
+        'getJailForAck đã bị gỡ; còn sót nghĩa là vẫn có đường tra DB trước ack');
 
-    const goc = db.getJail;
-    try {
-        // 1) DB treo lâu hơn trần -> trả null (cho qua) và phải về TRƯỚC hạn ack 3 giây.
-        //    Đo thật: trước bản vá là 10.015ms (interaction chết), sau bản vá 811ms.
-        db.getJail = () => new Promise(r => setTimeout(() => r(null), ACK_LOOKUP_TIMEOUT * 5));
-        const t0 = Date.now();
-        assert.strictEqual(await getJailForAck('u_test'), null, 'Quá hạn phải fail-open (null)');
-        const ms = Date.now() - t0;
-        assert.ok(ms < 3000, `Phải về trước hạn ack 3 giây, thực tế ${ms}ms`);
-
-        // 2) DB lỗi -> cũng fail-open, không ném ra làm chết interaction.
-        db.getJail = () => Promise.reject(new Error('connection reset'));
-        assert.strictEqual(await getJailForAck('u_test'), null, 'DB lỗi phải fail-open, không ném');
-
-        // 3) QUAN TRỌNG: fail-open không được che mất người ĐANG bị giam khi DB trả lời bình
-        //    thường — nếu không, bản vá này biến thành lỗ hổng kinh tế.
-        const den = Date.now() + 60_000;
-        db.getJail = () => Promise.resolve({ jailed_until: new Date(den).toISOString(), jail_reason: 'trộm gà' });
-        const dangGiam = await getJailForAck('u_test');
-        assert.ok(dangGiam, 'DB trả lời bình thường thì người bị giam PHẢI vẫn bị chặn');
-        assert.strictEqual(dangGiam.reason, 'trộm gà');
-
-        // 4) Không bị giam -> null (giống fail-open, nhưng đi từ dữ liệu thật).
-        db.getJail = () => Promise.resolve(null);
-        assert.strictEqual(await getJailForAck('u_test'), null);
-    } finally {
-        db.getJail = goc;
-    }
+    const nguyen = fs.readFileSync(NGUON, 'utf8');
+    const doanTruocAck = boComment(
+        nguyen.slice(nguyen.indexOf('interaction.isChatInputCommand()'), nguyen.indexOf('await command.execute(')));
+    assert.ok(doanTruocAck.includes('isJailed('), 'Đường trước ack phải dùng isJailed()');
+    assert.ok(!/await\s+\w*[Jj]ail/.test(doanTruocAck),
+        'Không được await bất kỳ hàm giam nào trên đường trước ack');
 });
 
 test('ack: withTimeout trả undefined khi quá hạn, không ném lỗi', async () => {

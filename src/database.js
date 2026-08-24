@@ -1524,6 +1524,19 @@ async function getJail(userId) {
     }
 }
 
+/**
+ * Lấy MỌI user đang bị giam (dùng lúc khởi động để nạp vào RAM — xem `lib/jail.js`).
+ * Chỉ trả về người còn hạn giam, nên danh sách này thường rỗng hoặc rất ngắn.
+ */
+async function getJailedUsers() {
+    try {
+        const { data } = await supabase.from('users')
+            .select('user_id, jailed_until, jail_reason')
+            .gt('jailed_until', new Date().toISOString());
+        return data || [];
+    } catch (error) { console.error('[DATABASE ERROR] getJailedUsers():', error); return []; }
+}
+
 /** Atomic: thử nộp phạt, không đủ tiền thì giam. Trả {result:'fined'|'jailed'|'error', ...}. */
 async function jailOrFine(userId, fine, jailHours, reason) {
     try {
@@ -2640,6 +2653,7 @@ module.exports = {
     // ban
     setBanned,
     getBannedIds,
+    getJailedUsers,
     // event
     getGameEvent,
     setGameEvent,
