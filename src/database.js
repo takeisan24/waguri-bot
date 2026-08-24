@@ -1010,6 +1010,36 @@ async function getAchievements(userId) {
 /** Mở khóa nhiều thành tựu (bỏ qua trùng). Trả MẢNG id THỰC SỰ vừa chèn
  *  (ON CONFLICT DO NOTHING -> select chỉ trả dòng mới) để caller trao thưởng ĐÚNG 1 lần,
  *  chống trả thưởng trùng khi 2 lần gọi /achievements đua nhau. [] nếu không có gì mới / lỗi. */
+/**
+ * Mở khoá thành tựu + trả thưởng trong MỘT giao dịch (RPC của migration 0141).
+ *
+ * VÌ SAO CÓ, thay vì gọi `unlockAchievements` rồi `addMoney`: thành tựu đã ghi nhận thì
+ * KHÔNG mở lại được, nên chạy `/achievements` lần nữa cũng không trao lại. Hai lời gọi rời
+ * nhau mà bước sau hỏng là mất tiền vĩnh viễn. RPC gộp cả hai nên trả tiền lỗi thì phần ghi
+ * nhận bị cuộn lại, người chơi chạy lại là nhận được. (Đã chứng minh trên DB test 24-08
+ * bằng cách buộc bước cộng tiền tràn số: thành tựu KHÔNG bị ghi.)
+ *
+ * @param {string} userId
+ * @param {Record<string, number>} rewards `{ achievement_id: xu }` — chỉ ứng viên vừa đạt.
+ * @returns {Promise<{unlocked: string[], paid: number}|null>} `null` = LỖI DB: chưa ghi nhận
+ *   gì và chưa trả xu nào. Nơi gọi PHẢI phân biệt `null` với `{unlocked: [], paid: 0}`
+ *   ("không có thành tựu mới") — nhập nhèm hai thứ đó đúng là lớp lỗi đang được sửa.
+ */
+async function unlockAchievementsWithReward(userId, rewards) {
+    try {
+        if (!rewards || !Object.keys(rewards).length) return { unlocked: [], paid: 0 };
+        const { data, error } = await supabase.rpc('unlock_achievements_with_reward', {
+            p_user_id: userId,
+            p_rewards: rewards,
+        });
+        if (error) throw error;
+        return { unlocked: data?.unlocked || [], paid: Number(data?.paid || 0) };
+    } catch (error) {
+        console.error('[DATABASE ERROR] unlockAchievementsWithReward():', error);
+        return null;
+    }
+}
+
 async function unlockAchievements(userId, ids) {
     try {
         if (!ids || !ids.length) return [];
@@ -2557,6 +2587,7 @@ module.exports = {
     // achievements
     getAchievements,
     unlockAchievements,
+    unlockAchievementsWithReward,
     // marriage
     marryUsers,
     divorceUser,

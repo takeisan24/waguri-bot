@@ -152,6 +152,7 @@
     "transfer_item(p_from text, p_to text, p_item_id text, p_qty integer)",
     "transfer_money(p_from text, p_to text, p_amount bigint)",
     "transfer_money_with_tax(p_from text, p_to text, p_amount bigint, p_tax_pct real)",
+    "unlock_achievements_with_reward(p_user_id text, p_rewards jsonb)",
     "update_ai_memory(p_user_id text, p_key text, p_value text)",
     "upgrade_clan_shrine(p_clan_id bigint, p_req_gold bigint, p_req_wood integer, p_req_iron integer)",
     "upgrade_pet_skill(p_user text, p_skill text)",
