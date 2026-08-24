@@ -123,6 +123,56 @@ for (const [num, group] of byNumber) {
     }
 }
 
+// ---------- R1b: số migration trùng GIỮA CÁC WORKTREE ----------
+// R1 ở trên chỉ nhìn thư mục migration của CÂY ĐANG ĐỨNG. Với nhiều phiên làm song song trên
+// nhiều worktree, đó là điểm mù có hệ thống: mỗi cây chỉ thấy số của mình nên đều XANH, và
+// nó chỉ nổ lúc ai đó rebase — tức người viết sau phải làm lại sau khi đã viết xong.
+//
+// Đã suýt xảy ra thật (2026-08-24): cây chính có `0141_thanh_tuu_gop_giao_dich.sql` trong khi
+// worktree `emdash/pet-update-4o8` có `0141_pet_rarity_ascend_hatch.sql`. Cả hai cổng đều
+// xanh. Đây đúng hạng lỗi đã gây sự cố chợ tháng 8 — trùng số làm file không bao giờ được
+// áp, kết quả là bán mọi thứ 500 xu.
+//
+// CÙNG số + CÙNG tên = không sao (chỉ là cùng một migration có mặt ở hai cây).
+// CÙNG số + KHÁC tên = va chạm thật, chặn ngay.
+//
+// Hỏng ở bước nào cũng bỏ qua im lặng: không có git, không có worktree nào, hay CI chạy trong
+// bản chép rời — cổng này KHÔNG được cản trở luồng bình thường.
+try {
+    const { execFileSync } = require('node:child_process');
+    const ra = execFileSync('git', ['worktree', 'list', '--porcelain'], {
+        cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'],
+    });
+    const duongDan = ra.split('\n')
+        .filter(l => l.startsWith('worktree '))
+        .map(l => l.slice('worktree '.length).trim())
+        .filter(Boolean)
+        .filter(d => path.resolve(d) !== path.resolve(ROOT));
+
+    for (const cay of duongDan) {
+        const thuMuc = path.join(cay, 'supabase', 'migrations');
+        let khac;
+        try {
+            khac = fs.readdirSync(thuMuc).filter(f => f.endsWith('.sql'));
+        } catch { continue; }                       // worktree không có thư mục này -> bỏ qua
+
+        const theoSo = new Map();
+        for (const f of khac) {
+            const m = f.match(/^(\d{4}[a-z]?)_/);
+            if (m) theoSo.set(m[1], f);
+        }
+        for (const [num, group] of byNumber) {
+            const kia = theoSo.get(num);
+            if (!kia) continue;
+            if (group.includes(kia)) continue;      // cùng số CÙNG tên -> cùng một migration
+            for (const f of group) {
+                add(f, 'R1_duplicate_number_worktree',
+                    `số ${num} cũng đang được dùng bởi \`${kia}\` ở worktree ${cay}`);
+            }
+        }
+    }
+} catch { /* không có git / lệnh hỏng -> bỏ qua */ }
+
 for (const f of files) {
     const { sql, fns } = parsed.get(f);
 
@@ -217,6 +267,7 @@ if (process.argv.includes('--update-allowlist')) {
 const fresh = violations.filter(v => !allowSet.has(key(v)));
 const RULE_HINT = {
     R1_duplicate_number: 'Đổi tên file sang số kế tiếp CHƯA dùng (chỉ với migration chưa apply prod).',
+    R1_duplicate_number_worktree: 'Hai worktree đang cùng dùng một số migration. Bên nào CHƯA áp lên test/prod thì đổi số — thống nhất với phiên kia trước khi đẩy.',
     R2_secdef_no_search_path: 'Thêm  SET search_path = pg_catalog, public  vào phần khai báo hàm.',
     R3_read_then_write_no_lock: 'Thêm FOR UPDATE vào câu SELECT … INTO + guard row-count sau khi ghi.',
     R4_grant_write_rpc_to_anon: 'REVOKE khỏi public/anon/authenticated, chỉ GRANT cho service_role.',
