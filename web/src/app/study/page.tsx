@@ -8,6 +8,7 @@ import {
   buTruThoiGianTamDung,
   hoanThanhPhienHoc,
   huyPhienHoc,
+  dapNhipPhienHoc,
   dangDangNhap,
 } from "./actions";
 
@@ -251,6 +252,14 @@ export default function WebStudyRoomPage() {
       document.title = original;
     };
   }, [isRunning, timeLeft, isBreak, t]);
+
+  // Nhịp tim: báo cho máy chủ biết tab này còn mở. Chạy KỂ CẢ khi đang tạm dừng — tạm dừng vẫn
+  // là đang giữ phiên. 60 giây một nhịp, ngưỡng bỏ hoang phía DB là 5 phút nên lỡ vài nhịp vẫn ổn.
+  useEffect(() => {
+    if (!phienDb) return;
+    const id = setInterval(() => { void dapNhipPhienHoc(phienDb.id); }, 60_000);
+    return () => clearInterval(id);
+  }, [phienDb]);
 
   // Có đăng nhập Discord hay không quyết định phiên này có được ghi nhận & thưởng hay không.
   useEffect(() => {

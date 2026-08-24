@@ -2800,6 +2800,7 @@ module.exports = {
     resolveExpiredAuctions,
     // study system
     startStudySession,
+    beatStudySession,
     completeStudySession,
     cancelStudySession,
     getStudyStatus,
@@ -3204,26 +3205,59 @@ async function addPetSkillPoints(userId, points) {
 // ============================================================
 //  HỌC TẬP & POMODORO (Study System)
 // ============================================================
+// Đi qua RPC `start_study_session_guarded` — CỬA CHUNG với web. Trước đây hàm này INSERT thẳng
+// và chỉ dựa vào Map `activeSessions` trong RAM để chặn trùng, nên đo được 3 lỗi thật: mở song
+// song một phiên bot + một phiên web (2 dòng ACTIVE), nhân đôi thưởng (1500 xu cho 15 phút thay
+// vì 750), và phiên bỏ hoang sau khi bot restart chặn nhầm người dùng bên web tới ~148 phút.
+// Bảo đảm cuối cùng nằm ở chỉ mục duy nhất một phần trong 0145, không ở đoạn kiểm tra nào cả.
+//
+// Trả về: {id, ends_at, ...} khi tạo được; ném lỗi ALREADY_ACTIVE để nơi gọi phân biệt được
+// "đang có phiên khác" với "DB hỏng" — hai chuyện đó KHÔNG được gộp thành cùng một `null`.
 async function startStudySession(userId, guildId, sessionName, durationMinutes) {
     try {
-        const endsAt = new Date(Date.now() + durationMinutes * 60 * 1000).toISOString();
-        const { data, error } = await supabase
-            .from('user_study_sessions')
-            .insert({
-                user_id: userId,
-                guild_id: guildId,
-                session_name: sessionName || 'Pomodoro Study',
-                duration_minutes: durationMinutes,
-                ends_at: endsAt,
-                status: 'ACTIVE'
-            })
-            .select()
-            .single();
+        const { data, error } = await supabase.rpc('start_study_session_guarded', {
+            p_user_id: userId,
+            p_guild_id: guildId,
+            p_session_name: sessionName || 'Pomodoro Study',
+            p_duration_minutes: durationMinutes
+        });
         if (error) throw error;
-        return data;
+
+        if (!data?.success) {
+            if (data?.error === 'already_active') {
+                const err = new Error('ALREADY_ACTIVE');
+                err.code = 'ALREADY_ACTIVE';
+                err.session = data;
+                throw err;
+            }
+            throw new Error(`start_study_session_guarded: ${data?.error || 'không rõ'}`);
+        }
+
+        return { id: data.session_id, ends_at: data.ends_at, duration_minutes: data.duration_minutes };
     } catch (e) {
+        if (e && e.code === 'ALREADY_ACTIVE') throw e;   // để lệnh /study nói đúng lý do
         logError('startStudySession', e, { userId, guildId, durationMinutes });
         return null;
+    }
+}
+
+/**
+ * Đập nhịp cho phiên học: báo "tôi còn sống". Cửa vào dọn phiên bỏ hoang dựa vào cột này chứ
+ * KHÔNG dựa vào ends_at — nhờ đó bot chết giữa chừng không khoá người dùng hàng tiếng đồng hồ.
+ * Không dùng cách "bot khởi động thì quét sạch" vì bot chạy sharded: một shard restart sẽ xoá
+ * phiên của người đang học trên shard khác.
+ */
+async function beatStudySession(sessionId, userId) {
+    try {
+        const { data, error } = await supabase.rpc('beat_study_session', {
+            p_session_id: sessionId,
+            p_user_id: userId
+        });
+        if (error) throw error;
+        return !!data?.success;
+    } catch (e) {
+        logError('beatStudySession', e, { sessionId, userId });
+        return false;
     }
 }
 

@@ -60,6 +60,14 @@ module.exports = {
                     flags: MessageFlags.Ephemeral
                 });
             }
+            // DB hỏng KHÔNG được nói thành "đang có phiên khác" — hai chuyện khác hẳn nhau và
+            // người dùng sẽ đi tìm phiên không tồn tại (đúng lớp lỗi của 45d7c92).
+            if (!result.success) {
+                return interaction.reply({
+                    content: t(locale, 'common.retry_later'),
+                    flags: MessageFlags.Ephemeral
+                });
+            }
 
             const session = result.session;
             const embed = studyLib.buildStudyEmbed(session, session.remainingMs);

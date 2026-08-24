@@ -137,6 +137,58 @@ test('biên số phút của web trùng biên của lệnh /study bên bot', () 
     assert.equal(sqlKep[1], botKep[2], `Biên TRÊN lệch: web ${sqlKep[1]} vs bot ${botKep[2]} phút.`);
 });
 
+// ============================================================
+// MỘT CỬA DUY NHẤT (0145). Ba chốt dưới đây canh ba thứ đã ĐO ĐƯỢC là hỏng trước khi vá:
+// bot mở song song phiên thứ hai (2 dòng ACTIVE -> nhân đôi thưởng 1500 xu cho 15 phút),
+// và 10 lời gọi đồng thời tạo được 2 dòng (2/3 lượt).
+// ============================================================
+const SQL145 = path.join(GOC, 'supabase', 'migrations', '0145_study_mot_cua_duy_nhat.sql');
+
+test('bot KHÔNG được chèn thẳng vào user_study_sessions, phải qua cửa chung', () => {
+    const s = boCmt(fs.readFileSync(path.join(GOC, 'src', 'database.js'), 'utf8'));
+
+    // `.from('user_study_sessions').insert(` = vòng qua cửa chung -> mất cả chốt trùng phiên
+    // lẫn chỗ đặt nhịp tim ban đầu.
+    const chenThang = /from\(\s*['"]user_study_sessions['"]\s*\)[\s\S]{0,200}?\.insert\(/.test(s);
+    assert.ok(!chenThang,
+        'src/database.js chèn thẳng vào `user_study_sessions`. Phải gọi RPC '
+        + '`start_study_session_guarded` — chốt chống trùng phiên nằm ở đó, chèn thẳng là đi vòng '
+        + 'qua nó (đã đo: mở được phiên bot + phiên web song song -> 1500 xu cho 15 phút).');
+
+    assert.ok(/start_study_session_guarded/.test(s),
+        'src/database.js không gọi `start_study_session_guarded` — cửa chung của cả bot lẫn web.');
+});
+
+test('có chỉ mục duy nhất một phần — thứ duy nhất bịt được đua tranh', () => {
+    assert.ok(fs.existsSync(SQL145), 'Không thấy 0145 — đổi tên thì phải sửa cổng này.');
+    const sql = boCmtSql(fs.readFileSync(SQL145, 'utf8'));
+
+    const re = /CREATE UNIQUE INDEX[\s\S]{0,120}?ON public\.user_study_sessions\s*\(\s*user_id\s*\)\s*WHERE\s+status\s*=\s*'ACTIVE'/i;
+    assert.ok(re.test(sql),
+        'Thiếu chỉ mục duy nhất một phần trên (user_id) WHERE status=\'ACTIVE\'. Kiểm-rồi-mới-chèn '
+        + 'KHÔNG đủ: READ COMMITTED không khoá gì lúc SELECT vì chưa có dòng nào để khoá. Đã đo: '
+        + '10 lời gọi đồng thời -> 2/3 lượt tạo được 2 dòng ACTIVE.');
+
+    assert.ok(/unique_violation/i.test(sql),
+        'Cửa vào không bắt `unique_violation`. Không bắt thì lời gọi thua cuộc nhận lỗi SQL thô '
+        + 'thay vì câu trả lời "đang có phiên khác".');
+});
+
+test('nhịp tim phải đập TRƯỚC nhánh thoát sớm khi tạm dừng', () => {
+    const s = boCmt(fs.readFileSync(LIB_BOT, 'utf8'));
+
+    const than = s.match(/setInterval\(async \(\) => \{([\s\S]*?)\n {4}\}, 30_000\)/);
+    assert.ok(than, 'Không tìm thấy vòng lặp 30 giây trong src/lib/study.js — đổi cách viết thì phải sửa cổng này.');
+
+    const viTriNhip = than[1].indexOf('beatStudySession');
+    const viTriThoat = than[1].search(/if\s*\(\s*session\.isPaused\s*\)\s*return/);
+    assert.ok(viTriNhip !== -1, 'Vòng lặp 30 giây không đập nhịp — phiên đang chạy sẽ bị coi là bỏ hoang sau 5 phút.');
+    assert.ok(viTriThoat !== -1, 'Không thấy nhánh thoát sớm khi tạm dừng.');
+    assert.ok(viTriNhip < viTriThoat,
+        'Nhịp tim đặt SAU `if (session.isPaused) return`. Ai tạm dừng quá 5 phút sẽ bị cửa vào '
+        + 'coi là bỏ hoang và huỷ mất phiên — tạm dừng vẫn là đang giữ phiên.');
+});
+
 test('phòng học bài không còn dùng nhạc của easter egg HVL', () => {
     // Bỏ chú thích trước khi quét: khối chú thích trong page.tsx CÓ nhắc tên `hvl_audio` để
     // giải thích vì sao đã thay nhạc. Quét cả chú thích thì cổng tự báo đỏ trên chính bản đã vá

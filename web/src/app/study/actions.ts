@@ -135,6 +135,29 @@ export async function hoanThanhPhienHoc(sessionId: number): Promise<KetQuaHoanTh
     }
 }
 
+/**
+ * Báo "tab này còn mở, phiên còn sống". Gọi mỗi 60 giây, KỂ CẢ khi đang tạm dừng.
+ * Cửa vào dọn phiên bỏ hoang dựa vào nhịp này chứ không dựa vào `ends_at` — nhờ vậy đóng tab
+ * giữa chừng chỉ khoá 5 phút thay vì tới hàng tiếng.
+ */
+export async function dapNhipPhienHoc(sessionId: number): Promise<{ ok: boolean }> {
+    try {
+        const userId = await layDiscordId();
+        if (!userId) return { ok: false };
+
+        const admin = createAdminClient();
+        const { data, error } = await admin.rpc("beat_study_session", {
+            p_session_id: Math.floor(Number(sessionId)),
+            p_user_id: userId,
+        });
+        if (ghiLoi("study/dapNhipPhienHoc", error)) return { ok: false };
+        return { ok: !!data?.success };
+    } catch (e) {
+        ghiLoi("study/dapNhipPhienHoc", { message: String(e) });
+        return { ok: false };
+    }
+}
+
 /** Bỏ phiên giữa chừng — không thưởng, giống hệt `/study stop` bên bot. */
 export async function huyPhienHoc(sessionId: number): Promise<{ ok: boolean }> {
     try {

@@ -176,6 +176,9 @@ function scheduleFinishTimer(session, delayMs) {
  * Start a new Study Session
  */
 async function startStudySession(userId, guildId, sessionName, durationMinutes, interaction) {
+    // Chốt trong RAM chỉ tiết kiệm một vòng gọi DB cho trường hợp hiển nhiên. Nó KHÔNG đủ để
+    // chặn trùng: Map này rỗng sau mỗi lần bot restart, và nó không biết gì về phiên mở bên web.
+    // Chốt thật nằm ở DB (cửa chung + chỉ mục duy nhất) qua db.startStudySession bên dưới.
     if (activeSessions.has(userId)) {
         return { success: false, reason: 'ALREADY_ACTIVE' };
     }
@@ -183,9 +186,25 @@ async function startStudySession(userId, guildId, sessionName, durationMinutes, 
     const duration = Math.max(15, Math.min(120, durationMinutes || 25));
     const name = sessionName || 'Pomodoro Study';
 
-    // Insert DB session record
-    const dbSession = await db.startStudySession(userId, guildId, name, duration);
-    const dbSessionId = dbSession?.id || null;
+    // Insert DB session record — cửa chung sẽ từ chối nếu người này đang có phiên ở BẤT KỲ đâu
+    // (Discord hay web). Ném ALREADY_ACTIVE để phân biệt với DB hỏng.
+    let dbSession;
+    try {
+        dbSession = await db.startStudySession(userId, guildId, name, duration);
+    } catch (e) {
+        if (e && e.code === 'ALREADY_ACTIVE') {
+            return { success: false, reason: 'ALREADY_ACTIVE' };
+        }
+        throw e;
+    }
+
+    // DB hỏng thật (đã ghi log ở tầng dưới) -> KHÔNG mở phiên chạy chay, vì phiên không có
+    // dbSessionId thì tới lúc hết giờ sẽ không cộng được thưởng nào, mà người dùng đã ngồi đủ giờ.
+    if (!dbSession) {
+        return { success: false, reason: 'DB_ERROR' };
+    }
+
+    const dbSessionId = dbSession.id;
 
     const totalMs = duration * 60 * 1000;
     const session = {
@@ -211,6 +230,13 @@ async function startStudySession(userId, guildId, sessionName, durationMinutes, 
 
     // Setup interval for progress bar embed updates every 30s
     session.updateInterval = setInterval(async () => {
+        // ĐẬP NHỊP TRƯỚC mọi thứ khác, và đập cả khi ĐANG TẠM DỪNG: tạm dừng vẫn là đang giữ
+        // phiên. Nếu để lệnh này sau `if (session.isPaused) return` thì ai tạm dừng quá 5 phút
+        // sẽ bị cửa vào coi là bỏ hoang và huỷ mất phiên.
+        if (session.dbSessionId) {
+            await db.beatStudySession(session.dbSessionId, session.userId).catch(() => {});
+        }
+
         if (session.isPaused) return;
 
         const remaining = session.endsAt - Date.now();
