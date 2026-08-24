@@ -3,26 +3,56 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useLanguage } from "../../components/LanguageProvider";
+import {
+  batDauPhienHoc,
+  buTruThoiGianTamDung,
+  hoanThanhPhienHoc,
+  huyPhienHoc,
+  dangDangNhap,
+} from "./actions";
+
+// Năm kênh nhạc LOFI thật (Pixabay Content License — miễn phí, không cần ghi công).
+//
+// Bộ cũ lấy nhạc dự phòng từ bucket `hvl_audio` — đó là album rap của easter egg HVL/MCK, sai
+// hoàn toàn không khí phòng học. Nay mỗi kênh có hai nguồn CÙNG MỘT BÀI:
+//   · `url`         -> CDN Pixabay: miễn phí băng thông, cache toàn cầu, `Access-Control-Allow-Origin: *`
+//   · `fallbackUrl` -> bản sao trong Supabase Storage bucket `study_lofi` của chính dự án
+//
+// Vì sao phải có bản sao: một trong ba link Pixabay của bộ cũ đã chết thật (403 AccessDenied),
+// và khi CSP còn chặn thì không ai nhận ra. Pixabay gỡ bài lúc nào là quyền của họ; bản sao
+// nằm trong Storage của mình thì không ai gỡ được.
+const LOFI_MIRROR = "https://kuvlkaxregnanhzgqrbp.supabase.co/storage/v1/object/public/study_lofi";
 
 const LOFI_STREAMS = [
   {
-    id: "kikyo",
-    name: "🌸 Kikyo Lofi Chill",
-    url: "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3",
-    fallbackUrl: "https://kuvlkaxregnanhzgqrbp.supabase.co/storage/v1/object/public/hvl_audio/01.mp3"
+    id: "study",
+    name: "🌸 Kikyo Study Session",
+    url: "https://cdn.pixabay.com/audio/2026/07/15/audio_6b51a3af77.mp3",
+    fallbackUrl: `${LOFI_MIRROR}/study-session.mp3`,
   },
   {
-    id: "rainy",
-    name: "🍵 Rainy Gekka Tea Shop",
-    url: "https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3",
-    fallbackUrl: "https://kuvlkaxregnanhzgqrbp.supabase.co/storage/v1/object/public/hvl_audio/05.mp3"
+    id: "coffee",
+    name: "☕ Gekka Coffee Shop",
+    url: "https://cdn.pixabay.com/audio/2026/07/15/audio_6353298add.mp3",
+    fallbackUrl: `${LOFI_MIRROR}/coffee-shop.mp3`,
   },
   {
-    id: "midnight",
-    // URL pixabay của kênh này đã chết (403 AccessDenied) -> luôn rơi xuống fallbackUrl.
-    url: "https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3",
-    name: "🌙 Midnight Academy",
-    fallbackUrl: "https://kuvlkaxregnanhzgqrbp.supabase.co/storage/v1/object/public/hvl_audio/10.mp3"
+    id: "sunny",
+    name: "🌤️ Sunny Terrace",
+    url: "https://cdn.pixabay.com/audio/2026/07/15/audio_c93b94ebff.mp3",
+    fallbackUrl: `${LOFI_MIRROR}/sunny-cafe.mp3`,
+  },
+  {
+    id: "diner",
+    name: "🍜 Midnight Diner",
+    url: "https://cdn.pixabay.com/audio/2026/07/15/audio_6c889c5533.mp3",
+    fallbackUrl: `${LOFI_MIRROR}/restaurant.mp3`,
+  },
+  {
+    id: "night",
+    name: "🌙 Quiet Night Beats",
+    url: "https://cdn.pixabay.com/audio/2026/07/25/audio_4bc2101521.mp3",
+    fallbackUrl: `${LOFI_MIRROR}/chill-vlog.mp3`,
   },
 ];
 
@@ -46,10 +76,25 @@ export default function WebStudyRoomPage() {
   const [volume, setVolume] = useState(0.5);
   const [audioStatus, setAudioStatus] = useState<string | null>(null);
 
+  // --- Phiên được DB ghi nhận (chỉ khi đã đăng nhập) ---
+  const [daDangNhap, setDaDangNhap] = useState<boolean | null>(null);  // null = chưa biết
+  const [tenPhien, setTenPhien] = useState("");
+  const [phienDb, setPhienDb] = useState<{ id: number } | null>(null);
+  const [thongBao, setThongBao] = useState<string | null>(null);
+  const [phanThuong, setPhanThuong] = useState<
+    { coins: number; exp: number; points: number; streak: number; minutes: number } | null
+  >(null);
+  const [dangGoi, setDangGoi] = useState(false);
+
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const chimeCtxRef = useRef<AudioContext | null>(null);
   // Mốc kết thúc tuyệt đối (epoch ms) của pha đang chạy; null = đồng hồ đang dừng.
   const deadlineRef = useRef<number | null>(null);
+  // Lúc bấm tạm dừng, để khi học tiếp còn biết đã nghỉ bao lâu mà dời hạn phía máy chủ.
+  const tamDungLucRef = useRef<number | null>(null);
+  // Khoá chống gọi chốt phiên nhiều lần: nhịp đồng hồ chạy mỗi 250ms, không khoá thì một lần
+  // hết giờ bắn ra cả chục lượt gọi máy chủ.
+  const dangChotRef = useRef(false);
 
   const isBreak = phase === "break";
   // Mẫu số phải theo ĐỘ DÀI CỦA PHA HIỆN TẠI. Trước đây luôn lấy duration*60 nên vừa vào giờ
@@ -112,6 +157,13 @@ export default function WebStudyRoomPage() {
    * Việc chuyển pha đặt ngay trong callback của timer (hệ thống ngoài) — không phải trong thân
    * effect — nên không sinh cascading render.
    */
+  /** Chuyển sang pha nghỉ (dùng chung cho cả phiên có DB lẫn phiên chạy chay). */
+  const vaoGioNghi = useCallback(() => {
+    deadlineRef.current = Date.now() + BREAK_MINUTES * 60 * 1000;
+    setPhase("break");
+    setTimeLeft(BREAK_MINUTES * 60);
+  }, []);
+
   const tick = useCallback(() => {
     if (deadlineRef.current === null) return;
     const remaining = Math.max(0, Math.round((deadlineRef.current - Date.now()) / 1000));
@@ -120,19 +172,65 @@ export default function WebStudyRoomPage() {
       return;
     }
 
-    // Hết giờ: học xong -> tự chạy tiếp giờ nghỉ; nghỉ xong -> dừng hẳn, chờ bấm Bắt đầu.
-    playChime();
     if (phase === "focus") {
-      deadlineRef.current = Date.now() + BREAK_MINUTES * 60 * 1000;
-      setPhase("break");
-      setTimeLeft(BREAK_MINUTES * 60);
-    } else {
-      deadlineRef.current = null;
-      setPhase("focus");
-      setTimeLeft(duration * 60);
-      setIsRunning(false);
+      // Phiên có DB: máy chủ mới là bên quyết định đã đủ giờ hay chưa.
+      if (phienDb) {
+        // Đang chờ máy chủ trả lời -> KHÔNG làm gì thêm. Thiếu nhánh này thì nhịp 250ms kế tiếp
+        // rơi xuống đường "chạy chay" bên dưới, nhảy sang giờ nghỉ và xoá mất kết quả đang chờ.
+        if (dangChotRef.current) return;
+        dangChotRef.current = true;
+        setDangGoi(true);
+        void hoanThanhPhienHoc(phienDb.id)
+          .then((kq) => {
+            if (kq.ok) {
+              playChime();
+              setPhanThuong({ coins: kq.coins, exp: kq.exp, points: kq.points, streak: kq.streak, minutes: kq.minutes });
+              setThongBao(null);
+              setPhienDb(null);
+              vaoGioNghi();
+              return;
+            }
+            if (kq.ma === "chua_het_gio") {
+              // Đồng hồ máy này chạy nhanh hơn máy chủ. KHÔNG kết thúc phiên — dời hạn theo số
+              // giây máy chủ báo rồi đếm tiếp. Không có cái này thì lệch đồng hồ vài giây làm
+              // người dùng mất trắng phần thưởng.
+              deadlineRef.current = Date.now() + (kq.giayConLai || 1) * 1000;
+              dangChotRef.current = false;
+              return;
+            }
+            // Các nhánh còn lại đều là hỏng thật -> nói thẳng, KHÔNG hiện phần thưởng giả.
+            // `chua_choi_bot` cố ý để phiên nguyên ACTIVE phía DB (để còn nhận thưởng sau khi
+            // có ví). Nhưng người dùng không có nút nào để quay lại nhận, mà phiên treo đó lại
+            // khoá lần bắt đầu kế tiếp bằng thông báo "đang có phiên khác" — sai và khó hiểu.
+            // Nên dọn hẳn ở đây: mất phiên là điều không tránh được khi không có ví để cộng.
+            if (kq.ma === "chua_choi_bot") void huyPhienHoc(phienDb.id);
+            setPhienDb(null);
+            setThongBao(
+              kq.ma === "chua_choi_bot" ? t("study.err_no_game_account")
+                : kq.ma === "chua_dang_nhap" ? t("study.err_login_lost")
+                  : kq.ma === "khong_thay_phien" ? t("study.err_session_gone")
+                    : t("study.err_db")
+            );
+            playChime();
+            vaoGioNghi();
+          })
+          .finally(() => setDangGoi(false));
+        return;
+      }
+
+      // Phiên chạy chay (chưa đăng nhập): không có gì để chốt.
+      playChime();
+      vaoGioNghi();
+      return;
     }
-  }, [phase, duration, playChime]);
+
+    // Hết giờ nghỉ -> dừng hẳn, chờ bấm Bắt đầu cho phiên mới.
+    playChime();
+    deadlineRef.current = null;
+    setPhase("focus");
+    setTimeLeft(duration * 60);
+    setIsRunning(false);
+  }, [phase, duration, playChime, phienDb, vaoGioNghi, t]);
 
   useEffect(() => {
     if (!isRunning) return;
@@ -153,6 +251,13 @@ export default function WebStudyRoomPage() {
       document.title = original;
     };
   }, [isRunning, timeLeft, isBreak, t]);
+
+  // Có đăng nhập Discord hay không quyết định phiên này có được ghi nhận & thưởng hay không.
+  useEffect(() => {
+    let huy = false;
+    void dangDangNhap().then((v) => { if (!huy) setDaDangNhap(v); });
+    return () => { huy = true; };
+  }, []);
 
   useEffect(() => {
     if (audioRef.current) {
@@ -241,33 +346,98 @@ export default function WebStudyRoomPage() {
       });
   };
 
-  const handleStart = () => {
+  const handleStart = async () => {
     // Mở AudioContext ngay trong user-gesture để chuông báo hết giờ chắc chắn kêu được.
     primeChime();
-    // Tiếp tục từ đúng chỗ đang dừng: mốc kết thúc = bây giờ + phần còn lại.
-    deadlineRef.current = Date.now() + timeLeft * 1000;
+    setPhanThuong(null);
+    setThongBao(null);
+
+    // Học tiếp sau khi tạm dừng: dời hạn phía máy chủ đúng bằng khoảng đã nghỉ, vì đồng hồ
+    // máy chủ không biết mình vừa bấm tạm dừng.
+    if (phienDb && tamDungLucRef.current !== null) {
+      const giayDaDung = Math.round((Date.now() - tamDungLucRef.current) / 1000);
+      tamDungLucRef.current = null;
+      deadlineRef.current = Date.now() + timeLeft * 1000;
+      setIsRunning(true);
+      await buTruThoiGianTamDung(phienDb.id, giayDaDung);
+      return;
+    }
+
+    // Chưa đăng nhập -> vẫn cho học, chỉ là không ghi nhận gì. Không chặn tính năng.
+    if (!daDangNhap || phase === "break") {
+      deadlineRef.current = Date.now() + timeLeft * 1000;
+      setIsRunning(true);
+      return;
+    }
+
+    // Phiên mới, có đăng nhập -> để máy chủ chốt mốc kết thúc.
+    setDangGoi(true);
+    const kq = await batDauPhienHoc(duration, tenPhien);
+    setDangGoi(false);
+
+    if (!kq.ok) {
+      setThongBao(
+        kq.ma === "dang_co_phien" ? t("study.err_already_active")
+          : kq.ma === "chua_dang_nhap" ? t("study.err_login_lost")
+            : t("study.err_db")
+      );
+      // Vẫn cho đồng hồ chạy chay để người dùng không bị chặn đứng — nhưng đã báo rõ là
+      // phiên này KHÔNG được ghi nhận.
+      deadlineRef.current = Date.now() + timeLeft * 1000;
+      setIsRunning(true);
+      return;
+    }
+
+    dangChotRef.current = false;
+    setPhienDb({ id: kq.sessionId });
+    // Mốc kết thúc lấy theo ĐỒNG HỒ MÁY CHỦ, không phải máy người dùng.
+    deadlineRef.current = new Date(kq.endsAt).getTime();
+    setTimeLeft(Math.max(1, Math.round((new Date(kq.endsAt).getTime() - Date.now()) / 1000)));
     setIsRunning(true);
   };
 
   const handlePause = () => {
     deadlineRef.current = null;
     setIsRunning(false);
+    if (phienDb) tamDungLucRef.current = Date.now();
   };
 
+  /** Dừng hẳn phiên đang chạy. Có phiên DB thì huỷ luôn trên máy chủ (không thưởng). */
   const handleReset = () => {
+    const dangHuy = phienDb;
     deadlineRef.current = null;
+    tamDungLucRef.current = null;
+    dangChotRef.current = false;
     setIsRunning(false);
     setPhase("focus");
     setTimeLeft(duration * 60);
+    setPhanThuong(null);
+    if (dangHuy) {
+      setPhienDb(null);
+      setThongBao(t("study.notice_cancelled"));
+      void huyPhienHoc(dangHuy.id);
+    } else {
+      setThongBao(null);
+    }
   };
 
   const applyDuration = (mins: number, tabKey: TabKey) => {
+    // Đổi độ dài giữa chừng = bỏ phiên đang chạy; phải huỷ trên máy chủ, nếu không dòng ACTIVE
+    // nằm lại và khoá luôn lần bắt đầu kế tiếp.
+    const dangHuy = phienDb;
     deadlineRef.current = null;
+    tamDungLucRef.current = null;
+    dangChotRef.current = false;
     setActiveTab(tabKey);
     setDuration(mins);
     setTimeLeft(mins * 60);
     setIsRunning(false);
     setPhase("focus");
+    setPhanThuong(null);
+    if (dangHuy) {
+      setPhienDb(null);
+      void huyPhienHoc(dangHuy.id);
+    }
   };
 
   // Ô nhập tuỳ chọn: kẹp 15–120 phút cho khớp đúng giới hạn của lệnh /study trong bot.
@@ -360,7 +530,7 @@ export default function WebStudyRoomPage() {
               />
             </div>
 
-            <div className="flex gap-2 mt-1">
+            <div className="flex gap-2 mt-1 flex-wrap">
               {LOFI_STREAMS.map((s) => (
                 <button
                   key={s.id}
@@ -417,6 +587,19 @@ export default function WebStudyRoomPage() {
             </div>
           ) : null}
 
+          {/* Tên phiên — ghi vào DB để lịch sử học có ý nghĩa, giống tuỳ chọn `title` của bot */}
+          {daDangNhap && !phienDb ? (
+            <input
+              type="text"
+              maxLength={50}
+              value={tenPhien}
+              onChange={(e) => setTenPhien(e.target.value)}
+              placeholder={t("study.name_placeholder")}
+              aria-label={t("study.name_placeholder")}
+              className="w-full mb-2 bg-purple-950/40 border border-purple-800/40 text-purple-100 text-sm rounded-lg px-3 py-2 text-center placeholder:text-purple-400/50 focus:outline-none focus:border-purple-500"
+            />
+          ) : null}
+
           {/* Big Time Countdown Display */}
           <div className="text-6xl md:text-7xl font-mono font-bold tracking-wider text-purple-100 my-4 drop-shadow-[0_0_20px_rgba(168,85,247,0.4)]">
             {formatMinSec(timeLeft)}
@@ -452,8 +635,49 @@ export default function WebStudyRoomPage() {
               onClick={handleReset}
               className="bg-slate-800 hover:bg-slate-700 text-purple-300 font-medium py-3.5 px-5 rounded-xl border border-purple-800/40 transition-all"
             >
-              {t("study.btn_reset")}
+              {phienDb ? t("study.btn_give_up") : t("study.btn_reset")}
             </button>
+          </div>
+
+          {/* ---- Trạng thái ghi nhận phiên học ---- */}
+          <div className="w-full mt-5 flex flex-col gap-2" role="status">
+            {phanThuong ? (
+              <div className="rounded-xl border border-emerald-700/50 bg-emerald-950/40 px-4 py-3 text-center">
+                <p className="text-sm font-semibold text-emerald-300">{t("study.reward_title")}</p>
+                <p className="text-xs text-emerald-200/90 mt-1">
+                  {t("study.reward_body", {
+                    minutes: phanThuong.minutes,
+                    coins: phanThuong.coins.toLocaleString("vi-VN"),
+                    exp: phanThuong.exp.toLocaleString("vi-VN"),
+                    points: phanThuong.points,
+                    streak: phanThuong.streak,
+                  })}
+                </p>
+              </div>
+            ) : null}
+
+            {thongBao ? (
+              <p className="text-[11px] text-amber-300/90 italic text-center">{thongBao}</p>
+            ) : null}
+
+            {daDangNhap === false ? (
+              <p className="text-[11px] text-purple-300/80 text-center">
+                {t("study.guest_notice")}{" "}
+                <Link href="/login" className="text-purple-300 underline hover:text-purple-200">
+                  {t("study.guest_login")}
+                </Link>
+              </p>
+            ) : null}
+
+            {phienDb ? (
+              <p className="text-[11px] text-purple-300/80 text-center">
+                {t("study.tracked_notice", { minutes: duration })}
+              </p>
+            ) : null}
+
+            {dangGoi ? (
+              <p className="text-[11px] text-purple-400/70 text-center">{t("study.saving")}</p>
+            ) : null}
           </div>
         </div>
       </main>
