@@ -80,7 +80,13 @@ module.exports = {
     // Cờ bạc — house edge nhẹ để không thành máy in tiền
     GAMBLE: {
         MIN_BET: 10,
-        MAX_BET: 1_000_000,
+        // ⚖️ CÂN LẠI 2026-08-24. Trước đây: 1.000.000 — tức KHÔNG có trần, vì toàn bộ cung
+        // tiền cả server lúc đo chỉ 505.755 xu. Nguy hiểm nằm ở chiều THẮNG chứ không phải
+        // chiều thua: với TAIXIU_MULT 1.98, một ván cược 1 triệu mà thắng đẻ ra +980.000 xu
+        // từ hư không — gần gấp đôi số tiền đang tồn tại. Một cú may là lạm phát tức thì.
+        // 25.000 ≈ 28 giờ cày /work (~900 xu/giờ), thắng tối đa +24.750 ≈ 5% cung tiền:
+        // vẫn hồi hộp, nhưng không lật được nền kinh tế. Đo lại khi cung tiền qua ~2 triệu.
+        MAX_BET: 25_000,
         COINFLIP_MULT: 1.95,
         TAIXIU_MULT: 1.98, // house edge ~3.8% (cân hơn với coinflip ~2.5%)
         // Bầu cua: thắng nhận lại bet * (1 + số_con_trùng)
