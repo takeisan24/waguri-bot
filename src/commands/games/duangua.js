@@ -78,9 +78,16 @@ module.exports = {
             const horse = Number(i.customId.slice(1)) - 1;
             // GIỮ CHỖ đồng bộ TRƯỚC await -> chặn double-click thu cược 2 lần (race). Nhả chỗ nếu thu tiền lỗi.
             bets.set(i.user.id, { horse, username: i.user.username });
-            if (!await db.stakeCollect(sessionId, 'duangua', interaction.channelId, i.user.id, bet)) {
+            // `stakeCollect` trả BA giá trị: `true` = đã thu cược, `false` = ví không đủ,
+            // `null` = KHÔNG BIẾT vì DB lỗi. Dùng `if (!...)` là gộp hai cái sau, và lúc
+            // Supabase chập chờn người chơi bị báo "không đủ {bet} xu" — kèm số tiền cụ thể —
+            // dù ví đầy. Cùng lớp lỗi đã vá ở 5 trò kia.
+            const daThu = await db.stakeCollect(sessionId, 'duangua', interaction.channelId, i.user.id, bet);
+            if (daThu !== true) {
                 bets.delete(i.user.id);
-                return i.reply({ content: t(locale, 'commands.duangua.err_insufficient_funds', { bet: fmt(bet, locale), currency: config.CURRENCY }), flags: MessageFlags.Ephemeral });
+                return i.reply({ content: daThu === null
+                    ? t(locale, 'common.retry_later')
+                    : t(locale, 'commands.duangua.err_insufficient_funds', { bet: fmt(bet, locale), currency: config.CURRENCY }), flags: MessageFlags.Ephemeral });
             }
             const horseChosenName = t(locale, 'commands.duangua.horse_name', { n: horse + 1 });
             await i.reply({ content: t(locale, 'commands.duangua.bet_success', { horse: horseChosenName, emoji: HORSES[horse].c, bet: fmt(bet, locale), currency: config.CURRENCY }), flags: MessageFlags.Ephemeral }).catch(() => {});

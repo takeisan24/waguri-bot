@@ -75,9 +75,16 @@ module.exports = {
             }
             // GIỮ CHỖ đồng bộ TRƯỚC await -> chặn double-click thu cược 2 lần (race). Nhả chỗ nếu thu tiền lỗi.
             bets.set(i.user.id, { side: i.customId, username: i.user.username });
-            if (!await db.stakeCollect(sessionId, 'xocdia', interaction.channelId, i.user.id, bet)) {
+            // `stakeCollect` trả BA giá trị: `true` = đã thu cược, `false` = ví không đủ,
+            // `null` = KHÔNG BIẾT vì DB lỗi. Dùng `if (!...)` là gộp hai cái sau, và lúc
+            // Supabase chập chờn người chơi bị báo "không đủ {bet} xu" — kèm số tiền cụ thể —
+            // dù ví đầy. Cùng lớp lỗi đã vá ở 5 trò kia.
+            const daThu = await db.stakeCollect(sessionId, 'xocdia', interaction.channelId, i.user.id, bet);
+            if (daThu !== true) {
                 bets.delete(i.user.id);
-                return i.reply({ content: t(locale, 'commands.xocdia.err_insufficient_funds', { bet: fmt(bet, locale), currency: config.CURRENCY }), flags: MessageFlags.Ephemeral });
+                return i.reply({ content: daThu === null
+                    ? t(locale, 'common.retry_later')
+                    : t(locale, 'commands.xocdia.err_insufficient_funds', { bet: fmt(bet, locale), currency: config.CURRENCY }), flags: MessageFlags.Ephemeral });
             }
             const btnName = i.customId === 'chan' ? `${t(locale, 'commands.xocdia.btn_chan')} 🔴` : `${t(locale, 'commands.xocdia.btn_le')} ⚪`;
             await i.reply({ content: t(locale, 'commands.xocdia.bet_success', { side: btnName, bet: fmt(bet, locale), currency: config.CURRENCY }), flags: MessageFlags.Ephemeral }).catch(() => {});

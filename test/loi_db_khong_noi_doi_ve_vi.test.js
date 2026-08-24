@@ -63,7 +63,11 @@ test('hàm bọc: nhánh catch trả `null`, không phải `false`', () => {
 });
 
 test('đặt cược: 5 trò cờ bạc phải tách lỗi DB khỏi "không đủ tiền"', () => {
+    // Năm trò đầu đặt cược qua `db.addMoney(userId, -bet)`; hai trò lobby (duangua,
+    // xocdia) đặt qua `db.stakeCollect(...)`. Hai đường khác nhau nhưng CÙNG một lớp
+    // lỗi, nên gác chung — thiếu trò nào là trò đó lặng lẽ quay về nói dối.
     const TRO = ['coinflip', 'taixiu', 'baucua', 'blackjack', 'crate'];
+    const TRO_LOBBY = ['duangua', 'xocdia'];
     const xau = [];
     for (const tro of TRO) {
         const s = doc('src', 'commands', 'games', `${tro}.js`);
@@ -89,6 +93,17 @@ test('đặt cược: 5 trò cờ bạc phải tách lỗi DB khỏi "không đ�
             xau.push(`${tro}: không có thông điệp riêng cho lỗi DB`);
         }
     }
+    for (const tro of TRO_LOBBY) {
+        const s = doc('src', 'commands', 'games', `${tro}.js`);
+        if (/if\s*\(\s*!\s*await\s+db\.stakeCollect\(/.test(s)) {
+            xau.push(`${tro}: đường đặt cược còn dùng \`if (!await db.stakeCollect(...))\``);
+            continue;
+        }
+        if (!/const\s+daThu\s*=\s*await\s+db\.stakeCollect\(/.test(s)) xau.push(`${tro}: không giữ kết quả stakeCollect`);
+        if (!/daThu\s*!==\s*true/.test(s)) xau.push(`${tro}: không kiểm \`daThu !== true\``);
+        if (!/daThu\s*===\s*null/.test(s)) xau.push(`${tro}: không tách nhánh lỗi DB`);
+    }
+
     assert.deepStrictEqual(xau, [],
         'Đặt cược là chỗ đau nhất của lớp lỗi này: thông điệp còn kèm SỐ TIỀN cụ thể nên\n'
         + 'nghe rất thuyết phục, mà người chơi thì đang có đủ tiền.');
