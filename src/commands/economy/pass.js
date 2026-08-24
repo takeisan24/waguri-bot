@@ -65,6 +65,7 @@ module.exports = {
                 }
             }
 
+            const nameOf = await layBoTraTen(locale);
             let rewardsDesc = '';
             for (const lvl of displayLevels) {
                 const r = rewardsConfig.REWARDS[lvl];
@@ -77,8 +78,8 @@ module.exports = {
                     ? t(locale, 'commands.pass.status_claimed') 
                     : (bp.is_premium ? (currentLvl >= lvl ? t(locale, 'commands.pass.status_claimable') : t(locale, 'commands.pass.status_locked')) : t(locale, 'commands.pass.status_no_premium'));
 
-                const freeGift = formatRewardDetails(r.free, locale);
-                const premiumGift = formatRewardDetails(r.premium, locale);
+                const freeGift = formatRewardDetails(r.free, locale, nameOf);
+                const premiumGift = formatRewardDetails(r.premium, locale, nameOf);
 
                 rewardsDesc += `**Level ${lvl}**:\n`;
                 rewardsDesc += `> 🔓 **Free**: ${freeGift}  *${freeClaimed}*\n`;
@@ -246,6 +247,11 @@ module.exports = {
             await interaction.deferReply({ flags: MessageFlags.Ephemeral });
             const cost = rewardsConfig.PREMIUM_COST;
             const user = await db.getUser(userId);
+            // Nhánh `/pass buy` có chốt này, nhánh nút thì không — `user.wallet` trên null
+            // ném TypeError và người dùng nhận "ứng dụng không phản hồi" thay vì lời báo lỗi.
+            if (!user) {
+                return interaction.editReply({ content: t(locale, 'common.db_error') });
+            }
 
             if (Number(user.wallet) < cost) {
                 const embed = buildWaguriEmbed(interaction, 'error', {
@@ -305,17 +311,31 @@ module.exports = {
 };
 
 // Hàm định dạng hiển thị chi tiết phần thưởng
-function formatRewardDetails(reward, locale = 'vi') {
+// `nameOf` là bộ tra tên vật phẩm dựng từ danh mục DB. Trước đây chỗ này truyền thẳng
+// `id` vào ô tên, nên MÀN HÌNH XEM TRƯỚC hiện mã nội bộ (`banh_mi`, `bo_hoa`, `thoi_sat`)
+// trong khi màn hình NHẬN QUÀ lại tra qua db.getItem và hiện "Bánh Mì Việt Nam". Cùng một
+// món, hai cái tên, tuỳ chỗ đứng. Đo ngày 24-08: 5/10 ô quà trong vùng level 1–5 — đúng
+// vùng cả 33 người đang chơi nhìn thấy — hiện mã máy thay vì tên.
+// Rơi về `id` khi không tra được, để không bao giờ tệ hơn hiện trạng cũ.
+function formatRewardDetails(reward, locale = 'vi', nameOf = (id) => id) {
     if (!reward) return t(locale, 'common.none');
     const parts = [];
     if (reward.coins) parts.push(`**+${fmt(reward.coins, locale)}** ${config.CURRENCY}`);
     if (reward.title) parts.push(t(locale, 'commands.pass.format_title', { title: reward.title }));
     if (reward.items) {
         for (const [id, qty] of Object.entries(reward.items)) {
-            parts.push(t(locale, 'commands.pass.format_item', { qty, name: id }));
+            parts.push(t(locale, 'commands.pass.format_item', { qty, name: nameOf(id) }));
         }
     }
     return parts.join(' + ');
+}
+
+/** Dựng bộ tra tên vật phẩm từ danh mục DB — cùng cách `market.js` làm. */
+async function layBoTraTen(locale) {
+    const items = await db.getItems().catch(() => null);
+    if (!Array.isArray(items)) return (id) => id;
+    const theoId = new Map(items.map(i => [i.id, i.name]));
+    return (id) => t(locale, `data.items.${id}.name`) || theoId.get(id) || id;
 }
 
 // Helper cập nhật tin nhắn view cũ sau khi mua/nhận quà thành công
@@ -346,6 +366,9 @@ async function updateViewEmbed(interaction, userId, seasonId, seasonLabel, local
         }
     }
 
+    // Bản sao thứ hai của khối dựng embed. File này đã một lần sửa chỗ này mà quên chỗ kia
+    // (xem ghi chú ở nút Premium bên dưới), nên mọi thay đổi phải làm ở CẢ HAI.
+    const nameOf = await layBoTraTen(locale);
     let rewardsDesc = '';
     for (const lvl of displayLevels) {
         const r = rewardsConfig.REWARDS[lvl];
@@ -359,9 +382,9 @@ async function updateViewEmbed(interaction, userId, seasonId, seasonLabel, local
             : (bp.is_premium ? (currentLvl >= lvl ? t(locale, 'commands.pass.status_claimable') : t(locale, 'commands.pass.status_locked')) : t(locale, 'commands.pass.status_no_premium'));
 
         rewardsDesc += `**Level ${lvl}**:\n`;
-        rewardsDesc += `> 🔓 **Free**: ${formatRewardDetails(r.free, locale)}  *${freeClaimed}*\n`;
+        rewardsDesc += `> 🔓 **Free**: ${formatRewardDetails(r.free, locale, nameOf)}  *${freeClaimed}*\n`;
         if (r.premium) {
-            rewardsDesc += `> 👑 **Premium**: ${formatRewardDetails(r.premium, locale)}  *${premiumClaimed}*\n`;
+            rewardsDesc += `> 👑 **Premium**: ${formatRewardDetails(r.premium, locale, nameOf)}  *${premiumClaimed}*\n`;
         }
         rewardsDesc += '\n';
     }
