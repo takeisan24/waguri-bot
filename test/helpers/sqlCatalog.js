@@ -9,6 +9,15 @@
 //
 // Giới hạn đã biết: parser thô, chỉ hiểu INSERT/UPDATE/DELETE dạng migration repo này
 // đang dùng. Nó KHÔNG thay thế truy vấn DB thật — nó là lưới bắt DRIFT lúc commit.
+//
+// 2026-08-24: parser từng ĐỨNG YÊN Ở TRẠNG THÁI TRƯỚC 0068 suốt nhiều tháng, lệch prod 7/90
+// món, vì nó không đọc khối `DO $$`. Cả hai bên vẫn đếm ra 90 món nên không cổng nào thấy —
+// drift kiểu ĐỔI TÊN thì đếm số lượng là mù. Nay có hai lớp:
+//   1. `applyRenames()` dưới đây đọc khối đổi tên (nhận diện qua alias `AS m(oldid, newid)`).
+//   2. `test/sqlcatalog_khop_prod.test.js` đối chiếu TẬP ID với `scripts/db-catalog-ids.json`
+//      (tệp do `scripts/db-catalog.js` sinh từ prod, có cổng `--check` neo lại mỗi lần push).
+// Lớp 2 mới là thứ đáng tin: migration sau viết theo lối khác thì lớp 1 hụt, lớp 2 báo đỏ
+// và nói thẳng cần thêm gì. ĐỪNG bỏ lớp 2 để đi làm parser SQL cho tổng quát.
 // ============================================================
 const fs = require('node:fs');
 const path = require('node:path');
@@ -92,6 +101,30 @@ function toBool(v) {
 }
 
 /**
+ * Áp các cặp đổi tên id trong một migration.
+ *
+ * Repo dùng một lối viết duy nhất cho việc này (xem `0068_rename_item_ids.sql`):
+ *     FOR r IN SELECT * FROM (VALUES ('cu','moi'), ... ) AS m(oldid, newid) LOOP
+ * Neo vào alias `(oldid, newid)` cho hẹp — bám `VALUES` trơn sẽ nuốt nhầm mọi VALUES khác.
+ *
+ * Migration copy TOÀN BỘ cột sang id mới rồi mới xoá id cũ, nên ở đây chuyển nguyên bản ghi
+ * thay vì dựng mới: giá và cờ ẩn phải đi theo. (Đã đối chiếu prod 24-08: cả 7 cặp giữ nguyên giá.)
+ */
+function applyRenames(sql, items, marketSeed, file) {
+    const re = /\(\s*values\s*([\s\S]*?)\)\s*as\s+\w+\s*\(\s*oldid\s*,\s*newid\s*\)/gi;
+    let m;
+    while ((m = re.exec(sql)) !== null) {
+        for (const tup of readTuples(m[1])) {
+            const [cu, moi] = splitTopLevel(tup).map(unquote);
+            if (!cu || !moi) continue;
+            const ban = items.get(cu);
+            if (ban) { items.set(moi, { ...ban, source: file }); items.delete(cu); }
+            if (marketSeed.delete(cu)) marketSeed.add(moi);
+        }
+    }
+}
+
+/**
  * Replay migration -> trạng thái catalog.
  * @returns {{items: Map<string,{price:number, shopHidden:boolean, source:string}>,
  *            marketSeed: Set<string>}}
@@ -162,6 +195,10 @@ function buildCatalog() {
         while ((m = delRe.exec(sql)) !== null) {
             for (const id of splitTopLevel(m[1]).map(unquote)) marketSeed.delete(id);
         }
+
+        // Đổi tên áp CUỐI CÙNG trong mỗi tệp: id mới phải kế thừa trạng thái mà chính tệp
+        // này vừa ghi cho id cũ, không phải trạng thái từ tệp trước.
+        applyRenames(sql, items, marketSeed, file);
     }
 
     return { items, marketSeed };
