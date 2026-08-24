@@ -1986,7 +1986,8 @@
       "val_none": "*(none yet)*",
       "view_desc": "🏷️ Title: {title}\n🎨 Profile color: {color}",
       "view_footer": "Set with: /cosmetic title · /cosmetic color",
-      "view_title": "🎨・Your Cosmetics"
+      "view_title": "🎨・Your Cosmetics",
+      "badge_owned": "You already own this badge~ 🌸"
     },
     "study": {
       "err_already_running": "🌸 *You already have an unfinished study session! Use `/study status` to check it or `/study stop` to finish early~* 🍵",

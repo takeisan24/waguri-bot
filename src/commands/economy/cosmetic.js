@@ -128,17 +128,23 @@ module.exports = {
                 return replyEmbed('warning', 'Đã sở hữu / Already Owned', 'Cậu đã sở hữu huy hiệu này rồi.');
             }
             
-            // Trừ tiền nguyên tử TRƯỚC + kiểm return -> không cấp badge free nếu guard chặn (không đủ tiền).
-            if (!await db.addMoney(userId, -badgeConf.cost, 'wallet')) {
-                return replyEmbed('error', 'Không đủ tiền / Insufficient Coins', `Cậu cần **${fmt(badgeConf.cost, locale)} xu** để mua huy hiệu này.`);
+            // MỘT lời gọi, MỘT giao dịch (0144). Bản cũ làm BA bước rời nhau: trừ tiền ->
+            // cấp huy hiệu -> nếu trùng thì hoàn tiền, mà lời hoàn tiền KHÔNG kiểm kết quả.
+            // Chết giữa bước 1 và 2, hoặc hoàn tiền hỏng, là mất tiền im lặng. RPC mới kiểm
+            // sở hữu TRƯỚC khi trừ nên không còn đường hoàn tiền để mà hỏng.
+            const kq = await db.buyBadge(userId, badgeId, badgeConf.cost);
+            if (kq === 'owned') {
+                return replyEmbed('warning', 'Đã sở hữu / Already Owned',
+                    t(locale, 'commands.cosmetic.badge_owned'));
             }
-            const isNew = await db.unlockBadge(userId, badgeId);
-            if (!isNew) {
-                // Đã sở hữu (mua trùng / đua đồng thời) -> hoàn tiền, không tính phí lần 2.
-                await db.addMoney(userId, badgeConf.cost, 'wallet');
-                return replyEmbed('warning', 'Đã sở hữu / Already Owned', 'Cậu đã sở hữu huy hiệu này rồi.');
+            if (kq === 'poor') {
+                return replyEmbed('error', 'Không đủ tiền / Insufficient Coins',
+                    `Cậu cần **${fmt(badgeConf.cost, locale)}** ${config.CURRENCY} để mua huy hiệu này~`);
             }
-            
+            if (kq !== 'ok') {
+                return replyEmbed('error', 'Lỗi / Error', t(locale, 'common.retry_later'));
+            }
+
             const badgeName = locale === 'en' ? badgeConf.name_en : badgeConf.name_vi;
             return replyEmbed('success', 'Mua thành công / Purchase Success', `Cậu đã mua thành công huy hiệu **${badgeConf.emoji} ${badgeName}**! Hãy dùng \`/cosmetic badge-equip\` để trưng bày.`);
         }

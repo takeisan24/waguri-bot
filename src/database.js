@@ -2829,6 +2829,8 @@ module.exports = {
     upgradeClanShrine,
     getUserBadges,
     unlockBadge,
+    claimWorldEventRewardAtomic,
+    buyBadge,
     getActiveWorldEvent,
     createWorldEvent,
     getWorldEventContributions,
@@ -2979,6 +2981,38 @@ async function getUserBadges(userId) {
 
 /** Mở khóa huy hiệu. Trả TRUE chỉ khi chèn MỚI (ON CONFLICT DO NOTHING -> select rỗng nếu đã có),
  *  để caller trao thưởng / tính tiền ĐÚNG 1 lần (chống double-charge & cấp trùng). */
+/** Nhận thưởng sự kiện thế giới — ĐẶT CỜ + CẤP VẬT PHẨM trong MỘT giao dịch (0144).
+ *  Bản cũ đặt cờ ở một lời gọi rồi cấp đồ ở lời gọi khác và bỏ kết quả: cấp hỏng thì cờ
+ *  đã bật, lần sau trả `already_claimed`, người chơi mất thưởng không đường đòi.
+ *  Trả: not_completed · no_contribution · already_claimed · ok · error */
+async function claimWorldEventRewardAtomic(userId, eventId, itemId, qty) {
+    try {
+        const { data, error } = await supabase.rpc('claim_world_event_reward_atomic', {
+            p_user: userId, p_event: eventId, p_item: itemId, p_qty: qty,
+        });
+        if (error) throw error;
+        return data;
+    } catch (e) {
+        logError('claimWorldEventRewardAtomic', e, { userId, eventId });
+        return 'error';
+    }
+}
+
+/** Mua huy hiệu — TRỪ TIỀN + CẤP trong MỘT giao dịch (0144). Không còn đường hoàn tiền để
+ *  mà hỏng: kiểm sở hữu TRƯỚC khi trừ. Trả: owned · poor · ok · error */
+async function buyBadge(userId, badgeId, cost) {
+    try {
+        const { data, error } = await supabase.rpc('buy_badge', {
+            p_user: userId, p_badge: badgeId, p_cost: cost,
+        });
+        if (error) throw error;
+        return data;
+    } catch (e) {
+        logError('buyBadge', e, { userId, badgeId });
+        return 'error';
+    }
+}
+
 async function unlockBadge(userId, badgeId) {
     try {
         const { data, error } = await supabase

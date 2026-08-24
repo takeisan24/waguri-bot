@@ -1986,7 +1986,8 @@
       "val_none": "*(chưa có)*",
       "view_desc": "🏷️ Danh hiệu: {title}\n🎨 Màu hồ sơ: {color}",
       "view_footer": "Đặt: /cosmetic title · /cosmetic color",
-      "view_title": "🎨・Cosmetic của cậu"
+      "view_title": "🎨・Cosmetic của cậu",
+      "badge_owned": "Cậu đã sở hữu huy hiệu này rồi~ 🌸"
     },
     "study": {
       "err_already_running": "🌸 *Cậu đang có một phiên học chưa hoàn thành rùi nhen! Dùng `/study status` để xem hoặc `/study stop` để nộp bài sớm nhen~* 🍵",

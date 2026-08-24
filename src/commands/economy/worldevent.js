@@ -150,6 +150,13 @@ module.exports = {
                 });
                 return interaction.editReply({ embeds: [embed] });
             }
+            if (r === 'error') {
+                return interaction.editReply({
+                    embeds: [buildWaguriEmbed(interaction, 'error', {
+                        locale, description: t(locale, 'common.retry_later'),
+                    })],
+                });
+            }
             if (r === 'ok') {
                 // Fetch lại để xem có completed sau đóng góp này không
                 const latestEvent = await db.getLatestWorldEvent();
@@ -191,7 +198,13 @@ module.exports = {
                 return interaction.editReply({ embeds: [embed] });
             }
 
-            const r = await db.claimWorldEventReward(userId, event.id);
+            // MỘT lời gọi, MỘT giao dịch (0144). Bản cũ đặt cờ `claimed` ở đây rồi cấp vật
+            // phẩm ở lời gọi RIÊNG phía dưới, và bỏ kết quả lời gọi đó. Cấp hỏng thì cờ đã
+            // bật -> lần sau trả `already_claimed` -> mất thưởng VĨNH VIỄN, không đường đòi,
+            // mà màn hình vẫn khoe "Cậu nhận được Nx <vật phẩm>". Đã chứng minh trên DB test:
+            // ép bước cấp tràn số nguyên -> hàm nổ -> cờ `claimed` cuộn lại thành false.
+            const r = await db.claimWorldEventRewardAtomic(
+                userId, event.id, evConf.rewardItemId, evConf.rewardQty);
             if (r === 'already_claimed') {
                 const embed = buildWaguriEmbed(interaction, 'warning', {
                     locale,
@@ -200,8 +213,7 @@ module.exports = {
                 return interaction.editReply({ embeds: [embed] });
             }
             if (r === 'ok') {
-                // Thưởng vật phẩm
-                await db.giveItemAdmin(userId, evConf.rewardItemId, evConf.rewardQty);
+                // Vật phẩm đã được cấp NGAY TRONG lời gọi trên, cùng giao dịch với cờ `claimed`.
                 
                 const embed = buildWaguriEmbed(interaction, 'jackpot', {
                     locale,

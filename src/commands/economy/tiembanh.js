@@ -164,8 +164,14 @@ async function subThu(interaction, locale) {
         }
         const cakeName = t(locale, `data.items.${cakeId}.name`) || (cakeId === 'banh_chung' ? 'Bánh Chưng' : (cakeId === 'banh_trung_thu' ? 'Bánh Trung Thu' : 'Bánh Kem Dâu Gekka'));
 
-        await db.giveItemAdmin(interaction.user.id, cakeId, r.cakes);
-        cakeMsg = t(locale, 'commands.tiembanh.cake_msg', { qty: r.cakes, name: cakeName, emoji: cakeEmoji });
+        // CHỈ khoe khi cấp được thật. `giveItemAdmin` trả false/null khi DB lỗi; bản cũ bỏ
+        // kết quả nên người chơi được báo "nhận N bánh" mà kho trống. Khác `/worldevent`, ở
+        // đây không có cờ "đã nhận" nào bị bật, nên mất một lần rồi thu lại là có — vì vậy
+        // dùng khuôn rẻ (kiểm kết quả) thay vì gộp giao dịch.
+        const daTraoBanh = await db.giveItemAdmin(interaction.user.id, cakeId, r.cakes);
+        if (daTraoBanh) {
+            cakeMsg = t(locale, 'commands.tiembanh.cake_msg', { qty: r.cakes, name: cakeName, emoji: cakeEmoji });
+        }
     }
     db.questIncr(interaction.user.id, 'bake', 1);
 
