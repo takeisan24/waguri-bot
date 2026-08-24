@@ -188,6 +188,14 @@ async function buildLeaderboardPayload(client, type, limit, guildId = null) {
 // Cộng thưởng cho 1 lượt vote. Dùng CHUNG cooldown 'vote_reward' với lệnh /vote
 // (claim nguyên tử) -> không bao giờ phát thưởng trùng dù user vừa bấm /vote.
 async function grantVoteReward(client, userId, isWeekend) {
+    // PHẢI tạo dòng users TRƯỚC khi claim cooldown. `cooldowns.user_id` có khoá ngoại tới
+    // `users`, nên người vote mà CHƯA từng dùng bot sẽ làm insert cooldown vỡ khoá ngoại;
+    // `claimCooldown` fail-open (database.js: DB lỗi -> trả false = cho qua) nên lượt đó
+    // vẫn phát thưởng NHƯNG không ghi được cooldown. Lượt vote thứ hai trong cùng chu kỳ
+    // lúc đó mới ghi được cooldown và LẠI phát thưởng lần nữa -> nhận đúp ở người mới.
+    // (Đường Top.gg trước đây thoát nạn nhờ `bumpVoteStreak` tạo user, nhưng nó chạy SAU.)
+    await db.getUser(userId);
+
     const cd = await db.claimCooldown(userId, 'vote_reward', config.VOTE.COOLDOWN_HOURS * 3600);
     if (cd) return; // đã nhận trong chu kỳ 12h này -> bỏ qua
 
@@ -214,6 +222,40 @@ async function grantVoteReward(client, userId, isWeekend) {
             bonus: bonus > 0
                 ? t(locale, 'lib.voteServer.dm_vote_streak_bonus', { amount: fmt(bonus, locale), currency: config.CURRENCY })
                 : '',
+        }));
+    } catch { /* user tắt DM -> bỏ qua */ }
+}
+
+// --- discordbotlist.com: thưởng vote ---
+//
+// Payload của họ mỏng hơn Top.gg nhiều: { id, username, avatar, admin } — không có `type`
+// (nên không phân biệt được cú test), không có cờ cuối tuần. Chỉ `id` là thứ ta cần.
+//
+// Cooldown để KHÓA RIÊNG (`vote_reward_dbl`), không dùng chung với Top.gg: vote hai nơi là
+// hai lần bấm thật, chung khoá thì lần thứ hai im lặng không thưởng — người dùng sẽ tưởng hỏng.
+// Bù lại mức thưởng phẳng và thấp hơn (xem chú thích VOTE.DBL trong config).
+async function grantDblVoteReward(client, userId) {
+    await db.getUser(userId); // tạo dòng users trước — xem chú thích ở grantVoteReward
+
+    const cd = await db.claimCooldown(userId, 'vote_reward_dbl', config.VOTE.DBL.COOLDOWN_HOURS * 3600);
+    if (cd) return; // đã nhận trong chu kỳ này -> bỏ qua
+
+    db.questIncr(userId, 'vote', 1); // vote ở đâu cũng tính vào nhiệm vụ vote
+
+    const { REWARD: coins, EXP: exp } = config.VOTE.DBL;
+    // Cooldown đã set trước = cổng dedup. addMoney lỗi thì log để cứu tay, không grant-first.
+    if (!await db.addMoney(userId, coins, 'wallet')) {
+        console.error(`[PAYOUT FAIL] vote-dbl user=${userId} coins=${coins}`);
+    }
+    await db.updateExp(userId, exp);
+
+    try {
+        const user = await client.users.fetch(userId);
+        const locale = await getInteractionLanguage({ user: { id: userId } });
+        await user.send(t(locale, 'lib.voteServer.dm_vote_thanks_dbl', {
+            coins: fmt(coins, locale),
+            currency: config.CURRENCY,
+            exp,
         }));
     } catch { /* user tắt DM -> bỏ qua */ }
 }
@@ -286,6 +328,7 @@ function startVoteServer(client) {
     if (process.env.DISABLE_VOTE_SERVER === '1') return;
 
     const auth = process.env.TOPGG_WEBHOOK_AUTH;
+    const dblAuth = process.env.DBL_WEBHOOK_AUTH; // secret tự đặt ở discordbotlist.com -> Edit -> Webhook
     const cassoToken = process.env.CASSO_WEBHOOK_TOKEN; // Secure-Token cấu hình ở Casso
     const notifySecret = process.env.BOT_NOTIFY_SECRET; // chuỗi bí mật dùng chung với web
     const port = Number(process.env.PORT || process.env.SERVER_PORT || 0);
@@ -293,9 +336,21 @@ function startVoteServer(client) {
         console.log('[VOTE] Bỏ qua HTTP server (chưa có PORT/SERVER_PORT).');
         return;
     }
+    // Trên panel kiểu Pterodactyl (Wispbyte), SERVER_PORT là cổng panel TỰ TIÊM và cũng là
+    // cổng mà subdomain public map vào. PORT đặt tay sẽ thắng nó ở dòng trên — bind sai cổng
+    // thì log vẫn báo "chạy ở cổng N" bình thường, chỉ có domain ngoài trả 502/504. Lỗi này
+    // im lặng hoàn toàn nếu không đối chiếu hai biến, nên phải nói to ra đây.
+    const panelPort = Number(process.env.SERVER_PORT || 0);
+    if (panelPort && Number(process.env.PORT || 0) && panelPort !== port) {
+        console.warn(`[VOTE] ⚠ PORT=${port} ĐANG ĐÈ SERVER_PORT=${panelPort} do panel cấp.`);
+        console.warn('[VOTE]   Subdomain public thường map vào SERVER_PORT -> ngoài Internet sẽ 502/504.');
+        console.warn('[VOTE]   Cách sửa: XOÁ biến PORT trên panel để dùng SERVER_PORT, hoặc đặt PORT = ' + panelPort);
+    }
     // /stats + health chỉ cần PORT là chạy. Webhook chỉ kích hoạt khi có TOPGG_WEBHOOK_AUTH
     // (lấy sau khi bot được duyệt). Chưa có secret -> webhook trả 503, các route khác vẫn ổn.
     if (!auth) console.log('[VOTE] Chưa có TOPGG_WEBHOOK_AUTH -> webhook tạm tắt (/stats + health vẫn chạy).');
+    if (!dblAuth) console.log('[VOTE] Chưa có DBL_WEBHOOK_AUTH -> webhook discordbotlist tạm tắt.');
+    else console.log('[VOTE] Webhook discordbotlist sẵn sàng ở /dbl/vote.');
     if (!cassoToken) console.log('[CASSO] Chưa có CASSO_WEBHOOK_TOKEN -> webhook thanh toán tạm tắt.');
     else console.log('[CASSO] Webhook thanh toán Premium sẵn sàng ở /casso/webhook.');
     if (!notifySecret) console.log('[PREMIUM] Chưa có BOT_NOTIFY_SECRET -> web không báo được đơn mới (owner phải tự gõ /premium-admin cho).');
@@ -378,13 +433,14 @@ function startVoteServer(client) {
             return;
         }
         const isVote = req.url.startsWith('/topgg/vote');
+        const isDblVote = req.url.startsWith('/dbl/vote');
         const isCasso = req.url.startsWith('/casso/webhook');
         // Web (Vercel) báo sang: có người vừa bấm "Tôi đã chuyển khoản".
         // Phải đi qua BOT chứ không phải webhook Discord thuần, vì webhook thuần KHÔNG gắn
         // được nút bấm — chỉ ứng dụng mới gắn được. Mà nút chính là điểm mấu chốt: nó là
         // khác biệt giữa "owner duyệt được từ điện thoại trong 2 chạm" và "phải mở máy gõ lệnh".
         const isClaim = req.url.startsWith('/premium/notify');
-        if (req.method !== 'POST' || (!isVote && !isCasso && !isClaim)) {
+        if (req.method !== 'POST' || (!isVote && !isDblVote && !isCasso && !isClaim)) {
             res.writeHead(404); res.end(); return;
         }
 
@@ -408,6 +464,26 @@ function startVoteServer(client) {
                 if (!code) { res.writeHead(400, JSONH); res.end('{"error":"bad_code"}'); return; }
                 res.writeHead(200, JSONH); res.end('{"ok":true}');
                 notifyOwnersOfClaim(client, code).catch(e => logError('premium claim notify', e));
+                return;
+            }
+
+            // --- discordbotlist.com vote webhook ---
+            // Họ gửi secret THÔ ở header Authorization (không HMAC, không có kiểu "test").
+            if (isDblVote) {
+                if (!dblAuth) { res.writeHead(503); res.end(); return; }
+                if (!safeEqual(req.headers.authorization, dblAuth)) { res.writeHead(401); res.end(); return; }
+                res.writeHead(200); res.end(); // docs yêu cầu 200, body rỗng
+                try {
+                    const data = JSON.parse(body || '{}');
+                    const uid = data?.id;
+                    // Chặn ID rác trước khi đụng DB — payload này không có chữ ký nên chỉ
+                    // secret ở header là lớp bảo vệ; đừng để chuỗi tuỳ ý đi thẳng vào RPC.
+                    if (!/^\d{5,25}$/.test(String(uid || ''))) {
+                        console.log('[VOTE] Webhook discordbotlist không có user id hợp lệ (có thể là cú test) ✅');
+                        return;
+                    }
+                    grantDblVoteReward(client, String(uid)).catch(e => logError('vote reward dbl', e));
+                } catch (e) { logError('dbl vote webhook parse', e); }
                 return;
             }
 

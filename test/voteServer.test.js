@@ -6,6 +6,7 @@ const http = require('node:http');
 process.env.TOPGG_WEBHOOK_AUTH = 'test_topgg_secret';
 process.env.CASSO_WEBHOOK_TOKEN = 'test_casso_token';
 process.env.BOT_NOTIFY_SECRET = 'test_notify_secret';
+process.env.DBL_WEBHOOK_AUTH = 'test_dbl_secret';
 process.env.PORT = '19999';
 
 const { startVoteServer } = require('../src/lib/voteServer');
@@ -112,6 +113,49 @@ describe('HTTP Vote & Stats Server Integration Tests', () => {
             body: JSON.stringify({ type: 'test' })
         });
         assert.strictEqual(res.status, 200);
+    });
+
+    // --- /dbl/vote: webhook vote của discordbotlist.com ---
+    // Payload của họ KHÔNG có chữ ký HMAC, chỉ có secret thô ở header — nên cửa 401 chính
+    // là toàn bộ lớp bảo vệ. Nhánh phát thưởng cần DB thật nên chỉ test tới mức route.
+    const DBL = 'http://127.0.0.1:19999/dbl/vote';
+    const postDbl = (headers, body) =>
+        fetch(DBL, { method: 'POST', headers: { 'Content-Type': 'application/json', ...headers }, body });
+
+    test('POST /dbl/vote tra 401 khi thieu Authorization', async () => {
+        const res = await postDbl({}, JSON.stringify({ id: '999999999999999999' }));
+        assert.strictEqual(res.status, 401);
+    });
+
+    test('POST /dbl/vote tra 401 khi secret sai', async () => {
+        const res = await postDbl({ Authorization: 'sai_secret' }, JSON.stringify({ id: '999999999999999999' }));
+        assert.strictEqual(res.status, 401);
+    });
+
+    test('POST /dbl/vote tra 200 khi secret dung', async () => {
+        const res = await postDbl({ Authorization: 'test_dbl_secret' }, JSON.stringify({ id: '999999999999999999' }));
+        assert.strictEqual(res.status, 200);
+    });
+
+    test('POST /dbl/vote khong sap khi payload thieu id / id rac', async () => {
+        for (const body of ['{}', JSON.stringify({ id: 'khong-phai-so' }), JSON.stringify({ id: '12' }), 'khong-phai-json']) {
+            const res = await postDbl({ Authorization: 'test_dbl_secret' }, body);
+            assert.strictEqual(res.status, 200, `body ${body} phai duoc ACK 200`);
+        }
+        // Server vẫn sống sau loạt payload rác.
+        const health = await fetch('http://127.0.0.1:19999/');
+        assert.strictEqual(health.status, 200);
+    });
+
+    // Chốt quyết định cân bằng ở config.VOTE.DBL: mở nền tảng list thứ hai KHÔNG được
+    // phép nhân đôi trần thu nhập vote mà đợt 5 đã cố tình cắt xuống. Ai nâng số này
+    // vượt mức nền của Top.gg thì test đỏ trước khi kịp lên production.
+    test('thuong vote DBL khong duoc vuot muc nen cua Top.gg', () => {
+        const config = require('../src/config');
+        assert.ok(config.VOTE.DBL.REWARD <= config.VOTE.REWARD,
+            `DBL.REWARD (${config.VOTE.DBL.REWARD}) phai <= VOTE.REWARD (${config.VOTE.REWARD})`);
+        assert.ok(config.VOTE.DBL.EXP <= config.VOTE.EXP,
+            `DBL.EXP (${config.VOTE.DBL.EXP}) phai <= VOTE.EXP (${config.VOTE.EXP})`);
     });
 
     // --- /premium/notify: web báo bot "có người bấm đã chuyển khoản" ---

@@ -391,6 +391,21 @@ module.exports = {
         STREAK_BONUS: 500,        // thưởng cộng thêm mỗi mốc streak (từ ngày thứ 2)
         STREAK_BONUS_MAX: 7,      // cap số mốc cộng (tối đa +3.500)
         REMINDER: true,           // bật nhắc vote qua DM khi đủ 12h
+
+        // discordbotlist.com — nền tảng list THỨ HAI (2026-08-24).
+        //
+        // Cố tình KHÔNG dùng chung mức thưởng với Top.gg. Nếu dùng chung, cộng thêm chuỗi
+        // và nhân cuối tuần thì trần vote vọt từ 17.000 lên 34.000 xu/ngày — đúng bằng con
+        // số mà đợt 5 vừa cắt đi vì "hai cú bấm ăn đứt gần hai ngày chơi thật". Mở nền tảng
+        // mới không phải là lý do để hoàn tác quyết định cân bằng đó.
+        //
+        // Nên: thưởng PHẲNG, không chuỗi, không nhân cuối tuần (payload DBL cũng không có
+        // trường cuối tuần). Trần mới = 17.000 + 2×1.250 = 19.500/ngày (+15%), đủ để có
+        // động lực bấm thêm một nút mà không thổi lại lạm phát.
+        //
+        // Chuỗi vote vẫn chỉ tính theo Top.gg: chuỗi gắn với chu kỳ 12h của Top.gg, cho
+        // DBL bump chuỗi sẽ thành đường giữ chuỗi rẻ tiền.
+        DBL: { REWARD: 1250, EXP: 25, COOLDOWN_HOURS: 12 },
     },
 
     // Onboarding theo từng user

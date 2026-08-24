@@ -34,6 +34,16 @@ module.exports = {
         const voteUrl = `https://top.gg/bot/${botId}/vote`;
         const C = config.CURRENCY;
 
+        // Vote bên DiscordBotList có khoá cooldown RIÊNG nên nhận được cả hai phần thưởng.
+        // Không nói ra thì chẳng ai biết là có nền tảng thứ hai — mà đó mới là mục đích của
+        // việc mở thêm list. Thưởng ở đó phát qua webhook `/dbl/vote`, không qua lệnh này.
+        const dblLine = t(locale, 'commands.vote.dbl_line', {
+            url: `https://discordbotlist.com/bots/${botId}/upvote`,
+            reward: fmt(config.VOTE.DBL.REWARD, locale),
+            currency: C,
+            exp: config.VOTE.DBL.EXP,
+        });
+
         const voted = await hasVoted(botId, interaction.user.id);
 
         // Chưa cấu hình token, hoặc không gọi được API -> chỉ hiện link mời vote.
@@ -41,7 +51,7 @@ module.exports = {
             const embed = buildWaguriEmbed(interaction, 'info', {
                 locale,
                 title: t(locale, 'commands.vote.title_main'),
-                description: t(locale, 'commands.vote.desc_no_api', { url: voteUrl, reward: fmt(config.VOTE.REWARD, locale), currency: C, exp: config.VOTE.EXP })
+                description: t(locale, 'commands.vote.desc_no_api', { url: voteUrl, reward: fmt(config.VOTE.REWARD, locale), currency: C, exp: config.VOTE.EXP }) + dblLine
             });
             return interaction.editReply({ embeds: [embed] });
         }
@@ -51,18 +61,23 @@ module.exports = {
             const embed = buildWaguriEmbed(interaction, 'warning', {
                 locale,
                 title: t(locale, 'commands.vote.title_not_voted'),
-                description: t(locale, 'commands.vote.desc_not_voted', { url: voteUrl, reward: fmt(config.VOTE.REWARD, locale), currency: C, exp: config.VOTE.EXP })
+                description: t(locale, 'commands.vote.desc_not_voted', { url: voteUrl, reward: fmt(config.VOTE.REWARD, locale), currency: C, exp: config.VOTE.EXP }) + dblLine
             });
             return interaction.editReply({ embeds: [embed] });
         }
 
         // Đã vote -> phát thưởng 1 lần / chu kỳ 12h (chống nhận trùng bằng cooldown nguyên tử).
+        // Tạo dòng users trước khi claim cooldown — `cooldowns.user_id` có khoá ngoại tới
+        // `users`, mà `claimCooldown` fail-open khi DB lỗi. Xem chú thích dài ở
+        // `src/lib/voteServer.js` (grantVoteReward). An toàn về ack: đã deferReply ở trên.
+        await db.getUser(interaction.user.id);
+
         const cd = await db.claimCooldown(interaction.user.id, 'vote_reward', config.VOTE.COOLDOWN_HOURS * 3600);
         if (cd) {
             const embed = buildWaguriEmbed(interaction, 'info', {
                 locale,
                 title: t(locale, 'commands.vote.title_claimed'),
-                description: t(locale, 'commands.vote.desc_claimed', { time: Math.floor(cd / 1000) })
+                description: t(locale, 'commands.vote.desc_claimed', { time: Math.floor(cd / 1000) }) + dblLine
             });
             return interaction.editReply({ embeds: [embed] });
         }

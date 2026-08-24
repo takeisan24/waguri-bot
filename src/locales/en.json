@@ -832,7 +832,8 @@
       "bonus_streak": " (+{amount} {currency} streak bonus)",
       "btn_remind_off": "🔕 Turn Off Reminders",
       "remind_content": "🌸 You can vote for Waguri again! Keep voting to **hold your streak** 🔥 and grab your rewards~\n[**🗳️ Vote here**]({url})",
-      "remind_off_success": "🔕 I've turned off vote reminders for you~ Thank you for always supporting Waguri 🌸"
+      "remind_off_success": "🔕 I've turned off vote reminders for you~ Thank you for always supporting Waguri 🌸",
+      "dbl_line": "\n\n➕ Vote on [**DiscordBotList**]({url}) too for another **{reward}** {currency} + **{exp} EXP** (separate reward, also once every 12 hours) 🌸"
     },
     "loto": {
       "err_voice_required": "You need to join a voice channel to open a Loto game~ 🌸",
@@ -2626,6 +2627,7 @@
       "dm_vote_thanks": "🌸 Thank you for voting for Waguri{weekend}! Here is **{coins}** {currency} + **{exp} EXP** for you 💝\n🔥 Vote streak: **{streak} days**{bonus}\nCome back in 12 hours to keep your streak going~",
       "dm_vote_weekend": " (weekend x2)",
       "dm_vote_streak_bonus": " (streak bonus +{amount} {currency})",
+      "dm_vote_thanks_dbl": "🌸 Thank you for voting for Waguri on **DiscordBotList**! Here is **{coins}** {currency} + **{exp} EXP** for you 💝\nYou can vote again in 12 hours~ Voting on Top.gg too earns a separate reward! 🔥",
       "dm_premium_thanks": "🌸 Thank you for upgrading to **Waguri Premium** 💎!\nI have activated **+{months} months** for you~{until}\nType `/premium` to see your perks 💕",
       "dm_premium_until": " Expires <t:{time}:R>."
     },
