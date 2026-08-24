@@ -67,7 +67,15 @@ async function getLiveMarketPrices() {
     for (const [itemId, info] of Object.entries(BASE_MARKET_ITEMS)) {
         const mult = computeMarketMultiplier(itemId, currentBlock);
         const prevMult = computeMarketMultiplier(itemId, prevBlock);
-        const price = Math.round(info.basePrice * mult);
+        // PHẢI khớp TỪNG PHÉP TÍNH với RPC `market_unit_price` (0098), thứ thật sự trả tiền:
+        //     GREATEST(1, floor(items.price * 0.5 * mult))   và basePrice === floor(items.price*0.5)
+        // Trước đây chỗ này dùng Math.round còn DB dùng floor. Cổng KINH TẾ #2/#5 canh BẢNG GIÁ
+        // (basePrice, tên, emoji) nên vẫn xanh — không cổng nào kiểm CON SỐ CUỐI người chơi đọc.
+        // Đo 26.280 trường hợp (12 món × 2.190 khung 4 giờ): 15,4% số khung bảng hiện CAO HƠN
+        // số thật, và ba món cày nhiều nhất sai gần một nửa thời gian (ca_tuoi 50,6%, quang_sat
+        // 49,4%, go 48,9%). Bán 1.000 gỗ ở khung lệch: bảng hứa 41.000, thực nhận 40.000.
+        // Hạ HIỂN THỊ xuống cho khớp, KHÔNG nâng tiền trả — nâng là tạo tiền, đụng bất biến #1.
+        const price = Math.max(1, Math.floor(info.basePrice * mult));
         const trend = mult > prevMult ? 'UP' : (mult < prevMult ? 'DOWN' : 'STABLE');
 
         results.push({
