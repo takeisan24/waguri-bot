@@ -50,13 +50,31 @@ module.exports = {
             if (!unlocked.has(a.id) && a.check(ctx)) newly.push(a.id);
         }
         let reward = 0;
+        // Khai NGOÀI khối để nhánh dựng thông báo phía dưới đọc được.
+        let daTraThuong = true;
         if (newly.length) {
             // CHỈ trao thưởng cho thành tựu THỰC SỰ vừa chèn (RPC trả id đã insert) ->
             // 2 lần gọi /achievements đua nhau không trao thưởng trùng (upsert chỉ chặn trùng row).
             const inserted = new Set(await db.unlockAchievements(userId, newly));
             newly = newly.filter(id => inserted.has(id));
             reward = ACH.reduce((s, a) => inserted.has(a.id) ? s + (a.reward || 0) : s, 0);
-            if (reward > 0) await db.addMoney(userId, reward, 'wallet');
+            // KIỂM kết quả cộng tiền. Trước đây bỏ qua giá trị trả về, mà `addMoney` trả
+            // boolean (`data !== null`, và `false` khi DB lỗi) nên hỏng là phát hiện được.
+            //
+            // Vì sao quan trọng hơn các chỗ nuốt lỗi khác: thành tựu ĐÃ được ghi nhận ở dòng
+            // trên và không mở lại được, nên chạy `/achievements` lần nữa cũng KHÔNG trao lại.
+            // Tiền mất VĨNH VIỄN, không có đường đòi — trong khi màn hình vẫn khẳng định
+            // "đã nhận X xu". Quy mô: 30 thành tựu, tổng 446.000 xu, mốc lớn nhất 100.000 —
+            // gần bằng 1/5 toàn bộ cung tiền của server lúc đo (505.755 xu).
+            //
+            // Chưa từng xảy ra (đo 24-08: 6 lượt mở khoá / 4 người, 3 lượt sau khi có sổ cái
+            // đều có dòng trả tiền khớp giờ). Nhưng nó là lỗi CÂM: nếu xảy ra, không ai biết.
+            //
+            // ĐÂY CHƯA PHẢI BẢN VÁ ĐỦ. Sửa trọn vẹn cần một RPC làm cả hai việc trong MỘT
+            // giao dịch. Chỗ này chỉ ngừng NÓI DỐI, chưa cứu được tiền.
+            // KHÔNG đảo thứ tự thành trả-tiền-trước: khi đó cộng tiền xong mà ghi nhận hỏng
+            // sẽ cho phép chạy lại và nhận tiền lần nữa — thành máy in tiền, tệ hơn hẳn.
+            daTraThuong = reward > 0 ? await db.addMoney(userId, reward, 'wallet') : true;
             newly.forEach(id => unlocked.add(id));
         }
 
@@ -64,9 +82,12 @@ module.exports = {
         if (newly.length) {
             lines.push(t(locale, 'commands.achievements.newly_unlocked', {
                 count: newly.length,
-                reward: fmt(reward, locale),
+                // Nếu cộng tiền hỏng thì KHÔNG khẳng định đã nhận. Hiện 0 và kèm dòng báo lỗi
+                // ngay dưới — thà nói "có trục trặc" còn hơn nói một con số không có thật.
+                reward: fmt(daTraThuong ? reward : 0, locale),
                 currency: config.CURRENCY
             }));
+            if (!daTraThuong) lines.push(t(locale, 'common.retry_later'));
             lines.push('──────────────────────────────');
         }
 
