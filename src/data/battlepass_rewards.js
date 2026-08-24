@@ -71,7 +71,12 @@ module.exports = {
         },
         15: {
             free: { coins: 6000 },
-            premium: { items: { ve_vip: 1 } } // Vé VIP mở rương
+            // Đổi mã theo `0068_rename_item_ids.sql` — migration đó ĐỔI TÊN chứ không xoá:
+            //   ve_vip -> banh_kem_dau · ve_dai_gia -> banh_cheesecake
+            // Bảng quà này không được cập nhật theo, nên tới 24-08 nó vẫn hứa hai mã đã
+            // biến mất khỏi danh mục. `inventory` không có khoá ngoại nên món ma vẫn ghi
+            // vào kho được: người chơi nhận một thứ không bán được, không dùng được.
+            premium: { items: { banh_kem_dau: 1 } } // Bánh Kem Dâu Gekka (buff +50, 6h)
         },
         16: {
             free: { items: { tam_go: 2 } },
@@ -87,7 +92,8 @@ module.exports = {
         },
         19: {
             free: { coins: 10000 },
-            premium: { items: { ve_dai_gia: 1 } } // Vé mở rương xịn
+            // Cùng lý do đổi mã như mốc 15 phía trên.
+            premium: { items: { banh_cheesecake: 1 } } // Bánh Cheesecake Gekka (buff +100, 8h)
         },
         20: {
             free: { 

@@ -32,11 +32,11 @@ const ROOT = path.join(__dirname, '..');
 // File JSON này được cổng `db-catalog.js --check` đối chiếu với prod mỗi lần push.
 const rewards = require('../src/data/battlepass_rewards');
 
-// Hai món đang treo, CỐ Ý ghi ra đây thay vì giấu vào allowlist rời: việc tạo chúng là
-// quyết định thiết kế (tên, loại, giá, công dụng) chứ không phải việc dọn dẹp, nên phải
-// nhìn thấy được. Cổng vẫn chặn mọi món ma MỚI.
-// Gỡ khỏi danh sách này ngay khi hai món được thêm vào danh mục.
-const DANG_TREO = new Set(['ve_vip', 've_dai_gia']);
+// RỖNG, và phải giữ rỗng. Hai món từng treo ở đây (`ve_vip`, `ve_dai_gia`) hoá ra không
+// phải "chưa từng tồn tại" mà là mã CŨ: `0068_rename_item_ids.sql` đổi chúng thành
+// `banh_kem_dau` và `banh_cheesecake`, còn bảng quà không cập nhật theo. Đã sửa.
+// Thêm mã vào đây chỉ khi thật sự cần một món chưa có, và phải ghi rõ lý do.
+const DANG_TREO = new Set([]);
 
 const DANH_MUC = new Set(require('../scripts/db-catalog-ids.json').items);
 
