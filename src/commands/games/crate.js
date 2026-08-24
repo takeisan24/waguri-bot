@@ -24,8 +24,15 @@ module.exports = {
                 : '🌸 Máy chủ này đã **tắt trò may rủi** rồi nha~');
         }
         const cost = config.CRATE.COST;
-        if (!await db.addMoney(userId, -cost, 'wallet')) {
-            return interaction.editReply(t(locale, 'commands.crate.err_poor', { cost: fmt(cost, locale), currency: config.CURRENCY }));
+        // `addMoney` trả BA giá trị, không phải hai: `true` = đã trừ, `false` = ví không đủ,
+        // `null` = KHÔNG BIẾT vì DB lỗi. Bản cũ dùng `if (!...)` nên gộp hai cái sau, và lúc
+        // Supabase chập chờn người chơi bị báo "không đủ {cost} xu để cược" — kèm số tiền cụ
+        // thể — dù ví đầy. Nói sai về tài sản của chính họ, mà lại nghe rất thuyết phục.
+        const daTru = await db.addMoney(userId, -cost, 'wallet');
+        if (daTru !== true) {
+            return interaction.editReply(daTru === null
+                ? t(locale, 'common.retry_later')
+                : t(locale, 'commands.crate.err_poor', { cost: fmt(cost, locale), currency: config.CURRENCY }));
         }
 
         const money = async mult => { const amt = Math.floor(cost * mult); await db.addMoney(userId, amt, 'wallet'); return amt; };

@@ -158,7 +158,12 @@ async function addMoney(userId, amount, type = 'wallet') {
 
     } catch (error) {
         console.error(`[DATABASE ERROR] Lỗi addMoney(${userId}):`, error);
-        return false;
+        // TRẢ `null`, KHÔNG phải `false`. Hai chuyện khác hẳn nhau: `false` = người dùng
+        // thật sự không đủ, `null` = KHÔNG BIẾT vì DB lỗi. Gộp chung thì lúc Supabase
+        // chập chờn, người chơi bị báo sai về tài sản của CHÍNH HỌ.
+        // Mọi nơi gọi đều dùng `if (!x)` nên `null` giữ NGUYÊN hành vi cũ; chỗ nào muốn
+        // tách mới kiểm `=== null`. Đổi dần từng chỗ, không cần một đợt sửa lớn.
+        return null;
     }
 }
 
@@ -187,7 +192,12 @@ async function stakeCollect(sessionId, game, channelId, userId, amount) {
         const { data, error } = await supabase.rpc('stake_collect', { p_session: sessionId, p_game: game, p_channel: channelId, p_user: userId, p_amount: amount });
         if (error) throw error;
         return data === true;
-    } catch (error) { console.error('[DATABASE ERROR] stakeCollect():', error); return false; }
+                // TRẢ `null`, KHÔNG phải `false`. Hai chuyện khác hẳn nhau: `false` = người dùng
+                // thật sự không đủ, `null` = KHÔNG BIẾT vì DB lỗi. Gộp chung thì lúc Supabase
+                // chập chờn, người chơi bị báo sai về tài sản của CHÍNH HỌ.
+                // Mọi nơi gọi đều dùng `if (!x)` nên `null` giữ NGUYÊN hành vi cũ; chỗ nào muốn
+                // tách mới kiểm `=== null`. Đổi dần từng chỗ, không cần một đợt sửa lớn.
+    } catch (error) { console.error('[DATABASE ERROR] stakeCollect():', error); return null; }
 }
 /** Ván xong bình thường: xoá dòng cược (cược đã thành pot & trả thưởng). */
 async function stakeSettle(sessionId) {
@@ -202,7 +212,9 @@ async function stakeSettle(sessionId) {
             console.error(`[DATABASE ERROR] stakeSettle() lần ${attempt}:`, error);
             if (attempt === 2) {
                 console.error(`[CRITICAL] stakeSettle THẤT BẠI session=${sessionId} — cần dọn dòng cược thủ công để tránh hoàn cược trùng.`);
-                return false;
+                // TRẢ `null` = "không biết, DB lỗi" — phân biệt với các giá trị khác.
+                // Nơi gọi dùng `if (!x)` nên hành vi giữ nguyên; muốn tách thì kiểm `=== null`.
+                return null;
             }
         }
     }
@@ -257,7 +269,12 @@ async function transferMoneyWithTax(fromUserId, toUserId, amount, taxPct) {
 
     } catch (error) {
         console.error(`[DATABASE ERROR] Lỗi transferMoneyWithTax(${fromUserId} -> ${toUserId}):`, error);
-        return false;
+        // TRẢ `null`, KHÔNG phải `false`. Hai chuyện khác hẳn nhau: `false` = người dùng
+        // thật sự không đủ, `null` = KHÔNG BIẾT vì DB lỗi. Gộp chung thì lúc Supabase
+        // chập chờn, người chơi bị báo sai về tài sản của CHÍNH HỌ.
+        // Mọi nơi gọi đều dùng `if (!x)` nên `null` giữ NGUYÊN hành vi cũ; chỗ nào muốn
+        // tách mới kiểm `=== null`. Đổi dần từng chỗ, không cần một đợt sửa lớn.
+        return null;
     }
 }
 
@@ -776,7 +793,12 @@ async function transferItem(fromId, toId, itemId, qty = 1) {
         return data === true;
     } catch (error) {
         console.error('[DATABASE ERROR] transferItem():', error);
-        return false;
+        // TRẢ `null`, KHÔNG phải `false`. Hai chuyện khác hẳn nhau: `false` = người dùng
+        // thật sự không đủ, `null` = KHÔNG BIẾT vì DB lỗi. Gộp chung thì lúc Supabase
+        // chập chờn, người chơi bị báo sai về tài sản của CHÍNH HỌ.
+        // Mọi nơi gọi đều dùng `if (!x)` nên `null` giữ NGUYÊN hành vi cũ; chỗ nào muốn
+        // tách mới kiểm `=== null`. Đổi dần từng chỗ, không cần một đợt sửa lớn.
+        return null;
     }
 }
 
@@ -883,7 +905,12 @@ async function transferBank(userId, amount, toBank) {
         return data === true;
     } catch (error) {
         console.error('[DATABASE ERROR] transferBank():', error);
-        return false;
+        // TRẢ `null`, KHÔNG phải `false`. Hai chuyện khác hẳn nhau: `false` = người dùng
+        // thật sự không đủ, `null` = KHÔNG BIẾT vì DB lỗi. Gộp chung thì lúc Supabase
+        // chập chờn, người chơi bị báo sai về tài sản của CHÍNH HỌ.
+        // Mọi nơi gọi đều dùng `if (!x)` nên `null` giữ NGUYÊN hành vi cũ; chỗ nào muốn
+        // tách mới kiểm `=== null`. Đổi dần từng chỗ, không cần một đợt sửa lớn.
+        return null;
     }
 }
 
@@ -1761,7 +1788,12 @@ async function setCosmeticWithFee(userId, field, value, cost) {
         return !!data;
     } catch (error) {
         console.error('[DATABASE ERROR] setCosmeticWithFee():', error);
-        return false;
+        // TRẢ `null`, KHÔNG phải `false`. Hai chuyện khác hẳn nhau: `false` = người dùng
+        // thật sự không đủ, `null` = KHÔNG BIẾT vì DB lỗi. Gộp chung thì lúc Supabase
+        // chập chờn, người chơi bị báo sai về tài sản của CHÍNH HỌ.
+        // Mọi nơi gọi đều dùng `if (!x)` nên `null` giữ NGUYÊN hành vi cũ; chỗ nào muốn
+        // tách mới kiểm `=== null`. Đổi dần từng chỗ, không cần một đợt sửa lớn.
+        return null;
     }
 }
 

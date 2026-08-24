@@ -18,8 +18,13 @@ async function move(interaction, toBank) {
     const amount = parseAmount(raw, toBank ? Number(user.wallet) : Number(user.bank)); // hỗ trợ 1k/2m/all
     if (!amount || amount <= 0) return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'error', { locale, title, description: t(locale, 'commands.bank.invalid_amount') })] });
 
-    const ok = await db.transferBank(interaction.user.id, amount, toBank);
-    if (!ok) return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'error', { locale, title, description: toBank ? t(locale, 'commands.bank.deposit_insufficient') : t(locale, 'commands.bank.withdraw_insufficient') })] });
+    // BA giá trị: `true` = xong, `false` = không đủ tiền, `null` = KHÔNG BIẾT vì DB lỗi.
+    // Gộp hai cái sau là nói sai về số dư của chính người dùng lúc Supabase chập chờn.
+    const kq = await db.transferBank(interaction.user.id, amount, toBank);
+    if (kq !== true) {
+        const loiDB = kq === null;
+        return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'error', { locale, title, description: loiDB ? t(locale, 'common.retry_later') : toBank ? t(locale, 'commands.bank.deposit_insufficient') : t(locale, 'commands.bank.withdraw_insufficient') })] });
+    }
 
     const u = await db.getUser(interaction.user.id);
     const bal = t(locale, 'commands.bank.balance_desc', { wallet: fmt(u?.wallet || 0, locale), bank: fmt(u?.bank || 0, locale), currency: config.CURRENCY });

@@ -54,12 +54,16 @@ module.exports = {
         const tax = Math.floor(amount * config.GIVE_TAX_PCT);
         const received = amount - tax;
 
-        const ok = await db.transferMoneyWithTax(interaction.user.id, target.id, amount, config.GIVE_TAX_PCT);
-        if (!ok) {
+        // BA giá trị: `true` = xong, `false` = không đủ tiền, `null` = KHÔNG BIẾT vì DB lỗi.
+        // Gộp hai cái sau là nói sai về số dư của chính người dùng lúc Supabase chập chờn.
+        const kq = await db.transferMoneyWithTax(interaction.user.id, target.id, amount, config.GIVE_TAX_PCT);
+        if (kq !== true) {
             const embed = buildWaguriEmbed(interaction, 'error', {
                 locale,
                 title: t(locale, 'commands.give.embed_title_warning'),
-                description: t(locale, 'commands.give.err_poor')
+                description: kq === null
+                    ? t(locale, 'common.retry_later')
+                    : t(locale, 'commands.give.err_poor')
             });
             return interaction.editReply({ embeds: [embed] });
         }

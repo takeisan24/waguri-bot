@@ -71,10 +71,17 @@ module.exports = {
             });
             return interaction.editReply({ embeds: [embedObj] });
         }
-        if (!await db.addMoney(userId, -bet, 'wallet')) {
+        // `addMoney` trả BA giá trị, không phải hai: `true` = đã trừ, `false` = ví không đủ,
+        // `null` = KHÔNG BIẾT vì DB lỗi. Bản cũ dùng `if (!...)` nên gộp hai cái sau, và lúc
+        // Supabase chập chờn người chơi bị báo "không đủ {bet} xu để cược" — kèm số tiền cụ
+        // thể — dù ví đầy. Nói sai về tài sản của chính họ, mà lại nghe rất thuyết phục.
+        const daTru = await db.addMoney(userId, -bet, 'wallet');
+        if (daTru !== true) {
             const embedObj = buildWaguriEmbed(interaction, 'warning', {
                 locale,
-                description: t(locale, 'common.insufficient_funds', { cost: fmt(bet, locale), currency: config.CURRENCY })
+                description: daTru === null
+                    ? t(locale, 'common.retry_later')
+                    : t(locale, 'common.insufficient_funds', { cost: fmt(bet, locale), currency: config.CURRENCY })
             });
             return interaction.editReply({ embeds: [embedObj] });
         }
