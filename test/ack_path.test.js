@@ -26,6 +26,14 @@ const CO_TRAN = {
     getJailForAck: 'lib/jail.js — withTimeout(ACK_LOOKUP_TIMEOUT), fail-open khi quá hạn',
 };
 
+// Hàm KHÔNG chạm DB, được phép xuất hiện trong biểu thức khởi tạo một promise chờ sẵn.
+// Danh sách này KHÔNG nới cho `await` — nó chỉ nói "gọi cái này không tốn vòng mạng nào".
+const THUAN_BO_NHO = {
+    isBlocked: 'lib/jail.js — tra một Set trong bộ nhớ',
+    catch: 'method của Promise, không phải lời gọi mới',
+    startsWith: 'String.prototype',
+};
+
 const boComment = s => s.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:])\/\/.*$/gm, '$1');
 
 test('ack: mọi await trước command.execute() đều có trần thời gian', () => {
@@ -44,6 +52,36 @@ test('ack: mọi await trước command.execute() đều có trần thời gian'
         .map(m => m[1]);
 
     const viPham = [...new Set(goi)].filter(ten => !CO_TRAN[ten]);
+
+    // ---- LỖ HỔNG ĐÃ TỪNG MỞ RA, NAY BỊT LẠI ----------------------------------------
+    // Ngày 24-08, hai lời tra DB trên đường này được cho chạy SONG SONG để hạ trần từ 1,6s
+    // xuống 800ms. Cách viết đổi từ `await getJailForAck(id)` thành:
+    //     const jailPromise = ... ? getJailForAck(id).catch(...) : null;
+    //     ...
+    //     const jail = await jailPromise;
+    // Regex ở trên chỉ bắt `await <tên>(`, nên `await jailPromise;` LỌT QUA — cổng vẫn xanh
+    // trong khi nó đã thôi nhìn thấy lời gọi DB đó. Đúng kiểu mù mà chính file này sinh ra
+    // để chặn. Nên soi thêm: mọi `await <biến>` trần thì biến ấy phải khởi tạo từ hàm CÓ TRẦN.
+    const awaitBien = [...doan.matchAll(/\bawait\s+([A-Za-z_$][\w$]*)\s*(?![\w$.(])/g)].map(m => m[1]);
+
+    const bienXau = [];
+    for (const ten of new Set(awaitBien)) {
+        // String.raw: trong chuỗi nháy đơn thường, '\s' bị JS nuốt còn 's' -> regex khớp bừa.
+        const khai = doan.match(new RegExp(String.raw`(?:const|let|var)\s+${ten}\s*=([\s\S]*?);`));
+        if (!khai) { bienXau.push(ten + ' (không tìm thấy nơi khai báo trong đoạn này)'); continue; }
+        const hamGoi = [...khai[1].matchAll(/([A-Za-z_$][\w$]*)\s*\(/g)].map(m => m[1]);
+        const la = [...new Set(hamGoi.filter(h => !CO_TRAN[h] && !THUAN_BO_NHO[h]))];
+        if (la.length) bienXau.push(ten + ' (khởi tạo từ: ' + la.join(', ') + ')');
+    }
+
+    assert.deepStrictEqual(
+        bienXau, [],
+        '\n❌ Có `await <biến>` trên đường trước ack mà biến đó khởi tạo từ hàm KHÔNG CÓ TRẦN:\n' +
+        bienXau.map(v => '   • ' + v).join('\n') +
+        '\n\nBắn promise trước rồi await sau VẪN LÀ chờ DB — chỉ khác là regex `await f(` không\n' +
+        'nhìn thấy. Bọc withTimeout(..., ACK_LOOKUP_TIMEOUT) rồi khai tên hàm vào CO_TRAN\n' +
+        '(hoặc THUAN_BO_NHO nếu nó không chạm DB) trong test này.\n'
+    );
 
     assert.deepStrictEqual(
         viPham, [],
