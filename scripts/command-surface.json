@@ -120,7 +120,9 @@
   ],
   "pet": [
     "adopt",
+    "ascend",
     "feed",
+    "hatch",
     "rename",
     "skill-up",
     "view"

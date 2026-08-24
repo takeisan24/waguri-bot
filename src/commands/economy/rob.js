@@ -4,6 +4,7 @@ const db = require('../../database.js');
 const config = require('../../config');
 const { pvpEnabled } = require('../../lib/guildflags');
 const { getInteractionLanguage, t } = require('../../lib/i18n');
+const { petBuffValue, petThiefFineCut, petRarity, findSpecies } = require('../../data/pets');
 
 const fmt = (n, locale) => Number(n).toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN');
 
@@ -61,31 +62,16 @@ module.exports = {
             return interaction.editReply({ embeds: [embed] });
         }
 
-        // Kiểm tra xem mục tiêu có nuôi Cún bảo vệ không (Level >= 5)
-        let dogBuff = false;
-        let targetPetName = '';
-        const targetPet = await db.getPet(target.id);
-        if (targetPet && targetPet.species === 'cun') {
-            const { petLevel } = require('../../data/pets');
-            const dogLvl = petLevel(targetPet.exp);
-            if (dogLvl >= 5) {
-                dogBuff = true;
-                targetPetName = targetPet.name || t(locale, 'species.cun') || 'Cún con';
-            }
-        }
-
-        // Kiểm tra xem kẻ trộm có nuôi Cáo nhỏ ranh mãnh không (Level >= 5)
-        let caoBuff = false;
-        let robberPetName = '';
-        const robberPet = await db.getPet(robberId);
-        if (robberPet && robberPet.species === 'cao') {
-            const { petLevel } = require('../../data/pets');
-            const caoLvl = petLevel(robberPet.exp);
-            if (caoLvl >= 5) {
-                caoBuff = true;
-                robberPetName = robberPet.name || t(locale, 'species.cao') || 'Cáo nhỏ';
-            }
-        }
+        // Buff thú cưng của CẢ HAI phía. Ngưỡng Lv.5 cũ đã bỏ (xem src/data/pets.js):
+        // đo trên prod thấy 0/2 pet từng chạm Lv.5 nên hai buff này chưa chạy lần nào.
+        // Hai lời gọi getPet nay chạy song song — trước đây nối tiếp nhau vô cớ.
+        const [targetPet, robberPet] = await Promise.all([db.getPet(target.id), db.getPet(robberId)]);
+        const guardCut = petBuffValue(targetPet, 'guard');    // 🛡️ Cún con / Nghê Đá — hạ tỉ lệ kẻ cướp
+        const thiefBonus = petBuffValue(robberPet, 'thief');  // 🗝️ Cáo nhỏ / Hổ Con  — tăng tiền cướp
+        const thiefFineCut = petThiefFineCut(robberPet);      //                        và giảm tiền phạt
+        const petLabel = p => (p ? `${petRarity(p).emoji}${findSpecies(p.species)?.emoji || '🐾'}` : '');
+        const targetPetName = targetPet ? (targetPet.name || t(locale, `species.${targetPet.species}`) || findSpecies(targetPet.species)?.name || '') : '';
+        const robberPetName = robberPet ? (robberPet.name || t(locale, `species.${robberPet.species}`) || findSpecies(robberPet.species)?.name || '') : '';
 
         // Cooldown (atomic) — chỉ tính khi mục tiêu hợp lệ
         const cd = await db.claimCooldown(robberId, 'rob', config.ROB.COOLDOWN_SECONDS);
@@ -99,12 +85,13 @@ module.exports = {
         }
 
         // Waguri không khuyến khích đâu nha 😟 nhưng game là game~
-        const successRate = dogBuff ? (config.ROB.SUCCESS_RATE - 0.2) : config.ROB.SUCCESS_RATE;
+        // Sàn 5%: bậc Thần Thoại cho guardCut tới 0,40 nên phải chặn tỉ lệ tụt về <= 0.
+        const successRate = Math.max(0.05, config.ROB.SUCCESS_RATE - guardCut);
         if (Math.random() < successRate) {
             const pct = config.ROB.STEAL_MIN_PCT + Math.random() * (config.ROB.STEAL_MAX_PCT - config.ROB.STEAL_MIN_PCT);
             let amount = Math.max(1, Math.floor(Number(tgt.wallet) * pct));
-            if (caoBuff) {
-                amount = Math.round(amount * 1.1);
+            if (thiefBonus > 0) {
+                amount = Math.round(amount * (1 + thiefBonus));
             }
             const ok = await db.transferMoney(target.id, robberId, amount);
             if (!ok) {
@@ -122,8 +109,9 @@ module.exports = {
                 target: target.id,
                 wallet: fmt(me?.wallet || 0, locale)
             });
-            if (caoBuff) {
-                desc += `\n` + t(locale, 'commands.rob.success_cao_buff', { name: robberPetName });
+            if (thiefBonus > 0) {
+                desc += `\n` + t(locale, 'commands.rob.success_thief_buff', {
+                    emoji: petLabel(robberPet), name: robberPetName, pct: (thiefBonus * 100).toFixed(0) });
             }
             const embedSuccess = buildWaguriEmbed(interaction, 'success', {
                 locale,
@@ -136,8 +124,8 @@ module.exports = {
             // Phạt theo TỔNG TÀI SẢN (ví+bank) -> không né được bằng cách giấu tiền trong bank.
             const robberAssets = Number(robber.wallet || 0) + Number(robber.bank || 0);
             let fine = Math.floor(robberAssets * config.ROB.FINE_PCT);
-            if (caoBuff) {
-                fine = Math.round(fine * 0.85); // Giảm 15% tiền phạt
+            if (thiefFineCut > 0) {
+                fine = Math.round(fine * (1 - thiefFineCut)); // bậc càng cao giảm càng nhiều
             }
             const usedIns = await db.useInsurance(robberId, 'bh_hoc_duong');
             if (usedIns) {
@@ -159,11 +147,13 @@ module.exports = {
             if (usedIns) {
                 desc += `\n` + t(locale, 'commands.rob.fail_insurance');
             }
-            if (caoBuff) {
-                desc += `\n` + t(locale, 'commands.rob.fail_cao_buff', { name: robberPetName });
+            if (thiefFineCut > 0) {
+                desc += `\n` + t(locale, 'commands.rob.fail_thief_buff', {
+                    emoji: petLabel(robberPet), name: robberPetName, pct: (thiefFineCut * 100).toFixed(0) });
             }
-            if (dogBuff) {
-                desc += `\n` + t(locale, 'commands.rob.fail_dog_buff', { name: targetPetName, target: target.id });
+            if (guardCut > 0) {
+                desc += `\n` + t(locale, 'commands.rob.fail_guard_buff', {
+                    emoji: petLabel(targetPet), name: targetPetName, target: target.id });
             }
             desc += `\n` + t(locale, 'commands.rob.fail_desc_footer', { bal: fmt(displayBal, locale), currency: config.CURRENCY });
 

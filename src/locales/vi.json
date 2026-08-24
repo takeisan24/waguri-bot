@@ -345,7 +345,16 @@
       "level_up": "🎉 Bé đã lên **Lv.{lvl}**!",
       "err_no_food": "Cậu không có sẵn **1× {food}** trong kho để cho bé ăn rồi~ 🥺",
       "feed_success_desc_item": "{emoji} **{name}** măm măm ngon lành món **{food}**! +{gain} EXP 😋 *(nhận x{mult} EXP)*",
-      "rename_success": "✅ Đã đổi tên thú cưng thành **{name}**~ 🐾"
+      "rename_success": "✅ Đã đổi tên thú cưng thành **{name}**~ 🐾",
+      "ascend_title": "✨・Lễ thăng bậc thành công!",
+      "ascend_success": "{name} bừng sáng rồi thăng từ {from} lên {to}!\nHệ số năng lực loài nay là **×{mult}**.",
+      "ascend_spent": "📿 Lễ vật đã dâng: **{items}**",
+      "ascend_max": "🌟 Thú cưng của cậu đã ở bậc **{rarity}** — không còn bậc nào cao hơn nữa đâu~",
+      "ascend_low_level": "Để lên bậc {next}, bé cần đạt **Lv.{need}** (hiện tại Lv.{level}). Cho bé ăn thêm nhé~ 🍖",
+      "ascend_missing": "Lễ thăng bậc {next} còn thiếu lễ vật.\nCần: {need}\n*(kiếm được qua `/fish` `/mine` `/chop` `/craft`)*",
+      "hatch_title": "🥚・Trứng đã nở!",
+      "hatch_success": "Quả **{egg}** rung lên rồi nứt ra... {emoji} **{species}** bậc **{rarity}** đã thức giấc!\n*Kinh nghiệm và kỹ năng cũ của cậu được giữ nguyên.*",
+      "hatch_no_egg": "Cậu không có **{egg}** nào trong kho cả~ Trứng rơi ngẫu nhiên khi `/fish` `/mine` `/chop` nhé! 🥺"
     },
     "pig": {
       "title": "🐷・Nuôi heo",
@@ -1781,12 +1790,12 @@
       "err_cooldown": "Cậu vừa \"ra tay\" xong, nghỉ chút đã nhé~ Quay lại sau <t:{ts}:R>.",
       "err_transfer_fail": "Hụt rồi, con mồi nhanh tay cất tiền mất tiêu~",
       "success_desc": "Cậu lén lấy được **{amount}** {currency} từ ví <@{target}>.\n💵 Số dư của cậu: **{wallet}** {currency}\n*(Waguri giả vờ không thấy gì~ 🙈)*",
-      "success_cao_buff": "🦊 Bé cáo **{name}** ranh mãnh giúp cậu trộm thêm 10% số tiền!",
       "fail_desc_base": "Cậu bị bắt quả tang và phải nộp phạt **{fine}** {currency}.",
       "fail_insurance": "🛡️ **Bảo hiểm Đường phố** đã kích hoạt giúp giảm 50% tiền phạt!",
-      "fail_cao_buff": "🦊 Bé cáo **{name}** ranh mãnh tẩu tán bớt tang vật giúp cậu giảm 15% tiền phạt!",
-      "fail_dog_buff": "🐕 Bé cún **{name}** của <@{target}> sủa vang làm cậu giật mình bị phát hiện!",
-      "fail_desc_footer": "\n💵 Số dư của cậu: **{bal}** {currency}\nLần sau đừng làm vậy nữa nhé~ 😟"
+      "fail_desc_footer": "\n💵 Số dư của cậu: **{bal}** {currency}\nLần sau đừng làm vậy nữa nhé~ 😟",
+      "success_thief_buff": "{emoji} **{name}** ranh mãnh giúp cậu trộm thêm {pct}% số tiền!",
+      "fail_thief_buff": "{emoji} **{name}** tẩu tán bớt tang vật giúp cậu giảm {pct}% tiền phạt!",
+      "fail_guard_buff": "{emoji} **{name}** của <@{target}> canh gác nghiêm ngặt làm cậu giật mình bị phát hiện!"
     },
     "vay": {
       "loan_line": "• <@{counterpart}> — **{amount}** {currency} · hạn <t:{ts}:R>{overdue}",
@@ -2267,14 +2276,21 @@
     "rong": "Rồng con",
     "cao": "Cáo nhỏ",
     "tho": "Thỏ con",
-    "gau": "Gấu con"
+    "gau": "Gấu con",
+    "ho": "Hổ Con Đông Dương",
+    "nghe": "Nghê Đá Giữ Đền",
+    "chim_lac": "Chim Lạc",
+    "giao_long": "Giao Long",
+    "kim_quy": "Kim Quy Hồ Gươm",
+    "phuong_hoang": "Phượng Hoàng Lửa"
   },
   "rarity": {
     "common": "Thường",
     "uncommon": "Không thông dụng",
     "rare": "Hiếm",
     "epic": "Sử thi",
-    "legendary": "Huyền thoại"
+    "legendary": "Huyền thoại",
+    "mythic": "Thần thoại"
   },
   "titles": {
     "Cày Cuốc Chuyên Cần 🌾": "Cày Cuốc Chuyên Cần 🌾",

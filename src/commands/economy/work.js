@@ -9,6 +9,7 @@ const { applyDisease } = require('../../lib/disease');
 const { getEventMult } = require('../../lib/event');
 const { buildWaguriEmbed } = require('../../lib/embed');
 const { handleNewbieQuest } = require('../../lib/newbie');
+const { petBuffValue, petRarity, findSpecies } = require('../../data/pets');
 
 const { getInteractionLanguage, t } = require('../../lib/i18n');
 const scriptsVi = require('../../data/workScripts');
@@ -106,30 +107,15 @@ module.exports = {
             const buffActive = user.buff_expires_at && new Date(user.buff_expires_at).getTime() > Date.now();
             const buffMult = buffActive ? Number(user.buff_mult) : 1;
 
-            // Kiểm tra xem user có nuôi Mèo tài lộc không (Level >= 5)
-            let catBuff = false;
-            let userPetName = '';
+            // Buff thú cưng. NGƯỠNG Lv.5 CŨ ĐÃ BỎ: đo trên prod thấy 0/2 pet từng chạm
+            // Lv.5, nghĩa là cả 6 buff loài chưa kích hoạt lần nào kể từ khi ra mắt. Nay
+            // buff bật ngay từ lúc nhận nuôi ở hệ số ×1,0, bậc độ hiếm nhân lên tới ×2,0.
+            // Giá trị lấy từ src/data/pets.js — không còn so chuỗi loài ở đây.
             const userPet = await db.getPet(userId);
-            if (userPet && userPet.species === 'meo') {
-                const { petLevel } = require('../../data/pets');
-                const catLvl = petLevel(userPet.exp);
-                if (catLvl >= 5) {
-                    catBuff = true;
-                    userPetName = userPet.name || 'Mèo con';
-                }
-            }
-
-            // Kiểm tra xem user có nuôi Rồng con không (Level >= 5)
-            let rongBuff = false;
-            let rongName = '';
-            if (userPet && userPet.species === 'rong') {
-                const { petLevel } = require('../../data/pets');
-                const rongLvl = petLevel(userPet.exp);
-                if (rongLvl >= 5) {
-                    rongBuff = true;
-                    rongName = userPet.name || 'Rồng con';
-                }
-            }
+            const jackpotBonus = petBuffValue(userPet, 'jackpot');  // 🍀 Mèo con / Phượng Hoàng Lửa
+            const expBonus = petBuffValue(userPet, 'exp');          // 📘 Rồng con / Giao Long
+            const petName = userPet ? (userPet.name || findSpecies(userPet.species)?.name || 'Thú cưng') : '';
+            const petTag = userPet ? `${petRarity(userPet).emoji}${findSpecies(userPet.species)?.emoji || '🐾'}` : '';
 
             // 4. Kết quả: xui theo risk_rate của nghề (5–25%) · còn lại 8% jackpot · phần lớn là thành công
             let category, earnedMoney, usedInsurance = false;
@@ -141,7 +127,7 @@ module.exports = {
                     loss = Math.round(loss * 0.2); // Giảm 80% thiệt hại
                 }
                 earnedMoney = -loss;
-            } else if (Math.random() < (catBuff ? (config.WORK.JACKPOT_CHANCE + 0.05) : config.WORK.JACKPOT_CHANCE)) {
+            } else if (Math.random() < (config.WORK.JACKPOT_CHANCE + jackpotBonus)) {
                 category = 'jackpot';
                 earnedMoney = Math.round(maxWage * config.WORK.JACKPOT_MULT * buffMult);
             } else {
@@ -224,15 +210,17 @@ module.exports = {
                     ? `\n🛡️ **Labor Insurance** activated, covering 80% of losses!`
                     : `\n🛡️ **Bảo hiểm Lao động** đã kích hoạt giúp gánh 80% thiệt hại!`;
             }
-            if (category === 'jackpot' && catBuff) {
+            if (category === 'jackpot' && jackpotBonus > 0) {
                 resultMessage += isEn
-                    ? `\n🐱 Kitten **${userPetName}** rubbed against you, bringing fortune to your pocket!`
-                    : `\n🐱 Bé mèo **${userPetName}** dụi dụi mang lại tài lộc đầy túi!`;
+                    ? `\n${petTag} **${petName}** brought fortune your way (+${(jackpotBonus * 100).toFixed(0)} pts jackpot chance)!`
+                    : `\n${petTag} **${petName}** mang lại tài lộc đầy túi (+${(jackpotBonus * 100).toFixed(0)} điểm % cơ hội trúng lớn)!`;
             }
-            if (rongBuff) {
+            if (expBonus > 0) {
+                // In ra ĐÚNG con số vừa dùng để tính, không phải "+15%" ghi cứng: bậc pet
+                // nhân hệ số nên số thật đổi theo bậc.
                 resultMessage += isEn
-                    ? `\n🐲 Baby Dragon **${rongName}** lent dragon power, giving +15% EXP!`
-                    : `\n🐲 Bé rồng **${rongName}** truyền long lực giúp cậu nhận thêm 15% EXP!`;
+                    ? `\n${petTag} **${petName}** lent its power, giving +${(expBonus * 100).toFixed(0)}% EXP!`
+                    : `\n${petTag} **${petName}** truyền sức mạnh giúp cậu nhận thêm ${(expBonus * 100).toFixed(0)}% EXP!`;
             }
             if (dz.note) resultMessage += `\n${dz.note}`;
 
@@ -247,8 +235,8 @@ module.exports = {
             // 5. EXP theo cấp nghề
             let gainedExp = Math.round(config.WORK.EXP_BASE + config.WORK.EXP_PER_LEVEL * jobLevel)
                 + Math.floor(Math.random() * (config.WORK.EXP_RANDOM + 1));
-            if (rongBuff) {
-                gainedExp = Math.round(gainedExp * 1.15);
+            if (expBonus > 0) {
+                gainedExp = Math.round(gainedExp * (1 + expBonus));
             }
             if (eventMult !== 1) gainedExp = Math.round(gainedExp * eventMult);
 

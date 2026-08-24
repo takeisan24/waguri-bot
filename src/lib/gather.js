@@ -7,7 +7,36 @@ const { getLevelFromExp, levelUpReward } = require('./leveling');
 const { getEventMult } = require('./event');
 const { buildWaguriEmbed } = require('./embed');
 const { getInteractionLanguage, t } = require('./i18n');
-const { petLevel } = require('../data/pets');
+const { petBuffValue, petRarity, findSpecies, EGGS } = require('../data/pets');
+
+/**
+ * Trứng thú cưng — rơi ở CẢ `/fish` `/mine` `/chop`. Đặt ở đây (một chỗ) thay vì nhân bản
+ * vào ba `onDrops`, để ba hoạt động không bao giờ lệch tỉ lệ nhau.
+ *
+ * Duyệt từ HIẾM NHẤT xuống và dừng ở quả đầu tiên trúng: mỗi lượt cày rơi tối đa MỘT quả,
+ * và quả hiếm hơn được ưu tiên. Duyệt ngược lại thì trứng Sử Thi (3%) luôn ăn trước và
+ * trứng Thần Thoại gần như không bao giờ tới lượt.
+ *
+ * Tỉ lệ neo vào thang rơi sẵn có (Vàng Đông Triều 1,0% · Kỳ Nam 0,5% · Cá Koi thực tế 0,1%)
+ * — xem chú thích EGGS trong src/data/pets.js.
+ */
+async function rollPetEgg(userId, locale, en) {
+    for (const id of ['trung_than_thoai', 'trung_huyen_thoai', 'trung_su_thi']) {
+        const egg = EGGS[id];
+        if (Math.random() >= egg.rate) continue;
+        await db.giveItemAdmin(userId, id, 1);
+        await db.discoverItem(userId, id);
+        // `|| it?.name` là bắt buộc: vi.json cố tình không dịch `data.items.*`, tên tiếng
+        // Việt nằm ở cột `items.name`. Thiếu nhánh này là in ra mã máy `trung_than_thoai`.
+        const it = await db.getItem(id);
+        const nm = t(locale, `data.items.${id}.name`) || it?.name || id;
+        const rar = t(locale, `rarity.${egg.rarity}`) || egg.rarity;
+        return en
+            ? `\n${egg.emoji} A **${nm}** (${rar}) rolled out of the pile! Use \`/pet hatch\` to awaken it.`
+            : `\n${egg.emoji} Một quả **${nm}** (${rar}) lăn ra! Dùng \`/pet hatch\` để đánh thức bé bên trong.`;
+    }
+    return '';
+}
 
 const fmt = (n, locale) => Number(n).toLocaleString(locale?.startsWith('en') ? 'en-US' : 'vi-VN');
 
@@ -37,7 +66,7 @@ function pick(table) {
  *  onPayout(payout, userPet, en) -> {payout, note} (buff payout SAU khi tính base; mặc định giữ nguyên).
  *  sold(c, name, payoutStr, extras, en) -> dòng mô tả khi có tiền (extras={grossStr,premStr,evStr}).
  *  empty(c, name, en)            -> dòng mô tả khi trắng tay.
- *  thoNote(thoName, en)          -> ghi chú buff Thỏ (giảm năng lượng).
+ *  thoNote(petLabel, pct, en)    -> ghi chú buff stamina (giảm năng lượng); pct do bậc pet quyết định.
  *  onDrops(ctx) async            -> chuỗi drop nối vào mô tả (ctx: {userId,c,userPet,locale,payout}).
  *  toolLine(toolNameTrans, tool, toolResult, en) -> dòng độ bền công cụ.
  */
@@ -74,29 +103,21 @@ async function runGather(interaction, opts) {
     // Kiểm tra Pet để kích hoạt buff (cần TRƯỚC khi tính năng lượng vì Thỏ giảm chi phí)
     const userPet = await db.getPet(userId);
 
-    // 1) Thỏ con: giảm năng lượng tiêu hao
-    let actualEnergyCost = energyCost;
-    let thoBuff = false;
-    let thoName = '';
-    if (userPet && userPet.species === 'tho') {
-        const thoLvl = petLevel(userPet.exp);
-        if (thoLvl >= 5) {
-            thoBuff = true;
-            thoName = userPet.name || (en ? 'Bunny' : 'Thỏ con');
-            actualEnergyCost = Math.round(energyCost * 0.85);
-        }
-    }
+    // Ngưỡng Lv.5 cũ ĐÃ BỎ (xem src/data/pets.js): đo trên prod thấy 0/2 pet từng
+    // chạm Lv.5, nên hai buff dưới đây chưa chạy lần nào kể từ khi ra mắt.
+    // Giá trị nay do bậc độ hiếm nhân lên (×1,0 Thường → ×2,0 Thần Thoại).
 
-    // 2) Rồng con: tăng EXP
-    let rongBuff = false;
-    let rongName = '';
-    if (userPet && userPet.species === 'rong') {
-        const rongLvl = petLevel(userPet.exp);
-        if (rongLvl >= 5) {
-            rongBuff = true;
-            rongName = userPet.name || (en ? 'Baby Dragon' : 'Rồng con');
-        }
-    }
+    // 1) stamina ⚡ (Thỏ con / Chim Lạc): giảm năng lượng tiêu hao
+    const staminaCut = petBuffValue(userPet, 'stamina');
+    const actualEnergyCost = staminaCut > 0
+        ? Math.max(1, Math.round(energyCost * (1 - staminaCut)))
+        : energyCost;
+
+    // 2) exp 📘 (Rồng con / Giao Long): tăng EXP
+    const expBonus = petBuffValue(userPet, 'exp');
+
+    const petName = userPet ? (userPet.name || findSpecies(userPet.species)?.name || (en ? 'Pet' : 'Thú cưng')) : '';
+    const petTag = userPet ? `${petRarity(userPet).emoji}${findSpecies(userPet.species)?.emoji || '🐾'}` : '';
 
     // Đủ năng lượng? — kiểm tra CHỈ-ĐỌC (getEnergy = spend_energy 0) TRƯỚC khi tiêu hao công cụ,
     // tránh đốt độ bền khi người chơi kiệt sức. spendEnergy thật vẫn là cổng cuối bên dưới.
@@ -166,28 +187,32 @@ async function runGather(interaction, opts) {
         desc = empty(c, displayName, en);
     }
 
-    if (thoBuff) desc += thoNote(thoName, en);
+    if (staminaCut > 0) desc += thoNote(`${petTag} **${petName}**`, (staminaCut * 100).toFixed(0), en);
     if (bearNote) desc += bearNote;
     if (dz.note) desc += `\n${dz.note}`;
 
     // Drop đặc thù theo hoạt động (copy nguyên văn từ lệnh gốc)
     desc += await onDrops({ userId, c, userPet, locale, payout });
 
+    // Trứng thú cưng: chung cho cả ba hoạt động cày cuốc.
+    desc += await rollPetEgg(userId, locale, en);
+
     // Dòng độ bền công cụ
     desc += toolLine(toolNameTrans, tool, toolResult, en);
 
     const u = await db.getUser(userId);
     let gainedExp = 4 + Math.floor(Math.random() * 3); // 4..6 EXP
-    if (rongBuff) gainedExp = Math.round(gainedExp * 1.15);
+    if (expBonus > 0) gainedExp = Math.round(gainedExp * (1 + expBonus));
     if (eventMult !== 1) gainedExp = Math.round(gainedExp * eventMult);
     const oldLevel = getLevelFromExp(Number(u?.exp || 0));
     const newExp = await db.updateExp(userId, gainedExp);
     const newLevel = newExp === null ? oldLevel : getLevelFromExp(newExp);
 
-    if (rongBuff) {
+    if (expBonus > 0) {
+        // In ĐÚNG con số vừa dùng để tính, không ghi cứng "+15%": bậc pet nhân hệ số.
         desc += en
-            ? `\n🐲 Baby Dragon **${rongName}** lent dragon power, giving +15% EXP!`
-            : `\n🐲 Bé rồng **${rongName}** truyền long lực giúp cậu nhận thêm 15% EXP!`;
+            ? `\n${petTag} **${petName}** lent its power, giving +${(expBonus * 100).toFixed(0)}% EXP!`
+            : `\n${petTag} **${petName}** truyền sức mạnh giúp cậu nhận thêm ${(expBonus * 100).toFixed(0)}% EXP!`;
     }
     if (newLevel > oldLevel) {
         const bonus = levelUpReward(oldLevel, newLevel);
@@ -279,18 +304,19 @@ function runResourceGather(interaction, { key, title, table }) {
         toolMissing: (toolNameTrans, tl, en) => en
             ? `You need to buy a **${toolNameTrans}** ${tl.emoji} at \`/store\` first! 🌸`
             : `Cậu cần mua **${toolNameTrans}** ${tl.emoji} ở \`/store\` mới thực hiện được nhé~ 🌸`,
-        // Gấu con: +10% payout (sau khi tính base) + ghi chú
+        // harvest 🌾 (Gấu con / Kim Quy): +sản lượng, nhân theo bậc độ hiếm.
         onPayout: (payout, userPet, en) => {
-            if (userPet && userPet.species === 'gau' && petLevel(userPet.exp) >= 5) {
-                const gauName = userPet.name || (en ? 'Bear Cub' : 'Gấu con');
-                return {
-                    payout: Math.round(payout * 1.1),
-                    note: en
-                        ? `\n🐻 Bear Cub **${gauName}** helped you harvest more efficiently (+10% yield)!`
-                        : `\n🐻 Bé gấu **${gauName}** sức mạnh giúp cậu khai thác hăng hái hơn (+10% sản lượng)!`,
-                };
-            }
-            return { payout, note: '' };
+            const bonus = petBuffValue(userPet, 'harvest');
+            if (bonus <= 0) return { payout, note: '' };
+            const nm = userPet.name || findSpecies(userPet.species)?.name || (en ? 'Pet' : 'Thú cưng');
+            const tag = `${petRarity(userPet).emoji}${findSpecies(userPet.species)?.emoji || '🐾'}`;
+            const pct = (bonus * 100).toFixed(0);
+            return {
+                payout: Math.round(payout * (1 + bonus)),
+                note: en
+                    ? `\n${tag} **${nm}** helped you harvest more efficiently (+${pct}% yield)!`
+                    : `\n${tag} **${nm}** giúp cậu khai thác hăng hái hơn (+${pct}% sản lượng)!`,
+            };
         },
         sold: (c, nm, payoutStr, ex, en) => en
             ? `You gathered ${c.emoji} **${nm}** and sold it for **+${payoutStr}** ${config.CURRENCY}!${ex.grossStr}${ex.premStr}${ex.evStr}`
@@ -298,9 +324,9 @@ function runResourceGather(interaction, { key, title, table }) {
         empty: (c, nm, en) => en
             ? `You only found ${c.emoji} **${nm}**... which is worth nothing 😅`
             : `Cậu chỉ nhặt được ${c.emoji} **${nm}**... chẳng đáng bao nhiêu 😅`,
-        thoNote: (thoName, en) => en
-            ? `\n🐰 Bunny **${thoName}** helped you save 15% energy!`
-            : `\n🐰 Bé thỏ **${thoName}** nhanh nhẹn giúp cậu tiết kiệm 15% năng lượng!`,
+        thoNote: (petLabel, pct, en) => en
+            ? `\n${petLabel} nimbly helped you save ${pct}% energy!`
+            : `\n${petLabel} nhanh nhẹn giúp cậu tiết kiệm ${pct}% năng lượng!`,
         toolLine: (toolNameTrans, tl, toolResult, en) => {
             const brokenStr = toolResult.broken ? (en ? ' *(broken! Need repair or buy new)*' : ' *(đã hỏng! Cần mua mới hoặc sửa)*') : '';
             return en

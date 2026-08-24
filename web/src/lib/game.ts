@@ -106,15 +106,57 @@ export function getSeasonLabel(seasonId: string, locale = "vi") {
   return t("game.seasons.new", locale);
 }
 
-// Thú cưng (đồng bộ với src/data/pets.js)
-export const PET_SPECIES = [
-  { id: "meo", emoji: "🐱", skills: [{ lvl: 1 }, { lvl: 5 }, { lvl: 10 }] },
-  { id: "cun", emoji: "🐶", skills: [{ lvl: 1 }, { lvl: 5 }, { lvl: 10 }] },
-  { id: "rong", emoji: "🐲", skills: [{ lvl: 1 }, { lvl: 5 }, { lvl: 10 }] },
-  { id: "cao", emoji: "🦊", skills: [{ lvl: 1 }, { lvl: 5 }, { lvl: 10 }] },
-  { id: "tho", emoji: "🐰", skills: [{ lvl: 1 }, { lvl: 5 }, { lvl: 10 }] },
-  { id: "gau", emoji: "🐻", skills: [{ lvl: 1 }, { lvl: 5 }, { lvl: 10 }] }
+// ── Thú cưng — GƯƠNG của src/data/pets.js ───────────────────────────────────
+//
+// Bản cũ khai `skills: [{lvl:1},{lvl:5},{lvl:10}]` cho cả 6 loài và ghép với 18 mô tả
+// trong web/src/locales — KHÔNG mô tả nào trong đó tồn tại ở bot. Vì mốc đầu là Lv.1,
+// mọi pet vừa nhận nuôi đã thấy ngay một lời hứa hư cấu ("tặng 1.000-3.000 xu mỗi ngày",
+// "ngủ hồi năng lượng gấp đôi", "lộ 1 ô Bingo"...). Nay web mô tả ĐÚNG những gì bot làm:
+// mỗi loài mang MỘT buff, giá trị nhân theo bậc độ hiếm.
+//
+// Sửa ở đây thì phải sửa src/data/pets.js và migration 0142 cho khớp — cả ba cố tình
+// khai trùng nhau: JS bot để tính, SQL để cưỡng chế, TS này để hiển thị.
+
+export const PET_RARITY_ORDER = ["common", "rare", "epic", "legendary", "mythic"] as const;
+export type PetRarityKey = (typeof PET_RARITY_ORDER)[number];
+
+export const PET_RARITY: Record<PetRarityKey, { emoji: string; color: string; mult: number; minLevel: number }> = {
+  common:    { emoji: "⚪", color: "#B0C4DE", mult: 1.0,  minLevel: 1 },
+  rare:      { emoji: "🔵", color: "#1E90FF", mult: 1.25, minLevel: 5 },
+  epic:      { emoji: "🟣", color: "#9370DB", mult: 1.5,  minLevel: 10 },
+  legendary: { emoji: "🟠", color: "#FF8C00", mult: 1.75, minLevel: 15 },
+  mythic:    { emoji: "🌟", color: "#FF1493", mult: 2.0,  minLevel: 20 }
+};
+
+// Bậc cao nhất lên được CHỈ bằng cấp; từ `epic` phải làm lễ (`/pet ascend`).
+const AUTO_RARITY_CAP: PetRarityKey = "rare";
+
+// Mức buff ở bậc ⚪ Thường. Chép TỪ CODE BOT đang chạy, không chép từ mô tả cũ.
+export const PET_BUFFS: Record<string, { emoji: string; base: number }> = {
+  jackpot: { emoji: "🍀", base: 0.05 },
+  guard:   { emoji: "🛡️", base: 0.2 },
+  exp:     { emoji: "📘", base: 0.15 },
+  thief:   { emoji: "🗝️", base: 0.1 },
+  stamina: { emoji: "⚡", base: 0.15 },
+  harvest: { emoji: "🌾", base: 0.1 }
+};
+
+export const PET_SPECIES: { id: string; emoji: string; rarity: PetRarityKey; buff: string; adoptable: boolean }[] = [
+  { id: "meo",  emoji: "🐱", rarity: "common", buff: "jackpot", adoptable: true },
+  { id: "cun",  emoji: "🐶", rarity: "common", buff: "guard",   adoptable: true },
+  { id: "rong", emoji: "🐲", rarity: "common", buff: "exp",     adoptable: true },
+  { id: "cao",  emoji: "🦊", rarity: "common", buff: "thief",   adoptable: true },
+  { id: "tho",  emoji: "🐰", rarity: "common", buff: "stamina", adoptable: true },
+  { id: "gau",  emoji: "🐻", rarity: "common", buff: "harvest", adoptable: true },
+  { id: "ho",           emoji: "🐯", rarity: "epic",      buff: "thief",   adoptable: false },
+  { id: "nghe",         emoji: "🗿", rarity: "epic",      buff: "guard",   adoptable: false },
+  { id: "chim_lac",     emoji: "🦅", rarity: "legendary", buff: "stamina", adoptable: false },
+  { id: "giao_long",    emoji: "🐉", rarity: "legendary", buff: "exp",     adoptable: false },
+  { id: "kim_quy",      emoji: "🐢", rarity: "mythic",    buff: "harvest", adoptable: false },
+  { id: "phuong_hoang", emoji: "🔥", rarity: "mythic",    buff: "jackpot", adoptable: false }
 ];
+
+const rarityRank = (k: string) => PET_RARITY_ORDER.indexOf(k as PetRarityKey);
 
 export function getPetLevelProgress(exp: number) {
   const e = Math.max(0, exp || 0);
@@ -124,16 +166,50 @@ export function getPetLevelProgress(exp: number) {
   return { level, expIntoLevel: e - floor, expForNextLevel: next - floor };
 }
 
+/** Bậc hiệu lực — SUY RA giống hệt petRarity() ở bot: max(cấp [trần rare], bậc loài, bậc đã lễ). */
+export function petRarityKey(pet: { species?: string | null; exp?: number | null; ascended_to?: string | null }): PetRarityKey {
+  const { level } = getPetLevelProgress(Number(pet?.exp) || 0);
+  let best: PetRarityKey = "common";
+  for (const key of PET_RARITY_ORDER) {
+    if (rarityRank(key) > rarityRank(AUTO_RARITY_CAP)) break;
+    if (level >= PET_RARITY[key].minLevel) best = key;
+  }
+  const base = PET_SPECIES.find((s) => s.id === pet?.species)?.rarity;
+  if (base && rarityRank(base) > rarityRank(best)) best = base;
+  const asc = pet?.ascended_to as PetRarityKey | undefined | null;
+  if (asc && rarityRank(asc) >= 0 && rarityRank(asc) > rarityRank(best)) best = asc;
+  return best;
+}
+
+/** Giá trị buff ĐÃ nhân bậc — cùng công thức với bot, nên web không thể hiện số khác bot. */
+export function petBuffValue(pet: { species?: string | null; exp?: number | null; ascended_to?: string | null }) {
+  const sp = PET_SPECIES.find((s) => s.id === pet?.species);
+  if (!sp) return null;
+  const b = PET_BUFFS[sp.buff];
+  if (!b) return null;
+  return { id: sp.buff, emoji: b.emoji, value: b.base * PET_RARITY[petRarityKey(pet)].mult };
+}
+
 export function findPetSpecies(speciesId: string, locale = "vi") {
   const species = PET_SPECIES.find((s) => s.id === speciesId);
   if (!species) return null;
+  return { ...species, name: t(`game.pets.${species.id}.name`, locale) };
+}
+
+/**
+ * Một dòng mô tả năng lực loài, số liệu SINH RA từ cùng công thức bot dùng.
+ * Không còn bảng mô tả viết tay để trôi khỏi code.
+ */
+export function describePetBuff(
+  pet: { species?: string | null; exp?: number | null; ascended_to?: string | null },
+  locale = "vi"
+) {
+  const b = petBuffValue(pet);
+  if (!b) return null;
+  const pct = Math.round(b.value * 100);
   return {
-    ...species,
-    name: t(`game.pets.${species.id}.name`, locale),
-    skills: species.skills.map((skill, idx) => ({
-      ...skill,
-      desc: t(`game.pets.${species.id}.skills.${idx}`, locale)
-    }))
+    emoji: b.emoji,
+    text: t(`game.petBuffs.${b.id}`, locale, { pct: String(pct) })
   };
 }
 

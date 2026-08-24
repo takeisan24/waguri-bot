@@ -3,7 +3,7 @@ const db = require('../../database.js');
 const config = require('../../config');
 const FISH = require('../../data/fish');
 const { t } = require('../../lib/i18n');
-const { petLevel } = require('../../data/pets');
+const { petBuffValue } = require('../../data/pets');
 const { runGather } = require('../../lib/gather');
 
 const FISH_NAMES = {
@@ -118,10 +118,12 @@ module.exports = {
         toolMissing: (_toolNameTrans, _tool, en) => en
             ? 'You need to buy a **Fishing Rod** 🎣 at `/store` first! 🌸'
             : 'Cậu cần mua **Cần câu cá** 🎣 ở `/store` mới đi câu được nhé~ 🌸',
-        // Gấu 🐻 Lv.5+: +10% tỉ lệ nâng mẻ thường lên "Cá hiếm" (TRƯỚC khi tính tiền)
+        // harvest 🌾 (Gấu con / Kim Quy): tỉ lệ nâng mẻ thường lên "Cá hiếm" TRƯỚC khi tính
+        // tiền. Ngưỡng Lv.5 cũ đã bỏ; tỉ lệ nay nhân theo bậc (10% Thường → 20% Thần Thoại).
         onPick: (c, userPet, _en) => {
-            if (userPet && userPet.species === 'gau' && petLevel(userPet.exp) >= 5 && c.name !== 'Cá hiếm' && c.name !== 'Rương kho báu') {
-                if (Math.random() < 0.10) return FISH.find(f => f.name === 'Cá hiếm') || c;
+            const bonus = petBuffValue(userPet, 'harvest');
+            if (bonus > 0 && c.name !== 'Cá hiếm' && c.name !== 'Rương kho báu') {
+                if (Math.random() < bonus) return FISH.find(f => f.name === 'Cá hiếm') || c;
             }
             return c;
         },
@@ -131,9 +133,9 @@ module.exports = {
         empty: (c, nm, en) => en
             ? `You only caught ${c.emoji} **${nm}**... and got nothing 😅 Better luck next time~`
             : `Cậu chỉ câu phải ${c.emoji} **${nm}**... chẳng được gì cả 😅 Lần sau may hơn nhé~`,
-        thoNote: (thoName, en) => en
-            ? `\n🐰 Kitten/Rabbit **${thoName}** helped you save 15% energy!`
-            : `\n🐰 Bé thỏ **${thoName}** nhanh nhẹn giúp cậu tiết kiệm 15% năng lượng!`,
+        thoNote: (petLabel, pct, en) => en
+            ? `\n${petLabel} nimbly helped you save ${pct}% energy!`
+            : `\n${petLabel} nhanh nhẹn giúp cậu tiết kiệm ${pct}% năng lượng!`,
         toolLine: (_toolNameTrans, _tool, toolResult, en) => {
             const brokenStr = toolResult.broken ? (en ? ' *(broken! Need repair or buy new)*' : ' *(đã hỏng! Cần mua mới hoặc sửa)*') : '';
             return en

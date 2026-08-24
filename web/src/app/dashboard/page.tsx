@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "../../lib/supabase/server";
 import { createAdminClient } from "../../lib/supabase/admin";
 import { getDiscordIdentity } from "../../lib/discord";
-import { getLevelProgress, affectionTier, fmtVND, getCurrentSeasonId, getSeasonLabel, findPetSpecies, getPetLevelProgress } from "../../lib/game";
+import { getLevelProgress, affectionTier, fmtVND, getCurrentSeasonId, getSeasonLabel, findPetSpecies, getPetLevelProgress, petRarityKey, describePetBuff, PET_RARITY } from "../../lib/game";
 import { toggleProfilePublic, toggleVoteReminder } from "./actions";
 import ShareProfileButton from "../../components/ShareProfileButton";
 import EventBanner from "../../components/EventBanner";
@@ -83,7 +83,8 @@ export default async function Dashboard() {
   // Trạng thái nông trại / thú cưng
   type PigRow = { stage?: string; tier?: number; sick?: boolean };
   type PlantRow = { stage?: string; type?: string };
-  type PetRow = { name?: string; species?: string; exp?: number };
+  // `ascended_to` là bậc ĐÃ LÀM LỄ — thiếu nó thì dashboard tính bậc thấp hơn bot.
+  type PetRow = { name?: string; species?: string; exp?: number; ascended_to?: string | null };
   let pig: PigRow | null = null;
   let plant: PlantRow | null = null;
   let pet: PetRow | null = null;
@@ -339,26 +340,29 @@ export default async function Dashboard() {
                     const sp = findPetSpecies(pet.species || "", locale);
                     const { level, expIntoLevel, expForNextLevel } = getPetLevelProgress(pet.exp || 0);
                     const pct = expForNextLevel > 0 ? Math.min((expIntoLevel / expForNextLevel) * 100, 100) : 0;
-                    const activeSkills = sp?.skills.filter(s => level >= s.lvl) || [];
+                    // Bản cũ lọc `sp.skills` — một danh sách 18 mô tả KHÔNG tồn tại trong bot,
+                    // mở khoá từ Lv.1 nên pet nào cũng hiện lời hứa hư cấu ngay khi vừa nhận nuôi.
+                    // Nay chỉ hiện ĐÚNG một năng lực loài, số liệu sinh từ cùng công thức bot dùng.
+                    const rarKey = petRarityKey(pet);
+                    const rar = PET_RARITY[rarKey];
+                    const buff = describePetBuff(pet, locale);
 
                     return (
                       <div className="space-y-3">
                         <div className="flex items-center gap-3">
-                          <span className="text-3xl">{sp?.emoji || "🐾"}</span>
+                          <span className="text-3xl">{rar.emoji}{sp?.emoji || "🐾"}</span>
                           <div>
-                            <p className="text-white font-bold text-base">{pet.name || sp?.name} <span className="text-xs text-pink-300 font-normal bg-pink-500/10 px-2 py-0.5 rounded-full ml-1">{t("dashboard.pet_level", locale, { level })}</span></p>
+                            <p className="text-white font-bold text-base">{pet.name || sp?.name} <span className="text-xs text-pink-300 font-normal bg-pink-500/10 px-2 py-0.5 rounded-full ml-1">{t("dashboard.pet_level", locale, { level })}</span> <span className="text-xs font-bold px-2 py-0.5 rounded-full ml-1" style={{ color: rar.color, backgroundColor: `${rar.color}1f` }}>{t(`game.petRarity.${rarKey}`, locale)} ×{rar.mult.toFixed(2)}</span></p>
                             <p className="text-[10px] text-slate-400 mt-0.5">{expIntoLevel}/{expForNextLevel} EXP ({Math.round(pct)}%)</p>
                           </div>
                         </div>
                         <div className="h-2 rounded-full bg-[#1c1424] overflow-hidden">
                           <div className="h-full bg-pink-400 rounded-full" style={{ width: `${pct}%` }} />
                         </div>
-                        {activeSkills.length > 0 && (
+                        {buff && (
                           <div className="mt-2 pt-2 border-t border-slate-800/60 space-y-1">
                             <p className="text-xs text-pink-300 font-bold">{t("dashboard.pet_skills_active", locale)}</p>
-                            {activeSkills.map((sk, idx) => (
-                              <p key={idx} className="text-xs text-slate-300 leading-relaxed">• {sk.desc}</p>
-                            ))}
+                            <p className="text-xs text-slate-300 leading-relaxed">{buff.emoji} {buff.text}</p>
                           </div>
                         )}
                         <div className="flex justify-end mt-2 pt-2 border-t border-slate-800/60">

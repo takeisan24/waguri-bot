@@ -200,8 +200,18 @@ module.exports = {
     // Thuế chuyển tiền /give (sink chống lạm phát)
     GIVE_TAX_PCT: 0.05,
 
-    // Thú cưng (giá cho ăn tăng theo cấp: FEED_COST + FEED_PER_LEVEL * level)
-    PET: { FEED_COST: 200, FEED_PER_LEVEL: 100, FEED_EXP_MIN: 20, FEED_EXP_MAX: 40 },
+    // Thú cưng — giá cho ăn: FEED_COST + FEED_PER_LEVEL * min(level, FEED_LEVEL_CAP).
+    //
+    // TRẦN `FEED_LEVEL_CAP` là mục vá bắt buộc, không phải tinh chỉnh khẩu vị. Bản cũ
+    // không trần nên chi phí tăng theo bình phương cấp: lên Lv.30 tốn ~1.835.700 xu,
+    // tức 3,1× TOÀN BỘ cung tiền của server (583.809 xu đo ngày 24/08). Hệ quả đo được:
+    // 2/395 người có pet, 0 pet chạm Lv.5 — mốc mà cả 6 buff loài mới bật.
+    //
+    // Với trần 8 (1.000 xu/lượt) + EXP mỗi lượt 50–100: tới bậc 🟣 Sử Thi ~33 lượt
+    // (~20.000 xu), tới 🌟 Thần Thoại ~145 lượt (~139.000 xu) — rẻ hơn huy hiệu VIP
+    // (200.000) đang bán, nên nằm đúng thang chi tiêu sẵn có. Dùng thức ăn ×3 thì
+    // còn ~48 lượt, tạo nhu cầu thật cho tiệm bánh và câu cá.
+    PET: { FEED_COST: 200, FEED_PER_LEVEL: 100, FEED_LEVEL_CAP: 8, FEED_EXP_MIN: 50, FEED_EXP_MAX: 100 },
 
     // Kết hôn / ly hôn (sink + có "án phí")
     MARRY: { COST: 5000, DIVORCE_COST: 10000 },
