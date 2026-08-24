@@ -1,5 +1,8 @@
 # Waguri — Branding & Thông tin đăng ký (Developer Portal / top.gg)
 
+> ⚠️ **Bản mô tả để submit bot list đã chuyển sang `docs/bot-listing-copy.md` (cập nhật v2.5.1).**
+> File này giữ lại phần Developer Portal / Privacy / ToS; các khối mô tả bên dưới là bản v2.4 cũ.
+
 Tài liệu sẵn để copy vào **Discord Developer Portal** và **top.gg**. Hướng tới: list lên top.gg + verify bot.
 
 ---

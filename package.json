@@ -18,6 +18,7 @@
     "check-sql": "node scripts/check-sql-policy.js",
     "check-economy": "node --test test/economy.invariants.test.js",
     "check-rpc": "node scripts/check-rpc-status.js",
+    "check-botlist": "node scripts/check-botlist-stats.js",
     "check-help": "node scripts/check-help-sync.js",
     "db:snapshot": "node scripts/db-snapshot.js",
     "check-db": "node scripts/check-db-applied.js && node scripts/check-db-drift.js && node scripts/db-snapshot.js --check && node scripts/db-catalog.js --check && node scripts/check-rpc-anon.js",

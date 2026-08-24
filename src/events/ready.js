@@ -40,6 +40,24 @@ async function getTotalGuildCount(client) {
     return client.guilds.cache.size;
 }
 
+// Tổng số thành viên — discordbotlist.com nhận thêm `users` (dùng cho analytics của họ).
+// Cộng `memberCount` chứ không đếm cache thành viên: không bật GUILD_MEMBERS intent thì
+// cache gần như rỗng, còn `memberCount` luôn có từ payload GUILD_CREATE.
+async function getTotalUserCount(client) {
+    const sumHere = () => client.guilds.cache.reduce((s, g) => s + (g.memberCount || 0), 0);
+    if (client.shard) {
+        try {
+            const counts = await client.shard.broadcastEval(
+                c => c.guilds.cache.reduce((s, g) => s + (g.memberCount || 0), 0)
+            );
+            return counts.reduce((sum, n) => sum + (n || 0), 0);
+        } catch {
+            return sumHere();
+        }
+    }
+    return sumHere();
+}
+
 // ---------------------------------------------------------
 // Stats autoposter ĐA NỀN TẢNG: gửi TỔNG số server lên các bot-list đã cấu hình token.
 // top.gg (TOPGG_TOKEN) · discordbotlist.com (DBL_TOKEN) · discord.bots.gg (DBGG_TOKEN).
@@ -52,38 +70,57 @@ function startStatsAutopost(client) {
         {
             name: 'Top.gg', token: process.env.TOPGG_TOKEN,
             url: id => `https://top.gg/api/bots/${id}/stats`,
-            body: (servers, shards) => shards ? { server_count: servers, shard_count: shards } : { server_count: servers },
+            body: ({ servers, shards }) => shards ? { server_count: servers, shard_count: shards } : { server_count: servers },
         },
         {
+            // docs.discordbotlist.com/bot-statistics — `guilds` là số hiện trên trang & widget;
+            // `users`/`voice_connections` chỉ để lộ ra API analytics của họ. Không gửi `shard_id`
+            // vì ta post CON SỐ TỔNG một lần (shard_id là dành cho kiểu post riêng từng shard).
             name: 'DiscordBotList', token: process.env.DBL_TOKEN,
             url: id => `https://discordbotlist.com/api/v1/bots/${id}/stats`,
-            body: (servers) => ({ guilds: servers }),
+            body: ({ servers, users }) => ({ guilds: servers, users, voice_connections: 0 }),
         },
         {
             name: 'Discord.Bots.gg', token: process.env.DBGG_TOKEN,
             url: id => `https://discord.bots.gg/api/v1/bots/${id}/stats`,
-            body: (servers, shards) => shards ? { guildCount: servers, shardCount: shards } : { guildCount: servers },
+            body: ({ servers, shards }) => shards ? { guildCount: servers, shardCount: shards } : { guildCount: servers },
         },
     ].filter(t => t.token);
-    if (!targets.length) return;
+    if (!targets.length) {
+        console.log('[STATS] Chưa có token bot-list nào (TOPGG_TOKEN / DBL_TOKEN / DBGG_TOKEN) -> bỏ qua autopost.');
+        return;
+    }
+    console.log(`[STATS] Autopost bật cho: ${targets.map(t => t.name).join(', ')} (mỗi 30 phút).`);
+
+    // Docs của discordbotlist KHÔNG thống nhất: endpoint /stats ghi `Authorization: <token>`
+    // còn /commands ghi `Authorization: Bot <token>`. Nếu bị 401/403 thì thử lại đúng một lần
+    // với tiền tố `Bot ` — rẻ hơn nhiều so với việc token đúng mà stats câm lặng mãi.
+    const send = (t, id, payload, authValue) => fetch(t.url(id), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: authValue },
+        body: JSON.stringify(payload),
+    });
 
     const post = async () => {
-        let servers;
+        let servers, users;
         try { servers = await getTotalGuildCount(client); }
         catch (e) { console.error('[STATS] không đếm được guild:', e?.message || e); return; }
+        try { users = await getTotalUserCount(client); }
+        catch { users = 0; }
         const shards = client.shard ? client.shard.count : undefined;
         for (const t of targets) {
             try {
-                const res = await fetch(t.url(client.user.id), {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', Authorization: t.token },
-                    body: JSON.stringify(t.body(servers, shards)),
-                });
+                const payload = t.body({ servers, users, shards });
+                let res = await send(t, client.user.id, payload, t.token);
+                if ((res.status === 401 || res.status === 403) && !/^Bot /.test(t.token)) {
+                    res = await send(t, client.user.id, payload, `Bot ${t.token}`);
+                    if (res.ok) console.log(`[STATS] ${t.name}: token cần tiền tố "Bot " — đã dùng cách đó.`);
+                }
                 if (res.ok) {
                     console.log(`[STATS] ${t.name}: server_count = ${servers}`);
                 } else {
                     const bodyText = await res.text().catch(() => '');
-                    console.warn(`[STATS] ${t.name} autopost thất bại (HTTP ${res.status}): ${bodyText.slice(0, 120) || 'Dịch vụ Top.gg tạm thời chập chờn / Token không hợp lệ'}`);
+                    console.warn(`[STATS] ${t.name} autopost thất bại (HTTP ${res.status}): ${bodyText.slice(0, 120) || 'Dịch vụ tạm thời chập chờn / Token không hợp lệ'}`);
                 }
             } catch (e) {
                 console.warn(`[STATS] ${t.name} kết nối thất bại:`, e?.message || e);
