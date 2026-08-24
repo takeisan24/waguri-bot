@@ -227,6 +227,8 @@
     "volume_label": "Volume",
     "tab_25": "25 Min (Pomodoro)",
     "tab_50": "50 Min (Deep Work)",
+    "tab_custom": "Custom",
+    "custom_label": "Minutes (15–120):",
     "percent_done": "{percent}% complete",
     "btn_start": "Start Studying 🚀",
     "btn_pause": "Pause ⏸️",
@@ -234,6 +236,7 @@
     "audio_playing": "🟢 Now playing",
     "audio_playing_fallback": "🟢 Playing (Fallback)",
     "audio_permission": "⚠️ Please click Play Music again to grant browser permission",
+    "audio_error": "⚠️ Couldn't load music from this channel (source blocked or offline). Try another channel~",
     "footer": "Waguri Bot Ecosystem • Pomodoro 24/7 Lofi Study Room"
   },
   "profile_edit": {

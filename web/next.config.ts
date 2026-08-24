@@ -9,6 +9,9 @@ const isDev = process.env.NODE_ENV === "development";
 //   - script/style 'unsafe-inline': Next chèn script hydrate + style inline; không có nonce
 //     nên buộc phải cho phép. 'unsafe-eval' chỉ bật ở dev (React eval để dựng stack lỗi).
 //   - img-src https: data:  -> avatar Discord CDN, GIF Tenor, mã VietQR, self-host.
+//   - media-src https:      -> nhạc lofi phòng học bài (/study) phát từ CDN ngoài + Supabase
+//     Storage. THIẾU dòng này thì media-src fallback về default-src 'self' -> trình duyệt chặn
+//     SẠCH mọi file nhạc (cả URL chính lẫn URL dự phòng), nút "Phát nhạc" không bao giờ chạy.
 //   - connect-src https:    -> Supabase (anon client) + host API bot (đổi qua env).
 //   - font-src 'self' data: -> next/font tự host dưới /_next.
 //   - frame-ancestors 'none' + object-src 'none' + base-uri/form-action 'self'.
@@ -17,6 +20,7 @@ const cspHeader = [
   `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: https:",
+  "media-src 'self' https:",
   "font-src 'self' data:",
   "connect-src 'self' https:",
   "frame-ancestors 'none'",

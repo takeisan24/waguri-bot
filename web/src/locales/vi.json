@@ -227,6 +227,8 @@
     "volume_label": "Âm lượng",
     "tab_25": "25 Phút (Pomodoro)",
     "tab_50": "50 Phút (Deep Work)",
+    "tab_custom": "Tuỳ chọn",
+    "custom_label": "Số phút (15–120):",
     "percent_done": "{percent}% hoàn thành",
     "btn_start": "Bắt đầu học 🚀",
     "btn_pause": "Tạm dừng ⏸️",
@@ -234,6 +236,7 @@
     "audio_playing": "🟢 Đang phát nhạc",
     "audio_playing_fallback": "🟢 Đang phát (Fallback)",
     "audio_permission": "⚠️ Vui lòng nhấp nút Phát Nhạc lần nữa để trình duyệt cấp quyền",
+    "audio_error": "⚠️ Không tải được nhạc từ kênh này (nguồn bị chặn hoặc mất kết nối). Cậu thử đổi sang kênh khác nhé~",
     "footer": "Waguri Bot Ecosystem • Pomodoro 24/7 Lofi Study Room"
   },
   "profile_edit": {
