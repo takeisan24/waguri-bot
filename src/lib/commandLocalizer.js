@@ -512,6 +512,8 @@ const SUBCOMMAND_DESCRIPTIONS = {
     "pet.feed": { vi: "Cho thú cưng ăn để tăng kinh nghiệm", en: "Feed your pet to increase EXP" },
     "pet.rename": { vi: "Đổi tên thú cưng", en: "Rename your pet" },
     "pet.skill-up": { vi: "Nâng cấp kỹ năng bị động cho thú cưng", en: "Upgrade passive skills for your pet" },
+    "pet.ascend": { vi: "Làm lễ thăng bậc độ hiếm cho thú cưng ✨", en: "Perform the rite to ascend your pet's tier ✨" },
+    "pet.hatch": { vi: "Ấp trứng nhặt được khi cày để đánh thức loài hiếm 🥚", en: "Hatch an egg found while gathering to awaken a rare species 🥚" },
 
     // clan
     "clan.create": { vi: "Lập bang mới (tốn 50,000 VNĐ)", en: "Create a new clan (costs 50,000 coins)" },
@@ -599,6 +601,7 @@ const OPTION_DESCRIPTIONS = {
     "market.auction.hours": { vi: "Thời gian đấu giá (giờ)", en: "Auction duration (hours)" },
     "pet.feed.food": { vi: "Chọn loại thức ăn cho bé", en: "Choose food for your pet" },
     "pet.skill-up.skill": { vi: "Chọn kỹ năng", en: "Choose a skill" },
+    "pet.hatch.egg": { vi: "Chọn quả trứng", en: "Choose an egg" },
     "repair.tool": { vi: "Chọn công cụ muốn sửa", en: "Choose the tool to repair" },
     "tiembanh.nhapnl.loai": { vi: "ID nguyên liệu, vd trai_2000 / thit_heo_2500 / ca_tuoi", en: "Ingredient ID, e.g. trai_2000 / thit_heo_2500 / ca_tuoi" },
     "tiembanh.nhapnl.sl": { vi: "Số lượng", en: "Quantity" },

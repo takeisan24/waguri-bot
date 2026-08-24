@@ -119,53 +119,56 @@
     },
     "pets": {
       "meo": {
-        "name": "Mèo con",
-        "skills": {
-          "0": "🐱 Tăng 2% cơ hội câu cá ngon.",
-          "1": "💫 Tăng 5% cơ hội câu cá siêu hiếm (Cá Rồng Vàng/Cá Koi Nhật).",
-          "2": "💰 Kỹ năng [Chiêu tài tiến bảo]: Tặng ngẫu nhiên 1,000 - 3,000 xu mỗi ngày khi đăng nhập."
-        }
+        "name": "Mèo con"
       },
       "cun": {
-        "name": "Cún con",
-        "skills": {
-          "0": "🐶 Tăng 5% tỉ lệ làm việc thành công.",
-          "1": "🚨 Giảm 15% mức tăng độ nghi ngờ cảnh sát khi làm việc mờ ám.",
-          "2": "🐕 Kỹ năng [Trung thành]: Bảo vệ 25% số tiền ví không bị mất khi bị cướp."
-        }
+        "name": "Cún con"
       },
       "rong": {
-        "name": "Rồng con",
-        "skills": {
-          "0": "🐲 Tăng 5% EXP nhận được cho mọi hoạt động cày cuốc.",
-          "1": "✨ Nhận thêm +15% EXP toàn bộ các hoạt động cày cuốc.",
-          "2": "⏳ Kỹ năng [Bá chủ thời gian]: Giảm 50% thời gian chờ cooldown của lệnh cày cuốc."
-        }
+        "name": "Rồng con"
       },
       "cao": {
-        "name": "Cáo nhỏ",
-        "skills": {
-          "0": "🦊 Tăng 5% tỉ lệ cướp tiền thành công.",
-          "1": "🌾 Tăng 10% năng suất thu hoạch nông sản trồng trọt.",
-          "2": "🎭 Kỹ năng [Ảo ảnh]: Nhìn thấy trước 1 ô Bingo chưa mở khi chơi minigame."
-        }
+        "name": "Cáo nhỏ"
       },
       "tho": {
-        "name": "Thỏ con",
-        "skills": {
-          "0": "🐰 Giảm 5% năng lượng tiêu hao khi chặt gỗ / đào mỏ.",
-          "1": "🥗 Giảm 15% năng lượng tiêu hao khi làm việc.",
-          "2": "💤 Kỹ năng [Mơ mộng]: Ngủ (/nghingoi) hồi đầy năng lượng nhanh gấp đôi."
-        }
+        "name": "Thỏ con"
       },
       "gau": {
-        "name": "Gấu con",
-        "skills": {
-          "0": "🐻 Tăng 5% lương cơ bản khi làm việc (/work).",
-          "1": "💎 Tăng 10% tỉ lệ rơi quặng quý (Kim cương/Vàng) khi đào mỏ.",
-          "2": "🌋 Kỹ năng [Địa chấn]: Mỗi lần đào mỏ có 2% cơ hội x5 sản lượng nhận được."
-        }
+        "name": "Gấu con"
+      },
+      "ho": {
+        "name": "Hổ Con Đông Dương"
+      },
+      "nghe": {
+        "name": "Nghê Đá Giữ Đền"
+      },
+      "chim_lac": {
+        "name": "Chim Lạc"
+      },
+      "giao_long": {
+        "name": "Giao Long"
+      },
+      "kim_quy": {
+        "name": "Kim Quy Hồ Gươm"
+      },
+      "phuong_hoang": {
+        "name": "Phượng Hoàng Lửa"
       }
+    },
+    "petBuffs": {
+      "jackpot": "Chiêu tài — +{pct} điểm % cơ hội trúng lớn khi `/work`.",
+      "guard": "Hộ chủ — kẻ cướp bị trừ {pct} điểm % tỉ lệ thành công khi nhắm vào cậu.",
+      "exp": "Khai trí — +{pct}% EXP từ `/work` và mọi lệnh cày cuốc.",
+      "thief": "Ranh mãnh — +{pct}% tiền cướp được khi `/rob`, và giảm tiền phạt khi trượt.",
+      "stamina": "Bền sức — giảm {pct}% năng lượng tiêu hao khi `/fish` `/mine` `/chop`.",
+      "harvest": "Bội thu — +{pct}% sản lượng cày, +{pct}% tiền `/sell`, +{pct}% cơ hội nâng mẻ cá."
+    },
+    "petRarity": {
+      "common": "Thường",
+      "rare": "Hiếm",
+      "epic": "Sử Thi",
+      "legendary": "Huyền Thoại",
+      "mythic": "Thần Thoại"
     }
   },
   "premium": {

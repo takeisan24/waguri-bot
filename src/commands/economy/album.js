@@ -40,12 +40,13 @@ module.exports = {
             uncommon: { name: t(locale, 'rarity.uncommon'), emoji: '🟢', color: '#32CD32' },
             rare: { name: t(locale, 'rarity.rare'), emoji: '🔵', color: '#1E90FF' },
             epic: { name: t(locale, 'rarity.epic'), emoji: '🟣', color: '#9370DB' },
-            legendary: { name: t(locale, 'rarity.legendary'), emoji: '🟠', color: '#FF8C00' }
+            legendary: { name: t(locale, 'rarity.legendary'), emoji: '🟠', color: '#FF8C00' },
+            mythic: { name: t(locale, 'rarity.mythic'), emoji: '🌟', color: '#FF1493' }
         };
 
         // 2. Tính toán thống kê theo Rarity
-        const rarityCounts = { common: 0, uncommon: 0, rare: 0, epic: 0, legendary: 0 };
-        const userRarityCounts = { common: 0, uncommon: 0, rare: 0, epic: 0, legendary: 0 };
+        const rarityCounts = { common: 0, uncommon: 0, rare: 0, epic: 0, legendary: 0, mythic: 0 };
+        const userRarityCounts = { common: 0, uncommon: 0, rare: 0, epic: 0, legendary: 0, mythic: 0 };
 
         for (const item of allItems) {
             const rarity = item.rarity || 'common';

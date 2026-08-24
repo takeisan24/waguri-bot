@@ -119,53 +119,56 @@
     },
     "pets": {
       "meo": {
-        "name": "Kitten",
-        "skills": {
-          "0": "🐱 Increases chance of catching tasty fish by 2%.",
-          "1": "💫 Increases chance of catching ultra rare fish by 5% (Golden Arowana/Japanese Koi).",
-          "2": "💰 Skill [Fortune Beckoner]: Receive random 1,000 - 3,000 coins daily upon login."
-        }
+        "name": "Kitten"
       },
       "cun": {
-        "name": "Puppy",
-        "skills": {
-          "0": "🐶 Increases work success rate by 5%.",
-          "1": "🚨 Reduces police suspicion build-up by 15% during shady work.",
-          "2": "🐕 Skill [Loyalty]: Protects 25% of wallet balance from being stolen in a robbery."
-        }
+        "name": "Puppy"
       },
       "rong": {
-        "name": "Baby Dragon",
-        "skills": {
-          "0": "🐲 Increases EXP gained from all activities by 5%.",
-          "1": "✨ Gain additional +15% EXP from all activities.",
-          "2": "⏳ Skill [Time Lord]: Reduces cooldown time of all harvesting actions by 50%."
-        }
+        "name": "Baby Dragon"
       },
       "cao": {
-        "name": "Little Fox",
-        "skills": {
-          "0": "🦊 Increases robbery success rate by 5%.",
-          "1": "🌾 Increases crop harvest yield by 10%.",
-          "2": "🎭 Skill [Illusion]: Unveils 1 unopened Bingo slot in advance."
-        }
+        "name": "Little Fox"
       },
       "tho": {
-        "name": "Bunny",
-        "skills": {
-          "0": "🐰 Reduces energy cost for chopping wood / mining by 5%.",
-          "1": "🥗 Reduces energy cost for working by 15%.",
-          "2": "💤 Skill [Dreamy]: Recover energy twice as fast while sleeping (/nghingoi)."
-        }
+        "name": "Bunny"
       },
       "gau": {
-        "name": "Baby Bear",
-        "skills": {
-          "0": "🐻 Increases base salary by 5% when working (/work).",
-          "1": "💎 Increases drop rate of precious ores (Diamond/Gold) by 10% when mining.",
-          "2": "🌋 Skill [Seismic]: Each mining action has a 2% chance to multiply yield by 5x."
-        }
+        "name": "Baby Bear"
+      },
+      "ho": {
+        "name": "Indochinese Tiger Cub"
+      },
+      "nghe": {
+        "name": "Stone Nghe Guardian"
+      },
+      "chim_lac": {
+        "name": "Lac Bird"
+      },
+      "giao_long": {
+        "name": "Giao Long Serpent"
+      },
+      "kim_quy": {
+        "name": "Golden Turtle"
+      },
+      "phuong_hoang": {
+        "name": "Fire Phoenix"
       }
+    },
+    "petBuffs": {
+      "jackpot": "Fortune — +{pct} pts jackpot chance on `/work`.",
+      "guard": "Guardian — robbers lose {pct} pts success rate against you.",
+      "exp": "Scholar — +{pct}% EXP from `/work` and all gathering.",
+      "thief": "Trickster — +{pct}% coins stolen on `/rob`, and a smaller fine when caught.",
+      "stamina": "Vigor — −{pct}% energy cost on `/fish` `/mine` `/chop`.",
+      "harvest": "Bounty — +{pct}% gathering yield, +{pct}% on `/sell`, +{pct}% rare-catch upgrade."
+    },
+    "petRarity": {
+      "common": "Common",
+      "rare": "Rare",
+      "epic": "Epic",
+      "legendary": "Legendary",
+      "mythic": "Mythic"
     }
   },
   "premium": {

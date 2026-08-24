@@ -758,8 +758,13 @@ async function takeItem(userId, itemId, qty = 1) {
         if (error) throw error;
         return data === true;
     } catch (error) {
+        // TRẢ `null`, KHÔNG phải `false`. Hai chuyện khác hẳn nhau: `false` = kho không đủ,
+        // `null` = không biết vì DB lỗi. Gộp chung thì lúc Supabase chập chờn người chơi bị
+        // báo "cậu không có món này" dù kho đầy — giao diện nói sai sự thật, đúng hạng lỗi
+        // mà đợt này đang vá. Mọi nơi gọi đều dùng `if (!taken)` nên `null` giữ nguyên hành
+        // vi cũ; chỉ nơi nào MUỐN tách mới kiểm `=== null` (xem /pet feed).
         console.error('[DATABASE ERROR] takeItem():', error);
-        return false;
+        return null;
     }
 }
 
@@ -903,16 +908,16 @@ async function sellItem(userId, itemId, quantity = 1) {
         if (error) throw error;
         
         if (data && data.status === 'ok') {
+            // harvest 🌾 (Gấu con / Kim Quy): thưởng thêm % tiền bán. Ngưỡng Lv.5 cũ đã bỏ
+            // (0/2 pet trên prod từng chạm tới); mức nay nhân theo bậc độ hiếm.
             const pet = await getPet(userId);
-            if (pet && pet.species === 'gau') {
-                const { petLevel } = require('./data/pets');
-                const lvl = petLevel(pet.exp);
-                if (lvl >= 5) {
-                    const bonus = Math.round(Number(data.gain) * 0.1);
-                    if (bonus > 0) {
-                        await addMoney(userId, bonus, 'wallet');
-                        data.gain = Number(data.gain) + bonus;
-                    }
+            const { petBuffValue } = require('./data/pets');
+            const harvestBonus = petBuffValue(pet, 'harvest');
+            if (harvestBonus > 0) {
+                const bonus = Math.round(Number(data.gain) * harvestBonus);
+                if (bonus > 0) {
+                    await addMoney(userId, bonus, 'wallet');
+                    data.gain = Number(data.gain) + bonus;
                 }
             }
         }
@@ -1116,16 +1121,55 @@ async function getPet(userId) {
     }
 }
 
-/** Nhận nuôi. Trả 'ok' | 'already' | 'error'. */
+/**
+ * Nhận nuôi. Trả 'ok' | 'already' | 'bad_species' | 'not_adoptable' | 'error'.
+ *
+ * Qua RPC `adopt_pet` (migration 0142) thay cho lối cũ "đọc pet -> nếu chưa có thì insert":
+ *  · hai lời gọi song song cùng thấy "chưa có pet" (check-then-act)
+ *  · và JS CHƯA TỪNG kiểm `species` — allow-list chỉ nằm ở `choices` của slash command,
+ *    nên mọi đường gọi mới (web, script) đều tạo được pet loài bịa. Bài học 0109: allow-list
+ *    phải nằm trong DB.
+ */
 async function adoptPet(userId, species, name) {
     try {
-        if (await getPet(userId)) return 'already';
-        const { error } = await supabase.from('user_pets').insert([{ user_id: userId, species, name }]);
+        const { data, error } = await supabase.rpc('adopt_pet', {
+            p_user: userId, p_species: species, p_name: name || null,
+        });
         if (error) throw error;
-        return 'ok';
+        return data?.status || 'error';
     } catch (error) {
         console.error('[DATABASE ERROR] adoptPet():', error);
         return 'error';
+    }
+}
+
+/**
+ * Thăng ĐÚNG MỘT bậc độ hiếm cho thú cưng (nguyên tử, có trừ lễ vật).
+ * @returns {object|null} { status: 'ok'|'no_pet'|'max_rarity'|'low_level'|'missing_items', ... }
+ */
+async function ascendPet(userId) {
+    try {
+        const { data, error } = await supabase.rpc('ascend_pet', { p_user: userId });
+        if (error) throw error;
+        return data || null;
+    } catch (error) {
+        console.error('[DATABASE ERROR] ascendPet():', error);
+        return null;
+    }
+}
+
+/**
+ * Ấp trứng: đổi loài + bậc, GIỮ NGUYÊN exp/kỹ năng/tên.
+ * @returns {object|null} { status: 'ok'|'bad_egg'|'no_egg'|'no_species', species?, rarity? }
+ */
+async function hatchPetEgg(userId, eggId) {
+    try {
+        const { data, error } = await supabase.rpc('hatch_pet_egg', { p_user: userId, p_egg: eggId });
+        if (error) throw error;
+        return data || null;
+    } catch (error) {
+        console.error('[DATABASE ERROR] hatchPetEgg():', error);
+        return null;
     }
 }
 
@@ -2596,6 +2640,8 @@ module.exports = {
     // pets
     getPet,
     adoptPet,
+    ascendPet,
+    hatchPetEgg,
     renamePet,
     feedPet,
     feedPetWithFee,

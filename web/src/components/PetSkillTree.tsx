@@ -3,6 +3,7 @@
 import React, { useState, useTransition } from "react";
 import Link from "next/link";
 import { upgradePetSkill } from "../app/dashboard/actions";
+import { petRarityKey, PET_RARITY } from "../lib/game";
 
 type PetData = {
   name: string;
@@ -10,6 +11,8 @@ type PetData = {
   exp: number;
   skills: Record<string, number> | null;
   skill_points: number;
+  // Bậc ĐÃ LÀM LỄ. Thiếu trường này thì trang tính bậc thấp hơn bot.
+  ascended_to?: string | null;
 };
 
 type SpeciesInfo = {
@@ -36,10 +39,12 @@ const SKILL_LIST: SkillDetails[] = [
     id: "fishing_luck",
     nameVi: "May Mắn Câu Cá",
     nameEn: "Fishing Luck",
-    descVi: "Tăng tỉ lệ rơi các loài cá huyền thoại (Cá Rồng Vàng, Cá Koi Nhật).",
+    descVi: "Tăng tỉ lệ rơi các loài cá huyền thoại (Cá Rồng Kim Long, Cá Koi Hoàng Gia).",
     descEn: "Increases the chance of catching rare, legendary fish.",
-    effectsVi: "+20% / +40% / +65% Tỉ lệ cá hiếm",
-    effectsEn: "+20% / +40% / +65% Rare fish rate",
+    // Số CHÉP TỪ fish.js:57-59 — cộng TUYỆT ĐỐI vào nền 0,10, không phải nhân.
+    // Bản cũ ghi "+20/+40/+65%", sai gấp ~4 lần so với code.
+    effectsVi: "+3 / +7 / +15 điểm % tỉ lệ (nền 10%)",
+    effectsEn: "+3 / +7 / +15 pts drop rate (10% base)",
     maxLvl: 3,
     emoji: "🎣",
     cx: 120,
@@ -64,8 +69,9 @@ const SKILL_LIST: SkillDetails[] = [
     nameEn: "Bakery Efficiency",
     descVi: "Đẩy nhanh hiệu suất nướng và rút ngắn thời gian chuẩn bị bánh ở tiệm Gekka.",
     descEn: "Boosts baking speed and overall production in Gekka Bakery.",
-    effectsVi: "+10% / +25% / +45% Tốc độ nướng bánh",
-    effectsEn: "+10% / +25% / +45% Baking speed",
+    // Số CHÉP TỪ bakery.js:93 — `1 + lvl*0.05`. Bản cũ ghi "+10/+25/+45%", sai gấp 3.
+    effectsVi: "+5% / +10% / +15% Tốc độ nướng bánh",
+    effectsEn: "+5% / +10% / +15% Baking speed",
     maxLvl: 3,
     emoji: "🍰",
     cx: 380,
@@ -88,6 +94,15 @@ export default function PetSkillTree({
 
   const skills = pet.skills || {};
   const skillPoints = pet.skill_points || 0;
+  const rarKey = petRarityKey(pet);
+  const rar = PET_RARITY[rarKey];
+  const RARITY_LABEL: Record<string, { vi: string; en: string }> = {
+    common: { vi: "Thường", en: "Common" },
+    rare: { vi: "Hiếm", en: "Rare" },
+    epic: { vi: "Sử Thi", en: "Epic" },
+    legendary: { vi: "Huyền Thoại", en: "Legendary" },
+    mythic: { vi: "Thần Thoại", en: "Mythic" }
+  };
 
   const handleUpgrade = (skillId: string) => {
     setErrorMsg(null);
@@ -106,10 +121,16 @@ export default function PetSkillTree({
       {/* Top Title Bar */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 glass-panel rounded-3xl p-6 border border-pink-300/10">
         <div className="flex items-center gap-3">
-          <span className="text-4xl">{species?.emoji || "🐾"}</span>
+          <span className="text-4xl">{rar.emoji}{species?.emoji || "🐾"}</span>
           <div>
             <h1 className="text-xl font-extrabold text-white">
               {pet.name || species?.name}
+              <span
+                className="text-[11px] font-bold px-2 py-0.5 rounded-full ml-2 align-middle"
+                style={{ color: rar.color, backgroundColor: `${rar.color}1f` }}
+              >
+                {isEn ? RARITY_LABEL[rarKey].en : RARITY_LABEL[rarKey].vi} ×{rar.mult.toFixed(2)}
+              </span>
             </h1>
             <p className="text-xs text-pink-300">
               {isEn ? `Available Skill Points: ` : `Điểm kỹ năng khả dụng: `}

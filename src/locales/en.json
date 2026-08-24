@@ -345,7 +345,16 @@
       "level_up": "🎉 Your pet leveled up to **Lv.{lvl}**!",
       "err_no_food": "You don't have **1× {food}** in your inventory to feed your pet~ 🥺",
       "feed_success_desc_item": "{emoji} **{name}** ate **{food}** happily! +{gain} EXP 😋 *(received x{mult} EXP)*",
-      "rename_success": "✅ Pet renamed to **{name}**~ 🐾"
+      "rename_success": "✅ Pet renamed to **{name}**~ 🐾",
+      "ascend_title": "✨・Ascension Complete!",
+      "ascend_success": "{name} glowed and ascended from {from} to {to}!\nSpecies power multiplier is now **×{mult}**.",
+      "ascend_spent": "📿 Offering consumed: **{items}**",
+      "ascend_max": "🌟 Your pet is already **{rarity}** — there is no higher tier~",
+      "ascend_low_level": "To reach {next}, your pet must be **Lv.{need}** (currently Lv.{level}). Feed them some more~ 🍖",
+      "ascend_missing": "The {next} ascension is missing its offering.\nRequired: {need}\n*(obtainable via `/fish` `/mine` `/chop` `/craft`)*",
+      "hatch_title": "🥚・The Egg Hatched!",
+      "hatch_success": "The **{egg}** trembled and cracked open... {emoji} **{species}**, a **{rarity}** companion, has awoken!\n*Your existing EXP and skills are kept.*",
+      "hatch_no_egg": "You don't have any **{egg}** in your inventory~ Eggs drop randomly from `/fish` `/mine` `/chop`! 🥺"
     },
     "pig": {
       "title": "🐷・Pig Husbandry",
@@ -1782,12 +1791,12 @@
       "err_cooldown": "You just did this, rest a bit~ Come back <t:{ts}:R>.",
       "err_transfer_fail": "Missed! The target was too quick and hid their money~",
       "success_desc": "You stealthily took **{amount}** {currency} from <@{target}>'s wallet.\n💵 Your wallet balance: **{wallet}** {currency}\n*(Waguri is pretending she saw nothing~ 🙈)*",
-      "success_cao_buff": "🦊 Your sly Fox cub **{name}** helped you steal an extra 10%!",
       "fail_desc_base": "You were caught red-handed and fined **{fine}** {currency}.",
       "fail_insurance": "🛡️ **Street Insurance** activated and reduced your fine by 50%!",
-      "fail_cao_buff": "🦊 Your Fox cub **{name}** helped smuggle some evidence and reduced your fine by 15%!",
-      "fail_dog_buff": "🐕 <@{target}>'s guard dog **{name}** barked loudly and got you busted!",
-      "fail_desc_footer": "\n💵 Your wallet balance: **{bal}** {currency}\nPlease don't do this again~ 😟"
+      "fail_desc_footer": "\n💵 Your wallet balance: **{bal}** {currency}\nPlease don't do this again~ 😟",
+      "success_thief_buff": "{emoji} Your sly **{name}** helped you steal an extra {pct}%!",
+      "fail_thief_buff": "{emoji} Your **{name}** smuggled away some evidence and cut your fine by {pct}%!",
+      "fail_guard_buff": "{emoji} <@{target}>'s guardian **{name}** stood watch and got you busted!"
     },
     "vay": {
       "loan_line": "• <@{counterpart}> — **{amount}** {currency} · due <t:{ts}:R>{overdue}",
@@ -2277,6 +2286,15 @@
       },
       "banh_cheesecake": {
         "name": "Gekka Cheesecake"
+      },
+      "trung_su_thi": {
+        "name": "Epic Egg"
+      },
+      "trung_huyen_thoai": {
+        "name": "Legendary Egg"
+      },
+      "trung_than_thoai": {
+        "name": "Mythic Egg"
       }
     },
     "jobs": {
@@ -2649,14 +2667,21 @@
     "rong": "Baby Dragon",
     "cao": "Fox Cub",
     "tho": "Bunny",
-    "gau": "Bear Cub"
+    "gau": "Bear Cub",
+    "ho": "Indochinese Tiger Cub",
+    "nghe": "Stone Nghe Guardian",
+    "chim_lac": "Lac Bird",
+    "giao_long": "Giao Long Serpent",
+    "kim_quy": "Golden Turtle",
+    "phuong_hoang": "Fire Phoenix"
   },
   "rarity": {
     "common": "Common",
     "uncommon": "Uncommon",
     "rare": "Rare",
     "epic": "Epic",
-    "legendary": "Legendary"
+    "legendary": "Legendary",
+    "mythic": "Mythic"
   },
   "titles": {
     "Cày Cuốc Chuyên Cần 🌾": "Diligent Farmer 🌾",
