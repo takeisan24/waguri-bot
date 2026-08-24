@@ -4,6 +4,14 @@
     "src/commands/admin/antinuke.js::antinuke_whitelist_add": [
       "kind_invalid"
     ],
+    "src/commands/economy/pet.js::adopt_pet": [
+      "bad_species",
+      "not_adoptable"
+    ],
+    "src/commands/economy/pet.js::hatch_pet_egg": [
+      "bad_egg",
+      "no_species"
+    ],
     "src/commands/economy/prestige.js::prestige_user": [
       "no_user"
     ],
