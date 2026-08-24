@@ -177,8 +177,11 @@ BEGIN
        SET status = 'COMPLETED', earned_coins = v_coins, earned_exp = v_exp, study_points = v_points
      WHERE id = p_session_id;
 
+    -- FOR UPDATE: dòng `users` này được ĐỌC rồi GHI LẠI (study_streak). Không khoá thì hai
+    -- giao dịch cùng đọc một giá trị streak rồi cùng ghi đè -> mất cập nhật. Khoá phiên ở trên
+    -- rồi mới khoá user ở đây, giữ nguyên một thứ tự để không tự khoá chéo.
     SELECT last_study_date, study_streak INTO v_last_date, v_streak
-      FROM public.users WHERE user_id = p_user_id;
+      FROM public.users WHERE user_id = p_user_id FOR UPDATE;
 
     IF v_last_date IS NULL THEN v_streak := 1;
     ELSIF v_last_date = v_today THEN v_streak := COALESCE(v_streak, 1);
