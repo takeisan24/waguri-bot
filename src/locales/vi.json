@@ -56,6 +56,7 @@
     },
     "rate_limited": "Cậu thao tác hơi nhanh rồi~ chờ vài giây nhé! 🌸",
     "retry_later": "Ơ, có lỗi rồi, cậu thử lại sau nhé~ 🌸",
+    "payout_unconfirmed": "\n\n⚠️ Nhưng **phần thưởng chưa ghi nhận xong** do trục trặc kết nối. Số dư dưới đây mới là con số thật — nếu thiếu, cậu nhắn admin giúp tớ nhé~",
     "success_title": "✅ Thành công",
     "warning_title": "⚠️ Cảnh báo",
     "goodbye": {
@@ -1018,6 +1019,7 @@
     },
     "crate": {
       "err_poor": "Cần **{cost}** {currency} để mở rương~ 😟",
+      "prize_failed": "😥 Rương mở ra rồi… nhưng **phần thưởng chưa ghi nhận được** do trục trặc kết nối. Số dư dưới đây mới là con số thật — nếu thiếu, cậu nhắn admin giúp tớ nhé~",
       "prize_little_money": "💵 Chút tiền lẻ: **+{amount}** {currency}",
       "prize_decent_money": "💰 Cũng được! **+{amount}** {currency}",
       "prize_common_item": "📦 Vật phẩm: **{name}**!",

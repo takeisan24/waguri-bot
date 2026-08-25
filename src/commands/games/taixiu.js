@@ -76,9 +76,20 @@ module.exports = {
 
         if (win) {
             const payout = Math.round(bet * config.GAMBLE.TAIXIU_MULT);
-            if (!await db.addMoney(userId, payout, 'wallet')) console.error(`[PAYOUT FAIL] taixiu user=${userId} payout=${payout}`);
+            // `addMoney` với số DƯƠNG không bao giờ trả `false`: guard trong RPC là
+            // `wallet + amount >= 0`, luôn đúng khi cộng. Nên nhánh hỏng duy nhất là `null`
+            // — DB lỗi. Lúc đó cược ĐÃ bị trừ mà thưởng chưa vào, nhưng bản cũ vẫn in
+            // "thắng +N xu" rồi chỉ ghi console.error. Người chơi đọc một câu khẳng định
+            // sai về tiền của chính họ, và không có cách nào biết.
+            //
+            // KHÔNG cố trả lại lần nữa: `null` có thể là timeout mạng sau khi ghi ĐÃ thành
+            // công, thử lại là trả gấp đôi. Chỗ nói thật duy nhất là dòng số dư ngay bên
+            // dưới — nó đọc lại từ DB, nên cứ để nó làm trọng tài.
+            const daTra = await db.addMoney(userId, payout, 'wallet');
+            if (daTra !== true) console.error(`[PAYOUT FAIL] taixiu user=${userId} payout=${payout}`);
             db.questIncr(userId, 'gamble_win', 1);
             desc += t(locale, 'commands.taixiu.win_msg', { winAmount: fmt(payout - bet, locale), currency: config.CURRENCY });
+            if (daTra !== true) desc += t(locale, 'common.payout_unconfirmed');
         } else {
             desc += triple
                 ? t(locale, 'commands.taixiu.lose_bao_msg', { loseAmount: fmt(bet, locale), currency: config.CURRENCY })

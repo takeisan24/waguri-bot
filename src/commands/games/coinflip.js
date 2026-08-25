@@ -62,9 +62,14 @@ module.exports = {
         let desc = t(locale, 'commands.coinflip.coin_dropped', { flip: flipName });
         if (win) {
             const payout = Math.round(bet * config.GAMBLE.COINFLIP_MULT);
-            if (!await db.addMoney(userId, payout, 'wallet')) console.error(`[PAYOUT FAIL] coinflip user=${userId} payout=${payout}`);
+            // Xem ghi chú dài ở `taixiu.js`: cộng tiền chỉ hỏng theo kiểu `null` (DB lỗi),
+            // và không được thử lại vì `null` có thể là timeout sau khi ghi đã thành công.
+            // Dòng số dư bên dưới đọc lại từ DB nên nó mới là chỗ nói thật.
+            const daTra = await db.addMoney(userId, payout, 'wallet');
+            if (daTra !== true) console.error(`[PAYOUT FAIL] coinflip user=${userId} payout=${payout}`);
             db.questIncr(userId, 'gamble_win', 1);
             desc += t(locale, 'commands.coinflip.win_msg', { winAmount: fmt(payout - bet, locale), currency: config.CURRENCY });
+            if (daTra !== true) desc += t(locale, 'common.payout_unconfirmed');
         } else {
             desc += t(locale, 'commands.coinflip.lose_msg', { loseAmount: fmt(bet, locale), currency: config.CURRENCY });
         }

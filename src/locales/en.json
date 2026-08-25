@@ -56,6 +56,7 @@
     },
     "rate_limited": "You are doing that too fast~ please wait a few seconds! 🌸",
     "retry_later": "Oops, an error occurred, please try again later~ 🌸",
+    "payout_unconfirmed": "\n\n⚠️ But **the reward didn't finish saving** because of a connection hiccup. The balance below is the real number — if it's short, please ping an admin~",
     "success_title": "✅ Success",
     "warning_title": "⚠️ Warning",
     "goodbye": {
@@ -1018,6 +1019,7 @@
     },
     "crate": {
       "err_poor": "You need **{cost}** {currency} to open the crate~ 😟",
+      "prize_failed": "😥 The crate opened… but **the reward didn't save** because of a connection hiccup. The balance below is the real number — if it's short, please ping an admin~",
       "prize_little_money": "💵 A little change: **+{amount}** {currency}",
       "prize_decent_money": "💰 Not bad! **+{amount}** {currency}",
       "prize_common_item": "📦 Item: **{name}**!",

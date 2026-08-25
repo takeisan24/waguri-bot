@@ -35,25 +35,52 @@ module.exports = {
                 : t(locale, 'commands.crate.err_poor', { cost: fmt(cost, locale), currency: config.CURRENCY }));
         }
 
-        const money = async mult => { const amt = Math.floor(cost * mult); await db.addMoney(userId, amt, 'wallet'); return amt; };
+        // Hai cửa trao thưởng — cả hai đều trả `null` khi TRAO HỎNG.
+        //
+        // Ở rương, trao hỏng nghĩa là MẤT TRẮNG: tiền mở rương đã bị trừ ở trên rồi mà
+        // phần thưởng không vào. Nặng hơn ba trò kia, nơi hỏng chỉ mất phần tiền thắng.
+        // Bản cũ bỏ luôn kết quả của cả `addMoney` lẫn `giveItemAdmin`, nên người chơi đọc
+        // "💎 CỰC HIẾM! Cậu nhận được Laptop!" với túi đồ trống — đúng lớp lỗi đã vá ở
+        // `/fish`. Không thử lại: hỏng có thể là timeout sau khi ghi ĐÃ thành công.
+        const money = async mult => {
+            const amt = Math.floor(cost * mult);
+            if (await db.addMoney(userId, amt, 'wallet') !== true) return null;
+            return amt;
+        };
         const giveItem = async pool => {
             const id = rpick(pool);
-            await db.giveItemAdmin(userId, id, 1);
+            if (await db.giveItemAdmin(userId, id, 1) !== true) return null;
             const it = await db.getItem(id);
             if (!it) return id;
             return t(locale, `data.items.${it.id}.name`) || it.name;
         };
 
+        // Dựng mô tả ở MỘT chỗ: trao được thì khoe, trao hỏng thì nói thật. Bảy nhánh dưới
+        // mà mỗi nhánh tự kiểm `null` là bảy chỗ có thể quên.
+        const HONG = t(locale, 'commands.crate.prize_failed');
+        const dongTien = async (mult, key) => {
+            const a = await money(mult);
+            return a === null ? HONG : t(locale, key, { amount: fmt(a, locale), currency: config.CURRENCY });
+        };
+        const dongDo = async (pool, key) => {
+            const n = await giveItem(pool);
+            return n === null ? HONG : t(locale, key, { name: n });
+        };
+
         // Phân phối EV ÂM (~0.7x) -> rương là money sink thật, spam mở sẽ lỗ dần.
         const r = Math.random();
         let desc, type = 'success';
-        if (r < 0.40) { const a = await money(0.1 + Math.random() * 0.3); desc = t(locale, 'commands.crate.prize_little_money', { amount: fmt(a, locale), currency: config.CURRENCY }); type = 'warning'; }
-        else if (r < 0.65) { const a = await money(0.5 + Math.random() * 0.4); desc = t(locale, 'commands.crate.prize_decent_money', { amount: fmt(a, locale), currency: config.CURRENCY }); type = 'warning'; }
-        else if (r < 0.80) { desc = t(locale, 'commands.crate.prize_common_item', { name: await giveItem(COMMON) }); }
-        else if (r < 0.92) { const a = await money(1 + Math.random() * 0.8); desc = t(locale, 'commands.crate.prize_good_money', { amount: fmt(a, locale), currency: config.CURRENCY }); }
-        else if (r < 0.975) { desc = t(locale, 'commands.crate.prize_good_item', { name: await giveItem(GOOD) }); }
-        else if (r < 0.997) { const a = await money(2.5 + Math.random() * 1.5); desc = t(locale, 'commands.crate.prize_jackpot_money', { amount: fmt(a, locale), currency: config.CURRENCY }); type = 'jackpot'; }
-        else { desc = t(locale, 'commands.crate.prize_rare_item', { name: await giveItem(RARE) }); type = 'jackpot'; }
+        if (r < 0.40) { desc = await dongTien(0.1 + Math.random() * 0.3, 'commands.crate.prize_little_money'); type = 'warning'; }
+        else if (r < 0.65) { desc = await dongTien(0.5 + Math.random() * 0.4, 'commands.crate.prize_decent_money'); type = 'warning'; }
+        else if (r < 0.80) { desc = await dongDo(COMMON, 'commands.crate.prize_common_item'); }
+        else if (r < 0.92) { desc = await dongTien(1 + Math.random() * 0.8, 'commands.crate.prize_good_money'); }
+        else if (r < 0.975) { desc = await dongDo(GOOD, 'commands.crate.prize_good_item'); }
+        else if (r < 0.997) { desc = await dongTien(2.5 + Math.random() * 1.5, 'commands.crate.prize_jackpot_money'); type = 'jackpot'; }
+        else { desc = await dongDo(RARE, 'commands.crate.prize_rare_item'); type = 'jackpot'; }
+
+        // Trao hỏng thì đừng tô màu ăn mừng: hai nhánh hiếm nhất đặt `type = 'jackpot'`
+        // trước khi biết kết quả, nên rương hỏng vẫn hiện khung vàng "ĐẠI TRÚNG".
+        if (desc === HONG) type = 'warning';
 
         const u = await db.getUser(userId);
         const embed = buildWaguriEmbed(interaction, type, {

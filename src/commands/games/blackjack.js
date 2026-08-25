@@ -105,8 +105,16 @@ module.exports = {
             if (settled) return;
             settled = true;
             const payout = { win: bet * 2, blackjack: Math.floor(bet * 2.5), push: bet, lose: 0 }[outcome];
+            // Xem ghi chú dài ở `taixiu.js`: cộng tiền chỉ hỏng theo kiểu `null` (DB lỗi),
+            // và KHÔNG được thử lại vì `null` có thể là timeout sau khi ghi đã thành công.
+            //
+            // Riêng ở đây `push` (hoà) CŨNG là một lần trả tiền — trả lại đúng tiền cược.
+            // Hỏng ở nhánh đó thì người chơi mất trắng tiền cược mà vẫn đọc "hoà, không ai
+            // thắng ai", nên nó cần cảnh báo y hệt nhánh thắng chứ không được bỏ qua.
+            let daTra = true;
             if (payout > 0) {
-                if (!await db.addMoney(userId, payout, 'wallet')) console.error(`[PAYOUT FAIL] blackjack user=${userId} payout=${payout}`);
+                daTra = await db.addMoney(userId, payout, 'wallet') === true;
+                if (!daTra) console.error(`[PAYOUT FAIL] blackjack user=${userId} payout=${payout} outcome=${outcome}`);
             }
             if (outcome === 'win' || outcome === 'blackjack') db.questIncr(userId, 'gamble_win', 1);
             const net = payout - bet;
@@ -130,6 +138,9 @@ module.exports = {
                     + (usedIns ? t(locale, 'commands.blackjack.police_ins') : '')
                     + (jailed ? t(locale, 'commands.blackjack.police_jailed', { jailMinutes: Math.round(jailTime / 60000) }) : t(locale, 'commands.blackjack.police_fine_only'));
             }
+
+            // Đặt ngay TRƯỚC dòng số dư: người đọc thấy cảnh báo rồi mới thấy con số thật.
+            if (!daTra) note += t(locale, 'common.payout_unconfirmed');
 
             const u = await db.getUser(userId);
             const noteFull = `${note}\n${t(locale, 'commands.blackjack.balance_footer', { balance: fmt(u?.wallet || 0, locale), currency: config.CURRENCY })}`;
