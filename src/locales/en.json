@@ -248,7 +248,7 @@
     },
     "deletedata": {
       "warning_title": "🗑️・Delete Your Data",
-      "warning_desc": "You are about to **permanently delete** all your gameplay data from Waguri. This action **CANNOT be undone** 🥺\n\n**Will be deleted:** wallet/bank balance, inventory, job, level, pet, pigs/plants, Gekka Bakery progress, quests, achievements, affection level & Waguri's memories of you, and all other progress.\n**Will be kept (by regulations):** Premium payment history (reconciliation) and confession logs (harassment investigation).\n\n⚠️ If you have an **outstanding loan** or **are currently a clan leader**, please resolve these first.\n\nAre you sure you want to delete?",
+      "warning_desc": "You are about to **permanently delete** all your gameplay data from Waguri. This action **CANNOT be undone** 🥺\n\n**Will be deleted:** wallet/bank balance, inventory, job, level, pet, pigs/plants, Gekka Bakery progress, quests, achievements, affection level & Waguri's memories of you, and all other progress.\n**Will be kept (by regulations):** Premium payment history (reconciliation) and confession logs (harassment investigation).\n\n⚠️ If you have an **outstanding loan**, **are currently a clan leader**, or **are involved in an active auction** (selling, or holding the highest bid on someone else's), please resolve these first.\n\nAre you sure you want to delete?",
       "btn_confirm": "Permanently Delete 🗑️",
       "btn_cancel": "Cancel, Keep It 🌸",
       "cancelled_desc": "Great! Your data is safe with me~ 🌸",
@@ -256,6 +256,8 @@
       "success_desc": "I have deleted all your gameplay data. If you return in the future, you will start completely fresh~ Goodbye, hope to see you again! 🌸",
       "blocked_loans_desc": "You still have **outstanding loans** (either borrowing or lending). Please use `/vay` to resolve all loans before deleting~ 🌸",
       "blocked_clan_leader_desc": "You are **currently a clan leader**. Please transfer ownership or disband the clan (`/clan disband`) before deleting~ 🌸",
+      "blocked_active_auctions_desc": "You have an **auction that hasn't finished yet**. Please cancel it with `/market cancel-auction`, or wait for it to end, before deleting~ 🌸",
+      "blocked_active_bids_desc": "You are the **highest bidder** on someone else's auction. Please wait for it to end before deleting — otherwise your bid would be stuck there~ 🌸",
       "error_desc": "Oops, an error occurred while deleting your data, please try again later~ 🌸"
     },
     "dovui": {

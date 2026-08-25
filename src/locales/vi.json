@@ -248,7 +248,7 @@
     },
     "deletedata": {
       "warning_title": "🗑️・Xoá dữ liệu của bạn",
-      "warning_desc": "Cậu sắp **xoá vĩnh viễn** toàn bộ dữ liệu chơi của mình khỏi Waguri. Hành động này **KHÔNG THỂ hoàn tác** 🥺\n\n**Sẽ xoá:** ví/ngân hàng, kho đồ, nghề, cấp, thú cưng, heo/cây, tiệm bánh, nhiệm vụ, thành tựu, thiện cảm & ký ức Waguri về cậu, cùng mọi tiến trình khác.\n**Giữ lại (theo quy định):** hồ sơ thanh toán Premium (đối soát) và nhật ký confession (điều tra quấy rối).\n\n⚠️ Nếu cậu đang **có khoản vay chưa tất toán** hoặc **đang là chủ một bang hội**, hãy xử lý xong trước đã nhé.\n\nCậu chắc chắn muốn xoá chứ?",
+      "warning_desc": "Cậu sắp **xoá vĩnh viễn** toàn bộ dữ liệu chơi của mình khỏi Waguri. Hành động này **KHÔNG THỂ hoàn tác** 🥺\n\n**Sẽ xoá:** ví/ngân hàng, kho đồ, nghề, cấp, thú cưng, heo/cây, tiệm bánh, nhiệm vụ, thành tựu, thiện cảm & ký ức Waguri về cậu, cùng mọi tiến trình khác.\n**Giữ lại (theo quy định):** hồ sơ thanh toán Premium (đối soát) và nhật ký confession (điều tra quấy rối).\n\n⚠️ Nếu cậu đang **có khoản vay chưa tất toán**, **đang là chủ một bang hội**, hoặc **đang vướng một phiên đấu giá** (tự rao bán, hoặc đang giữ giá cao nhất của người khác), hãy xử lý xong trước đã nhé.\n\nCậu chắc chắn muốn xoá chứ?",
       "btn_confirm": "Xoá vĩnh viễn 🗑️",
       "btn_cancel": "Huỷ, giữ lại 🌸",
       "cancelled_desc": "Tuyệt, mình vẫn giữ dữ liệu của cậu an toàn nhé~ 🌸",
@@ -256,6 +256,8 @@
       "success_desc": "Mình đã xoá toàn bộ dữ liệu chơi của cậu rồi. Nếu sau này quay lại, cậu sẽ bắt đầu hoàn toàn mới nhé~ Tạm biệt, mong sớm gặp lại! 🌸",
       "blocked_loans_desc": "Cậu vẫn còn **khoản vay chưa tất toán** (đang nợ hoặc đang cho vay). Hãy dùng `/vay` xử lý xong hết trước rồi mới xoá được nhé~ 🌸",
       "blocked_clan_leader_desc": "Cậu **đang là chủ một bang hội**. Hãy chuyển quyền hoặc giải tán bang (`/clan disband`) trước khi xoá dữ liệu nhé~ 🌸",
+      "blocked_active_auctions_desc": "Cậu **đang có phiên đấu giá chưa kết thúc**. Hãy dùng `/market cancel-auction` để huỷ, hoặc đợi phiên đó xong, rồi mới xoá được nhé~ 🌸",
+      "blocked_active_bids_desc": "Cậu **đang giữ giá cao nhất** ở một phiên đấu giá của người khác. Đợi phiên đó kết thúc rồi hẵng xoá nhé — không thì tiền cọc của cậu sẽ kẹt lại đó~ 🌸",
       "error_desc": "Hơ, có lỗi khi xoá dữ liệu, thử lại sau nhé~ 🌸"
     },
     "dovui": {

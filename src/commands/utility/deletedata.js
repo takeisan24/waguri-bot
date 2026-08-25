@@ -60,6 +60,21 @@ module.exports = {
                     locale,
                     description: t(locale, 'commands.deletedata.blocked_clan_leader_desc')
                 });
+            // RPC `delete_user_data` chặn BỐN điều kiện, không phải hai. Bản cũ chỉ có nhánh
+            // cho vay và bang hội, nên ai đang vướng đấu giá rơi thẳng vào `else` và đọc câu
+            // "có lỗi khi xoá dữ liệu, thử lại sau" — một câu nói SAI: không có lỗi nào cả,
+            // và thử lại bao nhiêu lần cũng y hệt. Họ chỉ cần huỷ phiên đấu giá là xong,
+            // nhưng không có gì nói cho họ biết điều đó.
+            } else if (res === 'blocked_active_auctions') {
+                e = buildWaguriEmbed(interaction, 'warning', {
+                    locale,
+                    description: t(locale, 'commands.deletedata.blocked_active_auctions_desc')
+                });
+            } else if (res === 'blocked_active_bids') {
+                e = buildWaguriEmbed(interaction, 'warning', {
+                    locale,
+                    description: t(locale, 'commands.deletedata.blocked_active_bids_desc')
+                });
             } else {
                 e = buildWaguriEmbed(interaction, 'error', { locale, description: t(locale, 'commands.deletedata.error_desc') });
             }
