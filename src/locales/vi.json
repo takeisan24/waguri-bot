@@ -1509,6 +1509,8 @@
       "err_cooldown": "Từ từ thôi nào~ Cậu vừa gửi confession gần đây. Thử lại sau **{min} phút {sec} giây** nhé~ 🌸",
       "err_not_configured": "Server chưa cấu hình kênh confession. Nhờ admin gõ `/config confession-channel` nhé~ 🌸",
       "err_channel_deleted": "Kênh confession không còn tồn tại, nhờ admin đặt lại giúp nhé~ 🌸",
+      "err_no_permission": "Mình **không có quyền gửi bài** vào <#{channel}> nên chưa đăng được confession của cậu 🥺 Nhờ admin bật quyền *Gửi tin nhắn* + *Đính kèm liên kết* cho mình ở kênh đó nha~ (Lượt gửi của cậu **chưa bị tính**, cứ thử lại sau khi sửa nhé!)",
+      "err_send_failed": "Mình vừa **gửi hụt** confession của cậu — hình như quyền ở kênh đó vừa bị đổi 🥺 Bài **chưa được đăng** đâu nha. Nhờ admin xem lại giúp, rồi cậu gửi lại sau **15 phút** nhé~",
       "embed_title": "🤫 Confession #{num}",
       "embed_footer": "🤫 Gửi ẩn danh qua Waguri",
       "success_reply": "✅ Đã gửi confession ẩn danh của cậu rồi nhé~ (không ai biết là cậu đâu)"

@@ -1509,6 +1509,8 @@
       "err_cooldown": "Take it slow~ You recently sent a confession. Try again in **{min} min {sec} sec**~ 🌸",
       "err_not_configured": "Server has not configured confession channel. Ask admin to run `/config confession-channel`~ 🌸",
       "err_channel_deleted": "Confession channel no longer exists, ask admin to re-configure it~ 🌸",
+      "err_no_permission": "I **can't post** in <#{channel}>, so your confession didn't go up 🥺 Please ask an admin to give me *Send Messages* + *Embed Links* there~ (Your attempt **wasn't counted**, just try again once it's fixed!)",
+      "err_send_failed": "I **failed to post** your confession — the channel permissions seem to have just changed 🥺 It did **not** go up. Please ask an admin to check, then try again in **15 minutes**~",
       "embed_title": "🤫 Confession #{num}",
       "embed_footer": "🤫 Sent anonymously via Waguri",
       "success_reply": "✅ Your anonymous confession has been sent! (Nobody knows it's you)"
