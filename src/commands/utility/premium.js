@@ -57,12 +57,15 @@ async function buildHub(interaction, locale) {
     // có người, để lúc chưa ai ủng hộ thì không phô ra một ô trống buồn thiu.
     const supporters = await db.getSupporters(10);
     if (supporters.length) {
-        const lines = [];
-        for (const s of supporters) {
-            let ten = s.user_id;
-            try { ten = (await interaction.client.users.fetch(String(s.user_id))).username; } catch { /* dùng ID */ }
-            lines.push(`💝 **${ten}**`);
-        }
+        // Hỏi tên CẢ danh sách cùng lúc. Bản cũ chờ xong người này mới hỏi người kia, mỗi
+        // lượt là một vòng gọi Discord — đủ 10 người thì thành ~2 giây chờ vô cớ, trong khi
+        // 10 lời hỏi này hoàn toàn độc lập với nhau.
+        const lines = await Promise.all(supporters.map(async (s) => {
+            const ten = await interaction.client.users.fetch(String(s.user_id))
+                .then(u => u.username)
+                .catch(() => s.user_id);   // hỏi không ra thì hiện ID, đừng bỏ trống dòng
+            return `💝 **${ten}**`;
+        }));
         fields.push({ name: t(locale, 'commands.premium.field_supporters'), value: lines.join('\n'), inline: false });
     }
 

@@ -841,6 +841,7 @@
       "title_main": "💝・Vote for Waguri",
       "title_success": "💝・Thank you for voting!",
       "desc_success": "Waguri presents you **{coins}** {currency} + **{exp} EXP**! 🎁\n🔥 Vote streak: **{streak} days**{bonus}\nRemember to vote again in 12 hours to maintain your streak~ Thank you for your support 🌸",
+      "payout_unconfirmed": "\n\n⚠️ But **the reward didn't finish saving** because of a connection hiccup. Please check with `/bank balance` — if it's still missing, ping an admin. Your vote itself was recorded, so nothing is lost~",
       "bonus_streak": " (+{amount} {currency} streak bonus)",
       "btn_remind_off": "🔕 Turn Off Reminders",
       "remind_content": "🌸 You can vote for Waguri again! Keep voting to **hold your streak** 🔥 and grab your rewards~\n[**🗳️ Vote here**]({url})",

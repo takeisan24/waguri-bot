@@ -22,7 +22,8 @@ module.exports = {
             return interaction.editReply({ embeds: [embed] });
         }
 
-        const user = await db.getUser(target.id);
+        // Song song vì hai truy vấn độc lập nhau — xem chú thích cùng kiểu ở `status.js`.
+        const [user, energy] = await Promise.all([db.getUser(target.id), db.getEnergy(target.id)]);
         if (!user) {
             const embed = buildWaguriEmbed(interaction, 'error', {
                 locale,
@@ -32,7 +33,6 @@ module.exports = {
         }
 
         const p = getProgress(Number(user.exp));
-        const energy = await db.getEnergy(target.id);
         const embed = buildWaguriEmbed(interaction, 'info', {
             locale,
             fields: [

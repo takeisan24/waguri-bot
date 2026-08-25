@@ -840,6 +840,7 @@
       "desc_claimed": "Cậu đã nhận thưởng cho lượt vote này rồi nha~ Vote lại được <t:{time}:R>. Cảm ơn cậu nhiều! 🌸",
       "title_success": "💝・Cảm ơn cậu đã vote!",
       "desc_success": "Waguri tặng cậu **{coins}** {currency} + **{exp} EXP** nè! 🎁\n🔥 Chuỗi vote: **{streak} ngày**{bonus}\nNhớ ghé vote tiếp sau 12 tiếng để giữ chuỗi nha~ Cảm ơn cậu đã luôn ủng hộ mình 🌸",
+      "payout_unconfirmed": "\n\n⚠️ Nhưng **phần thưởng chưa ghi nhận xong** do trục trặc kết nối. Cậu kiểm lại bằng `/bank balance` giúp mình nhé — nếu vẫn thiếu thì nhắn admin, lượt vote của cậu đã được ghi nhận rồi nên không mất đâu~",
       "bonus_streak": " (+{amount} {currency} thưởng chuỗi)",
       "title_main": "💝・Vote cho Waguri",
       "btn_remind_off": "🔕 Tắt nhắc",

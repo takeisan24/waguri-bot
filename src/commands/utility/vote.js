@@ -87,7 +87,15 @@ module.exports = {
         const { coins, exp, bonus } = computeVoteReward(streak, false);
         // Cooldown đã set trước (chống nhận trùng). Nếu addMoney lỗi -> log [PAYOUT FAIL] để cứu thủ công
         // (không grant-first vì sẽ mở lại race nhận đúp; cooldown-first là cổng dedup).
-        if (!await db.addMoney(interaction.user.id, coins, 'wallet')) {
+        // `addMoney` với số DƯƠNG chỉ hỏng theo kiểu `null` (DB lỗi) — guard trong RPC là
+        // `wallet + amount >= 0`, luôn đúng khi cộng. Bản cũ chỉ ghi console.error rồi vẫn
+        // in "cậu nhận được N xu", nên lúc Supabase chập chờn người vote đọc một câu khẳng
+        // định sai về tiền của chính họ. Cùng lớp lỗi đã vá ở 4 trò cờ bạc (`26b7974`).
+        //
+        // KHÔNG thử lại: cooldown đã đặt TRƯỚC (đó là cổng chống nhận đúp — xem chú thích
+        // ngay trên), nên trả lần nữa là mở lại đúng cái race mà thứ tự này sinh ra để chặn.
+        const daTra = await db.addMoney(interaction.user.id, coins, 'wallet');
+        if (daTra !== true) {
             console.error(`[PAYOUT FAIL] vote user=${interaction.user.id} coins=${coins}`);
         }
         await db.updateExp(interaction.user.id, exp);
@@ -96,6 +104,9 @@ module.exports = {
             locale,
             title: t(locale, 'commands.vote.title_success'),
             description: t(locale, 'commands.vote.desc_success', { coins: fmt(coins, locale), currency: C, exp, streak, bonus: bonusText })
+                // Khác 4 trò cờ bạc: embed này KHÔNG có dòng số dư để làm trọng tài, nên
+                // chuỗi ở đây phải tự chỉ người đọc sang `/bank balance`.
+                + (daTra !== true ? t(locale, 'commands.vote.payout_unconfirmed') : '')
         });
         await interaction.editReply({ embeds: [embed] });
     },
