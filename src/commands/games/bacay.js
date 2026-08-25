@@ -66,12 +66,25 @@ module.exports = {
         // Thu cược (ai hụt tiền do tiêu lúc chờ thì loại)
         const sessionId = require('crypto').randomUUID();
         const staked = [];
+        // GOM người bị loại để còn NÓI CHO HỌ BIẾT. Bản cũ chỉ `push` người thu được cược,
+        // nên ai bị `stakeCollect` trả falsy sẽ biến mất khỏi ván KHÔNG một dấu vết: nếu vẫn
+        // còn >=2 người thì ván chạy tiếp mà họ không hiểu vì sao mình không có trong đó, còn
+        // cả bàn chỉ thấy "không đủ người". Khác các chỗ khác trong đợt vá này — ở đây bot
+        // không nói SAI, nó không nói GÌ CẢ.
+        //
+        // `stakeCollect` trả `null` khi DB lỗi và `false` khi thật sự hết tiền (0144). Cả hai
+        // đều đáng báo, nên gộp chung một câu có nhắc tới cả hai khả năng.
+        const biLoai = [];
         for (const p of players) {
             if (await db.stakeCollect(sessionId, 'bacay', interaction.channelId, p.id, bet)) staked.push(p);
+            else biLoai.push(p);
         }
+        const dongBiLoai = biLoai.length
+            ? t(locale, 'commands.bacay.bi_loai', { names: biLoai.map(p => `<@${p.id}>`).join(', ') })
+            : '';
         if (staked.length < 2) {
             await db.stakeRefundSession(sessionId);
-            const embed = buildWaguriEmbed(interaction, 'warning', { locale, description: t(locale, 'commands.bacay.err_not_enough_players') });
+            const embed = buildWaguriEmbed(interaction, 'warning', { locale, description: t(locale, 'commands.bacay.err_not_enough_players') + dongBiLoai });
             return interaction.followUp({ embeds: [embed] });
         }
 
@@ -109,6 +122,9 @@ module.exports = {
                 winWord,
                 prize: fmt(share, locale)
             })
+            // NỬA QUAN TRỌNG HƠN của bản vá: khi ván VẪN CHẠY, bản cũ không nói một chữ nào
+            // về người bị loại. Họ bấm vào lobby, chờ, rồi thấy ván diễn ra mà không có mình.
+            + dongBiLoai,
         });
         
         embed.setFooter({
