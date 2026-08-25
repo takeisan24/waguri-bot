@@ -52,6 +52,26 @@ module.exports = {
         const gid = interaction.guild.id;
         const sub = interaction.options.getSubcommand();
 
+        // MỘT CỬA GHI CẤU HÌNH.
+        //
+        // Bản cũ có 13 nhánh, mỗi nhánh tự gọi `db.setGuildSetting(...)` rồi tự dựng embed
+        // 'success' — và KHÔNG nhánh nào kiểm kết quả ghi. `setGuildSetting` trả `false` khi
+        // DB lỗi, nên lúc Supabase chập chờn admin đọc "✅ Đã tắt trò may rủi" trong khi
+        // thật ra chưa tắt gì cả. Họ rời đi và tin rằng server đã được cấu hình xong.
+        //
+        // Đây KHÔNG phải bài học mới của repo: `antinuke.js:96` đã ghi đúng lý do này —
+        // "báo đã bật lá chắn trong khi DB từ chối là kiểu thất bại tệ nhất của cả tính
+        // năng". Chỉ là lúc đó áp cho antinuke mà quên config.
+        //
+        // Gom về một cửa thay vì chép `if` 13 lần: 13 bản sao là 13 chỗ có thể quên lại.
+        const ghiCauHinh = async (khoa, giaTri, moTaOk) => {
+            const daGhi = await db.setGuildSetting(gid, khoa, giaTri);
+            return buildWaguriEmbed(interaction, daGhi ? 'success' : 'error', {
+                locale,
+                description: daGhi ? moTaOk : t(locale, 'commands.config.err_save_failed'),
+            });
+        };
+
         if (sub === 'confession-channel') {
             const ch = interaction.options.getChannel('channel');
             if (!ch) {
@@ -60,132 +80,92 @@ module.exports = {
                 });
                 return interaction.editReply({ embeds: [embed] });
             }
-            await db.setGuildSetting(gid, 'confession_channel', ch.id);
-            const embed = buildWaguriEmbed(interaction, 'success', {
-                description: t(locale, 'commands.config.confession_success', { channelId: ch.id })
-            });
-            return interaction.editReply({ embeds: [embed] });
+            return interaction.editReply({ embeds: [await ghiCauHinh('confession_channel', ch.id,
+                t(locale, 'commands.config.confession_success', { channelId: ch.id }))] });
         }
 
         if (sub === 'ai') {
             const enabled = interaction.options.getBoolean('enabled');
-            await db.setGuildSetting(gid, 'ai_enabled', enabled ? '1' : '0');
-            const embed = buildWaguriEmbed(interaction, 'success', {
-                description: t(locale, 'commands.config.ai_success', {
+            return interaction.editReply({ embeds: [await ghiCauHinh('ai_enabled', enabled ? '1' : '0',
+                t(locale, 'commands.config.ai_success', {
                     status: enabled ? t(locale, 'commands.config.status_on') : t(locale, 'commands.config.status_off')
-                })
-            });
-            return interaction.editReply({ embeds: [embed] });
+                }))] });
         }
 
         if (sub === 'ai-channel') {
             const ch = interaction.options.getChannel('channel');
-            await db.setGuildSetting(gid, 'ai_channel', ch ? ch.id : '');
-            const embed = buildWaguriEmbed(interaction, 'success', {
-                description: ch ? t(locale, 'commands.config.ai_channel_set', { channelId: ch.id }) : t(locale, 'commands.config.ai_channel_removed')
-            });
-            return interaction.editReply({ embeds: [embed] });
+            return interaction.editReply({ embeds: [await ghiCauHinh('ai_channel', ch ? ch.id : '',
+                ch ? t(locale, 'commands.config.ai_channel_set', { channelId: ch.id }) : t(locale, 'commands.config.ai_channel_removed'))] });
         }
 
         if (sub === 'pvp') {
             const enabled = interaction.options.getBoolean('enabled');
-            await db.setGuildSetting(gid, 'pvp', enabled ? '1' : '0');
-            const embed = buildWaguriEmbed(interaction, 'success', {
-                description: t(locale, 'commands.config.pvp_success', {
+            return interaction.editReply({ embeds: [await ghiCauHinh('pvp', enabled ? '1' : '0',
+                t(locale, 'commands.config.pvp_success', {
                     status: enabled ? t(locale, 'commands.config.status_on') : t(locale, 'commands.config.status_off')
-                })
-            });
-            return interaction.editReply({ embeds: [embed] });
+                }))] });
         }
 
         if (sub === 'police-jail') {
             const enabled = interaction.options.getBoolean('enabled');
-            await db.setGuildSetting(gid, 'police_jail', enabled ? '1' : '0');
-            const embed = buildWaguriEmbed(interaction, 'success', {
-                description: enabled ? t(locale, 'commands.config.police_jail_on') : t(locale, 'commands.config.police_jail_off')
-            });
-            return interaction.editReply({ embeds: [embed] });
+            return interaction.editReply({ embeds: [await ghiCauHinh('police_jail', enabled ? '1' : '0',
+                enabled ? t(locale, 'commands.config.police_jail_on') : t(locale, 'commands.config.police_jail_off'))] });
         }
 
         if (sub === 'gambling') {
             const enabled = interaction.options.getBoolean('enabled');
-            await db.setGuildSetting(gid, 'gambling', enabled ? '1' : '0');
-            const embed = buildWaguriEmbed(interaction, 'success', {
-                description: enabled ? t(locale, 'commands.config.gambling_on') : t(locale, 'commands.config.gambling_off')
-            });
-            return interaction.editReply({ embeds: [embed] });
+            return interaction.editReply({ embeds: [await ghiCauHinh('gambling', enabled ? '1' : '0',
+                enabled ? t(locale, 'commands.config.gambling_on') : t(locale, 'commands.config.gambling_off'))] });
         }
 
         if (sub === 'levelup') {
             const enabled = interaction.options.getBoolean('enabled');
-            await db.setGuildSetting(gid, 'levelup', enabled ? '1' : '0');
-            const embed = buildWaguriEmbed(interaction, 'success', {
-                description: t(locale, 'commands.config.levelup_success', {
+            return interaction.editReply({ embeds: [await ghiCauHinh('levelup', enabled ? '1' : '0',
+                t(locale, 'commands.config.levelup_success', {
                     status: enabled ? t(locale, 'commands.config.status_on') : t(locale, 'commands.config.status_off')
-                })
-            });
-            return interaction.editReply({ embeds: [embed] });
+                }))] });
         }
 
         if (sub === 'welcome-channel') {
             const ch = interaction.options.getChannel('channel');
-            await db.setGuildSetting(gid, 'welcome_channel', ch ? ch.id : '');
-            const embed = buildWaguriEmbed(interaction, 'success', {
-                description: ch ? t(locale, 'commands.config.welcome_channel_set', { channelId: ch.id }) : t(locale, 'commands.config.welcome_channel_removed')
-            });
-            return interaction.editReply({ embeds: [embed] });
+            return interaction.editReply({ embeds: [await ghiCauHinh('welcome_channel', ch ? ch.id : '',
+                ch ? t(locale, 'commands.config.welcome_channel_set', { channelId: ch.id }) : t(locale, 'commands.config.welcome_channel_removed'))] });
         }
 
         if (sub === 'welcome-role') {
             const role = interaction.options.getRole('role');
-            await db.setGuildSetting(gid, 'welcome_role', role ? role.id : '');
-            const embed = buildWaguriEmbed(interaction, 'success', {
-                description: role ? t(locale, 'commands.config.welcome_role_set', { roleId: role.id }) : t(locale, 'commands.config.welcome_role_removed')
-            });
-            return interaction.editReply({ embeds: [embed] });
+            return interaction.editReply({ embeds: [await ghiCauHinh('welcome_role', role ? role.id : '',
+                role ? t(locale, 'commands.config.welcome_role_set', { roleId: role.id }) : t(locale, 'commands.config.welcome_role_removed'))] });
         }
 
         if (sub === 'goodbye-channel') {
             const ch = interaction.options.getChannel('channel');
-            await db.setGuildSetting(gid, 'goodbye_channel', ch ? ch.id : '');
-            const embed = buildWaguriEmbed(interaction, 'success', {
-                description: ch ? t(locale, 'commands.config.goodbye_channel_set', { channelId: ch.id }) : t(locale, 'commands.config.goodbye_channel_removed')
-            });
-            return interaction.editReply({ embeds: [embed] });
+            return interaction.editReply({ embeds: [await ghiCauHinh('goodbye_channel', ch ? ch.id : '',
+                ch ? t(locale, 'commands.config.goodbye_channel_set', { channelId: ch.id }) : t(locale, 'commands.config.goodbye_channel_removed'))] });
         }
 
         if (sub === 'announcement-channel') {
             const ch = interaction.options.getChannel('channel');
-            await db.setGuildSetting(gid, 'announcement_channel', ch ? ch.id : '');
-            const embed = buildWaguriEmbed(interaction, 'success', {
-                description: ch ? t(locale, 'commands.config.announcement_channel_set', { channelId: ch.id }) : t(locale, 'commands.config.announcement_channel_removed')
-            });
-            return interaction.editReply({ embeds: [embed] });
+            return interaction.editReply({ embeds: [await ghiCauHinh('announcement_channel', ch ? ch.id : '',
+                ch ? t(locale, 'commands.config.announcement_channel_set', { channelId: ch.id }) : t(locale, 'commands.config.announcement_channel_removed'))] });
         }
 
         if (sub === 'language') {
             const lang = interaction.options.getString('lang');
-            await db.setGuildSetting(gid, 'language', lang);
-            const embed = buildWaguriEmbed(interaction, 'success', {
-                description: lang === 'en'
+            return interaction.editReply({ embeds: [await ghiCauHinh('language', lang,
+                lang === 'en'
                     ? t(locale, 'commands.config.language_success_en')
-                    : t(locale, 'commands.config.language_success_vi')
-            });
-            return interaction.editReply({ embeds: [embed] });
+                    : t(locale, 'commands.config.language_success_vi'))] });
         }
 
         if (sub === 'staff-role') {
             // Bỏ trống = xoá cấu hình -> quay về tự dò theo QUYỀN `ManageThreads`, chứ không
             // phải dò theo tên role (cách cũ hỏng cả hai chiều, xem interactionCreate.js).
             const role = interaction.options.getRole('role');
-            await db.setGuildSetting(gid, 'staff_role_id', role ? role.id : null);
-            const embed = buildWaguriEmbed(interaction, 'success', {
-                locale,
-                description: role
+            return interaction.editReply({ embeds: [await ghiCauHinh('staff_role_id', role ? role.id : null,
+                role
                     ? t(locale, 'commands.config.staff_role_success', { role: role.id })
-                    : t(locale, 'commands.config.staff_role_cleared'),
-            });
-            return interaction.editReply({ embeds: [embed] });
+                    : t(locale, 'commands.config.staff_role_cleared'))] });
         }
 
         if (sub === 'view') {

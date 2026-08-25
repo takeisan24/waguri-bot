@@ -50,8 +50,13 @@ module.exports = {
             }
         }
 
-        // Đặt kênh này làm kênh trả lời AI mặc định (gọn gàng, đổi được bằng /config ai-channel)
-        await db.setGuildSetting(guild.id, 'ai_channel', channel.id);
+        // Đặt kênh này làm kênh trả lời AI mặc định (gọn gàng, đổi được bằng /config ai-channel).
+        //
+        // Kiểm kết quả: tới đây KÊNH ĐÃ ĐƯỢC TẠO rồi, nên ghi cấu hình hỏng là "thành công
+        // một nửa" — thứ khó chịu nhất để im lặng. Admin thấy kênh mới, đọc "đã xong", rồi
+        // tự hỏi vì sao Waguri không trả lời trong đó. Nói thẳng ra thì họ chỉ cần gõ thêm
+        // một lệnh. Cùng lý do đã ghi ở `antinuke.js:96` và `config.js`.
+        const daGhi = await db.setGuildSetting(guild.id, 'ai_channel', channel.id);
 
         const intro = buildWaguriEmbed(interaction, 'info', {
             locale,
@@ -64,9 +69,11 @@ module.exports = {
         });
         await channel.send({ embeds: [intro] }).catch(() => {});
 
-        const embed = buildWaguriEmbed(interaction, 'success', {
+        const embed = buildWaguriEmbed(interaction, daGhi ? 'success' : 'warning', {
+            locale,
             title: t(locale, 'commands.setup.success_title'),
             description: t(locale, 'commands.setup.success_desc', { channelId: channel.id })
+                + (daGhi ? '' : t(locale, 'commands.setup.warn_save_failed'))
         });
         await interaction.editReply({ embeds: [embed] });
     },

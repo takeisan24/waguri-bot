@@ -1585,6 +1585,7 @@
       "err_no_permission": "Cần quyền **Quản lý Server** để dùng lệnh này nhé~ 🌸",
       "embed_title_setup": "⚙️ Thiết lập phòng game",
       "err_missing_manage_channels": "Mình thiếu quyền **Quản lý Kênh (Manage Channels)** để tạo phòng 😟.\nVào *Cài đặt Server → Vai trò → Waguri* bật quyền đó, hoặc mời lại mình bằng `/invite` (link đã kèm sẵn quyền), rồi chạy lại `/setup` nhé~ 🌸",
+      "warn_save_failed": "\n\n⚠️ Kênh thì đã tạo xong, nhưng mình **chưa lưu được** nó làm kênh trả lời AI (trục trặc kết nối). Cậu chạy lại `/config ai-channel` một lần giúp mình nhé~ 🌸",
       "channel_topic": "Phòng chơi cùng Waguri 🌸 — gõ /help để xem lệnh",
       "channel_reason": "Waguri /setup",
       "err_create_channel_failed": "Ơ, mình tạo kênh không được (thiếu quyền hoặc vị trí kênh). Cấp quyền **Manage Channels** rồi chạy lại nhé~ 🌸",
@@ -1596,6 +1597,7 @@
     },
     "config": {
       "err_no_permission": "Cần quyền **Quản lý Server** để dùng lệnh này nhé~ 🌸",
+      "err_save_failed": "Mình **chưa lưu được** cài đặt này (trục trặc kết nối) 🥺 Cấu hình vẫn giữ nguyên như cũ, cậu thử lại sau một chút nha~",
       "status_on": "BẬT",
       "status_off": "TẮT",
       "ai_success": "✅ Đã **{status}** trò chuyện AI (@tag Waguri) ở server này.",

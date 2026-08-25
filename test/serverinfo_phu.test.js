@@ -23,9 +23,20 @@ const GOC = path.join(__dirname, '..', 'src', 'commands', 'admin');
 const srcConfig = fs.readFileSync(path.join(GOC, 'config.js'), 'utf8');
 const srcInfo = fs.readFileSync(path.join(GOC, 'serverinfo.js'), 'utf8');
 
-/** Khoá guild_settings mà `/config` GHI. */
-const khoaGhi = () => new Set(
-    [...srcConfig.matchAll(/setGuildSetting\([^,]+,\s*'([a-z_]+)'/g)].map(m => m[1]));
+/** Khoá guild_settings mà `/config` GHI.
+ *
+ * Bắt CẢ HAI hình dạng, vì `config.js` nay gom mọi lần ghi về một cửa chung:
+ *   · `setGuildSetting(gid, 'khoa'` — lối gọi thẳng (còn dùng ở `setup.js`, `announcement.js`)
+ *   · `ghiCauHinh('khoa'`          — cửa chung có KIỂM kết quả ghi
+ *
+ * Cửa chung ra đời vì bản cũ có 13 nhánh đều bỏ qua kết quả `setGuildSetting`, nên admin
+ * đọc "✅ đã lưu" trong khi DB từ chối. Giữ cả hai mẫu ở đây để cổng vẫn đếm đủ 13 mục dù
+ * sau này có nhánh viết theo lối nào.
+ */
+const khoaGhi = () => new Set([
+    ...[...srcConfig.matchAll(/setGuildSetting\([^,]+,\s*'([a-z_]+)'/g)].map(m => m[1]),
+    ...[...srcConfig.matchAll(/ghiCauHinh\('([a-z_]+)'/g)].map(m => m[1]),
+]);
 
 /** Khoá mà `/serverinfo` ĐỌC (biến `s` là object settings trong buildReport). */
 const khoaDoc = () => new Set(

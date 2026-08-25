@@ -1585,6 +1585,7 @@
       "err_no_permission": "Requires **Manage Server** permission to use this command~ 🌸",
       "embed_title_setup": "⚙️ Game Channel Setup",
       "err_missing_manage_channels": "I lack the **Manage Channels** permission to create a room 😟.\nGo to *Server Settings → Roles → Waguri* and enable it, or re-invite me using `/invite` (which includes this permission), then run `/setup` again~ 🌸",
+      "warn_save_failed": "\n\n⚠️ The channel was created, but I **couldn't save** it as the AI reply channel (connection hiccup). Please run `/config ai-channel` once to set it~ 🌸",
       "channel_topic": "Waguri's Playroom 🌸 — type /help to see commands",
       "channel_reason": "Waguri /setup",
       "err_create_channel_failed": "Oops, I couldn't create the channel (lacking permissions or invalid position). Grant **Manage Channels** and try again~ 🌸",
@@ -1596,6 +1597,7 @@
     },
     "config": {
       "err_no_permission": "Requires **Manage Server** permission to use this command~ 🌸",
+      "err_save_failed": "I **couldn't save** this setting (connection hiccup) 🥺 Your configuration is unchanged, please try again in a moment~",
       "status_on": "ENABLED",
       "status_off": "DISABLED",
       "ai_success": "✅ AI chat (@tag Waguri) is now **{status}** on this server.",
