@@ -2271,12 +2271,21 @@ async function markVoteReminded(userIds) {
 }
 
 /** Bật/tắt nhận nhắc vote (nút "Tắt nhắc" trong DM). */
+/**
+ * Bật/tắt nhắc vote. Trả `true` nếu ghi được, `false` nếu DB lỗi.
+ *
+ * Bản cũ KHÔNG trả gì cả — nuốt lỗi rồi trả `undefined` trong mọi trường hợp, nên nơi gọi
+ * không có cách nào biết thao tác có chạy không. Nút "Tắt nhắc" vì thế luôn báo "đã tắt",
+ * kể cả khi cài đặt chưa hề được lưu, và người dùng vẫn tiếp tục nhận nhắc.
+ */
 async function setVoteReminder(userId, on) {
     try {
         const { error } = await supabase.from('users').update({ vote_reminder: !!on }).eq('user_id', userId);
         if (error) throw error;
+        return true;
     } catch (error) {
         console.error('[DATABASE ERROR] setVoteReminder:', error);
+        return false;
     }
 }
 

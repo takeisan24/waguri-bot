@@ -173,10 +173,15 @@ module.exports = {
             // Nút "Tắt nhắc" trong DM nhắc vote -> tắt nhận nhắc cho user này.
             if (interaction.customId === 'vote_remind_off') {
                 try {
-                    await db.setVoteReminder(interaction.user.id, false);
+                    // Kiểm kết quả: bản cũ báo "đã tắt nhắc" vô điều kiện. Ghi hỏng thì người
+                    // dùng vẫn nhận nhắc mỗi chu kỳ, mà họ tin là đã tắt rồi — nên lần sau
+                    // thấy nhắc, họ kết luận nút không hoạt động chứ không bấm lại.
+                    const daTat = await db.setVoteReminder(interaction.user.id, false);
                     await interaction.update({
-                        content: t(locale, 'commands.vote.remind_off_success'),
-                        components: [],
+                        content: daTat
+                            ? t(locale, 'commands.vote.remind_off_success')
+                            : t(locale, 'common.retry_later'),
+                        components: daTat ? [] : interaction.message.components,
                     });
                 } catch (error) {
                     logError('vote_remind_off', error);
@@ -311,11 +316,16 @@ module.exports = {
                     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
                     const u = await db.getUser(interaction.user.id);
                     const newPublic = (u?.profile_public === false); // đang ẩn -> bật; đang hiện -> tắt
-                    await db.setProfilePublic(interaction.user.id, newPublic);
+                    // Kiểm kết quả: đây là công tắc RIÊNG TƯ. Báo "đã ẩn hồ sơ" trong khi DB
+                    // từ chối là để người dùng tin rằng dữ liệu của họ đã được giấu, trong
+                    // khi nó vẫn hiện công khai trên web — kiểu nói sai đắt nhất ở đây.
+                    const daDoi = await db.setProfilePublic(interaction.user.id, newPublic);
                     await interaction.editReply({
-                        content: newPublic
-                            ? t(locale, 'commands.profile.public_show', { id: interaction.user.id })
-                            : t(locale, 'commands.profile.public_hide'),
+                        content: !daDoi
+                            ? t(locale, 'common.retry_later')
+                            : newPublic
+                                ? t(locale, 'commands.profile.public_show', { id: interaction.user.id })
+                                : t(locale, 'commands.profile.public_hide'),
                     });
                 } catch (error) {
                     logError('profile:toggle', error);
