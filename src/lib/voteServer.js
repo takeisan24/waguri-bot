@@ -18,6 +18,8 @@ const { extractPremiumCode } = require('./paymatch');
 // Vòng đời đơn Premium (duyệt + cảm ơn + báo owner) nằm ở một chỗ duy nhất.
 const { dmPremiumThanks, notifyOwnersOfClaim } = require('./premiumOrders');
 const { getInteractionLanguage, t } = require('./i18n');
+// Danh tính bản dựng — để hỏi được từ xa "prod đang chạy mã nào, khởi động lúc nào".
+const { banBuild } = require('./banBuild');
 
 // Trước đây ghim cứng 'vi-VN' nên người dùng EN đọc "1.000.000" thay vì "1,000,000".
 // Mặc định 'vi' để những nơi gọi chưa truyền locale giữ nguyên hành vi cũ.
@@ -420,7 +422,10 @@ function startVoteServer(client) {
                     const { servers, users } = await getPublicStats(client);
                     const gatewayPing = client.ws ? (client.ws.ping !== -1 ? client.ws.ping : null) : null;
                     res.writeHead(200, { 'Content-Type': 'application/json' });
-                    res.end(JSON.stringify({ servers, users, gatewayPing }));
+                    // Kèm danh tính bản dựng: đây là đường DUY NHẤT hỏi được từ xa xem prod
+                    // đang chạy mã nào. Xem `lib/banBuild.js` để biết vì sao cần (vụ 44
+                    // commit cũ chạy im lặng nhiều ngày, 24-08-2026).
+                    res.end(JSON.stringify({ servers, users, gatewayPing, ...banBuild() }));
                 } catch {
                     res.writeHead(500); res.end();
                 }
