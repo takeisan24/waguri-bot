@@ -52,10 +52,25 @@ for (const ten of DUONG_WEBHOOK) {
             `${ten}: DM vẫn khoe vô điều kiện. \`console.error\` không phải cách báo cho NGƯỜI\n`
             + 'DÙNG — đó chính là trạng thái mà đường DBL đã ở suốt và nhìn qua tưởng đã xử lý.');
 
-        assert.match(than, /daTra !== true \?/,
-            `${ten}: phải rẽ nhánh theo \`daTra\` khi dựng nội dung DM.`);
+        // TRỤC EXP, không chỉ trục xu. DM khoe "{coins} xu + {exp} EXP" — hai phần thưởng,
+        // hai lời gọi có thể hỏng độc lập. Bản đầu của cổng này chỉ canh xu, nên khi tôi vá
+        // hai đường webhook thì nửa EXP vẫn khoe hụt và cổng vẫn xanh. Lỗi lọt qua đúng cái
+        // cổng sinh ra để chặn nó, chỉ vì cổng nhìn thiếu một trục.
+        assert.match(than, /const daExp = await db\.updateExp\(userId, exp\);/,
+            `${ten}: phải GIỮ kết quả \`updateExp\`. Nó trả \`null\` khi DB lỗi, mà DM vẫn khoe EXP.`);
+        assert.match(than, /\(daTra !== true \|\| daExp === null\)/,
+            `${ten}: cảnh báo phải bật khi BẤT KỲ nửa nào hỏng — xu hoặc EXP. Chỉ xét một nửa\n`
+            + 'là để nửa kia khoe hụt.');
     });
 }
+
+test('lệnh /vote cũng canh đủ HAI trục, không chỉ trục xu', () => {
+    const s = doc('src', 'commands', 'utility', 'vote.js');
+    assert.match(s, /const daExp = await db\.updateExp\(interaction\.user\.id, exp\);/,
+        '/vote phải giữ kết quả `updateExp`.');
+    assert.match(s, /\(daTra !== true \|\| daExp === null\)/,
+        '/vote phải cảnh báo khi bất kỳ nửa nào hỏng. Ba đường phải cư xử như một trên CẢ HAI trục.');
+});
 
 test('cả ba đường dùng CHUNG một chuỗi — đừng chép ra ba bản', () => {
     // Ba bản chép tay là ba cơ hội lệch nhau: sửa câu chữ ở một chỗ, hai chỗ kia ở lại.

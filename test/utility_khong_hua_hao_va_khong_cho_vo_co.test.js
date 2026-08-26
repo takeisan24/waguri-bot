@@ -30,8 +30,12 @@ test('vote: giữ kết quả trả tiền, và cảnh báo khi nó hỏng', () 
         'Phải GIỮ kết quả cộng tiền vào biến. Dạng cũ `if (!await db.addMoney(...))` vứt kết\n'
         + 'quả ngay sau khi kiểm, nên dòng khoe bên dưới không còn gì để dựa vào.');
 
-    assert.match(s, /daTra !== true \? t\(locale, 'commands\.vote\.payout_unconfirmed'\) : ''/,
-        'Trả tiền hỏng thì phải nối cảnh báo vào mô tả, không chỉ ghi console.error.');
+    // Điều kiện nay xét CẢ HAI trục — xu và EXP — vì `desc_success` khoe cả hai. Bản đầu
+    // của cổng này chỉ canh trục xu, nên nửa EXP khoe hụt vẫn lọt qua. Xem
+    // `test/thuong_vote_ba_duong_nhu_mot.test.js` để biết đầy đủ.
+    assert.match(s, /\(daTra !== true \|\| daExp === null\) \? t\(locale, 'commands\.vote\.payout_unconfirmed'\) : ''/,
+        'Thưởng hỏng thì phải nối cảnh báo vào mô tả, không chỉ ghi console.error — và phải\n'
+        + 'xét cả hai nửa (xu VÀ EXP), vì chỉ xét một nửa là để nửa kia khoe hụt.');
 
     assert.doesNotMatch(s, /if \(!await db\.addMoney\(interaction\.user\.id, coins/,
         'Dạng vứt kết quả đã quay lại — đúng lỗi đang chặn.');

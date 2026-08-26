@@ -98,7 +98,11 @@ module.exports = {
         if (daTra !== true) {
             console.error(`[PAYOUT FAIL] vote user=${interaction.user.id} coins=${coins}`);
         }
-        await db.updateExp(interaction.user.id, exp);
+        // EXP cũng được KHOE trong `desc_success` ("{coins} xu + {exp} EXP"), nên phải kiểm
+        // y như tiền. Xem chú thích cùng nội dung ở `lib/voteServer.js` — ba đường thưởng
+        // vote phải cư xử như một, kể cả ở trục EXP.
+        const daExp = await db.updateExp(interaction.user.id, exp);
+        if (daExp === null) console.error(`[EXP FAIL] vote user=${interaction.user.id} exp=${exp}`);
         const bonusText = bonus > 0 ? t(locale, 'commands.vote.bonus_streak', { amount: fmt(bonus, locale), currency: C }) : '';
         const embed = buildWaguriEmbed(interaction, 'success', {
             locale,
@@ -106,7 +110,7 @@ module.exports = {
             description: t(locale, 'commands.vote.desc_success', { coins: fmt(coins, locale), currency: C, exp, streak, bonus: bonusText })
                 // Khác 4 trò cờ bạc: embed này KHÔNG có dòng số dư để làm trọng tài, nên
                 // chuỗi ở đây phải tự chỉ người đọc sang `/bank balance`.
-                + (daTra !== true ? t(locale, 'commands.vote.payout_unconfirmed') : '')
+                + ((daTra !== true || daExp === null) ? t(locale, 'commands.vote.payout_unconfirmed') : '')
         });
         await interaction.editReply({ embeds: [embed] });
     },

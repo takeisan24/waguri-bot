@@ -214,7 +214,11 @@ async function grantVoteReward(client, userId, isWeekend) {
     // dài ngay đầu hàm) — trả lần nữa là mở lại đúng cái race mà thứ tự đó sinh ra để chặn.
     const daTra = await db.addMoney(userId, coins, 'wallet');
     if (daTra !== true) console.error(`[PAYOUT FAIL] vote-topgg user=${userId} coins=${coins}`);
-    await db.updateExp(userId, exp);
+    // EXP cũng được KHOE trong DM ("{coins} xu + {exp} EXP"), nên nó phải được kiểm y
+    // như tiền. Bản vá trước chỉ chạm nửa xu và để nguyên nửa EXP — đúng lỗi "vá một
+    // đường, lọt đường kia" mà chính commit đó đang nói tới.
+    const daExp = await db.updateExp(userId, exp);
+    if (daExp === null) console.error(`[EXP FAIL] vote user=${userId} exp=${exp}`);
 
     // DM cảm ơn (im lặng nếu user tắt DM)
     try {
@@ -233,7 +237,7 @@ async function grantVoteReward(client, userId, isWeekend) {
                 : '',
         // Dùng lại đúng chuỗi của lệnh `/vote`: cùng một sự việc, và nó đã chỉ sẵn cách tự
         // kiểm (`/bank balance`) lẫn trấn an rằng LƯỢT VOTE không mất.
-        }) + (daTra !== true ? t(locale, 'commands.vote.payout_unconfirmed') : ''));
+        }) + ((daTra !== true || daExp === null) ? t(locale, 'commands.vote.payout_unconfirmed') : ''));
     } catch { /* user tắt DM -> bỏ qua */ }
 }
 
@@ -259,7 +263,11 @@ async function grantDblVoteReward(client, userId) {
     // vẫn đọc "cậu nhận được N xu" khi tiền chưa vào. Giữ kết quả để DM nói thật.
     const daTra = await db.addMoney(userId, coins, 'wallet');
     if (daTra !== true) console.error(`[PAYOUT FAIL] vote-dbl user=${userId} coins=${coins}`);
-    await db.updateExp(userId, exp);
+    // EXP cũng được KHOE trong DM ("{coins} xu + {exp} EXP"), nên nó phải được kiểm y
+    // như tiền. Bản vá trước chỉ chạm nửa xu và để nguyên nửa EXP — đúng lỗi "vá một
+    // đường, lọt đường kia" mà chính commit đó đang nói tới.
+    const daExp = await db.updateExp(userId, exp);
+    if (daExp === null) console.error(`[EXP FAIL] vote user=${userId} exp=${exp}`);
 
     try {
         const user = await client.users.fetch(userId);
@@ -268,7 +276,7 @@ async function grantDblVoteReward(client, userId) {
             coins: fmt(coins, locale),
             currency: config.CURRENCY,
             exp,
-        }) + (daTra !== true ? t(locale, 'commands.vote.payout_unconfirmed') : ''));
+        }) + ((daTra !== true || daExp === null) ? t(locale, 'commands.vote.payout_unconfirmed') : ''));
     } catch { /* user tắt DM -> bỏ qua */ }
 }
 
