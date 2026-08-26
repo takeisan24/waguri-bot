@@ -1135,6 +1135,7 @@
       "err_not_thread": "This can only be used inside a support thread (ticket)~",
       "err_already_open": "🌸 You already have an open support room at {channel}~ Please finish or close it first!",
       "err_bot_no_perm": "⚠️ I am missing the `Manage Channels` permission so I cannot open a room~ Please ask an Admin to grant it to me! 🌸",
+      "err_close_db": "⚠️ I **couldn't save** the closed status to the database (connection hiccup), so I'm **keeping this channel** instead of deleting it. Deleting it now would lock the ticket opener out: the system would still think they have an open ticket in a channel that no longer exists, and they could never open a new one. Please press **Close** again in a few minutes~ 🌸",
       "cat_general": "💬 General question",
       "cat_bug": "🐛 Bug report",
       "cat_premium": "💎 Premium support",

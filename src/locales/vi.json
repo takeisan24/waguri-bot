@@ -1135,6 +1135,7 @@
       "err_not_thread": "Lệnh này chỉ dùng được trong luồng hỗ trợ (ticket)~",
       "err_already_open": "🌸 Cậu đang có một phòng hỗ trợ mở tại {channel} rồi nhen~ Hoàn tất hoặc đóng phòng cũ trước đã nhé!",
       "err_bot_no_perm": "⚠️ Tớ thiếu quyền `Quản lý kênh` (Manage Channels) nên chưa mở phòng được~ Cậu nhờ Admin cấp thêm quyền cho tớ nhen! 🌸",
+      "err_close_db": "⚠️ Tớ **chưa ghi được** trạng thái đóng vào cơ sở dữ liệu (trục trặc kết nối) nên **giữ nguyên kênh này**, chưa xoá. Nếu xoá bây giờ thì người mở ticket sẽ bị kẹt: hệ thống vẫn tưởng họ đang có ticket ở một kênh không còn tồn tại, và không mở được ticket mới nữa. Cậu bấm **Đóng** lại sau ít phút giúp tớ nhé~ 🌸",
       "cat_general": "💬 Thắc mắc chung",
       "cat_bug": "🐛 Báo lỗi",
       "cat_premium": "💎 Hỗ trợ Premium",

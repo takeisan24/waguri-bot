@@ -474,11 +474,21 @@ async function handleTicketOpen(interaction, category = 'general') {
         await interaction.deferReply({ flags: MessageFlags.Ephemeral }).catch(() => {});
     }
 
+    // TỰ CHỮA bản ghi mồ côi: kênh đã biến mất mà bản ghi vẫn OPEN.
+    //
+    // Chặn nguyên nhân thôi chưa đủ — ai đã dính lỗi cũ (đóng ticket lúc DB hỏng, kênh bị
+    // xoá mà bản ghi ở lại) thì hiện đang bị khoá vĩnh viễn, và bản vá ở đường đóng không
+    // cứu được họ. Đối chiếu với cache kênh là phép ĐỌC TRONG RAM, 0 vòng API.
     const active = await db.getActiveTicket(guild.id, user.id);
     if (active) {
-        return interaction.editReply({
-            content: t(locale, 'commands.ticket.err_already_open', { channel: `<#${active.channel_id}>` }),
-        });
+        const kenhCu = guild.channels.cache.get(String(active.channel_id));
+        if (kenhCu) {
+            return interaction.editReply({
+                content: t(locale, 'commands.ticket.err_already_open', { channel: `<#${active.channel_id}>` }),
+            });
+        }
+        // Kênh không còn -> bản ghi là rác. Đóng nó rồi cho mở ticket mới.
+        await db.closeTicket(active.channel_id).catch(() => {});
     }
 
     let categoryChannel = guild.channels.cache.find(
@@ -719,8 +729,25 @@ async function handleTicketComponent(interaction, locale) {
             }
         }
 
-        // 4. Cập nhật DB & Đếm ngược 5s trước khi xóa channel
-        await db.closeTicket(channel.id);
+        // 4. Cập nhật DB — rồi MỚI xoá kênh, và chỉ khi ghi thành công.
+        //
+        // Xoá kênh là bước KHÔNG ĐẢO NGƯỢC ĐƯỢC, nên nó phải phụ thuộc vào bước có thể hỏng
+        // đứng trước. Bản cũ bỏ qua kết quả `closeTicket` và xoá kênh vô điều kiện: DB lỗi
+        // thì bản ghi ở lại trạng thái OPEN trong khi kênh biến mất, `getActiveTicket` vẫn
+        // thấy nó, và `handleTicketOpen` từ chối mở ticket mới với câu "cậu đang có ticket ở
+        // <#kênh-đã-bị-xoá>". Người đó bị KHOÁ VĨNH VIỄN khỏi hệ thống hỗ trợ, trỏ vào một
+        // kênh không còn tồn tại — và không có đường nào tự thoát.
+        //
+        // `handleTicketOpen` ngay phía trên đã làm đúng chuyện này từ chiều ngược lại (ghi
+        // DB hỏng -> dọn kênh vừa tạo). Đây chỉ là áp cùng nguyên tắc cho đường đóng.
+        const daDong = await db.closeTicket(channel.id);
+        if (!daDong) {
+            // GIỮ LẠI kênh: thà để một kênh cần đóng tay còn hơn khoá người ta khỏi mọi
+            // ticket sau này. Nói với staff chứ không im lặng — họ là người bấm nút.
+            await channel.send({ content: t(locale, 'commands.ticket.err_close_db') }).catch(() => {});
+            return;
+        }
+
         await channel.send({ content: '🔒 Ticket đã được đóng an toàn. Kênh sẽ tự động xóa trong 5 giây...' });
 
         setTimeout(async () => {
