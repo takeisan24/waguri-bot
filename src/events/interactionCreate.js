@@ -401,6 +401,10 @@ module.exports = {
         // Các component khác: định tuyến theo customId (phase sau sẽ nạp động).
     },
     handleTicketOpen,
+    // Lộ ra để cổng `test/staff_ticket_mot_nguon.test.js` kiểm được HÀNH VI (ai là staff)
+    // thay vì chỉ so khớp hình dạng chữ trong mã.
+    layRoleStaff,
+    laStaffTicket,
 };
 
 function escapeHtml(str) {
@@ -409,6 +413,56 @@ function escapeHtml(str) {
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;');
+}
+
+// ============================================================
+// AI LÀ STAFF — MỘT nguồn chân lý cho cả hai câu hỏi về ticket:
+//   · ai được CẤP QUYỀN XEM kênh ticket        (handleTicketOpen)
+//   · ai được bấm NHẬN / KHOÁ ticket đó        (handleTicketComponent)
+//
+// VÌ SAO GOM LẠI: hai chỗ đó từng trả lời KHÁC NHAU. `handleTicketOpen` đã bỏ lối dò theo
+// TÊN role và chuyển sang hai tầng (cấu hình đích danh -> quyền `ManageThreads`), nhưng hai
+// nút Nhận/Khoá cách đó ~120 dòng vẫn giữ nguyên regex cũ `/staff|support|mod|admin/i`.
+//
+// Hệ quả đo được từ chính mã: `/config staff-role` KHÔNG hề ảnh hưởng tới nút. Admin đặt
+// role `Hỗ trợ` làm staff thì người của họ THẤY được ticket nhưng bấm Nhận bị từ chối —
+// còn một role tên `admin-logs` thì lại nhận được. Đúng hai chiều hỏng mà chú thích ở
+// `handleTicketOpen` đã mô tả, chỉ là bản vá hôm đó chưa với tới đây.
+// ============================================================
+
+/** Danh sách role staff của guild (để dựng permission overwrite). */
+async function layRoleStaff(guild, PermissionsBitField) {
+    const cauHinh = await db.getGuildSettings(guild.id);
+
+    // Tầng 1: admin đã chỉ đích danh qua `/config staff-role` -> chính xác tuyệt đối.
+    if (cauHinh?.staff_role_id) {
+        const r = guild.roles.cache.get(String(cauHinh.staff_role_id));
+        if (r) return [r];
+    }
+
+    // Tầng 2: chưa cấu hình -> lấy mọi role CÓ QUYỀN quản lý luồng. Đây là tín hiệu ngữ
+    // nghĩa (Discord đã trao quyền) thay vì đoán qua chữ trong tên. `has()` mặc định tính
+    // cả Administrator nên tầng này tự động bao luôn mọi role admin.
+    return guild.roles.cache
+        .filter(r => r.id !== guild.id && !r.managed &&
+                     r.permissions.has(PermissionsBitField.Flags.ManageThreads))
+        .first(10);   // chặn trần: Discord giới hạn số overwrite mỗi kênh
+}
+
+/**
+ * Thành viên này có phải staff không — dùng cho nút Nhận/Khoá.
+ *
+ * Nhận CẢ `ManageThreads` LẪN `ManageChannels`: tầng 2 ở trên cấp quyền xem theo
+ * `ManageThreads`, còn bản cũ của nút lại xét `ManageChannels`. Chấp nhận cả hai là nới
+ * đúng phần hợp lệ (không ai đang bấm được mà mất quyền) và chỉ siết đúng lối dò theo tên.
+ */
+async function laStaffTicket(guild, member, PermissionsBitField) {
+    if (!member) return false;
+    if (member.permissions.has(PermissionsBitField.Flags.ManageThreads)) return true;
+    if (member.permissions.has(PermissionsBitField.Flags.ManageChannels)) return true;
+
+    const roles = await layRoleStaff(guild, PermissionsBitField);
+    return roles.some(r => member.roles.cache.has(r.id));
 }
 
 async function handleTicketOpen(interaction, category = 'general') {
@@ -474,23 +528,9 @@ async function handleTicketOpen(interaction, category = 'general') {
         PermissionsBitField.Flags.SendMessages,
         PermissionsBitField.Flags.ReadMessageHistory,
     ];
-    const cauHinh = await db.getGuildSettings(guild.id);
-    let roleStaff = [];
-
-    // Tầng 1: admin đã chỉ đích danh qua `/config staff-role` -> chính xác tuyệt đối.
-    if (cauHinh?.staff_role_id) {
-        const r = guild.roles.cache.get(String(cauHinh.staff_role_id));
-        if (r) roleStaff = [r];
-    }
-    // Tầng 2: chưa cấu hình -> lấy mọi role CÓ QUYỀN quản lý luồng. Đây là tín hiệu ngữ
-    // nghĩa (Discord đã trao quyền) thay vì đoán qua chữ trong tên. `has()` mặc định tính
-    // cả Administrator nên tầng này tự động bao luôn mọi role admin.
-    if (!roleStaff.length) {
-        roleStaff = guild.roles.cache
-            .filter(r => r.id !== guild.id && !r.managed &&
-                         r.permissions.has(PermissionsBitField.Flags.ManageThreads))
-            .first(10);   // chặn trần: Discord giới hạn số overwrite mỗi kênh
-    }
+    // Hai tầng nay nằm ở `layRoleStaff` — dùng CHUNG với nút Nhận/Khoá, để hai nơi không
+    // bao giờ trả lời khác nhau về cùng một câu hỏi "ai là staff".
+    const roleStaff = await layRoleStaff(guild, PermissionsBitField);
 
     for (const r of roleStaff) overwrites.push({ id: r.id, allow: QUYEN_STAFF });
 
@@ -585,8 +625,7 @@ async function handleTicketComponent(interaction, locale) {
     const ticket = await db.getTicketByChannel(channel.id);
 
     if (customId === 'tkt:claim') {
-        const isStaff = member.permissions.has(PermissionsBitField.Flags.ManageChannels) ||
-            member.roles.cache.some(r => /staff|support|mod|admin/i.test(r.name));
+        const isStaff = await laStaffTicket(interaction.guild, member, PermissionsBitField);
         if (!isStaff) {
             return interaction.reply({ content: '❌ Cậu không có quyền nhận ticket hỗ trợ này nhen!', flags: MessageFlags.Ephemeral });
         }
@@ -604,8 +643,7 @@ async function handleTicketComponent(interaction, locale) {
     }
 
     if (customId === 'tkt:lock') {
-        const isStaff = member.permissions.has(PermissionsBitField.Flags.ManageChannels) ||
-            member.roles.cache.some(r => /staff|support|mod|admin/i.test(r.name));
+        const isStaff = await laStaffTicket(interaction.guild, member, PermissionsBitField);
         if (!isStaff) {
             return interaction.reply({ content: '❌ Cậu không có quyền khóa ticket này!', flags: MessageFlags.Ephemeral });
         }
