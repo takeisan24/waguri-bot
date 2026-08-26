@@ -206,7 +206,14 @@ async function grantVoteReward(client, userId, isWeekend) {
     // Tăng chuỗi vote (RPC tự tạo user nếu lần đầu) -> tính thưởng theo streak.
     const streak = await db.bumpVoteStreak(userId, config.VOTE.STREAK_GRACE_HOURS * 3600);
     const { coins, exp, bonus } = computeVoteReward(streak, isWeekend);
-    await db.addMoney(userId, coins, 'wallet');
+    // Cùng lớp lỗi đã vá ở LỆNH `/vote` (`d23cc69`) — nhưng Top.gg gọi WEBHOOK chứ không gọi
+    // lệnh, nên vá một đường là để lọt đường kia. `addMoney` với số dương chỉ hỏng theo kiểu
+    // `null` (DB lỗi), và lúc đó DM bên dưới vẫn khoe "cậu nhận được N xu".
+    //
+    // KHÔNG thử trả lại: cooldown đã đặt ở trên chính là cổng chống nhận đúp (xem chú thích
+    // dài ngay đầu hàm) — trả lần nữa là mở lại đúng cái race mà thứ tự đó sinh ra để chặn.
+    const daTra = await db.addMoney(userId, coins, 'wallet');
+    if (daTra !== true) console.error(`[PAYOUT FAIL] vote-topgg user=${userId} coins=${coins}`);
     await db.updateExp(userId, exp);
 
     // DM cảm ơn (im lặng nếu user tắt DM)
@@ -224,7 +231,9 @@ async function grantVoteReward(client, userId, isWeekend) {
             bonus: bonus > 0
                 ? t(locale, 'lib.voteServer.dm_vote_streak_bonus', { amount: fmt(bonus, locale), currency: config.CURRENCY })
                 : '',
-        }));
+        // Dùng lại đúng chuỗi của lệnh `/vote`: cùng một sự việc, và nó đã chỉ sẵn cách tự
+        // kiểm (`/bank balance`) lẫn trấn an rằng LƯỢT VOTE không mất.
+        }) + (daTra !== true ? t(locale, 'commands.vote.payout_unconfirmed') : ''));
     } catch { /* user tắt DM -> bỏ qua */ }
 }
 
@@ -246,9 +255,10 @@ async function grantDblVoteReward(client, userId) {
 
     const { REWARD: coins, EXP: exp } = config.VOTE.DBL;
     // Cooldown đã set trước = cổng dedup. addMoney lỗi thì log để cứu tay, không grant-first.
-    if (!await db.addMoney(userId, coins, 'wallet')) {
-        console.error(`[PAYOUT FAIL] vote-dbl user=${userId} coins=${coins}`);
-    }
+    // Bản cũ CÓ kiểm và ghi log, nhưng DM bên dưới vẫn khoe vô điều kiện — tức người dùng
+    // vẫn đọc "cậu nhận được N xu" khi tiền chưa vào. Giữ kết quả để DM nói thật.
+    const daTra = await db.addMoney(userId, coins, 'wallet');
+    if (daTra !== true) console.error(`[PAYOUT FAIL] vote-dbl user=${userId} coins=${coins}`);
     await db.updateExp(userId, exp);
 
     try {
@@ -258,7 +268,7 @@ async function grantDblVoteReward(client, userId) {
             coins: fmt(coins, locale),
             currency: config.CURRENCY,
             exp,
-        }));
+        }) + (daTra !== true ? t(locale, 'commands.vote.payout_unconfirmed') : ''));
     } catch { /* user tắt DM -> bỏ qua */ }
 }
 
