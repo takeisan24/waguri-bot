@@ -1386,7 +1386,8 @@
         "worldevent": "Sự kiện cộng đồng toàn server 🌍 — cả server cùng góp sức đạt mục tiêu chung rồi chia thưởng (view · contribute · claim)",
         "ticket": "Mở kênh hỗ trợ riêng tư với Staff Waguri 🌸 — dùng khi cần trợ giúp mà không muốn hỏi công khai (create · panel · close)",
         "serverinfo": "Xuất báo cáo cấu trúc server: kênh, role, cấu hình — để rà soát. Cần quyền Quản lý Server.",
-        "antinuke": "Chống nuke server: phát hiện & chặn xoá kênh/role hàng loạt, ban hàng loạt, tự phong quyền. Chỉ CHỦ SERVER đổi được cấu hình. Bắt đầu bằng `/antinuke check`."
+        "antinuke": "Chống nuke server: phát hiện & chặn xoá kênh/role hàng loạt, ban hàng loạt, tự phong quyền. Chỉ CHỦ SERVER đổi được cấu hình. Bắt đầu bằng `/antinuke check`.",
+        "redeem": "đổi mã quà nhận xu, vật phẩm hoặc ngày Premium"
       }
     },
     "action": {
@@ -1907,7 +1908,25 @@
       "reset_timeout": "Hết giờ xác nhận, không xóa gì cả~ 🌸",
       "trend_title": "📈 Xu hướng cung tiền (mới → cũ)",
       "no_target": "Thiếu người chơi.",
-      "no_telemetry": "Chưa có dữ liệu telemetry kinh tế. Thử lại sau chút nhé~ 🌸"
+      "no_telemetry": "Chưa có dữ liệu telemetry kinh tế. Thử lại sau chút nhé~ 🌸",
+      "code": {
+        "empty_reward": "Mã không có phần thưởng nào cả. Cần ít nhất một trong: `coins`, `item`, `premium-days`.",
+        "created": "🎁 Đã tạo mã `{code}` — **{uses}** lượt.",
+        "sum_coins": "· 💰 {amount} {currency} mỗi lượt",
+        "sum_item": "· 📦 {qty}x `{id}`",
+        "sum_premium": "· ✨ {days} ngày Premium",
+        "list_empty": "Chưa có mã quà nào được tạo.",
+        "revoked": "🚫 Đã thu hồi mã `{code}`. Từ giờ mã này báo \"không tồn tại\".",
+        "revoke_none": "Không tìm thấy mã `{code}` đang hoạt động (có thể đã thu hồi trước đó).",
+        "err_exists": "Mã này đã tồn tại rồi. Đặt tên khác nhé.",
+        "err_bad_code": "Mã phải dài 4-32 ký tự, chỉ gồm chữ, số và dấu gạch ngang.",
+        "err_bad_rewards": "Phần thưởng không hợp lệ: số lượng phải dương, vật phẩm phải có thật, và ghi chú không được để trống.",
+        "err_bad_window": "Mốc thời gian không hợp lệ: hạn dùng phải nằm ở tương lai và sau mốc bắt đầu.",
+        "err_over_cap_coins": "⛔ Vượt trần **50.000 xu** mỗi lượt. Trần đặt trong DB để một số 0 gõ thừa không thổi bay nền kinh tế.",
+        "err_over_cap_total": "⛔ Vượt trần **500.000 xu** tổng (xu × số lượt). Giảm số xu hoặc số lượt xuống.",
+        "err_over_cap_premium": "⛔ Vượt trần **90 ngày** Premium mỗi mã.",
+        "err_error": "Không tạo được mã lúc này. Kiểm tra log rồi thử lại."
+      }
     },
     "premium-admin": {
       "only_owner": "Lệnh này chỉ dành cho owner thôi nhé~ 🌸",
@@ -2027,6 +2046,21 @@
       "log_stats": "*Hiện tại cậu chưa có phiên học nào đang chạy nhen~*\n\n**Thống kê cá nhân:**\n• **Chuỗi Chuyên Cần 📚:** `{streak} ngày`\n• **Tổng thời gian tập trung:** `{hours} giờ {minutes} phút`\n• **Hạt Hoa Kikyo 🌸:** `{points} hạt`\n\n",
       "stop_saved": "🌸 *Waguri đã lưu lại phiên học \"{name}\" cho cậu rùi nhen~ Hẹn gặp lại cậu ở phiên học tiếp theo!* ✨",
       "lb_row": "{medal} **#{rank}** <@{user}> — `{streak} ngày` (Tổng {hours}h {minutes}m)\n"
+    },
+    "redeem": {
+      "ok": "🎁 Đổi mã `{code}` thành công rồi nè!",
+      "reward_coins": "💰 **+{amount}** {currency}",
+      "reward_item": "📦 **{qty}x** {name}",
+      "reward_premium": "✨ **+{days} ngày** Premium",
+      "not_found": "Mã này không tồn tại. Cậu kiểm tra lại xem có gõ nhầm chữ nào không nhé.",
+      "not_started": "Mã này chưa tới giờ dùng đâu. Cậu quay lại sau nha.",
+      "expired": "Tiếc quá, mã này hết hạn mất rồi.",
+      "used_up": "Mã này đã hết lượt đổi rồi. Lần sau nhanh tay hơn nhé!",
+      "already": "Cậu đã đổi mã này rồi mà.",
+      "not_for_you": "Mã này dành riêng cho một người khác.",
+      "account_too_new": "Tài khoản Discord của cậu còn mới quá nên chưa đổi được mã này.",
+      "error": "Waguri chưa đổi được mã lúc này, cậu thử lại sau một chút nhé. **Phần thưởng chưa bị trừ lượt.**",
+      "too_many_tries": "Cậu nhập sai hơi nhiều rồi. Nghỉ một lát rồi thử lại nha."
     }
   },
   "lib": {

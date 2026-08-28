@@ -2,6 +2,7 @@
 // Định nghĩa bản dịch và hàm địa phương hóa tự động cho các Slash Commands.
 
 const COMMAND_DESCRIPTIONS = {
+    "redeem": { vi: "Đổi mã quà", en: "Redeem a gift code" },
     "antinuke": {
         vi: "🛡️ Chống nuke: chặn xoá kênh/role & ban hàng loạt, tự phong quyền",
         en: "🛡️ Anti-nuke: stop mass channel/role deletion, ban waves, self-granted perms"
@@ -349,6 +350,9 @@ const COMMAND_DESCRIPTIONS = {
 };
 
 const SUBCOMMAND_DESCRIPTIONS = {
+    "eco-admin.code-create": { vi: "🎁 Tạo mã quà", en: "🎁 Create a gift code" },
+    "eco-admin.code-list": { vi: "🎁 Xem các mã quà đã tạo", en: "🎁 List the gift codes you created" },
+    "eco-admin.code-revoke": { vi: "🎁 Thu hồi một mã quà", en: "🎁 Revoke a gift code" },
     "antinuke.enable": { vi: "Bật/tắt lá chắn (TẮT có độ trễ 5 phút + báo động)", en: "Turn the shield on/off (turning OFF is delayed 5 minutes + alerts)" },
     "antinuke.mode": { vi: "Chế độ: chỉ ghi log (thử) hay thi hành thật", en: "Mode: log-only (dry run) or enforce" },
     "antinuke.status": { vi: "Xem cấu hình & trạng thái lá chắn", en: "View shield settings and status" },
@@ -578,6 +582,18 @@ const SUBCOMMAND_DESCRIPTIONS = {
 };
 
 const OPTION_DESCRIPTIONS = {
+    "redeem.code": { vi: "Mã quà cậu nhận được", en: "The gift code you received" },
+    "eco-admin.code-create.code": { vi: "Mã quà (4-32 ký tự: A-Z, 0-9, dấu -)", en: "Code (4-32 chars: A-Z, 0-9, hyphen)" },
+    "eco-admin.code-create.note": { vi: "Mã này để làm gì? (bắt buộc — 6 tháng sau còn tra được)", en: "What is this code for? (required — so it still makes sense in 6 months)" },
+    "eco-admin.code-create.coins": { vi: "Số xu mỗi lượt (trần 50.000)", en: "Coins per use (cap 50,000)" },
+    "eco-admin.code-create.item-qty": { vi: "Số lượng vật phẩm (mặc định 1)", en: "Item quantity (default 1)" },
+    "eco-admin.code-create.premium-days": { vi: "Số ngày Premium (trần 90)", en: "Premium days (cap 90)" },
+    "eco-admin.code-create.max-uses": { vi: "Số lượt đổi tối đa (mặc định 1)", en: "Maximum number of redemptions (default 1)" },
+    "eco-admin.code-create.only-user": { vi: "Chỉ riêng một người mới đổi được (mã đền bù)", en: "Restrict the code to one person (compensation code)" },
+    "eco-admin.code-create.expires-hours": { vi: "Hết hạn sau bao nhiêu giờ", en: "Expires after this many hours" },
+    "eco-admin.code-create.min-account-age": { vi: "Tuổi tài khoản Discord tối thiểu (ngày)", en: "Minimum Discord account age (days)" },
+    "eco-admin.code-list.limit": { vi: "Số dòng (mặc định 20, tối đa 50)", en: "Rows to show (default 20, max 50)" },
+    "eco-admin.code-revoke.code": { vi: "Mã cần thu hồi", en: "Code to revoke" },
     "ask.anh": { vi: "Gửi kèm một tấm ảnh cho Waguri xem (tuỳ chọn)", en: "Attach an image for Waguri to look at (optional)" },
     "antinuke.mode.mode": { vi: "Chế độ", en: "Mode" },
     "antinuke.lockdown.state": { vi: "Khoá hay mở", en: "Lock or unlock" },

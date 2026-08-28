@@ -2591,8 +2591,101 @@ async function getUserDiscoveries(userId) {
     }
 }
 
+/* ── Mã quà (redeem code) ────────────────────────────────────────────────────────
+ * Cả bốn hàm dưới đây chỉ gọi RPC, KHÔNG tự ghép bước nào. Đây là chủ ý: việc "ghi nhận
+ * đã nhận" và "trao thưởng" phải nằm trong cùng một giao dịch dưới DB (0146). Nếu có ngày
+ * ai đó thấy tiện mà tách ra làm hai lời gọi ở đây, đó chính là lỗi đã vá ba lần ở
+ * /worldevent, /achievements và /cosmetic badge-buy.
+ *
+ * Quy ước trả về: chuỗi trạng thái, hoặc 'error' khi DB hỏng. Cố ý KHÔNG trả `false` —
+ * `false` lẫn nghĩa giữa "DB từ chối" và "DB chết", và nơi gọi sẽ nói sai với người chơi.
+ */
+
+/** Đổi mã quà. NGUYÊN TỬ — xem 0146_ma_qua.sql.
+ * @returns {{status: string, rewards?: object}} status:
+ *   'ok' | 'not_found' | 'not_started' | 'expired' | 'used_up' | 'already'
+ *   | 'not_for_you' | 'account_too_new' | 'error'
+ */
+async function redeemCode(userId, code) {
+    try {
+        const { data, error } = await supabase.rpc('redeem_code_atomic', {
+            p_user: String(userId),
+            p_code: String(code || ''),
+        });
+        if (error) throw error;
+        // RPC trả jsonb. Thiếu `status` nghĩa là hợp đồng đã đổi mà JS chưa theo kịp —
+        // báo 'error' chứ đừng đoán là thành công.
+        if (!data || typeof data.status !== 'string') {
+            console.error('[DATABASE ERROR] redeemCode(): RPC trả về không có status', data);
+            return { status: 'error' };
+        }
+        return data;
+    } catch (error) {
+        console.error('[DATABASE ERROR] redeemCode():', error);
+        return { status: 'error' };
+    }
+}
+
+/** Tạo mã quà. Trần thưởng canh DƯỚI DB, không phải ở đây.
+ * @returns {string} 'ok' | 'exists' | 'bad_code' | 'bad_rewards' | 'bad_window'
+ *   | 'over_cap_coins' | 'over_cap_total' | 'over_cap_premium' | 'error'
+ */
+async function createRedeemCode(opts = {}) {
+    try {
+        const { data, error } = await supabase.rpc('create_redeem_code', {
+            p_code: String(opts.code || ''),
+            p_rewards: opts.rewards || {},
+            p_max_uses: Number(opts.maxUses) || 1,
+            p_per_user_limit: Number(opts.perUserLimit) || 1,
+            p_only_user: opts.onlyUserId ? String(opts.onlyUserId) : null,
+            p_starts_at: opts.startsAt || null,
+            p_expires_at: opts.expiresAt || null,
+            p_min_age_days: Number(opts.minAccountAgeDays) || 0,
+            p_note: String(opts.note || ''),
+            p_created_by: opts.createdBy ? String(opts.createdBy) : null,
+        });
+        if (error) throw error;
+        return typeof data === 'string' ? data : 'error';
+    } catch (error) {
+        console.error('[DATABASE ERROR] createRedeemCode():', error);
+        return 'error';
+    }
+}
+
+/** Thu hồi mã. @returns {string} 'ok' | 'not_found' | 'error' */
+async function revokeRedeemCode(code) {
+    try {
+        const { data, error } = await supabase.rpc('revoke_redeem_code', { p_code: String(code || '') });
+        if (error) throw error;
+        return typeof data === 'string' ? data : 'error';
+    } catch (error) {
+        console.error('[DATABASE ERROR] revokeRedeemCode():', error);
+        return 'error';
+    }
+}
+
+/** Liệt kê mã. @returns {Array|null} null = DB hỏng (khác hẳn [] = chưa có mã nào) */
+async function listRedeemCodes(limit = 20) {
+    try {
+        const { data, error } = await supabase
+            .from('redeem_codes')
+            .select('code, rewards, max_uses, uses, expires_at, revoked, note, created_at')
+            .order('created_at', { ascending: false })
+            .limit(Math.min(Math.max(Number(limit) || 20, 1), 50));
+        if (error) throw error;
+        return data || [];
+    } catch (error) {
+        console.error('[DATABASE ERROR] listRedeemCodes():', error);
+        return null;
+    }
+}
+
 module.exports = {
     supabase,
+    redeemCode,
+    createRedeemCode,
+    revokeRedeemCode,
+    listRedeemCodes,
     recordDiscovery,
     getUserDiscoveries,
     getUser,

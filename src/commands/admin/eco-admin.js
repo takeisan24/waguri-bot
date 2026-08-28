@@ -46,12 +46,27 @@ module.exports = {
         .addSubcommand(s => s.setName('report').setDescription('📊 Báo cáo telemetry kinh tế (cung tiền, hoạt động, dòng tiền, top nhận)'))
         .addSubcommand(s => s.setName('trace').setDescription('🔎 Xem nhật ký giao dịch của một người chơi')
             .addUserOption(o => o.setName('user').setDescription('Người chơi cần truy vết').setRequired(true))
-            .addIntegerOption(o => o.setName('limit').setDescription('Số dòng (mặc định 20, tối đa 50)').setMinValue(1).setMaxValue(50))),
+            .addIntegerOption(o => o.setName('limit').setDescription('Số dòng (mặc định 20, tối đa 50)').setMinValue(1).setMaxValue(50)))
+        .addSubcommand(s => s.setName('code-create').setDescription('🎁 Tạo mã quà')
+            .addStringOption(o => o.setName('code').setDescription('Mã quà (4-32 ký tự: A-Z, 0-9, dấu -)').setRequired(true).setMaxLength(32))
+            .addStringOption(o => o.setName('note').setDescription('Mã này để làm gì? (bắt buộc — 6 tháng sau còn tra được)').setRequired(true).setMaxLength(200))
+            .addIntegerOption(o => o.setName('coins').setDescription('Số xu mỗi lượt (trần 50.000)').setMinValue(0))
+            .addStringOption(o => o.setName('item').setDescription('Vật phẩm kèm theo').setAutocomplete(true))
+            .addIntegerOption(o => o.setName('item-qty').setDescription('Số lượng vật phẩm (mặc định 1)').setMinValue(1))
+            .addIntegerOption(o => o.setName('premium-days').setDescription('Số ngày Premium (trần 90)').setMinValue(0))
+            .addIntegerOption(o => o.setName('max-uses').setDescription('Số lượt đổi tối đa (mặc định 1)').setMinValue(1))
+            .addUserOption(o => o.setName('only-user').setDescription('Chỉ riêng một người mới đổi được (mã đền bù)'))
+            .addIntegerOption(o => o.setName('expires-hours').setDescription('Hết hạn sau bao nhiêu giờ').setMinValue(1))
+            .addIntegerOption(o => o.setName('min-account-age').setDescription('Tuổi tài khoản Discord tối thiểu (ngày)').setMinValue(0)))
+        .addSubcommand(s => s.setName('code-list').setDescription('🎁 Xem các mã quà đã tạo')
+            .addIntegerOption(o => o.setName('limit').setDescription('Số dòng (mặc định 20, tối đa 50)').setMinValue(1).setMaxValue(50)))
+        .addSubcommand(s => s.setName('code-revoke').setDescription('🎁 Thu hồi một mã quà')
+            .addStringOption(o => o.setName('code').setDescription('Mã cần thu hồi').setRequired(true).setMaxLength(32))),
 
     async autocomplete(interaction) {
         const focused = interaction.options.getFocused().toLowerCase();
         const sub = interaction.options.getSubcommand();
-        if (sub === 'giveitem') {
+        if (sub === 'giveitem' || sub === 'code-create') {
             const items = await db.getItems();
             await interaction.respond(items
                 .filter(i => i.name.toLowerCase().includes(focused) || i.id.includes(focused))
@@ -86,6 +101,103 @@ module.exports = {
         // được khởi tạo lúc hoisted -> `/eco-admin trace` ném ReferenceError và không bao
         // giờ phản hồi. Mọi nhánh dùng chung một khai báo thì không còn chỗ cho lỗi đó.
         const C = config.CURRENCY;
+
+        // --- Mã quà (redeem code) ---
+        // Mọi nhánh dưới đây đều PHẢI nhìn chuỗi trạng thái RPC trả về rồi mới nói.
+        // Không nhánh nào được mặc định 'thành công' — đó là lỗi lặp lại ở 6 lô đã audit.
+        if (sub === 'code-create') {
+            const ma = interaction.options.getString('code');
+            const itemId = interaction.options.getString('item');
+            const rewards = {};
+            const coins = interaction.options.getInteger('coins') || 0;
+            const days = interaction.options.getInteger('premium-days') || 0;
+            if (coins > 0) rewards.coins = coins;
+            if (days > 0) rewards.premium_days = days;
+            if (itemId) rewards.items = [{ id: itemId, qty: interaction.options.getInteger('item-qty') || 1 }];
+
+            // Mã không thưởng gì là mã vô nghĩa — chặn ngay, đừng để tạo rồi mới ngơ ngác.
+            if (!Object.keys(rewards).length) {
+                return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'warning', {
+                    description: t(locale, 'commands.eco-admin.code.empty_reward') })] });
+            }
+
+            const gio = interaction.options.getInteger('expires-hours');
+            const onlyUser = interaction.options.getUser('only-user');
+            const kq = await db.createRedeemCode({
+                code: ma,
+                rewards,
+                maxUses: interaction.options.getInteger('max-uses') || 1,
+                perUserLimit: 1,
+                onlyUserId: onlyUser?.id || null,
+                startsAt: null,
+                expiresAt: gio ? new Date(Date.now() + gio * 3600000).toISOString() : null,
+                minAccountAgeDays: interaction.options.getInteger('min-account-age') || 0,
+                note: interaction.options.getString('note'),
+                createdBy: interaction.user.id,
+            });
+
+            if (kq !== 'ok') {
+                const khoa = `commands.eco-admin.code.err_${kq}`;
+                // Chuỗi lạ (hợp đồng RPC đổi mà đây chưa theo) rơi về thông báo chung,
+                // KHÔNG rơi về "đã tạo".
+                const mo = t(locale, khoa) === khoa ? t(locale, 'commands.eco-admin.code.err_error') : t(locale, khoa);
+                return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'error', { description: mo })] });
+            }
+
+            console.log(`[ECO-ADMIN AUDIT] owner=${interaction.user.id} action=code-create code=${String(ma).toUpperCase()} rewards=${JSON.stringify(rewards)}`);
+            const tomTat = [
+                coins > 0 ? t(locale, 'commands.eco-admin.code.sum_coins', { amount: fmt(coins, locale), currency: C }) : null,
+                itemId ? t(locale, 'commands.eco-admin.code.sum_item', { qty: interaction.options.getInteger('item-qty') || 1, id: itemId }) : null,
+                days > 0 ? t(locale, 'commands.eco-admin.code.sum_premium', { days }) : null,
+            ].filter(Boolean);
+            return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'success', {
+                description: t(locale, 'commands.eco-admin.code.created', {
+                    code: String(ma).toUpperCase(),
+                    uses: interaction.options.getInteger('max-uses') || 1,
+                }) + (tomTat.length ? `\n${tomTat.join('\n')}` : ''),
+            })] });
+        }
+
+        if (sub === 'code-list') {
+            const ds = await db.listRedeemCodes(interaction.options.getInteger('limit') || 20);
+            // null = DB hỏng, [] = chưa có mã nào. Hai chuyện khác nhau, hai câu khác nhau.
+            if (ds === null) {
+                return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'error', {
+                    description: t(locale, 'common.retry_later') })] });
+            }
+            if (!ds.length) {
+                return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'info', {
+                    description: t(locale, 'commands.eco-admin.code.list_empty') })] });
+            }
+            const dong = ds.map(c => {
+                const het = c.revoked ? '🚫' : (c.expires_at && new Date(c.expires_at) <= new Date() ? '⏰' : '✅');
+                const r = c.rewards || {};
+                const thuong = [
+                    r.coins ? `${fmt(r.coins, locale)} ${C}` : null,
+                    Array.isArray(r.items) && r.items.length ? `${r.items.length} vật phẩm` : null,
+                    r.premium_days ? `${r.premium_days}d Premium` : null,
+                ].filter(Boolean).join(' + ') || '—';
+                return `${het} \`${c.code}\` · ${c.uses}/${c.max_uses} · ${thuong}\n   ↳ _${c.note}_`;
+            });
+            return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'info', {
+                description: dong.join('\n') })] });
+        }
+
+        if (sub === 'code-revoke') {
+            const ma = interaction.options.getString('code');
+            const kq = await db.revokeRedeemCode(ma);
+            if (kq === 'error') {
+                return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'error', {
+                    description: t(locale, 'common.retry_later') })] });
+            }
+            if (kq === 'not_found') {
+                return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'warning', {
+                    description: t(locale, 'commands.eco-admin.code.revoke_none', { code: String(ma).toUpperCase() }) })] });
+            }
+            console.log(`[ECO-ADMIN AUDIT] owner=${interaction.user.id} action=code-revoke code=${String(ma).toUpperCase()}`);
+            return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'success', {
+                description: t(locale, 'commands.eco-admin.code.revoked', { code: String(ma).toUpperCase() }) })] });
+        }
 
         // --- Báo cáo telemetry kinh tế (không cần target user) ---
         if (sub === 'report') {

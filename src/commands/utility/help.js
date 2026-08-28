@@ -10,6 +10,7 @@ const CATEGORIES = [
         ['mine', 'đi đào mỏ kiếm tiền ⛏️'],
         ['chop', 'đi chặt gỗ kiếm tiền 🪓'],
         ['daily', 'điểm danh nhận thưởng + streak'],
+        ['redeem', 'đổi mã quà nhận xu/vật phẩm/Premium'],
         ['quest', 'nhiệm vụ hằng ngày & tân thủ (thưởng tiền)'],
         ['achievements', 'thành tựu (mở khóa nhận thưởng)'],
         ['status', 'trạng thái: năng lượng/mệt/buff/Premium/sự kiện 📊'],

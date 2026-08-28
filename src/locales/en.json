@@ -1386,7 +1386,8 @@
         "worldevent": "Server-wide community event 🌍 — everyone contributes toward a shared goal, then shares the reward (view · contribute · claim)",
         "ticket": "Open a private support channel with Waguri Staff 🌸 — for help you would rather not ask publicly (create · panel · close)",
         "serverinfo": "Export a report of the server structure: channels, roles, settings — for auditing. Requires Manage Server.",
-        "antinuke": "Anti-nuke: detect and stop mass channel/role deletion, ban waves and self-granted permissions. Only the SERVER OWNER can change settings. Start with `/antinuke check`."
+        "antinuke": "Anti-nuke: detect and stop mass channel/role deletion, ban waves and self-granted permissions. Only the SERVER OWNER can change settings. Start with `/antinuke check`.",
+        "redeem": "redeem a gift code for coins, items or Premium days"
       }
     },
     "action": {
@@ -1907,7 +1908,25 @@
       "reset_timeout": "Confirmation timed out, nothing was deleted~ 🌸",
       "trend_title": "📈 Money Supply Trend (newest → oldest)",
       "no_target": "Missing target player.",
-      "no_telemetry": "No economy telemetry data yet. Try again in a bit~ 🌸"
+      "no_telemetry": "No economy telemetry data yet. Try again in a bit~ 🌸",
+      "code": {
+        "empty_reward": "This code grants nothing. Set at least one of: `coins`, `item`, `premium-days`.",
+        "created": "🎁 Created code `{code}` — **{uses}** use(s).",
+        "sum_coins": "· 💰 {amount} {currency} per use",
+        "sum_item": "· 📦 {qty}x `{id}`",
+        "sum_premium": "· ✨ {days} days of Premium",
+        "list_empty": "No redeem codes have been created yet.",
+        "revoked": "🚫 Revoked `{code}`. It now reports as \"not found\".",
+        "revoke_none": "No active code `{code}` found (it may already be revoked).",
+        "err_exists": "That code already exists. Pick another name.",
+        "err_bad_code": "Codes must be 4-32 characters: letters, digits and hyphens only.",
+        "err_bad_rewards": "Invalid rewards: quantities must be positive, items must exist, and the note cannot be empty.",
+        "err_bad_window": "Invalid window: the expiry must be in the future and after the start time.",
+        "err_over_cap_coins": "⛔ Over the **50,000 coin** per-use cap. The cap lives in the DB so one extra zero cannot wreck the economy.",
+        "err_over_cap_total": "⛔ Over the **500,000 coin** total cap (coins × uses). Lower the amount or the use count.",
+        "err_over_cap_premium": "⛔ Over the **90 day** Premium cap per code.",
+        "err_error": "Could not create the code right now. Check the logs and retry."
+      }
     },
     "premium-admin": {
       "only_owner": "This command is only for the bot owner~ 🌸",
@@ -2027,6 +2046,21 @@
       "log_stats": "*You have no running study session right now~*\n\n**Your stats:**\n• **Study streak 📚:** `{streak} days`\n• **Total focus time:** `{hours}h {minutes}m`\n• **Kikyo Flower Seeds 🌸:** `{points}`\n\n",
       "stop_saved": "🌸 *Waguri saved your \"{name}\" session~ See you at the next one!* ✨",
       "lb_row": "{medal} **#{rank}** <@{user}> — `{streak} days` (Total {hours}h {minutes}m)\n"
+    },
+    "redeem": {
+      "ok": "🎁 Code `{code}` redeemed!",
+      "reward_coins": "💰 **+{amount}** {currency}",
+      "reward_item": "📦 **{qty}x** {name}",
+      "reward_premium": "✨ **+{days} days** of Premium",
+      "not_found": "That code doesn't exist. Double-check the spelling?",
+      "not_started": "This code isn't active yet. Come back a bit later!",
+      "expired": "This code has expired.",
+      "used_up": "This code has run out of uses. Be quicker next time!",
+      "already": "You've already redeemed this code.",
+      "not_for_you": "This code is reserved for someone else.",
+      "account_too_new": "Your Discord account is too new to redeem this code.",
+      "error": "Waguri couldn't redeem the code right now — please try again shortly. **No use was consumed.**",
+      "too_many_tries": "That's a lot of wrong codes. Take a short break and try again."
     }
   },
   "data": {

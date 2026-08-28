@@ -30,6 +30,9 @@
   "eco-admin": [
     "addmoney",
     "ban",
+    "code-create",
+    "code-list",
+    "code-revoke",
     "giveitem",
     "premium",
     "report",
@@ -130,6 +133,7 @@
   "prestige": [],
   "profile": [],
   "quest": [],
+  "redeem": [],
   "repair": [],
   "rob": [],
   "store": [
