@@ -16,7 +16,9 @@
   "livestats": {
     "serving": "Đang phục vụ",
     "servers": "server",
-    "members": "thành viên"
+    "members": "thành viên",
+    "players": "người chơi",
+    "active": "đang chơi tuần này"
   },
   "lb_teaser": {
     "title": "🏆 Top Đại Gia",

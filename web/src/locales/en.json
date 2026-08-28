@@ -16,7 +16,9 @@
   "livestats": {
     "serving": "Serving",
     "servers": "servers",
-    "members": "members"
+    "members": "members",
+    "players": "players",
+    "active": "active this week"
   },
   "lb_teaser": {
     "title": "🏆 Top Tycoons",

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { BOT_API } from "../lib/botApi";
+import { BOT_API_CLIENT } from "../lib/botApi";
 import { useLanguage } from "./LanguageProvider";
 
 // Banner sự kiện toàn cục đang chạy (đồng bộ với lịch sự kiện auto của bot — data/events.js).
@@ -15,7 +15,7 @@ export default function EventBanner() {
   useEffect(() => {
     const ctrl = new AbortController();
     const t = setTimeout(() => ctrl.abort(), 4000);
-    fetch(`${BOT_API}/api/event`, { signal: ctrl.signal })
+    fetch(`${BOT_API_CLIENT}/api/event`, { signal: ctrl.signal })
       .then((r) => (r.ok ? r.json() : Promise.reject()))
       .then((d: Ev) => {
         if (d?.active && Number(d.mult) > 1) setEv(d);

@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { BOT_API } from "../lib/botApi";
 import { useLanguage } from "./LanguageProvider";
 
 // Teaser top đại gia — fetch CLIENT-side (như LiveStats) để KHÔNG chặn render landing.
-const API = BOT_API;
+// (Không cần host của bot ở đây: component này vốn đã gọi `/api/leaderboard` — một route
+// cùng nguồn của chính web, tự lo phần đọc Supabase và lui về bot khi cần.)
 const MEDALS = ["🥇", "🥈", "🥉"];
 
 type Row = { id: string; username: string; avatar: string | null; value: number };

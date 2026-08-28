@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import CherryBlossom from "../../components/CherryBlossom";
 import SiteHeader from "../../components/SiteHeader";
 import SiteFooter from "../../components/SiteFooter";
-import { BOT_API } from "../../lib/botApi";
+import { BOT_API_CLIENT } from "../../lib/botApi";
 import { createClient } from "../../lib/supabase/client";
 import { useLanguage } from "../../components/LanguageProvider";
 
@@ -41,13 +41,15 @@ export default function StatusPage() {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 4000);
 
-      const healthRes = await fetch(`${BOT_API}/`, { 
+      const healthRes = await fetch(`${BOT_API_CLIENT}/health`, { 
         signal: controller.signal,
         headers: { "Cache-Control": "no-cache" }
       });
       clearTimeout(timeoutId);
 
-      const text = await healthRes.text();
+      // Cầu nối trả JSON `{ ok, text }` chứ không trả text trần: nó phải bọc lại phần
+        // thân text của bot để mọi đường trong proxy cùng một kiểu.
+        const text = healthRes.ok ? String((await healthRes.json())?.text ?? "") : "";
       const duration = Date.now() - apiStart;
 
       if (healthRes.ok && text.includes("Waguri OK")) {
@@ -64,7 +66,7 @@ export default function StatusPage() {
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 4000);
-      const statsRes = await fetch(`${BOT_API}/stats`, { 
+      const statsRes = await fetch(`${BOT_API_CLIENT}/stats`, { 
         signal: controller.signal,
         headers: { "Cache-Control": "no-cache" }
       });
