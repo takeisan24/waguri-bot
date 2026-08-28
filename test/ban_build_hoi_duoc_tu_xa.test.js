@@ -87,7 +87,41 @@ test('/stats thật sự trả danh tính bản dựng ra ngoài', () => {
     const s = boCmt(fs.readFileSync(path.join(ROOT, 'src', 'lib', 'voteServer.js'), 'utf8'));
 
     assert.match(s, /require\('\.\/banBuild'\)/, 'voteServer.js phải nạp banBuild.');
-    assert.match(s, /JSON\.stringify\(\{ servers, users, gatewayPing, \.\.\.banBuild\(\) \}\)/,
+    assert.match(s, /\.\.\.banBuild\(\)/,
         '`/stats` phải trải `banBuild()` vào JSON trả về. Không có nó thì không còn đường nào\n'
         + 'hỏi prod đang chạy mã gì — đúng tình trạng đã để lọt 44 commit cũ.');
+
+    // HAI TÊN TRƯỜNG NÀY LÀ HỢP ĐỒNG VỚI WEB, không được đổi:
+    // `web/src/components/LiveStats.tsx` đọc `d.servers` và `d.users`; đổi tên là trang chủ
+    // im lặng ẩn widget (nó cố ý render null khi thiếu số liệu, nên sẽ không ai thấy lỗi).
+    assert.match(s, /JSON\.stringify\(\{[\s\S]{0,400}?\bservers,[\s\S]{0,80}?\busers,/,
+        '`/stats` phải giữ nguyên hai tên `servers` và `users` — web đang đọc đúng hai tên đó.');
+
+    // Số người chơi THẬT + bộ nhớ: hai thứ thêm ngày 28-08 để trả lời "bao nhiêu người
+    // dùng bot" và để truy vụ hết bộ nhớ (bot chạy với --max-old-space-size=384).
+    assert.match(s, /layThongKeNguoiChoi\(\)/,
+        '`/stats` phải kèm số người chơi thật — `users` chỉ là tổng thành viên các server\n'
+        + '(một người ở nhiều server bị đếm nhiều lần, và có cả bot).');
+    assert.match(s, /heapUsedMb:/,
+        '`/stats` phải trả bộ nhớ đang dùng. Không có nó thì lần bot chết tiếp theo lại chỉ\n'
+        + 'còn cách đoán, đúng như hôm 27-08.');
+    assert.match(s, /heapLimitMb:/,
+        'Phải trả cả TRẦN heap: 120MB là bình thường hay sắp chết phụ thuộc hoàn toàn vào trần.');
+});
+
+test('số người chơi đọc từ ảnh chụp telemetry, KHÔNG đếm trực tiếp mỗi lượt gọi', () => {
+    const s = boCmt(fs.readFileSync(path.join(ROOT, 'src', 'lib', 'voteServer.js'), 'utf8'));
+
+    assert.match(s, /async function layThongKeNguoiChoi\(\)/, 'thiếu hàm lấy số người chơi.');
+    assert.match(s, /cacheGet\('thong-ke-nguoi-choi'\)/,
+        'Phải cache: `/stats` là endpoint dịch vụ uptime gọi liên tục, truy vấn gộp mỗi lượt\n'
+        + 'là tự bắn vào chân.');
+    assert.match(s, /db\.getEconomySnapshots\(1\)/,
+        'Phải đọc ảnh chụp telemetry đã tính sẵn, chỉ MỘT dòng.');
+
+    // `users.last_seen` RỖNG ở 434/470 người (đo 28-08) — dùng nó sẽ báo 19 người hoạt động
+    // trong khi con số thật là 236. Bẫy này đã ghi trong sổ và từng làm tôi kết luận sai.
+    assert.doesNotMatch(s, /last_seen/,
+        'Không được dùng `users.last_seen` để đếm người hoạt động — cột đó rỗng ở gần hết\n'
+        + 'người dùng. Ảnh chụp telemetry lấy từ `economy_ledger` nên mới đúng.');
 });

@@ -3,7 +3,7 @@ require('node:dns').setDefaultResultOrder('ipv4first');
 require('./src/lib/envLoader');
 const fs = require('node:fs');
 const path = require('node:path');
-const { Client, Collection, GatewayIntentBits, REST, Routes } = require('discord.js');
+const { Client, Collection, GatewayIntentBits, Options, REST, Routes } = require('discord.js');
 const { logError } = require('./src/lib/logger');
 
 const client = new Client({
@@ -22,6 +22,48 @@ const client = new Client({
         // Thiếu nó thì anti-nuke im lặng hoàn toàn mà không báo lỗi gì.
         GatewayIntentBits.GuildModeration,
     ],
+
+    // ---------------------------------------------------------
+    // GIỚI HẠN & DỌN CACHE — bot chạy với `--max-old-space-size=384` (xem Startup
+    // Command trên panel), tức chỉ 384MB heap.
+    //
+    // MẶC ĐỊNH CỦA discord.js RẤT RỘNG TAY, đã kiểm bằng `Options.DefaultMakeCacheSettings`
+    // và `Options.DefaultSweeperSettings` trên đúng bản đang cài:
+    //   · makeCache giới hạn DUY NHẤT `MessageManager: 200` (mỗi kênh) — `users`,
+    //     `guildMembers` và mọi cache khác KHÔNG giới hạn.
+    //   · sweepers mặc định chỉ quét `threads`. Message/user/member KHÔNG BAO GIỜ được dọn.
+    //
+    // Bot bật `MessageContent` + `GuildMembers` trên 23 server / 2.295 thành viên, nên hai
+    // cache không giới hạn đó chỉ có lớn lên. Bot chết ngày 27-08 sau ~35 tiếng chạy liên
+    // tục, và WATCHDOG KHÔNG CỨU ĐƯỢC: nó chỉ bắt gateway không Ready quá 5 phút, còn hết
+    // bộ nhớ thì tiến trình bị giết thẳng — `process.exit` không kịp chạy.
+    //
+    // ⚠️ ĐÂY LÀ GIẢ THUYẾT, CHƯA PHẢI KẾT LUẬN. `/stats` nay trả `heapUsedMb`/`heapLimitMb`;
+    // theo dõi vài ngày sẽ biết bộ nhớ có còn bò lên nữa không. Nhưng ngay cả khi nguyên
+    // nhân là chuyện khác, một bot 384MB vẫn nên có các giới hạn này.
+    //
+    // AN TOÀN ĐÃ KIỂM: chỉ ĐÚNG MỘT chỗ trong toàn repo đọc cache thành viên
+    // (`lib/antinuke/index.js:78`), và nó đã tự `fetch` khi cache trượt. Mọi nơi khác dùng
+    // `interaction.member` / `message.member` (Discord gửi kèm sự kiện) hoặc `.fetch()`
+    // tường minh — không phụ thuộc cache.
+    sweepers: {
+        ...Options.DefaultSweeperSettings,
+        // Tin nhắn cũ hơn 30 phút không còn ai cần: collector chạy trên sự kiện SỐNG, còn
+        // bản ghi ticket thì `fetch` thẳng từ API.
+        messages: { interval: 600, lifetime: 1800 },
+        // Giữ lại chính bot — `guild.members.me` được dùng ở nhiều nơi để kiểm quyền.
+        users: { interval: 3600, filter: () => (u) => u.id !== client.user?.id },
+        guildMembers: { interval: 3600, filter: () => (m) => m.id !== client.user?.id },
+    },
+    makeCache: Options.cacheWithLimits({
+        ...Options.DefaultMakeCacheSettings,
+        MessageManager: 50,
+        // Ba cache này bot KHÔNG đọc bao giờ: không bật intent Presences; `noitu` chỉ GỬI
+        // react chứ không đọc; `invite.js` chỉ TẠO lời mời chứ không tra cache.
+        PresenceManager: 0,
+        ReactionManager: 0,
+        GuildInviteManager: 0,
+    }),
 });
 
 // ---------------------------------------------------------

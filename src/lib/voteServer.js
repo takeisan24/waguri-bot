@@ -48,6 +48,35 @@ function safeEqual(a, b) {
 }
 
 // Số server + thành viên toàn bot (gộp mọi shard nếu có) — cho widget công khai trên web.
+/**
+ * Số người chơi THẬT của bot, đọc từ ảnh chụp telemetry hằng ngày.
+ *
+ * VÌ SAO KHÔNG ĐẾM TRỰC TIẾP: `/stats` là endpoint dịch vụ uptime gọi liên tục — một truy
+ * vấn gộp mỗi lượt gọi là tự bắn vào chân. `economy_snapshots` đã tính sẵn mỗi ngày (xem
+ * `runEconomySnapshot` ở index.js), nên đây chỉ là một lượt đọc có chỉ mục, lại còn cache
+ * 5 phút.
+ *
+ * VÌ SAO KHÔNG DÙNG `users.last_seen`: cột đó RỖNG ở 434/470 người (đo 28-08). Dùng nó sẽ
+ * báo 19 người hoạt động trong khi con số thật là 236. Ảnh chụp lấy từ `economy_ledger` nên
+ * đúng. Bẫy này đã ghi trong sổ và từng làm tôi kết luận sai một lần rồi.
+ */
+async function layThongKeNguoiChoi() {
+    const daCo = cacheGet('thong-ke-nguoi-choi');
+    if (daCo) return daCo;
+    try {
+        const [snap] = await db.getEconomySnapshots(1);
+        if (!snap) return null;
+        const ra = {
+            players: Number(snap.user_count || 0),
+            activePlayers: Number(snap.active_7d || 0),
+        };
+        cacheSet('thong-ke-nguoi-choi', ra, 5 * 60_000);
+        return ra;
+    } catch {
+        return null;   // thiếu số người chơi không được phép làm hỏng health check
+    }
+}
+
 async function getPublicStats(client) {
     if (client.shard) {
         try {
@@ -437,13 +466,38 @@ function startVoteServer(client) {
             if (req.url.startsWith('/stats')) {
                 res.setHeader('Access-Control-Allow-Origin', '*');
                 try {
-                    const { servers, users } = await getPublicStats(client);
+                    // Hai lời gọi độc lập -> song song. `layThongKeNguoiChoi` đọc cache 5
+                    // phút nên hầu hết lượt gọi không chạm DB.
+                    const [{ servers, users }, nguoiChoi] = await Promise.all([
+                        getPublicStats(client),
+                        layThongKeNguoiChoi(),
+                    ]);
                     const gatewayPing = client.ws ? (client.ws.ping !== -1 ? client.ws.ping : null) : null;
+                    const bn = process.memoryUsage();
                     res.writeHead(200, { 'Content-Type': 'application/json' });
-                    // Kèm danh tính bản dựng: đây là đường DUY NHẤT hỏi được từ xa xem prod
-                    // đang chạy mã nào. Xem `lib/banBuild.js` để biết vì sao cần (vụ 44
-                    // commit cũ chạy im lặng nhiều ngày, 24-08-2026).
-                    res.end(JSON.stringify({ servers, users, gatewayPing, ...banBuild() }));
+                    // `servers` + `users` GIỮ NGUYÊN TÊN: web đang đọc chúng
+                    // (`web/src/components/LiveStats.tsx`, `web/src/app/status/page.tsx`).
+                    // Chỉ THÊM trường, không đổi tên — đổi là phá trang đang chạy.
+                    //
+                    // Phân biệt hai con số dễ lẫn:
+                    //   `users`   = tổng thành viên của 23 server (một người ở nhiều server
+                    //               bị đếm nhiều lần, và có cả bot) — đây là TẦM VỚI.
+                    //   `players` = người THẬT đã dùng bot, đếm trong DB.
+                    //
+                    // `heapUsedMb`/`heapLimitMb` để truy vụ bot chết: bot chạy với
+                    // `--max-old-space-size=384`, mà discord.js mặc định KHÔNG quét cache
+                    // user/member. Có số này thì lần sau nhìn được nó bò lên hay không, thay
+                    // vì đoán như hôm nay.
+                    res.end(JSON.stringify({
+                        servers,
+                        users,
+                        ...(nguoiChoi || {}),
+                        gatewayPing,
+                        ...banBuild(),
+                        heapUsedMb: Math.round(bn.heapUsed / 1048576),
+                        rssMb: Math.round(bn.rss / 1048576),
+                        heapLimitMb: Math.round(require('node:v8').getHeapStatistics().heap_size_limit / 1048576),
+                    }));
                 } catch {
                     res.writeHead(500); res.end();
                 }
