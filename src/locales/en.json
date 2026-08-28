@@ -287,6 +287,7 @@
       "field_wallet": "💵 Wallet Balance"
     },
     "work": {
+      "bonus_unconfirmed": "\n\n⚠️ But the **level-up bonus didn't finish saving** because of a connection hiccup. Please check with `/bank balance` — your level did go up for real, so nothing is lost~",
       "success_title": "💼・Work Hard",
       "fail_title": "❌・Work Failed",
       "earn_desc": "\n💵 Earned wage: **+{amount}** {currency} *(added to wallet)*",
@@ -1974,6 +1975,7 @@
     },
     "nghingoi": {
       "cooldown_title": "😴 Cozy Nap",
+      "err_save_failed": "Oh, I **couldn't restore your energy** because of a connection hiccup 🥺 Please check with `/status` — if it's still not full, just run `/nghingoi` again~ 🌸",
       "cooldown_desc": "You just woke up~ 😴 You can sleep again <t:{time}:R>.",
       "success_title": "😴 Sweet Dreams",
       "success_desc": "You rested and restored full **{energy}** ⚡ energy, recovered **100 ❤️ health**, and cleared your fatigue! Ready to work with me again~ 🌸"

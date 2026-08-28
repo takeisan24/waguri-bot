@@ -28,7 +28,31 @@ const ROOT = path.join(__dirname, '..');
 // Hàm bọc trong database.js trả `false`/`null` khi DB lỗi. Bỏ kết quả = nhánh sau chạy tiếp
 // như thể xong việc, rồi báo thành công. Đây là lớp lỗi ĐÔNG NHẤT của cả loạt audit.
 const CHI_DOC = /^(get|is|has|list|count|fetch|find|read|tra|xem|lay)/i;
-const GIU_KET_QUA = /(const|let|var)\s+\w+\s*=\s*await\s+db\.|if\s*\(!?\s*await\s+db\.|\.then\(|\.catch\(|return\s+await\s+db\.|return\s+db\./;
+
+// "Giữ kết quả" có NHIỀU hình dạng hơn `const x = await db.…` rất nhiều. Bản đầu của tệp
+// này chỉ nhận đúng một dạng và cho ra **8 dương tính giả trên 14 ứng viên (~57%)** khi quét
+// 5 lô đã đóng — tôi suýt đi vá những chỗ vốn đã đúng.
+//
+// Đây chính là lỗi đã ghi trong sổ [[false-lan-nghia-2026-08-24]]: "số đo đầu SAI gần một
+// nửa vì regex chỉ khớp MỘT dạng return". Lặp lại y nguyên, ở một công cụ viết ra để chống
+// đúng kiểu sai đó. Một cái cân lệch tệ hơn không có cân, vì nó khiến người ta hành động.
+const GIU_KET_QUA = new RegExp([
+    // khai báo với MỌI dạng ràng buộc: `const x =`, `const [a,b] =`, `const {a,b} =`
+    String.raw`(const|let|var)\s+[\w\s,{}\[\]:$]+=\s*await\s+db\.`,
+    // gán trần, không khai báo: `usedVehicle = await db.…`
+    String.raw`[\w.$\]]+\s*=\s*await\s+db\.`,
+    // nhánh của toán tử ba ngôi: `x ? await db.… : …` và `… : await db.…`
+    String.raw`[?:]\s*await\s+db\.`,
+    // gom nhiều lời gọi: kết quả dùng qua mảng trả về
+    String.raw`Promise\.(all|allSettled|race)\(`,
+    // dùng thẳng trong điều kiện
+    String.raw`if\s*\(\s*!?\s*await\s+db\.`,
+    // trả thẳng ra ngoài — nơi gọi mới là chỗ chịu trách nhiệm
+    String.raw`return\s+(await\s+)?db\.`,
+    String.raw`=>\s*(await\s+)?db\.`,
+    // nối promise
+    String.raw`\.then\(|\.catch\(`,
+].join('|'));
 
 // ---- L3: hành động KHÔNG ĐẢO NGƯỢC ĐƯỢC ---------------------------------------------
 // Xoá kênh / ban / kick / xoá tin. Chúng phải phụ thuộc vào bước có thể hỏng đứng trước —

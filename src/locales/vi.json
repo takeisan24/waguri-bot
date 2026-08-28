@@ -287,6 +287,7 @@
       "field_wallet": "💵 Số dư ví"
     },
     "work": {
+      "bonus_unconfirmed": "\n\n⚠️ Nhưng **tiền thưởng lên cấp chưa ghi nhận xong** do trục trặc kết nối. Cậu kiểm lại bằng `/bank balance` giúp mình nhé — cấp độ thì đã lên thật rồi, không mất đâu~",
       "success_title": "💼・Làm việc chăm chỉ",
       "fail_title": "❌・Làm việc thất bại",
       "earn_desc": "\n💵 Nhận lương: **+{amount}** {currency} *(đã cộng vào ví)*",
@@ -1974,6 +1975,7 @@
     },
     "nghingoi": {
       "cooldown_title": "😴 Giấc ngủ trưa",
+      "err_save_failed": "Ơ, mình **chưa hồi được năng lượng** cho cậu do trục trặc kết nối 🥺 Cậu xem lại bằng `/status` nhé — nếu năng lượng vẫn chưa đầy thì gõ `/nghingoi` lại giúp mình~ 🌸",
       "cooldown_desc": "Cậu vừa ngủ dậy mà~ 😴 Ngủ tiếp được sau <t:{time}:R> nhé.",
       "success_title": "😴 Ngủ một giấc thật ngon",
       "success_desc": "Cậu đã nghỉ ngơi, hồi đầy **{energy}** ⚡ năng lượng, phục hồi **100 ❤️ sức khỏe** và **hết mệt mỏi** hẳn! Sẵn sàng làm việc cùng tớ tiếp nào~ 🌸"

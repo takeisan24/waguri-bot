@@ -297,13 +297,29 @@ module.exports = {
 
             if (newLevel > oldLevel) {
                 const bonus = levelUpReward(oldLevel, newLevel);
-                if (bonus > 0) await db.addMoney(userId, bonus, 'wallet');
+                // Kiểm kết quả: dòng chúc mừng ngay bên dưới KHOE đúng con số `bonus`. Bản
+                // cũ bỏ qua kết quả nên lúc DB trục trặc, người chơi đọc "Thưởng +N xu" mà
+                // ví không nhúc nhích. `/work` là lệnh đông nhất bot (1.339 lượt / 19 người,
+                // 30 ngày), nên đây là chỗ câu nói sai chạm nhiều người nhất trong lô kinh tế.
+                //
+                // `addMoney` với số DƯƠNG chỉ hỏng theo kiểu `null` (DB lỗi) — guard trong
+                // RPC là `wallet + amount >= 0`, luôn đúng khi cộng.
+                const daThuong = bonus > 0
+                    ? await db.addMoney(userId, bonus, 'wallet') === true
+                    : true;   // không có thưởng thì không có gì để hỏng
+                if (!daThuong) console.error(`[PAYOUT FAIL] work-levelup user=${userId} bonus=${bonus}`);
                 const lvlUpTitle = isEn ? '🎉 Level Up!' : '🎉 Lên cấp!';
                 let lvlUpDesc = isEn
                     ? `Congratulations on reaching **Level ${newLevel}**! Bonus: **+${fmt(bonus, locale)}** ${config.CURRENCY} 🎁`
                     : `Chúc mừng cậu đạt **Level ${newLevel}**! Thưởng **+${fmt(bonus, locale)}** ${config.CURRENCY} 🎁`;
 
                 // Gợi ý tham gia server support nếu vượt mốc cấp độ và ở server cộng đồng ngoài
+                // Thưởng ghi hụt -> nói thật. Không dùng `common.payout_unconfirmed` vì chuỗi
+                // đó chỉ người đọc sang "dòng số dư bên dưới", mà embed của /work chỉ hiện
+                // MỨC THAY ĐỔI của ví chứ không hiện số dư — nên phải có chuỗi riêng chỉ
+                // đúng `/bank balance`.
+                if (!daThuong) lvlUpDesc += t(locale, 'commands.work.bonus_unconfirmed');
+
                 const { getMilestoneInviteMessage } = require('../../lib/supportReward');
                 const inviteMsg = getMilestoneInviteMessage(oldLevel, newLevel, locale);
                 if (inviteMsg && interaction.guildId !== config.ROLE_REWARDS.SUPPORT_GUILD_ID) {
