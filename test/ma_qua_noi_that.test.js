@@ -245,3 +245,66 @@ test('dò mã bằng máy bị chặn sau 5 lần sai', async () => {
     assert.notStrictEqual(khac.text, t('vi', 'commands.redeem.too_many_tries'),
         'bộ đếm đang chặn nhầm người khác');
 });
+
+// ── 12-14. Ba lỗi tìm ra khi ĐỌC LẠI chính mã mình vừa viết ────────────────────────
+// Cả ba đều lọt qua 549 test và 11 phép bẻ ngược, vì cổng chỉ canh thứ tôi NGHĨ ra để canh.
+const path2 = require('path');
+
+function chayEcoAdmin(sub, { options = {}, stubs = {} } = {}) {
+    const lenh = require('../src/commands/admin/eco-admin.js');
+    const { OWNER_ID } = require('./helpers/mockInteraction');
+    const { interaction, calls } = makeInteraction({ sub, options, userId: OWNER_ID, locale: 'vi' });
+    const hoan = stubDb(db, {
+        getUser: async () => ({ user_id: OWNER_ID, locale: 'vi' }),
+        getGuildSettings: async () => ({}),
+        ...stubs,
+    });
+    return lenh.execute(interaction).then(() => { hoan(); return { calls }; },
+        e => { hoan(); throw e; });
+}
+
+test('mã quà trả lời RIÊNG TƯ — không in mã ra kênh cho mọi người hốt', async () => {
+    for (const sub of ['code-create', 'code-list', 'code-revoke']) {
+        const { calls } = await chayEcoAdmin(sub, {
+            options: { code: 'ABCD-1234', note: 'thu', coins: 1, limit: 5 },
+            stubs: {
+                createRedeemCode: async () => 'ok',
+                listRedeemCodes: async () => [],
+                revokeRedeemCode: async () => 'ok',
+            },
+        });
+        const defer = calls.find(c => c.kind === 'deferReply');
+        assert.ok(defer, `${sub}: không thấy deferReply`);
+        assert.ok(defer.payload?.flags,
+            `/eco-admin ${sub} đang trả lời CÔNG KHAI. Mã quà in ra kênh là bị hốt sạch\n`
+            + 'trước khi kịp đem phát; code-list còn phơi toàn bộ mã đang sống.');
+    }
+});
+
+test('code-list không vượt trần 4096 ký tự của mô tả embed', async () => {
+    // 50 mã, ghi chú dài kịch trần 200 ký tự — đúng thứ Discord sẽ từ chối.
+    const nhieu = Array.from({ length: 50 }, (_, i) => ({
+        code: `MA-DAI-SO-${i}`, rewards: { coins: 1000, items: [{ id: 'x', qty: 1 }], premium_days: 3 },
+        max_uses: 10, uses: 3, expires_at: null, revoked: false, note: 'g'.repeat(200),
+    }));
+    const { calls } = await chayEcoAdmin('code-list', {
+        options: { limit: 50 },
+        stubs: { listRedeemCodes: async () => nhieu },
+    });
+    const mo = calls.at(-1)?.payload?.embeds?.[0];
+    const desc = (mo?.data || mo)?.description || '';
+    assert.ok(desc.length > 0, 'code-list không trả lời gì');
+    assert.ok(desc.length <= 4096,
+        `Mô tả dài ${desc.length} ký tự — Discord chặn ở 4096 và lệnh sẽ chết không lời giải thích.`);
+    assert.match(desc, /\d+ mã nữa/, 'đã cắt bớt mà không nói ra — nuốt bớt im lặng cũng là nói sai');
+});
+
+test('code-list không ghi cứng chữ tiếng Việt trong mã nguồn', () => {
+    const js = fs.readFileSync(path2.join(ROOT, 'src', 'commands', 'admin', 'eco-admin.js'), 'utf8');
+    const khoi = js.slice(js.indexOf("sub === 'code-list'"), js.indexOf("sub === 'code-revoke'"));
+    const banChay = khoi.split('\n').filter(d => !d.trim().startsWith('//'))
+        .filter(d => /`[^`]*[àáâãèéêìíòóôõùúýăđĩũơưạảấầẩậắằẳẵặẹẻẽếềểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹ]/i.test(d));
+    assert.deepStrictEqual(banChay, [],
+        `Chữ tiếng Việt ghi cứng trong code-list:\n${banChay.join('\n')}\n`
+        + 'Chủ bot đọc tiếng Anh sẽ thấy chữ Việt lẫn vào — đúng lớp lỗi L2 mà máy quét đi tìm.');
+});

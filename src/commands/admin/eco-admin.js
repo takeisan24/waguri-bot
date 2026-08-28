@@ -92,9 +92,12 @@ module.exports = {
             });
             return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
         }
-        await interaction.deferReply();
-
+        // Nhánh mã quà phải trả lời RIÊNG TƯ. Không thì `/eco-admin code-create` in thẳng mã
+        // vào kênh cho mọi người đang xem — mã 100 lượt bị hốt sạch trước khi kịp đem phát.
+        // `code-list` còn nặng hơn: nó phơi TOÀN BỘ mã đang sống cùng giá trị từng mã.
+        // (Đọc `sub` trước defer là an toàn: `getSubcommand()` thuần bộ nhớ, không chạm DB.)
         const sub = interaction.options.getSubcommand();
+        await interaction.deferReply(sub.startsWith('code-') ? { flags: MessageFlags.Ephemeral } : undefined);
         // Khai báo MỘT lần ở đầu scope hàm, trước mọi nhánh `sub`. Trước đây có tới hai
         // `const C`: một trong khối `report`, một ở cuối hàm. Nhánh `trace` không có bản
         // cục bộ nên giải về bản cuối hàm — đang trong vùng chết (TDZ) vì `const` không
@@ -169,18 +172,33 @@ module.exports = {
                 return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'info', {
                     description: t(locale, 'commands.eco-admin.code.list_empty') })] });
             }
+            const cat = (s, n) => (String(s).length > n ? `${String(s).slice(0, n - 1)}…` : String(s));
             const dong = ds.map(c => {
                 const het = c.revoked ? '🚫' : (c.expires_at && new Date(c.expires_at) <= new Date() ? '⏰' : '✅');
                 const r = c.rewards || {};
                 const thuong = [
                     r.coins ? `${fmt(r.coins, locale)} ${C}` : null,
-                    Array.isArray(r.items) && r.items.length ? `${r.items.length} vật phẩm` : null,
+                    // Không ghi cứng "vật phẩm" ở đây: chủ bot đọc tiếng Anh sẽ thấy chữ Việt
+                    // lẫn vào. Đúng lớp lỗi L2 mà máy quét của chính repo này đi tìm.
+                    Array.isArray(r.items) && r.items.length
+                        ? t(locale, 'commands.eco-admin.code.sum_items_n', { n: r.items.length }) : null,
                     r.premium_days ? `${r.premium_days}d Premium` : null,
                 ].filter(Boolean).join(' + ') || '—';
-                return `${het} \`${c.code}\` · ${c.uses}/${c.max_uses} · ${thuong}\n   ↳ _${c.note}_`;
+                return `${het} \`${c.code}\` · ${c.uses}/${c.max_uses} · ${thuong}\n   ↳ _${cat(c.note, 80)}_`;
             });
-            return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'info', {
-                description: dong.join('\n') })] });
+
+            // Mô tả embed của Discord chặn ở 4096 ký tự. Ghi chú được phép dài 200, nên chỉ
+            // 20 mã (mức mặc định) đã đủ vượt trần -> Discord từ chối và lệnh chết không lời
+            // giải thích. Cắt cho vừa, và NÓI ra là đã cắt: nuốt bớt trong im lặng cũng là
+            // một kiểu nói sai.
+            let mo = '';
+            let bo = 0;
+            for (const d of dong) {
+                if (mo.length + d.length + 1 > 3900) { bo++; continue; }
+                mo += (mo ? '\n' : '') + d;
+            }
+            if (bo) mo += `\n\n${t(locale, 'commands.eco-admin.code.list_truncated', { n: bo })}`;
+            return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'info', { description: mo })] });
         }
 
         if (sub === 'code-revoke') {

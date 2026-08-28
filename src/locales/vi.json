@@ -1925,7 +1925,9 @@
         "err_over_cap_coins": "⛔ Vượt trần **50.000 xu** mỗi lượt. Trần đặt trong DB để một số 0 gõ thừa không thổi bay nền kinh tế.",
         "err_over_cap_total": "⛔ Vượt trần **500.000 xu** tổng (xu × số lượt). Giảm số xu hoặc số lượt xuống.",
         "err_over_cap_premium": "⛔ Vượt trần **90 ngày** Premium mỗi mã.",
-        "err_error": "Không tạo được mã lúc này. Kiểm tra log rồi thử lại."
+        "err_error": "Không tạo được mã lúc này. Kiểm tra log rồi thử lại.",
+        "sum_items_n": "{n} vật phẩm",
+        "list_truncated": "_…và {n} mã nữa không hiển thị hết (dùng `limit` nhỏ hơn để xem rõ)._"
       }
     },
     "premium-admin": {
