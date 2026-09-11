@@ -44,6 +44,44 @@ function buildQrScreen(interaction, locale, order, laDonate) {
             .setCustomId(`pay:claim:${order.code}`)
             .setLabel(t(locale, 'commands.premium.btn_claimed'))
             .setStyle(ButtonStyle.Success),
+        new ButtonBuilder()
+            .setCustomId(`pay:cancel:${order.code}`)
+            .setLabel(t(locale, 'commands.premium.btn_cancel'))
+            .setStyle(ButtonStyle.Secondary),
+    );
+
+    return { embeds: [embed], components: [row] };
+}
+
+/** Màn hình xác nhận: ngăn người dùng bấm nhầm khi chưa chuyển tiền thật. */
+function buildConfirmScreen(interaction, locale, order) {
+    const soTien = Number(order.amount) > 0
+        ? `${fmt(order.amount, locale)}${t(locale, 'commands.premium.currency')}`
+        : t(locale, 'commands.premium.amount_freeform');
+
+    const embed = buildWaguriEmbed(interaction, 'warning', {
+        locale,
+        title: t(locale, 'commands.premium.confirm_title'),
+        description: t(locale, 'commands.premium.confirm_desc'),
+        fields: [
+            { name: t(locale, 'commands.premium.qr_memo'), value: `\`\`\`${order.code}\`\`\``, inline: true },
+            { name: t(locale, 'commands.premium.qr_amount'), value: soTien, inline: true },
+        ],
+    });
+
+    const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+            .setCustomId(`pay:confirm:${order.code}`)
+            .setLabel(t(locale, 'commands.premium.btn_confirm_claim'))
+            .setStyle(ButtonStyle.Success),
+        new ButtonBuilder()
+            .setCustomId(`pay:back_qr:${order.code}`)
+            .setLabel(t(locale, 'commands.premium.btn_back_qr'))
+            .setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder()
+            .setCustomId(`pay:cancel:${order.code}`)
+            .setLabel(t(locale, 'commands.premium.btn_cancel'))
+            .setStyle(ButtonStyle.Danger),
     );
 
     return { embeds: [embed], components: [row] };
@@ -60,6 +98,18 @@ async function handlePayButton(interaction, locale) {
     // Màn QR & báo đã CK đều là chuyện RIÊNG của từng người -> ephemeral. Nút nằm trên tin
     // nhắn /premium công khai (ai bấm cũng được, đúng ý đồ), nhưng đơn thì của riêng người bấm.
     const userId = interaction.user.id;
+
+    // --- Huỷ / Đóng màn hình thanh toán ---
+    if (id.startsWith('pay:cancel')) {
+        await interaction.deferUpdate();
+        return interaction.editReply({
+            embeds: [buildWaguriEmbed(interaction, 'info', {
+                locale,
+                description: t(locale, 'commands.premium.cancelled_desc'),
+            })],
+            components: [],
+        });
+    }
 
     // --- Ủng hộ tuỳ tâm: KHÔNG ghim số tiền, người ủng hộ tự điền trong app ngân hàng ---
     if (id === 'pay:donate') {
@@ -84,9 +134,48 @@ async function handlePayButton(interaction, locale) {
         return interaction.editReply(buildQrScreen(interaction, locale, order, false));
     }
 
-    // --- "Tôi đã chuyển khoản" -> đánh dấu & DM owner kèm nút duyệt ---
+    // --- Bước 1: Người mua bấm "Tôi đã chuyển khoản" -> Màn hình XÁC NHẬN (chống bấm nhầm) ---
     if (id.startsWith('pay:claim:')) {
         const code = id.slice('pay:claim:'.length);
+        await interaction.deferUpdate();
+
+        const order = await db.getPremiumOrder(code);
+        if (!order || String(order.user_id) !== String(userId)) {
+            return interaction.editReply({
+                embeds: [buildWaguriEmbed(interaction, 'error', { locale, description: t(locale, 'commands.premium.order_failed') })],
+                components: [],
+            });
+        }
+
+        if (order.status === 'paid' || order.claimed_at) {
+            return interaction.editReply({
+                embeds: [buildWaguriEmbed(interaction, 'warning', { locale, description: t(locale, 'commands.premium.claim_already') })],
+                components: [],
+            });
+        }
+
+        return interaction.editReply(buildConfirmScreen(interaction, locale, order));
+    }
+
+    // --- Người dùng muốn quay lại xem mã QR từ màn hình xác nhận ---
+    if (id.startsWith('pay:back_qr:')) {
+        const code = id.slice('pay:back_qr:'.length);
+        await interaction.deferUpdate();
+
+        const order = await db.getPremiumOrder(code);
+        if (!order || String(order.user_id) !== String(userId)) {
+            return interaction.editReply({
+                embeds: [buildWaguriEmbed(interaction, 'error', { locale, description: t(locale, 'commands.premium.order_failed') })],
+                components: [],
+            });
+        }
+
+        return interaction.editReply(buildQrScreen(interaction, locale, order, order.kind === 'donate'));
+    }
+
+    // --- Bước 2: Người mua XÁC NHẬN chắc chắn đã chuyển -> đánh dấu & DM owner ---
+    if (id.startsWith('pay:confirm:')) {
+        const code = id.slice('pay:confirm:'.length);
         await interaction.deferUpdate();
 
         // `claimOrderOnce` chỉ đổi được MỘT LẦN và chỉ bởi CHỦ đơn -> bấm lại không phiền
@@ -100,7 +189,7 @@ async function handlePayButton(interaction, locale) {
         }
 
         // Báo owner ở chế độ nền: người trả tiền không nên phải chờ Discord API của owner.
-        notifyOwnersOfClaim(interaction.client, code).catch(e => logError('pay:claim notify', e, { user: userId }));
+        notifyOwnersOfClaim(interaction.client, code).catch(e => logError('pay:confirm notify', e, { user: userId }));
 
         return interaction.editReply({
             embeds: [buildWaguriEmbed(interaction, 'success', {
@@ -115,4 +204,4 @@ async function handlePayButton(interaction, locale) {
     return true;
 }
 
-module.exports = { handlePayButton, buildQrScreen };
+module.exports = { handlePayButton, buildQrScreen, buildConfirmScreen };

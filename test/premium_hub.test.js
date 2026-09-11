@@ -32,7 +32,7 @@ Module._load = function (yeuCau, cha, laChinh) {
 };
 
 const premium = require('../src/commands/utility/premium.js');
-const { buildQrScreen } = require('../src/lib/payButtons.js');
+const { buildQrScreen, buildConfirmScreen } = require('../src/lib/payButtons.js');
 Module._load = loadGoc;
 
 const interactionGia = {
@@ -93,12 +93,33 @@ describe('/premium — trung tâm ủng hộ', () => {
             assert.ok(JSON.stringify(e).includes(donHang.code), 'màn QR thiếu mã đơn');
             for (const f of e.fields) assert.ok(f.value.trim().length > 0 && f.value.length <= 1024);
             assert.strictEqual(out.components[0].components[0].custom_id, `pay:claim:${donHang.code}`);
+            assert.strictEqual(out.components[0].components[1].custom_id, `pay:cancel:${donHang.code}`);
         });
 
         test(`màn QR mua Premium GHIM đúng số tiền (${locale})`, () => {
             const donHang = { code: 'WAGURI9F8E7D6C', amount: 25000 };
             const out = xacThuc(buildQrScreen(interactionGia, locale, donHang, false));
             assert.match(out.embeds[0].image.url, /[?&]amount=25000(&|$)/, 'QR Premium phải ghim đúng 25000');
+            assert.strictEqual(out.components[0].components[1].custom_id, `pay:cancel:${donHang.code}`);
+        });
+
+        test(`màn xác nhận chuyển khoản dựng & xác thực được (${locale})`, () => {
+            const donHang = { code: 'WAGURI9F8E7D6C', amount: 25000 };
+            const out = xacThuc(buildConfirmScreen(interactionGia, locale, donHang));
+            const e = out.embeds[0];
+            assert.ok(e.title, 'embed xác nhận phải có tiêu đề');
+            assert.ok(JSON.stringify(e).includes(donHang.code), 'màn xác nhận thiếu mã đơn');
+            for (const f of e.fields) assert.ok(f.value.trim().length > 0 && f.value.length <= 1024);
+
+            const nut = out.components[0].components;
+            assert.strictEqual(nut.length, 3, 'màn xác nhận phải có đủ 3 nút: xác nhận, quay lại QR, đóng');
+            assert.strictEqual(nut[0].custom_id, `pay:confirm:${donHang.code}`);
+            assert.strictEqual(nut[1].custom_id, `pay:back_qr:${donHang.code}`);
+            assert.strictEqual(nut[2].custom_id, `pay:cancel:${donHang.code}`);
+            for (const b of nut) {
+                assert.ok(b.label.length <= 80, `label nút quá dài: ${b.label}`);
+                assert.notStrictEqual(b.style, 6);
+            }
         });
     }
 });
