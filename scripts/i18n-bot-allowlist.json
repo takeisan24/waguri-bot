@@ -15,24 +15,22 @@
     "src/commands/games/bingo.js": "Chỉ còn .setDescription() của slash, do src/lib/commandLocalizer.js dịch. Logic chạy nằm ở src/lib/bingoPrefix.js (32 lời gọi i18n).",
     "src/commands/games/loto.js": "Như bingo.js — logic ở src/lib/loto.js (33 lời gọi i18n).",
     "src/events/channelDelete.js": "Một dòng console.log nội bộ, người dùng không đọc.",
+    "src/lib/ai/dauVao.js": "Chuỗi là NHÃN GỬI CHO MODEL, không phải chữ người dùng đọc. Model nhận nhãn tiếng Việt rồi trả lời theo ngôn ngữ mà chỉ thị [Ngôn ngữ] trong systemPrompt ép — người dùng EN vẫn nhận câu trả lời tiếng Anh. Dịch nhãn sang EN chỉ tốn thêm token mà không đổi gì cho người đọc, vì persona vốn đã thuần tiếng Việt.",
     "src/lib/ai/gemini.js": "Log cảnh báo nội bộ (console.warn khi câu trả lời bị cắt).",
     "src/lib/ai/index.js": "Từ vựng ngữ cảnh cho AI + log nội bộ.",
-    "src/lib/ai/persona.js": "Prompt nhân vật gửi cho model, không phải giao diện.",
+    "src/lib/ai/taiAnh.js": "Hai chuỗi là console.warn cho NGƯỜI VẬN HÀNH (bỏ ảnh host lạ, không tải được), không hiện ra Discord. Người dùng chỉ thấy Waguri trả lời bằng chữ; lý do bỏ ảnh nằm ở nhãn do dauVao.js sinh, và nhãn đó đi qua model rồi ra ngôn ngữ đúng.",
     "src/lib/amlich.js": "Dữ liệu âm lịch (can, chi, tiết khí) — danh từ riêng tiếng Việt, dịch sẽ sai.",
     "src/lib/antinuke/config.js": "Mô tả nội bộ, không hiển thị.",
     "src/lib/antinuke/index.js": "Mô tả nội bộ, không hiển thị.",
     "src/lib/antinuke/lockdown.js": "Mô tả nội bộ, không hiển thị.",
     "src/lib/autobackup.js": "Log nội bộ.",
+    "src/lib/canhAck.js": "Log nội bộ — chuỗi chỉ gửi về kênh log của chủ bot qua logError, người dùng không bao giờ thấy.",
     "src/lib/commandLocalizer.js": "CHÍNH LÀ bảng dịch tên/mô tả lệnh. Tiếng Việt ở đây là đầu ra mong muốn.",
     "src/lib/eventCalendar.js": "4 chuỗi hiển thị là thông báo phát vào MỘT kênh cố định (ANNOUNCEMENT_CHANNEL_ID, biến môi trường toàn cục) — không có người nhận cụ thể để lấy locale. Muốn song ngữ là quyết định sản phẩm, không phải sửa máy móc. 4 chuỗi còn lại là console.log.",
-    "src/lib/jail.js": "Một dòng console.warn nội bộ khi getJailForAck quá hạn — log cho người vận hành đọc, không hiện cho người chơi. Chuỗi hiển thị của hệ giam nằm ở common.jailed* trong locale.",
     "src/lib/logger.js": "Log nội bộ.",
-    "src/lib/canhAck.js": "Log nội bộ — chuỗi chỉ gửi về kênh log của chủ bot qua logError, người dùng không bao giờ thấy.",
     "src/lib/masoi/engine.js": "Tên/mô tả 6 vai ở đây chỉ là GIÁ TRỊ DỰ PHÒNG. Mọi đường hiển thị đi qua getRoleName/getRoleDesc trong masoi.js:68-69, vốn gọi `t(locale, 'commands.masoi.roles.*')` trước; locale đã có đủ 6 vai cả vi lẫn en. Chỗ dùng thẳng chỉ là `.emoji` (không phụ thuộc ngôn ngữ).",
     "src/lib/noitu.js": "Từ điển trò Nối Từ — trò chơi tiếng Việt theo bản chất, không dịch được.",
     "src/lib/owner.js": "Log nội bộ.",
-    "src/lib/season.js": "Tên mùa/lễ tiếng Việt (Tết Nguyên Đán…) — danh từ riêng.",
-    "src/lib/ai/dauVao.js": "Chuỗi là NHÃN GỬI CHO MODEL, không phải chữ người dùng đọc. Model nhận nhãn tiếng Việt rồi trả lời theo ngôn ngữ mà chỉ thị [Ngôn ngữ] trong systemPrompt ép — người dùng EN vẫn nhận câu trả lời tiếng Anh. Dịch nhãn sang EN chỉ tốn thêm token mà không đổi gì cho người đọc, vì persona vốn đã thuần tiếng Việt.",
-    "src/lib/ai/taiAnh.js": "Hai chuỗi là console.warn cho NGƯỜI VẬN HÀNH (bỏ ảnh host lạ, không tải được), không hiện ra Discord. Người dùng chỉ thấy Waguri trả lời bằng chữ; lý do bỏ ảnh nằm ở nhãn do dauVao.js sinh, và nhãn đó đi qua model rồi ra ngôn ngữ đúng."
+    "src/lib/season.js": "Tên mùa/lễ tiếng Việt (Tết Nguyên Đán…) — danh từ riêng."
   }
 }
