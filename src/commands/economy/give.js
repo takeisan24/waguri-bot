@@ -51,6 +51,20 @@ module.exports = {
             return interaction.editReply({ embeds: [embed] });
         }
 
+        // Chốt chặn chống tài khoản clone farm quà tân thủ chuyển tiền
+        const guard = await db.guardPayTransfer(interaction.user.id);
+        if (guard && guard.allowed === false) {
+            const embed = buildWaguriEmbed(interaction, 'warning', {
+                locale,
+                title: t(locale, 'commands.give.embed_title_warning'),
+                description: t(locale, 'commands.give.err_locked_newbie', {
+                    level: 5,
+                    chapter: 4
+                })
+            });
+            return interaction.editReply({ embeds: [embed] });
+        }
+
         const tax = Math.floor(amount * config.GIVE_TAX_PCT);
         const received = amount - tax;
 

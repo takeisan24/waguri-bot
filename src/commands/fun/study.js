@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, EmbedBuilder, MessageFlags } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder, MessageFlags } = require('discord.js');
 const studyLib = require('../../lib/study');
 const db = require('../../database');
 const { getInteractionLanguage, t } = require('../../lib/i18n');
@@ -41,6 +41,11 @@ module.exports = {
             sub
                 .setName('leaderboard')
                 .setDescription('Xem Bảng xếp hạng Học Viên Chuyên Cần')
+        )
+        .addSubcommand(sub =>
+            sub
+                .setName('shop')
+                .setDescription('Cửa hàng Học viện Kikyo — Đổi vật phẩm bằng Điểm Tri Thức 🎓')
         ),
 
     async execute(interaction) {
@@ -145,6 +150,91 @@ module.exports = {
                 .setTimestamp();
 
             return interaction.reply({ embeds: [embed] });
+        }
+
+        if (subcommand === 'shop') {
+            const userRow = await db.getUser(userId);
+            const userPoints = userRow?.study_points || 0;
+            const catalog = await db.getStudyShopCatalog();
+
+            if (!catalog || catalog.length === 0) {
+                return interaction.reply({
+                    content: t(locale, 'commands.study.shop_empty') || 'Cửa hàng hiện đang tạm đóng cửa để bổ sung giáo trình~ 🌸',
+                    flags: MessageFlags.Ephemeral
+                });
+            }
+
+            const tier1 = catalog.filter(i => i.tier === 1);
+            const tier2 = catalog.filter(i => i.tier === 2);
+            const tier3 = catalog.filter(i => i.tier === 3);
+
+            const formatItems = (list) => list.map(item => {
+                const it = item.items || {};
+                const name = (locale === 'en' ? t(locale, `data.items.${item.id}.name`) : it.name) || it.name || item.id;
+                return `• **${name}** — \`${item.cost_points} pts\`\n  *${it.description || ''}*`;
+            }).join('\n');
+
+            const embed = new EmbedBuilder()
+                .setColor('#8B5CF6')
+                .setTitle(t(locale, 'commands.study.shop_title') || '🎓 Cửa Hàng Học Viện Kikyo')
+                .setDescription(
+                    `Chào mừng cậu đến với Tiệm Tri Thức Kikyo! 🌸\n` +
+                    `Điểm Tri Thức hiện tại của cậu: **${userPoints}** 📜\n` +
+                    `*(Tích lũy điểm qua các phiên học Pomodoro /study start)*\n\n` +
+                    `**🍵 TẦNG 1: NHẬP MÔN & TIÊU THỤ**\n${formatItems(tier1)}\n\n` +
+                    `**📖 TẦNG 2: TRI THỨC ỨNG DỤNG & KỸ NĂNG**\n${formatItems(tier2)}\n\n` +
+                    `**🎫 TẦNG 3: VIỆN SĨ & TINH ANH**\n${formatItems(tier3)}`
+                )
+                .setFooter({ text: 'Chọn vật phẩm bên dưới để quy đổi ngay • Waguri 🌸' })
+                .setTimestamp();
+
+            const selectOptions = catalog.map(item => {
+                const it = item.items || {};
+                const name = (locale === 'en' ? t(locale, `data.items.${item.id}.name`) : it.name) || it.name || item.id;
+                return {
+                    label: `${name} (${item.cost_points} pts)`,
+                    value: item.id,
+                    description: (it.description || '').slice(0, 100),
+                    emoji: item.tier === 1 ? '🍵' : item.tier === 2 ? '📖' : '🎓'
+                };
+            });
+
+            const row = new ActionRowBuilder().addComponents(
+                new StringSelectMenuBuilder()
+                    .setCustomId('study_shop_select')
+                    .setPlaceholder('Chọn vật phẩm muốn quy đổi...')
+                    .addOptions(selectOptions)
+            );
+
+            const msg = await interaction.reply({ embeds: [embed], components: [row], fetchReply: true });
+
+            const collector = msg.createMessageComponentCollector({
+                filter: i => i.user.id === userId && i.customId === 'study_shop_select',
+                time: 60000
+            });
+
+            collector.on('collect', async i => {
+                const chosenId = i.values[0];
+                const res = await db.buyStudyShopItem(userId, chosenId);
+                if (!res || !res.success) {
+                    let errMsg = 'Có lỗi xảy ra khi mua vật phẩm~ 🌸';
+                    if (res?.error === 'insufficient_points') {
+                        errMsg = `Cậu chưa đủ Điểm Tri Thức rồi 🥺 (Cần **${res.cost}** pts, hiện có **${res.current_points}** pts). Chăm chỉ học thêm nhé~ 🌸`;
+                    }
+                    return i.reply({ content: errMsg, flags: MessageFlags.Ephemeral });
+                }
+
+                return i.reply({
+                    content: `🎉 Chúc mừng cậu đã đổi thành công **${res.item_name}** với giá **${res.cost}** Điểm Tri Thức! Còn lại **${res.remaining_points}** pts. 🌸`,
+                    flags: MessageFlags.Ephemeral
+                });
+            });
+
+            collector.on('end', () => {
+                interaction.editReply({ components: [] }).catch(() => {});
+            });
+
+            return;
         }
     }
 };

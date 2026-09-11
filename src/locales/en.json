@@ -1695,6 +1695,7 @@
       "err_self": "You cannot transfer money to yourself~ 😄",
       "err_invalid_amount": "The amount must be greater than 0~",
       "err_poor": "Your wallet doesn't have enough money 😟. Go earn more with `/work`!",
+      "err_locked_newbie": "You need to reach at least **Level {level}** or complete **Story Act 3** to transfer money~ 🌸 (to protect against alt accounts)",
       "success_title": "💸・Transfer Successful",
       "success_desc": "You transferred to <@{target}>. So generous of you~ 🌸\nTax {taxPct}%: **-{tax}** → recipient received **{received}** {currency}\n💵 Your wallet balance: **{wallet}** {currency}",
       "success_desc_no_tax": "You transferred to <@{target}>. So generous of you~ 🌸\nRecipient received **{received}** {currency}\n💵 Your wallet balance: **{wallet}** {currency}"
@@ -2053,7 +2054,9 @@
       "done_partial_desc": "*Waguri noted that you studied for **{minutes} minutes**!* 🌸\n\n⚠️ The system is busy so **rewards could not be granted** right now. Please try again shortly, or tell an admin if it keeps happening~ 🍵",
       "log_stats": "*You have no running study session right now~*\n\n**Your stats:**\n• **Study streak 📚:** `{streak} days`\n• **Total focus time:** `{hours}h {minutes}m`\n• **Kikyo Flower Seeds 🌸:** `{points}`\n\n",
       "stop_saved": "🌸 *Waguri saved your \"{name}\" session~ See you at the next one!* ✨",
-      "lb_row": "{medal} **#{rank}** <@{user}> — `{streak} days` (Total {hours}h {minutes}m)\n"
+      "lb_row": "{medal} **#{rank}** <@{user}> — `{streak} days` (Total {hours}h {minutes}m)\n",
+      "shop_title": "🎓 Kikyo Academy Knowledge Shop",
+      "shop_empty": "The shop is temporarily closed for curriculum restocking~ 🌸"
     },
     "redeem": {
       "ok": "🎁 Code `{code}` redeemed!",
@@ -2351,6 +2354,36 @@
       },
       "trung_than_thoai": {
         "name": "Mythic Egg"
+      },
+      "tra_lofi": {
+        "name": "Lo-Fi Waguri Tea"
+      },
+      "men_no_co_truyen": {
+        "name": "Ancient Yeast"
+      },
+      "bot_ngu_coc_pet": {
+        "name": "Herbal Pet Cereal"
+      },
+      "so_tay_ngu_nghiep": {
+        "name": "Fishing Manual"
+      },
+      "bi_pho_dia_chat": {
+        "name": "Geology Tome"
+      },
+      "sach_tam_tri": {
+        "name": "Pet Mind Tome"
+      },
+      "tui_lua_mach_kikyo": {
+        "name": "Kikyo Wheat Seed Bag"
+      },
+      "khay_nuong_hoang_kim": {
+        "name": "Golden Baking Tray"
+      },
+      "kinh_tri_thuc": {
+        "name": "Kikyo Reading Glasses"
+      },
+      "title_dai_hoc_si": {
+        "name": "Title: Grand Scholar"
       }
     },
     "jobs": {

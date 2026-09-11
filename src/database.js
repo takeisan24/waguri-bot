@@ -2907,6 +2907,11 @@ module.exports = {
     cancelStudySession,
     getStudyStatus,
     getStudyLeaderboard,
+    buyStudyShopItem,
+    getStudyShopCatalog,
+    // story quest & anti-sybil guardrail
+    advanceStoryNode,
+    guardPayTransfer,
     // admin
     setBalance,
     setExp,
@@ -3689,5 +3694,70 @@ async function antinukePruneIncidents(days = 90) {
     } catch (e) {
         logError('antinukePruneIncidents', e, { days });
         return 0;
+    }
+}
+
+/** Mua vật phẩm tại Tiệm Tri Thức bằng study_points (nguyên tử) */
+async function buyStudyShopItem(userId, itemId) {
+    try {
+        const { data, error } = await supabase.rpc('buy_study_shop_item', {
+            p_user_id: userId,
+            p_item_id: itemId
+        });
+        if (error) throw error;
+        return data;
+    } catch (e) {
+        logError('buyStudyShopItem', e, { userId, itemId });
+        return null;
+    }
+}
+
+/** Lấy danh mục vật phẩm tại Tiệm Tri Thức kèm thông tin item */
+async function getStudyShopCatalog() {
+    try {
+        const { data, error } = await supabase
+            .from('study_shop_catalog')
+            .select('id, cost_points, tier, items(id, name, description, effect_type, effect_value, rarity)')
+            .order('tier', { ascending: true })
+            .order('cost_points', { ascending: true });
+        if (error) throw error;
+        return data || [];
+    } catch (e) {
+        logError('getStudyShopCatalog', e);
+        return [];
+    }
+}
+
+/** Cập nhật tiến trình Cốt truyện (Hồi ký Kikyo) và trao thưởng nguyên tử */
+async function advanceStoryNode(userId, chapter, node, rewardCoins, rewardExp, rewardItem, affectionGain) {
+    try {
+        const { data, error } = await supabase.rpc('advance_story_node', {
+            p_user_id: userId,
+            p_chapter: Number(chapter),
+            p_node: Number(node),
+            p_reward_coins: rewardCoins ? Number(rewardCoins) : 0,
+            p_reward_exp: rewardExp ? Number(rewardExp) : 0,
+            p_reward_item: rewardItem || null,
+            p_affection_gain: affectionGain ? Number(affectionGain) : 0
+        });
+        if (error) throw error;
+        return data;
+    } catch (e) {
+        logError('advanceStoryNode', e, { userId, chapter, node });
+        return null;
+    }
+}
+
+/** Chốt chặn kiểm tra quyền chuyển tiền /give (chống acc clone) */
+async function guardPayTransfer(senderId) {
+    try {
+        const { data, error } = await supabase.rpc('guard_pay_transfer', {
+            p_sender_id: senderId
+        });
+        if (error) throw error;
+        return data;
+    } catch (e) {
+        logError('guardPayTransfer', e, { senderId });
+        return { allowed: false, error: 'db_error' };
     }
 }

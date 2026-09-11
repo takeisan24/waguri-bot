@@ -218,7 +218,7 @@ const CATEGORIES_EN: Cat[] = [
       ["date", "invite on a date 💑"],
       ["confession", "send anonymous confession 🤫"],
       ["noitu", "Vietnamese word chaining game 🔤"],
-      ["study", "Pomodoro study companion 24/7 with Waguri (start · status · stop · leaderboard) 📚"],
+      ["study", "Pomodoro study companion 24/7 with Waguri (start · status · stop · leaderboard · shop) 📚"],
     ],
   },
   {

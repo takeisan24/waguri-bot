@@ -427,14 +427,14 @@ module.exports = {
     // tiệm tự nướng RATE/phút, dồn vào doanh thu tới TRẦN capacity -> /thu về ví.
     // Cân bằng hướng ỔN ĐỊNH: passive < cày chủ động; trần + gate NL chống lạm phát.
     BAKERY: {
-        OPEN_COST: 50000,          // phí mở tiệm
-        MIN_LEVEL: 15,             // cấp tối thiểu để mở
+        OPEN_COST: 10000,          // phí mở tiệm (cân bằng lại về 10k xu)
+        MIN_LEVEL: 5,              // cấp tối thiểu để mở (cân bằng lại về Cấp 5)
         TOOL: 'bo_lam_banh',       // vật phẩm "giấy phép" (đã có trong catalog, 8k)
         BAKE_MARKUP: 0.8,          // 1 nguyên liệu (giá p) -> +p*0.8 vào kho tiềm năng (so với /sell chỉ 0.5)
         CAKE_EVERY: 15000,         // mỗi 15k doanh thu thu được -> tặng 1 bánh (hybrid: tiền + item)
         CAKE_ITEM: 'banh_kem_dau', // bánh trả ra (Bánh Kem Dâu Gekka — buff item đã có)
         // Nguyên liệu hợp lệ (orphan outputs đang chờ dùng) + cá mới. Mở rộng sau.
-        FILLINGS: ['trai_1500','trai_2000','trai_2500','trai_3000','trai_3500',
+        FILLINGS: ['banh_mi', 'trai_1500','trai_2000','trai_2500','trai_3000','trai_3500',
                    'hoa_1500','hoa_2000','hoa_2500','hoa_3000','hoa_3500',
                    'thit_heo_2000','thit_heo_2500','thit_heo_3000','thit_heo_3500','thit_heo_4000',
                    'ca_tuoi', 'ca_ngon', 'ca_hiem'],

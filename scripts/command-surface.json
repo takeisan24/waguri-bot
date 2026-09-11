@@ -189,6 +189,7 @@
   "ship": [],
   "study": [
     "leaderboard",
+    "shop",
     "start",
     "status",
     "stop"

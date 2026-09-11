@@ -576,6 +576,7 @@ const SUBCOMMAND_DESCRIPTIONS = {
     "study.status": { vi: "Xem trạng thái phiên học hiện tại 📊", en: "View current study session status 📊" },
     "study.stop": { vi: "Kết thúc phiên học bài sớm 🛑", en: "End study session early 🛑" },
     "study.leaderboard": { vi: "Bảng xếp hạng Chuyên Cần 🏆", en: "Study diligence leaderboard 🏆" },
+    "study.shop": { vi: "Tiệm Tri Thức — Đổi Điểm Tri Thức lấy vật phẩm & danh hiệu 🛒", en: "Knowledge Shop — Exchange Study Points for items & titles 🛒" },
 
     // announcement
     "announcement.clear": { vi: "Xóa bản tin thông báo hiện tại 🗑️", en: "Clear current announcement 🗑️" }

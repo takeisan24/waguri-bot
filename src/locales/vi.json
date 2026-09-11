@@ -1695,6 +1695,7 @@
       "err_self": "Cậu không thể tự chuyển cho chính mình đâu~ 😄",
       "err_invalid_amount": "Số tiền phải lớn hơn 0 nhé~",
       "err_poor": "Ví của cậu không đủ tiền rồi 😟. Làm thêm với `/work` nhé!",
+      "err_locked_newbie": "Cậu cần đạt tối thiểu **Cấp độ {level}** hoặc hoàn thành **Hồi 3 Cốt truyện** mới có thể chuyển tiền cho người khác nhé~ 🌸 (chống tài khoản ảo)",
       "success_title": "💸・Chuyển tiền thành công",
       "success_desc": "Cậu đã chuyển cho <@{target}>. Tử tế ghê~ 🌸\nThuế {taxPct}%: **-{tax}** → người nhận thực nhận **{received}** {currency}\n💵 Số dư của cậu: **{wallet}** {currency}",
       "success_desc_no_tax": "Cậu đã chuyển cho <@{target}>. Tử tế ghê~ 🌸\nNgười nhận được **{received}** {currency}\n💵 Số dư của cậu: **{wallet}** {currency}"
@@ -2053,7 +2054,9 @@
       "done_partial_desc": "*Waguri ghi nhận cậu đã học xong **{minutes} phút** rồi nhen!* 🌸\n\n⚠️ Hệ thống đang bận nên **chưa cộng được phần thưởng** vào lúc này. Cậu thử lại sau một chút hoặc báo admin nếu tình trạng lặp lại nhé~ 🍵",
       "log_stats": "*Hiện tại cậu chưa có phiên học nào đang chạy nhen~*\n\n**Thống kê cá nhân:**\n• **Chuỗi Chuyên Cần 📚:** `{streak} ngày`\n• **Tổng thời gian tập trung:** `{hours} giờ {minutes} phút`\n• **Hạt Hoa Kikyo 🌸:** `{points} hạt`\n\n",
       "stop_saved": "🌸 *Waguri đã lưu lại phiên học \"{name}\" cho cậu rùi nhen~ Hẹn gặp lại cậu ở phiên học tiếp theo!* ✨",
-      "lb_row": "{medal} **#{rank}** <@{user}> — `{streak} ngày` (Tổng {hours}h {minutes}m)\n"
+      "lb_row": "{medal} **#{rank}** <@{user}> — `{streak} ngày` (Tổng {hours}h {minutes}m)\n",
+      "shop_title": "🎓 Cửa Hàng Học Viện Kikyo",
+      "shop_empty": "Cửa hàng hiện đang tạm đóng cửa để bổ sung giáo trình~ 🌸"
     },
     "redeem": {
       "ok": "🎁 Đổi mã `{code}` thành công rồi nè!",

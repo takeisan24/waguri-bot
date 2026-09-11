@@ -15,6 +15,7 @@
     "add_health(p_user_id text, p_delta integer)",
     "add_pass_xp(p_user_id text, p_season_id text, p_xp_amount integer, p_xp_per_level integer)",
     "adopt_pet(p_user text, p_species text, p_name text)",
+    "advance_story_node(p_user_id text, p_chapter integer, p_node integer, p_reward_coins bigint, p_reward_exp bigint, p_reward_item text, p_affection_gain integer)",
     "ai_overview()",
     "antinuke_action_log(p_incident bigint, p_kind text, p_target text, p_payload jsonb)",
     "antinuke_get(p_guild text)",
@@ -46,6 +47,7 @@
     "buy_badge(p_user text, p_badge text, p_cost bigint)",
     "buy_item(p_user_id text, p_item_id text, p_quantity integer)",
     "buy_premium_pass(p_user_id text, p_season_id text, p_cost bigint)",
+    "buy_study_shop_item(p_user_id text, p_item_id text)",
     "cancel_web_study_session(p_session_id bigint, p_user_id text)",
     "charge_assets(p_user text, p_amount bigint)",
     "charge_wealth_tax()",
@@ -90,6 +92,7 @@
     "get_public_profile(p_user_id text)",
     "give_item(p_user_id text, p_item_id text, p_qty integer)",
     "grant_premium(p_user_id text, p_days integer)",
+    "guard_pay_transfer(p_sender_id text)",
     "halve_jail(p_user_id text)",
     "hatch_pet_egg(p_user text, p_egg text)",
     "hospital_heal(p_user_id text)",
@@ -254,6 +257,7 @@
     "quest_progress_pkey",
     "redeem_claims_pkey",
     "redeem_codes_pkey",
+    "study_shop_catalog_pkey",
     "tickets_channel_id_key",
     "tickets_pkey",
     "uq_game_stakes_session_user",
@@ -589,6 +593,12 @@
       "starts_at:timestamp with time zone",
       "uses:integer"
     ],
+    "study_shop_catalog": [
+      "cost_points:integer",
+      "created_at:timestamp with time zone",
+      "id:text",
+      "tier:integer"
+    ],
     "tickets": [
       "category:text",
       "channel_id:text",
@@ -646,6 +656,7 @@
     "users": [
       "affection:integer",
       "affection_days:integer",
+      "affection_points:integer",
       "ai_memory:jsonb",
       "ai_used:integer",
       "ai_used_date:date",
@@ -690,6 +701,9 @@
       "profile_color:text",
       "profile_public:boolean",
       "sick:boolean",
+      "story_chapter:integer",
+      "story_data:jsonb",
+      "story_node:integer",
       "study_points:integer",
       "study_streak:integer",
       "title:text",
