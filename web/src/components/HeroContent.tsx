@@ -7,7 +7,7 @@ import { useLanguage } from "./LanguageProvider";
  * Wrapped inside page.tsx (Server Component).
  */
 export default function HeroContent() {
-  const { t, locale } = useLanguage();
+  const { t } = useLanguage();
 
   return (
     <div className="text-center max-w-3xl mx-auto mb-16 space-y-6">
