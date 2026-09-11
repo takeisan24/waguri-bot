@@ -57,6 +57,8 @@
     "support": "Hỗ trợ (Discord)",
     "tos": "Điều khoản",
     "privacy": "Quyền riêng tư",
+    "dev_by": "Phát triển bởi",
+    "disclaimer": "Lấy cảm hứng từ nhân vật Waguri Kaoruko trong \"The Fragrant Flower Blooms with Dignity\". Đây là sản phẩm fan, không có liên kết chính thức với tác giả/nhà xuất bản và không sở hữu bản quyền nhân vật.",
     "copyright": "© {year} Waguri Bot. Bản quyền thuộc về team phát triển Waguri."
   },
   "home": {
@@ -69,7 +71,9 @@
       "title_2": "Game Kinh Tế RPG Việt Nam",
       "subtitle": "Trải nghiệm thế giới nhập vai vui nhộn, đi làm, thăng tiến nghề nghiệp, minigame may rủi, bang hội, và trò chuyện cùng bé Waguri Kaoruko ngọt ngào ngay trên server Discord của bạn!",
       "invite_btn": "Mời Waguri vào Discord 🌸",
-      "login_btn": "Đăng nhập Dashboard ⚡"
+      "login_btn": "Đăng nhập Dashboard ⚡",
+      "explore_btn": "Khám Phá Tính Năng",
+      "tagline_prefix": "Nâng tầm Server của bạn cùng "
     },
     "features": {
       "title": "Tính năng nổi bật",

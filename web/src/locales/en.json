@@ -57,6 +57,8 @@
     "support": "Support (Discord)",
     "tos": "Terms of Service",
     "privacy": "Privacy Policy",
+    "dev_by": "Developed by",
+    "disclaimer": "Inspired by the character Waguri Kaoruko from \"The Fragrant Flower Blooms with Dignity\". This is a fan product, not officially affiliated with the author/publisher and does not own character rights.",
     "copyright": "© {year} Waguri Bot. All rights reserved by the Waguri development team."
   },
   "home": {
@@ -69,7 +71,9 @@
       "title_2": "RPG Economy Game",
       "subtitle": "Experience a fun RPG world, work, career progression, high-stakes minigames, clans, and chat with sweet Waguri Kaoruko right on your Discord server!",
       "invite_btn": "Invite Waguri to Discord 🌸",
-      "login_btn": "Login to Dashboard ⚡"
+      "login_btn": "Dashboard Login ⚡",
+      "explore_btn": "Explore Features",
+      "tagline_prefix": "Level Up Your Server with "
     },
     "features": {
       "title": "Key Features",

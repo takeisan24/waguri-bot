@@ -7,12 +7,10 @@ import { useLanguage } from "./LanguageProvider";
 const VOTE_URL = "https://top.gg/bot/1482620714690543738/vote";
 
 export default function SiteFooter() {
-  const { t, locale } = useLanguage();
+  const { t } = useLanguage();
 
-  const devByText = locale === "en" ? "Developed by" : "Phát triển bởi";
-  const disclaimerText = locale === "en"
-    ? 'Inspired by the character Waguri Kaoruko from "The Fragrant Flower Blooms with Dignity". This is a fan product, not officially affiliated with the author/publisher and does not own character rights.'
-    : 'Lấy cảm hứng từ nhân vật Waguri Kaoruko trong "The Fragrant Flower Blooms with Dignity". Đây là sản phẩm fan, không có liên kết chính thức với tác giả/nhà xuất bản và không sở hữu bản quyền nhân vật.';
+  const devByText = t("footer.dev_by");
+  const disclaimerText = t("footer.disclaimer");
 
   return (
     <footer className="relative border-t border-slate-900 bg-[#07040a]/80 py-8 z-10 text-xs text-slate-500">

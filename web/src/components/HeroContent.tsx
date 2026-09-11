@@ -26,21 +26,10 @@ export default function HeroContent() {
       </div>
 
       <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-white leading-tight">
-        {locale === "en" ? (
-          <>
-            Level Up Your Server with{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-300 via-rose-300 to-purple-400 text-glow">
-              Waguri
-            </span>
-          </>
-        ) : (
-          <>
-            Nâng tầm Server của bạn cùng{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-300 via-rose-300 to-purple-400 text-glow">
-              Waguri
-            </span>
-          </>
-        )}
+        {t("home.hero.tagline_prefix")}
+        <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-300 via-rose-300 to-purple-400 text-glow">
+          Waguri
+        </span>
       </h1>
 
       <p className="text-base sm:text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed">
@@ -60,7 +49,7 @@ export default function HeroContent() {
           href="#features"
           className="w-full sm:w-auto px-8 py-4 rounded-full font-bold border border-slate-700 text-slate-300 hover:text-white hover:border-pink-300/50 bg-[#120c1a]/30 backdrop-blur-md transition-all duration-300 text-center cursor-pointer"
         >
-          {locale === "en" ? "Explore Features" : "Khám Phá Tính Năng"}
+          {t("home.hero.explore_btn")}
         </a>
       </div>
     </div>
