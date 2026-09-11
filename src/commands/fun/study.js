@@ -209,11 +209,18 @@ module.exports = {
             const msg = await interaction.reply({ embeds: [embed], components: [row], fetchReply: true });
 
             const collector = msg.createMessageComponentCollector({
-                filter: i => i.user.id === userId && i.customId === 'study_shop_select',
+                filter: i => i.customId === 'study_shop_select',
                 time: 60000
             });
 
             collector.on('collect', async i => {
+                if (i.user.id !== userId) {
+                    return i.reply({
+                        content: t(locale, 'common.not_for_you') || '🌸 *Đây không phải phiên mua sắm của cậu nhen~ Cậu hãy gõ `/study shop` để tự mở tiệm cho mình nha!* 🍵',
+                        flags: MessageFlags.Ephemeral
+                    });
+                }
+
                 const chosenId = i.values[0];
                 const res = await db.buyStudyShopItem(userId, chosenId);
                 if (!res || !res.success) {

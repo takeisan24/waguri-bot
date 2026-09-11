@@ -209,11 +209,17 @@ module.exports = {
         });
 
         const collector = msg.createMessageComponentCollector({
-            filter: i => i.user.id === userId,
             time: 120000
         });
 
         collector.on('collect', async i => {
+            if (i.user.id !== userId) {
+                return i.reply({
+                    content: t(locale, 'common.not_for_you') || '🌸 *Đây không phải góc nhiệm vụ của cậu nhen~ Cậu hãy gõ `/quest` để xem hành trình của riêng mình nha!* 🍵',
+                    flags: MessageFlags.Ephemeral
+                });
+            }
+
             if (i.isStringSelectMenu() && i.customId === 'quest_tab_select') {
                 activeTab = i.values[0];
                 user = await db.getUser(userId);

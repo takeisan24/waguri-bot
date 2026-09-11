@@ -88,7 +88,7 @@ const STORY_CHAPTERS = [
                 title: 'Tiết 3: Gieo Mầm Hy Vọng',
                 intro: 'Waguri dắt cậu đến cửa hàng nông nghiệp mua hạt giống đầu tiên để gieo xuống mảnh đất sau trường.',
                 dialogue: '"Tự tay gieo một hạt giống và nhìn nó nảy mầm là cảm giác kỳ diệu lắm đó! Chúng mình cùng trồng một luống hoa nhé cậu~"',
-                command: '/plant',
+                command: '/trongcay muagiong',
                 targetType: 'plant',
                 reward: { coins: 1500, exp: 80, item: null, affection: 5 },
                 rewardText: '1.500 xu + 80 EXP + 5 Hảo cảm 🌸'
@@ -126,7 +126,7 @@ const STORY_CHAPTERS = [
                 title: 'Tiết 2: Tái Sinh Bánh Mì Cũ',
                 intro: 'Đem những ổ bánh mì và nông sản tích trữ nạp vào lò bánh để chuẩn bị cho mẻ nướng mới.',
                 dialogue: '"Tuyệt vời quá! Thay vì để bánh mì bị khô, chúng mình có thể biến tấu chúng thành nhân bánh nướng bơ đường thơm lừng!"',
-                command: '/tiembanh nap',
+                command: '/tiembanh nhapnl',
                 targetType: 'bakery_stock',
                 reward: { coins: 2500, exp: 120, item: null, affection: 5 },
                 rewardText: '2.500 xu + 120 EXP + 5 Hảo cảm 🌸'
@@ -136,7 +136,7 @@ const STORY_CHAPTERS = [
                 title: 'Tiết 3: Hương Vị Đầu Mùa',
                 intro: 'Canh lửa chuẩn xác và nướng mẻ bánh đầu tiên tại lò nướng Gekka.',
                 dialogue: '"Mùi thơm bơ sữa lan tỏa khắp con hẻm rồi kìa! Bánh sắp chín rồi, hồi hộp ghê~"',
-                command: '/tiembanh nuong',
+                command: '/tiembanh thu',
                 targetType: 'bakery_bake',
                 reward: { coins: 3000, exp: 150, item: 'men_no_co_truyen', affection: 10 },
                 rewardText: 'Men Nở Cổ Truyền + 3.000 xu + 10 Hảo cảm 🌸'
@@ -164,7 +164,7 @@ const STORY_CHAPTERS = [
                 title: 'Tiết 1: 25 Phút Tập Trung',
                 intro: 'Kỳ thi học kỳ cận kề. Saku Natsusawa lập trại kèm học đêm cho cả nhóm. Cùng Waguri ngồi vào bàn học tập trung 25 phút.',
                 dialogue: '"Để giữ được học bổng ở Kikyo, đêm nào mình cũng phải cố gắng rất nhiều... Nhưng học cùng cậu, mình thấy an tâm và có động lực hơn hẳn đấy!"',
-                command: '/study start 25',
+                command: '/study start',
                 targetType: 'study',
                 reward: { coins: 2000, exp: 100, item: null, affection: 10 },
                 rewardText: '15 Điểm Tri Thức + 2.000 xu + 10 Hảo cảm 🌸'
@@ -174,7 +174,7 @@ const STORY_CHAPTERS = [
                 title: 'Tiết 2: Vị Khách Bốn Chân',
                 intro: 'Một chú mèo nhỏ bị lạc đang đói lả nép dưới chân bàn học. Cùng Waguri nhận nuôi và chăm sóc bé.',
                 dialogue: '"Ôi, nhìn bé con run rẩy thương chưa kìa... Chúng mình nhận nuôi và đặt tên cho bạn nhỏ này nhé cậu?"',
-                command: '/pet status',
+                command: '/pet view',
                 targetType: 'pet',
                 reward: { coins: 1500, exp: 80, item: 'bot_ngu_coc_pet', affection: 5 },
                 rewardText: 'Ngũ Cốc Thảo Dược Pet + 1.500 xu + 5 Hảo cảm 🌸'
