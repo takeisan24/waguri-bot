@@ -75,3 +75,117 @@ test('ANTI-SYBIL GUARDRAIL: Chặn acc clone cày quà tân thủ chuyển tiề
     assert.strictEqual(isTransferAllowed(200, 4), true, 'Chapter >= 4 phải được phép');
 });
 
+test('ĐIỀU KIỆN CỐT TRUYỆN: checkStoryNodeCondition cho cả 5 Hồi', async (t) => {
+    const db = require('../src/database');
+    const { checkStoryNodeCondition } = require('../src/lib/storyCondition');
+
+    // Mock các hàm DB
+    const origHasItem = db.hasItem;
+    const origGetPlant = db.getPlant;
+    const origGetBakery = db.getBakery;
+    const origGetPet = db.getPet;
+
+    t.after(() => {
+        db.hasItem = origHasItem;
+        db.getPlant = origGetPlant;
+        db.getBakery = origGetBakery;
+        db.getPet = origGetPet;
+    });
+
+    // 1. Tiết 4 của mọi Hồi phải luôn pass
+    for (let c = 1; c <= 5; c++) {
+        const res = await checkStoryNodeCondition('user1', c, 4, {});
+        assert.strictEqual(res.pass, true, `Hồi ${c} Tiết 4 phải luôn mở`);
+    }
+
+    // 2. Hồi 1 Tiết 1 & 2 & 3
+    const h1n1 = await checkStoryNodeCondition('user1', 1, 1, { onboarded: true });
+    assert.strictEqual(h1n1.pass, true, 'Hồi 1 Tiết 1 đã onboarded phải pass');
+
+    const h1n2Fail = await checkStoryNodeCondition('user1', 1, 2, { last_daily: null });
+    assert.strictEqual(h1n2Fail.pass, false, 'Hồi 1 Tiết 2 chưa daily phải fail');
+
+    const h1n2Pass = await checkStoryNodeCondition('user1', 1, 2, { last_daily: new Date().toISOString() });
+    assert.strictEqual(h1n2Pass.pass, true, 'Hồi 1 Tiết 2 đã daily phải pass');
+
+    const h1n3Fail = await checkStoryNodeCondition('user1', 1, 3, { exp: 0, last_work: null });
+    assert.strictEqual(h1n3Fail.pass, false, 'Hồi 1 Tiết 3 chưa work phải fail');
+
+    const h1n3Pass = await checkStoryNodeCondition('user1', 1, 3, { exp: 60 });
+    assert.strictEqual(h1n3Pass.pass, true, 'Hồi 1 Tiết 3 exp >= 50 phải pass');
+
+    // 3. Hồi 2: Thử thách câu cá, đào khoáng, trồng cây
+    db.hasItem = async (uid, item) => item === 'can_cau';
+    const h2n1Pass = await checkStoryNodeCondition('user1', 2, 1, {});
+    assert.strictEqual(h2n1Pass.pass, true, 'Có can_cau phải pass Hồi 2 Tiết 1');
+
+    db.hasItem = async (uid, item) => false;
+    const h2n2Fail = await checkStoryNodeCondition('user1', 2, 2, {});
+    assert.strictEqual(h2n2Fail.pass, false, 'Không có cuoc_sat phải fail Hồi 2 Tiết 2');
+
+    db.getPlant = async () => null;
+    const h2n3Fail = await checkStoryNodeCondition('user1', 2, 3, {});
+    assert.strictEqual(h2n3Fail.pass, false, 'Chưa trồng cây phải fail Hồi 2 Tiết 3');
+
+    db.getPlant = async () => ({ id: 1, tier: 1 });
+    const h2n3Pass = await checkStoryNodeCondition('user1', 2, 3, {});
+    assert.strictEqual(h2n3Pass.pass, true, 'Đã trồng cây phải pass Hồi 2 Tiết 3');
+
+    // 4. Hồi 3 Tiết 1: Mở tiệm bánh Gekka
+    db.getBakery = async () => null;
+    // Cấp < 5: Không pass, có progress bar
+    const h3n1LowLvl = await checkStoryNodeCondition('user1', 3, 1, { exp: 500, wallet: 20000 });
+    assert.strictEqual(h3n1LowLvl.pass, false);
+    assert.ok(h3n1LowLvl.progressText.includes('EXP'));
+    assert.strictEqual(h3n1LowLvl.actionButton, undefined);
+
+    // Cấp >= 5 (exp 1600) nhưng thiếu tiền (< 10,000 xu)
+    const h3n1Poor = await checkStoryNodeCondition('user1', 3, 1, { exp: 1600, wallet: 5000 });
+    assert.strictEqual(h3n1Poor.pass, false);
+    assert.ok(h3n1Poor.progressText.includes('10.000 xu'));
+
+    // Cấp >= 5 và đủ tiền (>= 10,000 xu) -> CÓ Nút 1-Click mở tiệm!
+    const h3n1Ready = await checkStoryNodeCondition('user1', 3, 1, { exp: 1600, wallet: 10000 });
+    assert.strictEqual(h3n1Ready.pass, false);
+    assert.ok(h3n1Ready.actionButton, 'Phải có action button');
+    assert.strictEqual(h3n1Ready.actionButton.customId, 'quest_quick_open_bakery');
+
+    // Đã mở tiệm -> Pass
+    db.getBakery = async () => ({ level: 1, stock: 100 });
+    const h3n1Done = await checkStoryNodeCondition('user1', 3, 1, { exp: 1600, wallet: 10000 });
+    assert.strictEqual(h3n1Done.pass, true);
+
+    // 5. Hồi 4: Pomodoro & Thú cưng
+    const h4n1NoStudy = await checkStoryNodeCondition('user1', 4, 1, { total_study_minutes: 0, study_streak: 0, study_points: 0 });
+    assert.strictEqual(h4n1NoStudy.pass, false);
+    assert.strictEqual(h4n1NoStudy.actionButton.customId, 'quest_quick_study_start');
+
+    const h4n1Studied = await checkStoryNodeCondition('user1', 4, 1, { total_study_minutes: 25 });
+    assert.strictEqual(h4n1Studied.pass, true);
+
+    db.getPet = async () => null;
+    const h4n2NoPet = await checkStoryNodeCondition('user1', 4, 2, {});
+    assert.strictEqual(h4n2NoPet.pass, false);
+    assert.strictEqual(h4n2NoPet.actionButton.customId, 'quest_quick_adopt_pet');
+
+    db.getPet = async () => ({ species: 'meo', fed_at: null });
+    const h4n2HasPet = await checkStoryNodeCondition('user1', 4, 2, {});
+    assert.strictEqual(h4n2HasPet.pass, true);
+
+    // Tiết 3: Cho pet ăn
+    const h4n3NotFed = await checkStoryNodeCondition('user1', 4, 3, {});
+    assert.strictEqual(h4n3NotFed.pass, false);
+
+    db.getPet = async () => ({ species: 'meo', fed_at: new Date().toISOString() });
+    const h4n3Fed = await checkStoryNodeCondition('user1', 4, 3, {});
+    assert.strictEqual(h4n3Fed.pass, true, 'User mangoya.38_ với pet đã ăn phải pass');
+
+    // 6. Hồi 5: Thị trường & Bang hội
+    const h5n1Pass = await checkStoryNodeCondition('user1', 5, 1, { exp: 3500 });
+    assert.strictEqual(h5n1Pass.pass, true);
+
+    const h5n3Pass = await checkStoryNodeCondition('user1', 5, 3, { clan_id: 123 });
+    assert.strictEqual(h5n3Pass.pass, true);
+});
+
+
