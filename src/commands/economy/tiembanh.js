@@ -3,7 +3,7 @@ const db = require('../../database.js');
 const config = require('../../config');
 const { buildWaguriEmbed } = require('../../lib/embed');
 const { getLevelFromExp } = require('../../lib/leveling');
-const { levelInfo, maxLevel, fillingStockGain, computeBake, getEffectiveStats } = require('../../lib/bakery');
+const { levelInfo, maxLevel, fillingStockGain, computeBake, getEffectiveStats, isRushHour, getDailyBakeryOrders } = require('../../lib/bakery');
 const { getInteractionLanguage, t } = require('../../lib/i18n');
 
 const B = config.BAKERY;
@@ -59,10 +59,15 @@ async function subXem(interaction, locale) {
         return `• ${itName} (x${count})`;
     }).join('\n') || t(locale, 'commands.tiembanh.no_decor');
 
+    const rushBadge = eff.isRushHour 
+        ? `\n🔥 **${locale === 'en' ? 'RUSH HOUR ACTIVE (+20% rate):' : 'GIỜ CAO ĐIỂM (+20% tốc độ):'}** \`${eff.rushRate}\` ${C}/${locale === 'en' ? 'min' : 'phút'}`
+        : '';
+
     const fields = [
-        { name: t(locale, 'commands.tiembanh.field_level'), value: t(locale, 'commands.tiembanh.field_level_val', { level: bk.level, max: maxLevel(), rate: eff.rate, baseRate: baseInfo.rate, cap: fmt(eff.cap, locale), currency: C }), inline: false },
+        { name: t(locale, 'commands.tiembanh.field_level'), value: t(locale, 'commands.tiembanh.field_level_val', { level: bk.level, max: maxLevel(), rate: eff.isRushHour ? eff.rushRate : eff.rate, baseRate: baseInfo.rate, cap: fmt(eff.cap, locale), currency: C }) + rushBadge, inline: false },
         { name: t(locale, 'commands.tiembanh.field_revenue'), value: `**${fmt(estRevenue, locale)}** ${C}`, inline: true },
         { name: t(locale, 'commands.tiembanh.field_stock'), value: `**${fmt(bk.stock, locale)}** ${C}`, inline: true },
+        { name: '🏆 ' + (locale === 'en' ? 'Reputation' : 'Danh tiếng'), value: `**${fmt(bk.reputation || 0, locale)}** ${locale === 'en' ? 'pts' : 'điểm'}`, inline: true },
         { name: t(locale, 'commands.tiembanh.field_staff'), value: staffNames, inline: true },
         { name: t(locale, 'commands.tiembanh.field_decor'), value: decorNames, inline: true }
     ];
@@ -276,6 +281,158 @@ async function subNangcap(interaction, locale) {
     })] });
 }
 
+// --- donhang ---
+async function subDonhang(interaction, locale) {
+    const bk = await db.getBakery(interaction.user.id);
+    if (!bk) return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'info', {
+        locale,
+        title: t(locale, 'commands.tiembanh.title'),
+        description: t(locale, 'commands.tiembanh.not_open', { level: B.MIN_LEVEL, cost: fmt(B.OPEN_COST, locale), currency: C })
+    })] });
+
+    const nowVN = new Date(Date.now() + 7 * 3600 * 1000);
+    const dateStr = nowVN.toISOString().slice(0, 10);
+
+    const orders = getDailyBakeryOrders(interaction.user.id, dateStr);
+    const completed = await db.getCompletedBakeryOrdersToday(interaction.user.id, dateStr);
+    const completedSet = new Set(completed.map(c => c.order_id));
+
+    const inv = await db.getInventory(interaction.user.id);
+    const invMap = {};
+    for (const item of (inv || [])) {
+        invMap[item.item_id] = Number(item.quantity || 0);
+    }
+
+    const isEn = locale === 'en';
+    const fields = orders.map(ord => {
+        const isDone = completedSet.has(ord.id);
+        const title = isEn ? ord.titleEn : ord.titleVi;
+        const desc = isEn ? ord.descEn : ord.descVi;
+        const statusBadge = isDone ? '✅ ' + (isEn ? 'Delivered' : 'Đã giao') : '⏳ ' + (isEn ? 'Pending' : 'Chờ giao');
+
+        const reqList = Object.entries(ord.required || {}).map(([itemId, qty]) => {
+            const has = invMap[itemId] || 0;
+            const itemKey = `data.items.${itemId}.name`;
+            const name = t(locale, itemKey) || itemId;
+            const okIcon = has >= qty ? '✅' : '❌';
+            return `${okIcon} \`${has}/${qty}\` **${name}**`;
+        }).join('\n');
+
+        const rewardText = `🎁 **+${fmt(ord.rewardCoins, locale)}** ${C} · **+${ord.rewardExp}** EXP · **+${ord.rewardRep}** 🏆 · **+${fmt(ord.cakeProgress, locale)}** 🎂`;
+
+        return {
+            name: `${statusBadge} · #${ord.orderIndex} ${ord.customer} — ${title}`,
+            value: `*${desc}*\n**${isEn ? 'Required items' : 'Yêu cầu'}:**\n${reqList}\n**${isEn ? 'Rewards' : 'Phần thưởng'}:** ${rewardText}`,
+            inline: false
+        };
+    });
+
+    const rushNotice = isRushHour() 
+        ? (isEn ? '\n\n🔥 **RUSH HOUR ACTIVE!** Baking rate is increased by +20%!' : '\n\n🔥 **GIỜ CAO ĐIỂM ĐANG DIỄN RA!** Tốc độ nướng bánh tăng +20%!')
+        : '';
+
+    const guideText = isEn 
+        ? `Deliver an order using \`/tiembanh giaodon stt:<1-3>\`.\nReputation: **${fmt(bk.reputation || 0, locale)}** pts.${rushNotice}`
+        : `Dùng lệnh \`/tiembanh giaodon stt:<1-3>\` để hoàn thành đơn hàng và nhận thưởng.\nDanh tiếng tiệm: **${fmt(bk.reputation || 0, locale)}** điểm.${rushNotice}`;
+
+    return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'info', {
+        locale,
+        title: isEn ? '🍰・VIP Catering & Special Orders' : '🍰・Đơn Hàng VIP & Khách Quen Tiệm Bánh',
+        description: guideText,
+        fields
+    })] });
+}
+
+// --- giaodon <stt> ---
+async function subGiaodon(interaction, locale) {
+    const slot = interaction.options.getInteger('stt');
+    const isEn = locale === 'en';
+
+    const bk = await db.getBakery(interaction.user.id);
+    if (!bk) return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'info', {
+        locale,
+        title: t(locale, 'commands.tiembanh.title'),
+        description: t(locale, 'commands.tiembanh.not_open', { level: B.MIN_LEVEL, cost: fmt(B.OPEN_COST, locale), currency: C })
+    })] });
+
+    const nowVN = new Date(Date.now() + 7 * 3600 * 1000);
+    const dateStr = nowVN.toISOString().slice(0, 10);
+
+    const orders = getDailyBakeryOrders(interaction.user.id, dateStr);
+    const target = orders.find(o => o.orderIndex === slot);
+
+    if (!target) {
+        return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'warning', {
+            locale,
+            title: isEn ? '🍰・Invalid Order' : '🍰・Đơn hàng không hợp lệ',
+            description: isEn ? 'Please choose order 1, 2, or 3!' : 'Vui lòng chọn đơn hàng số 1, 2 hoặc 3 nhé! 🌸'
+        })] });
+    }
+
+    const res = await db.deliverBakeryOrder(
+        interaction.user.id,
+        dateStr,
+        target.id,
+        target.required,
+        target.rewardCoins,
+        target.rewardExp,
+        target.rewardRep,
+        target.cakeProgress
+    );
+
+    if (res.error === 'ALREADY_DELIVERED') {
+        return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'warning', {
+            locale,
+            title: isEn ? '🍰・Order Already Delivered' : '🍰・Đơn hàng đã giao',
+            description: isEn 
+                ? `You have already delivered this order today! Come back tomorrow for new orders.`
+                : `Cậu đã hoàn thành và giao đơn hàng **#${slot}** hôm nay rồi! Ngày mai khách quen sẽ quay lại với đơn mới nha~ 🌸`
+        })] });
+    }
+
+    if (res.error === 'MISSING_ITEMS') {
+        const itemKey = `data.items.${res.item_id}.name`;
+        const itemName = t(locale, itemKey) || res.item_id;
+        return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'warning', {
+            locale,
+            title: isEn ? '🍰・Missing Items' : '🍰・Chưa đủ nguyên liệu/bánh',
+            description: isEn
+                ? `You are missing **${itemName}**! Need **${res.required}**, but you only have **${res.available}** in inventory.`
+                : `Cậu chưa gom đủ **${itemName}** để giao đơn! Yêu cầu: **${res.required}**, kho đồ hiện có: **${res.available}**. Hãy nướng bánh hoặc thu hoạch thêm nhé! 🌸`
+        })] });
+    }
+
+    if (!res.success) {
+        return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'error', {
+            locale,
+            title: isEn ? '🍰・Delivery Error' : '🍰・Lỗi giao hàng',
+            description: t(locale, 'common.generic_error')
+        })] });
+    }
+
+    // Giao hàng thành công!
+    const orderTitle = isEn ? target.titleEn : target.titleVi;
+    const descSuccess = isEn
+        ? `**${target.customer}** was delighted with your delivery for **"${orderTitle}"**!\n\n` +
+          `🎁 **Rewards received:**\n` +
+          `• Coins: **+${fmt(res.reward_coins, locale)}** ${C}\n` +
+          `• EXP: **+${res.reward_exp}** EXP\n` +
+          `• Reputation: **+${res.reward_rep}** 🏆 (Total: **${fmt(res.new_reputation, locale)}**)\n` +
+          `• Cake Progress: **+${fmt(target.cakeProgress, locale)}** 🎂`
+        : `**${target.customer}** vô cùng hài lòng với món ngon từ đơn hàng **"${orderTitle}"**!\n\n` +
+          `🎁 **Phần thưởng cậu nhận được:**\n` +
+          `• Xu: **+${fmt(res.reward_coins, locale)}** ${C}\n` +
+          `• EXP: **+${res.reward_exp}** EXP\n` +
+          `• Danh tiếng tiệm: **+${res.reward_rep}** 🏆 (Tổng: **${fmt(res.new_reputation, locale)}** điểm)\n` +
+          `• Tiến trình bánh: **+${fmt(target.cakeProgress, locale)}** 🎂`;
+
+    return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'success', {
+        locale,
+        title: isEn ? '🎉・Order Delivered Successfully!' : '🎉・Giao đơn hàng VIP thành công!',
+        description: descSuccess
+    })] });
+}
+
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('tiembanh')
@@ -315,7 +472,10 @@ module.exports = {
                     { name: '🪵 Bộ Nội Thất Gỗ (+5% rate)', value: 'noi_that' },
                     { name: '💎 Trang Sức Đá Quý (+6% rate)', value: 'trang_suc' }
                 )))
-        .addSubcommand(s => s.setName('nangcap').setDescription('Nâng cấp tiệm (tăng tốc nướng & trần doanh thu)')),
+        .addSubcommand(s => s.setName('nangcap').setDescription('Nâng cấp tiệm (tăng tốc nướng & trần doanh thu)'))
+        .addSubcommand(s => s.setName('donhang').setDescription('Xem danh sách đơn hàng VIP đặc biệt hôm nay 📋'))
+        .addSubcommand(s => s.setName('giaodon').setDescription('Giao đơn hàng VIP nhận Xu, EXP, Danh Tiếng 🎁')
+            .addIntegerOption(o => o.setName('stt').setDescription('Số thứ tự đơn hàng (1, 2 hoặc 3)').setRequired(true).setMinValue(1).setMaxValue(3))),
     async execute(interaction) {
         await interaction.deferReply();
         const locale = await getInteractionLanguage(interaction);
@@ -328,6 +488,8 @@ module.exports = {
         if (sub === 'sathai') return subSathai(interaction, locale);
         if (sub === 'trangtri') return subTrangtri(interaction, locale);
         if (sub === 'nangcap') return subNangcap(interaction, locale);
+        if (sub === 'donhang') return subDonhang(interaction, locale);
+        if (sub === 'giaodon') return subGiaodon(interaction, locale);
         return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'warning', { locale, title: t(locale, 'commands.tiembanh.title'), description: t(locale, 'commands.tiembanh.err_sub') })] });
     },
 };

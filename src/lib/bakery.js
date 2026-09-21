@@ -86,17 +86,84 @@ function computeBonuses(staffList = [], decorList = []) {
     return { rateMult, capMult, wagePct, cakeDiscount };
 }
 
+/**
+ * Kiểm tra xem hiện tại có đang trong Giờ Cao Điểm (Rush Hour) của tiệm bánh hay không.
+ * Múi giờ Việt Nam = UTC + 7.
+ */
+function isRushHour(nowMs = Date.now()) {
+    const d = new Date(nowMs);
+    const vnHour = (d.getUTCHours() + 7) % 24;
+    const windows = B.RUSH_HOUR?.WINDOWS || [];
+    return windows.some(w => vnHour >= w.startHourVN && vnHour < w.endHourVN);
+}
+
+/**
+ * Lấy danh sách 3 đơn hàng VIP tất định trong ngày cho người chơi.
+ * 0 DB query, tất định theo (userId, dateStr).
+ */
+function getDailyBakeryOrders(userId, dateStr) {
+    if (!dateStr) {
+        const now = new Date();
+        const year = now.getUTCFullYear();
+        const month = String(now.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(now.getUTCDate()).padStart(2, '0');
+        dateStr = `${year}-${month}-${day}`;
+    }
+
+    const pool = B.VIP_ORDERS_POOL || [];
+    if (!pool.length) return [];
+
+    const selected = [];
+    const poolCopy = [...pool];
+
+    for (let slot = 0; slot < 3 && poolCopy.length > 0; slot++) {
+        let hash = 0;
+        const str = `${userId}:${dateStr}:${slot}`;
+        for (let i = 0; i < str.length; i++) {
+            hash = (hash << 5) - hash + str.charCodeAt(i);
+            hash |= 0;
+        }
+        const idx = Math.abs(hash) % poolCopy.length;
+        const chosen = poolCopy.splice(idx, 1)[0];
+        selected.push({
+            orderIndex: slot + 1,
+            ...chosen,
+            orderDate: dateStr,
+        });
+    }
+
+    return selected;
+}
+
 /** Lấy thông số hiệu dụng đã áp dụng bonus */
-function getEffectiveStats(level, staffList = [], decorList = [], bakeryEfficiencyLvl = 0) {
+function getEffectiveStats(level, staffList = [], decorList = [], bakeryEfficiencyLvl = 0, nowMs = Date.now()) {
     const base = levelInfo(level);
     const bonuses = computeBonuses(staffList, decorList);
     const petBuffMult = 1.0 + (bakeryEfficiencyLvl * 0.05); // +5% speed per level
+    const standardRate = Math.round(base.rate * bonuses.rateMult * petBuffMult);
+    const rush = isRushHour(nowMs);
+    const rushRate = rush ? Math.round(standardRate * (1.0 + (B.RUSH_HOUR?.BONUS_RATE || 0.20))) : standardRate;
+
     return {
-        rate: Math.round(base.rate * bonuses.rateMult * petBuffMult),
+        rate: standardRate,
+        rushRate,
+        isRushHour: rush,
+        baseRate: base.rate,
         cap: Math.round(base.cap * bonuses.capMult),
         wagePct: bonuses.wagePct,
         cakeEvery: Math.round(B.CAKE_EVERY * (1.0 - bonuses.cakeDiscount))
     };
 }
 
-module.exports = { levelInfo, maxLevel, fillingStockGain, computeBake, cakesFromRevenue, computeBonuses, getEffectiveStats };
+module.exports = {
+    levelInfo,
+    maxLevel,
+    fillingStockGain,
+    computeBake,
+    cakesFromRevenue,
+    computeBonuses,
+    getEffectiveStats,
+    isRushHour,
+    getDailyBakeryOrders,
+};
+

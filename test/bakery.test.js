@@ -1,7 +1,7 @@
 // Test thuần cho lib/bakery — tính doanh thu nướng (mirror RPC). Chạy: npm test
 const test = require('node:test');
 const assert = require('node:assert');
-const { levelInfo, maxLevel, fillingStockGain, computeBake, cakesFromRevenue, computeBonuses, getEffectiveStats } = require('../src/lib/bakery');
+const { levelInfo, maxLevel, fillingStockGain, computeBake, cakesFromRevenue, computeBonuses, getEffectiveStats, isRushHour, getDailyBakeryOrders } = require('../src/lib/bakery');
 
 const MIN = 60000;
 
@@ -69,4 +69,45 @@ test('computeBonuses & getEffectiveStats: tính toán chính xác và đầy đ�
     const eff = getEffectiveStats(1, ['rintaro', 'subaru'], ['noi_that', 'trang_suc']);
     assert.strictEqual(eff.rate, 25);
     assert.strictEqual(eff.cap, 15000);
+});
+
+test('isRushHour: phát hiện đúng các khung giờ cao điểm (11-13h & 18-20h VN, UTC+7)', () => {
+    // 05:00 UTC = 12:00 VN -> trong khung 11:00-13:00
+    const noonVN = Date.UTC(2026, 8, 21, 5, 30, 0);
+    assert.strictEqual(isRushHour(noonVN), true);
+
+    // 08:00 UTC = 15:00 VN -> ngoài khung
+    const afternoonVN = Date.UTC(2026, 8, 21, 8, 0, 0);
+    assert.strictEqual(isRushHour(afternoonVN), false);
+
+    // 12:30 UTC = 19:30 VN -> trong khung 18:00-20:00
+    const eveningVN = Date.UTC(2026, 8, 21, 12, 30, 0);
+    assert.strictEqual(isRushHour(eveningVN), true);
+
+    // 20:00 UTC = 03:00 VN ngày hôm sau -> ngoài khung
+    const nightVN = Date.UTC(2026, 8, 21, 20, 0, 0);
+    assert.strictEqual(isRushHour(nightVN), false);
+});
+
+test('getDailyBakeryOrders: sinh đúng 3 đơn hàng VIP tất định, không trùng lặp slot', () => {
+    const userId = '123456789012345678';
+    const dateStr = '2026-09-21';
+
+    const orders1 = getDailyBakeryOrders(userId, dateStr);
+    const orders2 = getDailyBakeryOrders(userId, dateStr);
+
+    assert.strictEqual(orders1.length, 3);
+    assert.deepStrictEqual(orders1, orders2, 'Phải tất định 100% khi cùng userId và dateStr');
+
+    const ids = new Set(orders1.map(o => o.id));
+    assert.strictEqual(ids.size, 3, '3 đơn hàng phải là 3 khách quen / sự kiện khác nhau');
+
+    for (const ord of orders1) {
+        assert.ok(ord.orderIndex >= 1 && ord.orderIndex <= 3);
+        assert.ok(ord.rewardCoins > 0);
+        assert.ok(ord.rewardExp > 0);
+        assert.ok(ord.rewardRep > 0);
+        assert.ok(ord.cakeProgress > 0);
+        assert.ok(Object.keys(ord.required).length > 0);
+    }
 });

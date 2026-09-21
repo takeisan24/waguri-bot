@@ -82,6 +82,7 @@
     "create_premium_order(p_user text, p_plan text, p_months integer, p_amount integer)",
     "create_redeem_code(p_code text, p_rewards jsonb, p_max_uses integer, p_per_user_limit integer, p_only_user text, p_starts_at timestamp with time zone, p_expires_at timestamp with time zone, p_min_age_days integer, p_note text, p_created_by text)",
     "delete_user_data(p_user_id text)",
+    "deliver_bakery_order(p_user_id text, p_order_date date, p_order_id text, p_required_items jsonb, p_reward_coins bigint, p_reward_exp integer, p_reward_rep integer, p_cake_progress bigint)",
     "discord_account_created(p_user text)",
     "divorce_user(p_user text)",
     "equip_badge(p_user_id text, p_badge_id text, p_slot integer)",
@@ -196,6 +197,7 @@
     "antinuke_whitelist_pkey",
     "auctions_pkey",
     "bakeries_pkey",
+    "bakery_completed_orders_pkey",
     "bakery_likes_pkey",
     "battle_pass_users_pkey",
     "clan_invites_pkey",
@@ -337,8 +339,15 @@
       "level:integer",
       "likes_count:integer",
       "opened_at:timestamp with time zone",
+      "reputation:integer",
       "staff:jsonb",
       "stock:bigint",
+      "user_id:text"
+    ],
+    "bakery_completed_orders": [
+      "delivered_at:timestamp with time zone",
+      "order_date:date",
+      "order_id:text",
       "user_id:text"
     ],
     "bakery_likes": [

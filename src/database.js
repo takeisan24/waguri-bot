@@ -2564,6 +2564,41 @@ async function bakeryDecorate(userId, itemId) {
     try { const { data, error } = await supabase.rpc('bakery_decorate', { p_user_id: userId, p_item_id: itemId }); if (error) throw error; return data; }
     catch (e) { console.error('[DATABASE ERROR] bakeryDecorate():', e); return 'error'; }
 }
+/** Giao đơn hàng VIP tiệm bánh. Trả { success: true, reward_coins, reward_exp, reward_rep, new_wallet, new_exp, new_reputation } hoặc { success: false, error, ... } */
+async function deliverBakeryOrder(userId, orderDate, orderId, requiredItems, rewardCoins, rewardExp, rewardRep, cakeProgress) {
+    try {
+        const { data, error } = await supabase.rpc('deliver_bakery_order', {
+            p_user_id: userId,
+            p_order_date: orderDate,
+            p_order_id: orderId,
+            p_required_items: requiredItems,
+            p_reward_coins: Number(rewardCoins || 0),
+            p_reward_exp: Number(rewardExp || 0),
+            p_reward_rep: Number(rewardRep || 0),
+            p_cake_progress: Number(cakeProgress || 0),
+        });
+        if (error) throw error;
+        return data;
+    } catch (e) {
+        console.error('[DATABASE ERROR] deliverBakeryOrder():', e);
+        return { success: false, error: 'DB_ERROR' };
+    }
+}
+/** Lấy danh sách các đơn hàng VIP tiệm bánh đã giao trong ngày */
+async function getCompletedBakeryOrdersToday(userId, orderDate) {
+    try {
+        const { data, error } = await supabase
+            .from('bakery_completed_orders')
+            .select('order_id, delivered_at')
+            .eq('user_id', userId)
+            .eq('order_date', orderDate);
+        if (error) throw error;
+        return data || [];
+    } catch (e) {
+        console.error('[DATABASE ERROR] getCompletedBakeryOrdersToday():', e);
+        return [];
+    }
+}
 /** Ghi nhận phát hiện thành tựu/bộ sưu tập (ví dụ: hvl_album). */
 async function recordDiscovery(userId, itemId) {
     try {
@@ -2928,6 +2963,8 @@ module.exports = {
     bakeryHire,
     bakeryFire,
     bakeryDecorate,
+    deliverBakeryOrder,
+    getCompletedBakeryOrdersToday,
     likeBakery,
     getBakeryWithLikes,
     getBakeryLeaderboard,

@@ -58,7 +58,7 @@ const CATEGORIES_VI: Cat[] = [
     cmds: [
       ["heo", "nuôi heo đất 🐷 (mua/chăm/bán/trộm)"],
       ["trongcay", "trồng cây 🌱 (giống/tưới/thu hoạch/trộm)"],
-      ["tiembanh", "tiệm bánh Gekka 🍰 (kinh doanh thụ động)"],
+      ["tiembanh", "tiệm bánh Gekka 🍰 kinh doanh thụ động & đơn hàng VIP (xem · mo · nhapnl · thu · thue · sathai · trangtri · nangcap · donhang · giaodon)"],
       ["coinflip", "tung đồng xu"],
       ["taixiu", "tài xỉu"],
       ["baucua", "bầu cua tôm cá"],
@@ -191,7 +191,7 @@ const CATEGORIES_EN: Cat[] = [
     cmds: [
       ["heo", "piggy bank 🐷 (buy/care/sell/steal)"],
       ["trongcay", "plant trees 🌱 (seed/water/harvest/steal)"],
-      ["tiembanh", "Gekka Bakery 🍰 (passive business management)"],
+      ["tiembanh", "Gekka Bakery 🍰 passive income & VIP catering (view · open · stock · collect · hire · fire · decor · upgrade · orders · deliver)"],
       ["coinflip", "coin flip"],
       ["taixiu", "tai xiu (over/under)"],
       ["baucua", "bau cua (gourd-crab-fish)"],
