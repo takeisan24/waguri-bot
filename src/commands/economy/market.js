@@ -114,10 +114,10 @@ module.exports = {
                 .setTitle(isEn ? '📈 Waguri Live Commodity Market' : '📈 Sàn Giao Dịch Nông Thủy Sản Biến Động Waguri')
                 .setDescription(
                     isEn
-                        ? `Market prices update dynamically every 4 hours based on global supply & demand!\n⏳ Next market shift in: **${countdown}**`
-                        : `Giá nông sản biến động tự động mỗi 4 giờ dựa trên cung cầu thị trường!\n⏳ Lần đổi giá tiếp theo sau: **${countdown}**`
+                        ? `Market prices update dynamically every 4 hours based on global supply & demand!\n⏳ Next market shift in: **${countdown}**\n📊 Sparkline shows 24h price trend (6 blocks: \`[ ▂▃▅▆█]\`).`
+                        : `Giá nông sản biến động tự động mỗi 4 giờ dựa trên cung cầu thị trường!\n⏳ Lần đổi giá tiếp theo sau: **${countdown}**\n📊 Biểu đồ Sparkline thể hiện xu hướng 24h qua (6 khối: \`[ ▂▃▅▆█]\`).`
                 )
-                .setFooter({ text: 'Waguri Market Engine • Real-time Fluctuations' });
+                .setFooter({ text: 'Waguri Market Engine • Real-time Fluctuations & 24h Trend' });
 
             const catMap = {
                 crop: isEn ? '🌾 Crops' : '🌾 Nông Sản',
@@ -134,7 +134,8 @@ module.exports = {
                     const name = isEn ? p.nameEn : p.nameVi;
                     const icon = p.trend === 'UP' ? '📈' : (p.trend === 'DOWN' ? '📉' : '➡️');
                     const pctSign = p.pctChange > 0 ? `+${p.pctChange}%` : `${p.pctChange}%`;
-                    return `${p.emoji} **${name}**: **${fmt(p.currentPrice, locale)}** ${config.CURRENCY} (${icon} \`${pctSign}\`)`;
+                    const spark = p.sparkline ? `\`[${p.sparkline}]\`` : '';
+                    return `${p.emoji} **${name}**: **${fmt(p.currentPrice, locale)}** ${config.CURRENCY} (${icon} \`${pctSign}\`) ${spark}\n↳ *24h:* \`${fmt(p.low24h, locale)} - ${fmt(p.high24h, locale)}\` ${config.CURRENCY}`;
                 }).join('\n');
                 embed.addFields({ name: catMap[cat], value: text, inline: false });
             }

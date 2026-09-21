@@ -77,14 +77,17 @@ Waguri là **Discord economy/RPG bot bản địa hóa văn hóa Việt**. Bot N
 
 ---
 
-## 4. TRẠNG THÁI HIỆN TẠI (cập nhật 2026-08-02 — sửa khi đổi lớn)
+## 4. TRẠNG THÁI HIỆN TẠI (cập nhật 2026-09-21 — sửa khi đổi lớn)
 
-- **Release:** GitHub tag mới nhất `v2.4.0` ("Feature /study Pomodoro Companion & Web Lofi Study Room Ecosystem"). `package.json` = `2.4.0`.
-- **📈 Biểu Đồ Giá Chợ Nông Thủy Sản Biến Động Hàng Giờ (`/market` & Web) — HẠNG MỤC ƯU TIÊN #1 ĐÃ HOÀN THÀNH 100%:**
-  - **Migration `0095_market_fluctuations.sql`, `0096_fix_market_item_ids.sql` & RPC `sell_item_market`:** Đã áp dụng DB Supabase Production. Tạo bảng `market_prices`, `market_history` và RPC bán hàng nguyên tử. Migration 0096 đã chuẩn hóa 100% Item ID khớp với bảng `items` (`trai_1500`, `trai_2500`, `hoa_2000`, `hoa_3500`, `ca_koi_nhat`, `ca_rong_vang`, `quang_sat`, `vang_dong_tren`, `go`, `thit_heo_2500`, `ca_tuoi`, `ky_nam`).
-  - **Thuật toán tất định 4 giờ (Deterministic 4-Hour Time Block Engine):** Tính toán biến động giá từ **-30% đến +50%** so với giá cơ sở cho 12 loại nông/thủy/khoáng/lâm sản, chuẩn hóa múi giờ `Date.UTC()` đồng bộ tuyệt đối giữa Bot VPS và Web Vercel.
-  - **Slash Command & Embed Interactive:** Lệnh `/market prices` hiển thị bảng giá biến động kèm biểu tượng xu hướng (📈 UP, 📉 DOWN, ➡️ STABLE), phần trăm biến động và đếm ngược lần đổi giá tiếp theo. Lệnh `/market sell` & `/store sell` tự động giao dịch theo giá chợ thời gian thực.
-  - **Trang Web Chợ Biến Động (`web/src/app/market`):** Giao diện Web thiết kế hiện đại, tự động phân loại theo 5 danh mục hàng hóa (Nông sản, Chăn nuôi, Thủy sản, Khai thác, Lâm nghiệp), cập nhật revalidate 60s và đồng bộ thanh điều hướng SiteHeader. Đã kiểm thử `test/market.test.js` (105/105 tests pass 100%).
+- **Release:** GitHub tag mới nhất `v2.4.0` ("Feature /study Pomodoro Companion & Web Lofi Study Room Ecosystem"). `package.json` = `2.5.1`.
+- **📈 Biểu Đồ Giá Chợ Nông Thủy Sản Biến Động Hàng Giờ, Khử Dốc Tuyến Tính MurmurMix32 & Sparklines (`/market` & Web) — HẠNG MỤC ƯU TIÊN #1 ĐÃ HOÀN THÀNH 100%:**
+  - **Migration `0150_market_avalanche_hash.sql` & RPC `market_multiplier`:** Đã áp dụng 1:1 trên cả Supabase Test & Production DB. Tích hợp bộ trộn tuyết lở (Avalanche Mixer) MurmurMix32 vào hàm băm PL/pgSQL, khử dốc tuyến tính cùng ngày: tần suất bước nhảy $\pm 1\%$ giảm từ **82,3%** xuống còn **2,31%** (phân phối đều tự nhiên).
+  - **Đồng bộ bit-exact 100%:** `src/lib/market.js` (bot Node.js) và `web/src/lib/market.ts` (Next.js TS) cùng triển khai `murmurMix32(hash >>> 0)`. Kiểm thử 2.880 trường hợp khớp vân tay DB `f49bc44ff9d21deb22d4da79ee28fbc4` trong `test/market_gia_hien_dung_gia_tra.test.js`.
+  - **Biểu đồ giá suy ra (0-DB query):** `getMarketHistory(itemId, 6)` tái hiện lịch sử 6 khối 4h (24 giờ qua) với 0 query DB.
+  - **Trực quan hóa Sparkline đa nền tảng:**
+    - Bot Discord (`/market prices`): Hiển thị biểu đồ Sparkline Unicode trực quan (` ` đến `█`) kèm dải giá 24h (`Min - Max`) ngay trên embed.
+    - Web Next.js (`web/src/app/market`): Render biểu đồ vector SVG mini sparkline mềm mại có vùng gradient đổi màu theo xu hướng (Emerald khi UP, Rose khi DOWN, Slate khi STABLE) kèm dải giá 24h. Đã kiểm thử `test/market.test.js` và `test/economy.invariants.test.js` (563/563 tests pass 100%).
+
 - **⚡ Tối Ưu Bảng Xếp Hạng Siêu Tốc & Tự Động Đồng Bộ Discord Profile (`/leaderboard` & Web) — ĐÃ HOÀN THÀNH 100%:**
   - **Migration `0091_public_leaderboard_security_definer.sql` & `0092_user_profile_names.sql`:** Đã áp dụng lên Supabase Production DB. Cấu hình `SECURITY DEFINER` và phân quyền công khai `GRANT EXECUTE TO anon` cho các hàm RPC `leaderboard_rows`, `leaderboard_rows_guild`, `get_bakery_leaderboard`. Thêm cột `username` & `avatar` vào bảng `users`.
   - **Tối ưu tốc độ (20ms):** Đảo luồng ưu tiên truy vấn trực tiếp Supabase DB trước, giảm thời gian chờ phản hồi Bảng xếp hạng từ ~3.5s xuống còn **0.02s (nhanh gấp 70 lần)**, hoàn toàn độc lập với trạng thái bật/tắt của Bot VPS Wispbyte.

@@ -20,6 +20,55 @@ export async function generateMetadata() {
 
 const fmt = (n: number, isEn = false) => Number(n || 0).toLocaleString(isEn ? "en-US" : "vi-VN");
 
+function SparklineSvg({
+  history,
+  trend,
+}: {
+  history: { price: number; blockKey: string }[];
+  trend: string;
+}) {
+  if (!history || history.length < 2) return null;
+  const prices = history.map((h) => h.price);
+  const min = Math.min(...prices);
+  const max = Math.max(...prices);
+  const range = max - min || 1;
+  const width = 120;
+  const height = 36;
+  const padX = 6;
+  const padY = 6;
+  const usableW = width - padX * 2;
+  const usableH = height - padY * 2;
+
+  const coords = prices.map((price, i) => {
+    const x = padX + (i / (prices.length - 1)) * usableW;
+    const y = padY + (1 - (price - min) / range) * usableH;
+    return { x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10 };
+  });
+
+  const polylineStr = coords.map((c) => `${c.x},${c.y}`).join(" ");
+  const areaStr = `${coords[0].x},${height} ${polylineStr} ${coords[coords.length - 1].x},${height}`;
+  const strokeColor = trend === "UP" ? "#34d399" : trend === "DOWN" ? "#fb7185" : "#94a3b8";
+  const fillColor = trend === "UP" ? "rgba(52, 211, 153, 0.15)" : trend === "DOWN" ? "rgba(251, 113, 133, 0.15)" : "rgba(148, 163, 184, 0.1)";
+  const lastCoord = coords[coords.length - 1];
+
+  return (
+    <div className="w-full h-8 my-1">
+      <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full overflow-visible">
+        <polygon points={areaStr} fill={fillColor} />
+        <polyline
+          fill="none"
+          stroke={strokeColor}
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          points={polylineStr}
+        />
+        <circle cx={lastCoord.x} cy={lastCoord.y} r="3" fill={strokeColor} />
+      </svg>
+    </div>
+  );
+}
+
 export default async function MarketPage() {
   const locale = await getLocaleServer();
   const isEn = locale === "en";
@@ -115,6 +164,15 @@ export default async function MarketPage() {
                         <div>
                           <h3 className="text-base font-bold text-white">{isEn ? p.nameEn : p.nameVi}</h3>
                           <p className="text-xs text-slate-400">{isEn ? "Base price" : "Giá cơ sở"}: {fmt(p.basePrice, isEn)} VNĐ</p>
+                        </div>
+
+                        {/* Sparkline & 24h range */}
+                        <div className="pt-1">
+                          <div className="flex items-center justify-between text-[11px] text-slate-400 mb-1">
+                            <span>{isEn ? "24h Trend" : "Xu hướng 24h"}</span>
+                            <span className="font-mono text-slate-400">{fmt(p.low24h, isEn)} - {fmt(p.high24h, isEn)}</span>
+                          </div>
+                          <SparklineSvg history={p.history} trend={p.trend} />
                         </div>
 
                         <div className="pt-2 border-t border-slate-800/60 flex items-baseline justify-between">

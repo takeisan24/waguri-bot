@@ -51,7 +51,7 @@ const {
 //   · công thức hiển thị đã trôi khỏi công thức trả tiền, HOẶC
 //   · `items.price` trong DB đã đổi — khi đó chạy lại câu SQL trên để lấy vân tay mới, và
 //     nhớ cập nhật basePrice ở CẢ bot lẫn web (cổng KINH TẾ #2/#5 sẽ nhắc).
-const VAN_TAY_DB = 'fcf7302f9be01a42d6399950363a0d83';
+const VAN_TAY_DB = 'f49bc44ff9d21deb22d4da79ee28fbc4';
 
 function vanTay(giaCua) {
     const rows = [];

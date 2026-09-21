@@ -21,6 +21,19 @@ const BASE_MARKET_ITEMS = {
 };
 
 /**
+ * Bộ trộn băm tuyết lở MurmurMix32 (Avalanche Mixer)
+ * Biến đổi các bit để khử tương quan tuyến tính khi chuỗi đầu vào chỉ khác nhau 1 ký tự cuối.
+ */
+function murmurMix32(h) {
+    h = (h ^ (h >>> 16)) >>> 0;
+    h = Math.imul(h, 0x85ebca6b) >>> 0;
+    h = (h ^ (h >>> 13)) >>> 0;
+    h = Math.imul(h, 0xc2b2ae35) >>> 0;
+    h = (h ^ (h >>> 16)) >>> 0;
+    return h;
+}
+
+/**
  * Tính toán hệ số nhân giá thị trường (0.70 đến 1.50) dựa trên block 4h tất định
  */
 function computeMarketMultiplier(itemId, timeBlock) {
@@ -30,9 +43,11 @@ function computeMarketMultiplier(itemId, timeBlock) {
         hash = (hash << 5) - hash + str.charCodeAt(i);
         hash |= 0;
     }
-    const normalized = (Math.abs(hash) % 81) / 100; // 0.00 đến 0.80
+    const mixed = murmurMix32(hash >>> 0);
+    const normalized = (mixed % 81) / 100; // 0.00 đến 0.80
     return parseFloat((0.70 + normalized).toFixed(2)); // 0.70 đến 1.50
 }
+
 
 function get4HourBlock() {
     const now = new Date();
@@ -50,6 +65,52 @@ function getNextShiftCountdown() {
     const hours = Math.floor(diffMs / (1000 * 60 * 60));
     const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
     return `${hours}h ${minutes}m`;
+}
+
+function getPast4HourBlocks(count = 6, referenceDate = new Date()) {
+    const blocks = [];
+    const msPerBlock = 4 * 60 * 60 * 1000;
+    const refMs = referenceDate.getTime();
+    for (let i = count - 1; i >= 0; i--) {
+        const d = new Date(refMs - i * msPerBlock);
+        const year = d.getUTCFullYear();
+        const day = Math.floor((d.getTime() - Date.UTC(year, 0, 0)) / (1000 * 60 * 60 * 24));
+        const block = Math.floor(d.getUTCHours() / 4);
+        blocks.push({
+            blockKey: `${year}-${day}-${block}`,
+            timestamp: d.getTime(),
+        });
+    }
+    return blocks;
+}
+
+function getMarketHistory(itemId, blocksCount = 6, referenceDate = new Date()) {
+    const info = BASE_MARKET_ITEMS[itemId];
+    if (!info) return [];
+    const blocks = getPast4HourBlocks(blocksCount, referenceDate);
+    return blocks.map(b => {
+        const mult = computeMarketMultiplier(itemId, b.blockKey);
+        const multPct = Math.round(mult * 100);
+        const price = Math.max(1, Math.floor(info.basePrice * multPct / 100));
+        return {
+            blockKey: b.blockKey,
+            multiplier: mult,
+            price,
+            timestamp: b.timestamp,
+        };
+    });
+}
+
+function generateSparkline(prices) {
+    if (!prices || prices.length === 0) return '';
+    const ticks = [' ', '▂', '▃', '▄', '▅', '▆', '▇', '█'];
+    const min = Math.min(...prices);
+    const max = Math.max(...prices);
+    if (min === max) return ticks[3].repeat(prices.length);
+    return prices.map(p => {
+        const idx = Math.min(ticks.length - 1, Math.floor(((p - min) / (max - min)) * ticks.length));
+        return ticks[idx];
+    }).join('');
 }
 
 async function getLiveMarketPrices() {
@@ -75,7 +136,7 @@ async function getLiveMarketPrices() {
         // số thật, và ba món cày nhiều nhất sai gần một nửa thời gian (ca_tuoi 50,6%, quang_sat
         // 49,4%, go 48,9%). Bán 1.000 gỗ ở khung lệch: bảng hứa 41.000, thực nhận 40.000.
         // Hạ HIỂN THỊ xuống cho khớp, KHÔNG nâng tiền trả — nâng là tạo tiền, đụng bất biến #1.
-                // TÍNH BẰNG SỐ NGUYÊN, không nhân với số thực. `mult` luôn có dạng k/100 (k = 70..150)
+        // TÍNH BẰNG SỐ NGUYÊN, không nhân với số thực. `mult` luôn có dạng k/100 (k = 70..150)
         // nhưng dấu phẩy động lưu 0,99 thành 0,98999999999999999…, nên Math.floor(40000 × 0,99)
         // ra 39.599 trong khi RPC dùng `numeric` chính xác và trả 39.600.
         // Đã đo đối chiếu 2.880 trường hợp với CHÍNH hàm market_multiplier của DB: nhân trực
@@ -84,6 +145,12 @@ async function getLiveMarketPrices() {
         const multPct = Math.round(mult * 100);          // 70..150, đúng (abs(hash) % 81) + 70
         const price = Math.max(1, Math.floor(info.basePrice * multPct / 100));
         const trend = mult > prevMult ? 'UP' : (mult < prevMult ? 'DOWN' : 'STABLE');
+
+        const history = getMarketHistory(itemId, 6);
+        const historyPrices = history.map(h => h.price);
+        const sparkline = generateSparkline(historyPrices);
+        const high24h = Math.max(...historyPrices);
+        const low24h = Math.min(...historyPrices);
 
         results.push({
             itemId,
@@ -96,6 +163,10 @@ async function getLiveMarketPrices() {
             multiplier: mult,
             pctChange: Math.round((mult - 1) * 100),
             trend,
+            sparkline,
+            high24h,
+            low24h,
+            history,
         });
     }
 
@@ -104,8 +175,13 @@ async function getLiveMarketPrices() {
 
 module.exports = {
     BASE_MARKET_ITEMS,
+    murmurMix32,
     computeMarketMultiplier,
     get4HourBlock,
     getNextShiftCountdown,
+    getPast4HourBlocks,
+    getMarketHistory,
+    generateSparkline,
     getLiveMarketPrices,
 };
+
