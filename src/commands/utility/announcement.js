@@ -33,6 +33,7 @@ module.exports = {
                 return interaction.editReply({ content: t(locale, 'commands.announcement.err_owner') });
             }
             await db.setGuildSetting('global', 'latest_announcement', '');
+            await db.setGuildSetting('global', 'latest_announcement_title', '');
             await db.setGuildSetting('global', 'latest_announcement_commit', '');
             const embed = buildWaguriEmbed(interaction, 'success', {
                 locale,
@@ -47,6 +48,7 @@ module.exports = {
             await interaction.deferReply();
             const s = await db.getGuildSettings('global');
             const message = s?.latest_announcement;
+            const savedTitle = s?.latest_announcement_title;
 
             if (!message) {
                 const embed = buildWaguriEmbed(interaction, 'warning', {
@@ -59,7 +61,7 @@ module.exports = {
 
             const embed = buildWaguriEmbed(interaction, 'info', {
                 locale,
-                title: t(locale, 'commands.announcement.title_latest'),
+                title: savedTitle ? (savedTitle.startsWith('📢') ? savedTitle : `📢 ${savedTitle}`) : t(locale, 'commands.announcement.title_latest'),
                 description: message
             });
             embed.setTimestamp();
@@ -152,19 +154,20 @@ module.exports = {
             const ctaRaw = submitted.fields.getTextInputValue('ann_cta')?.trim() || '';
             const note = submitted.fields.getTextInputValue('ann_note')?.trim() || '';
 
-            let fullMessage = `🌸 **${title.toUpperCase()}** 🌸\n\n${highlights}`;
+            let content = highlights;
             if (note) {
-                fullMessage += `\n\n${note}`;
+                content += `\n\n${note}`;
             }
-            if (fullMessage.length > 4000) fullMessage = fullMessage.slice(0, 4000) + '…';
+            if (content.length > 4000) content = content.slice(0, 4000) + '…';
 
             // 1. Lưu thông báo vào cấu hình global
-            await db.setGuildSetting('global', 'latest_announcement', fullMessage);
+            await db.setGuildSetting('global', 'latest_announcement', content);
+            await db.setGuildSetting('global', 'latest_announcement_title', title);
 
             const embed = buildWaguriEmbed(submitted, 'jackpot', {
                 locale,
                 title: title.startsWith('📢') ? title : `📢 ${title}`,
-                description: fullMessage
+                description: content
             });
 
             if (imageUrl && /^https?:\/\/.+/i.test(imageUrl)) {

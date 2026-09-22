@@ -101,8 +101,9 @@ client.commands = new Collection();
 // 1. NẠP COMMAND TỪ src/commands/<nhóm>/*.js
 // ---------------------------------------------------------
 const foldersPath = path.join(__dirname, 'src', 'commands');
-const commandsAPI = [];   // dữ liệu lệnh gửi lên Discord API
-const commandTable = [];  // hiển thị trạng thái ra console
+const commandsAPI = [];      // dữ liệu lệnh gửi lên Discord API
+const slashTable = [];       // hiển thị lệnh Slash ra console
+const contextMenuTable = []; // hiển thị Context Menu Apps ra console
 
 for (const folder of fs.readdirSync(foldersPath)) {
     const commandsPath = path.join(foldersPath, folder);
@@ -127,16 +128,27 @@ for (const folder of fs.readdirSync(foldersPath)) {
                 console.error(`[SYSTEM] Không thể địa phương hóa lệnh ${command.data.name}:`, e);
             }
             commandsAPI.push(cmdJSON);
-            commandTable.push({ 'Lệnh': `/${command.data.name}`, 'Trạng thái': '✅ Hoạt động' });
+
+            const isContextMenu = cmdJSON.type === 2 || cmdJSON.type === 3;
+            if (isContextMenu) {
+                const ctxType = cmdJSON.type === 2 ? 'User Context Menu (Apps)' : 'Message Context Menu (Apps)';
+                contextMenuTable.push({ 'Tên Menu': command.data.name, 'Loại Menu': ctxType, 'Trạng thái': '✅ Hoạt động' });
+            } else {
+                slashTable.push({ 'Lệnh Slash': `/${command.data.name}`, 'Trạng thái': '✅ Hoạt động' });
+            }
         } else {
             console.log(`[WARNING] Lệnh tại ${file} thiếu "data" hoặc "execute".`);
-            commandTable.push({ 'Lệnh': file, 'Trạng thái': '❌ Thiếu cấu trúc' });
+            slashTable.push({ 'Lệnh Slash': file, 'Trạng thái': '❌ Thiếu cấu trúc' });
         }
     }
 }
 
-console.log('\n--- DANH SÁCH LỆNH (COMMANDS) ---');
-console.table(commandTable);
+console.log(`\n--- DANH SÁCH LỆNH SLASH (${slashTable.length} lệnh) ---`);
+console.table(slashTable);
+if (contextMenuTable.length > 0) {
+    console.log(`\n--- DANH SÁCH CONTEXT MENU APPS (${contextMenuTable.length} menu) ---`);
+    console.table(contextMenuTable);
+}
 
 // ---------------------------------------------------------
 // 2. TỰ ĐỘNG ĐĂNG KÝ SLASH COMMAND LÊN DISCORD
