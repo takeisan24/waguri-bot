@@ -23,13 +23,26 @@ const HONG = 'commands.announcement.nhac_kenh_hong';
 const CHUA_DAT = 'commands.announcement.nhac_kenh';
 
 /** Dựng guild giả. `guiDuocO` là tập id kênh mà bot có quyền gửi. */
-function guildGia({ kenhDat = null, systemId = 'sys', guiDuocO = [], coMe = true, cachedChannels = null } = {}) {
+function guildGia({ kenhDat = null, systemId = 'sys', guiDuocO = [], coMe = true, cachedChannels = null, thieuViewO = [] } = {}) {
     const kenh = (id, name = id) => ({ id, name, type: 0, toString: () => `#${name}` });
     const cacheMap = cachedChannels ? new Map(cachedChannels.map(c => [c.id, c])) : null;
     return {
         systemChannel: systemId ? kenh(systemId) : null,
         members: coMe
-            ? { me: { permissionsIn: ch => ({ has: p => p === PermissionFlagsBits.SendMessages && guiDuocO.includes(ch.id) }) } }
+            ? { me: { permissionsIn: ch => ({
+                has: p => {
+                    if (p === PermissionFlagsBits.ViewChannel) {
+                        return guiDuocO.includes(ch.id) && !thieuViewO.includes(ch.id);
+                    }
+                    if (p === PermissionFlagsBits.SendMessages) {
+                        return guiDuocO.includes(ch.id);
+                    }
+                    if (p === PermissionFlagsBits.EmbedLinks) {
+                        return true;
+                    }
+                    return guiDuocO.includes(ch.id);
+                }
+            }) } }
             : {},
         channels: {
             cache: cacheMap,
@@ -126,3 +139,18 @@ test('ưu tiên kênh có tên thong-bao / general / chat nếu có nhiều kên
     const r = await chonKenhThongBao(g, {});
     assert.strictEqual(r.channel.id, 'thong-bao-server');
 });
+
+test('kênh systemChannel có SendMessages nhưng bị ẩn (thiếu ViewChannel) -> lui về kênh text Smart Fallback', async () => {
+    const g = guildGia({
+        systemId: 'sys-hidden',
+        guiDuocO: ['sys-hidden', 'chat-thuc-te'],
+        thieuViewO: ['sys-hidden'], // kênh system bị ẩn khỏi bot
+        cachedChannels: [
+            { id: 'sys-hidden', name: 'general', type: 0 },
+            { id: 'chat-thuc-te', name: 'chat-chung', type: 0 }
+        ]
+    });
+    const r = await chonKenhThongBao(g, {});
+    assert.strictEqual(r.channel.id, 'chat-thuc-te', 'Không được chọn kênh systemChannel khi bot bị chặn ViewChannel');
+});
+

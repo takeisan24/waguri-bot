@@ -6,7 +6,8 @@ const {
     ActionRowBuilder, 
     ButtonBuilder, 
     ButtonStyle, 
-    MessageFlags 
+    MessageFlags,
+    PermissionFlagsBits 
 } = require('discord.js');
 const db = require('../../database.js');
 const { isOwner } = require('../../lib/owner');
@@ -223,17 +224,45 @@ module.exports = {
                     const s = await db.getGuildSettings(gid);
                     const { channel, nhac } = await chonKenhThongBao(guild, s);
 
+                    let sent = false;
                     if (channel) {
                         const sendPayload = nhac
                             ? { content: t(locale, nhac), ...payload }
                             : payload;
-                        await channel.send(sendPayload);
-                        sentCount++;
+                        try {
+                            await channel.send(sendPayload);
+                            sentCount++;
+                            sent = true;
+                        } catch (sendErr) {
+                            // Nếu kênh bị lỗi quyền bất ngờ (50001 Missing Access hoặc 50013 Missing Permissions),
+                            // tự động dò tìm các kênh văn bản khác trong guild thay vì bỏ cuộc
+                            if (sendErr.code === 50001 || sendErr.code === 50013) {
+                                const backupChannels = Array.from(guild.channels?.cache?.values() || []).filter(ch => 
+                                    ch.id !== channel.id &&
+                                    (ch.type === 0 || (typeof ch.isTextBased === 'function' && ch.isTextBased() && !ch.isVoiceBased?.() && !ch.isThread?.()))
+                                );
+                                for (const altCh of backupChannels) {
+                                    const perms = guild.members?.me?.permissionsIn(altCh);
+                                    if (perms?.has?.(PermissionFlagsBits.ViewChannel) && perms?.has?.(PermissionFlagsBits.SendMessages)) {
+                                        try {
+                                            await altCh.send({ content: t(locale, 'commands.announcement.nhac_kenh'), ...payload });
+                                            sentCount++;
+                                            sent = true;
+                                            break;
+                                        } catch { /* tiếp tục tìm */ }
+                                    }
+                                }
+                            }
+                            if (!sent) {
+                                console.error(`[ANNOUNCEMENT ERROR] Guild ID: ${gid} (Kênh ${channel.id})`, sendErr.message || sendErr);
+                                failCount++;
+                            }
+                        }
                     } else {
                         failCount++;
                     }
                 } catch (err) {
-                    console.error(`[ANNOUNCEMENT ERROR] Guild ID: ${gid}`, err);
+                    console.error(`[ANNOUNCEMENT ERROR] Guild ID: ${gid}`, err.message || err);
                     failCount++;
                 }
             }

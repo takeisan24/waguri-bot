@@ -22,8 +22,20 @@ const { PermissionFlagsBits } = require('discord.js');
  *   nhac    — khoá i18n của dòng nhắc admin, null nghĩa là kênh đúng ý nên không nhắc.
  */
 async function chonKenhThongBao(guild, settings) {
-    const guiDuoc = ch => Boolean(ch) && Boolean(guild.members?.me)
-        && guild.members.me.permissionsIn(ch).has(PermissionFlagsBits.SendMessages);
+    const guiDuoc = ch => {
+        if (!ch || !guild.members?.me) return false;
+        try {
+            const perms = guild.members.me.permissionsIn(ch);
+            if (!perms || typeof perms.has !== 'function') return false;
+            // Bắt buộc phải có cả ViewChannel lẫn SendMessages (tránh DiscordAPIError[50001] Missing Access)
+            const canView = perms.has(PermissionFlagsBits.ViewChannel);
+            const canSend = perms.has(PermissionFlagsBits.SendMessages);
+            const canEmbed = typeof perms.has === 'function' && perms.has(PermissionFlagsBits.EmbedLinks) !== false;
+            return Boolean(canView && canSend && canEmbed);
+        } catch {
+            return false;
+        }
+    };
 
     let channel = null;
     let nhac = null;
