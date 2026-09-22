@@ -23,14 +23,16 @@ const HONG = 'commands.announcement.nhac_kenh_hong';
 const CHUA_DAT = 'commands.announcement.nhac_kenh';
 
 /** Dựng guild giả. `guiDuocO` là tập id kênh mà bot có quyền gửi. */
-function guildGia({ kenhDat = null, systemId = 'sys', guiDuocO = [], coMe = true } = {}) {
-    const kenh = id => ({ id, toString: () => `#${id}` });
+function guildGia({ kenhDat = null, systemId = 'sys', guiDuocO = [], coMe = true, cachedChannels = null } = {}) {
+    const kenh = (id, name = id) => ({ id, name, type: 0, toString: () => `#${name}` });
+    const cacheMap = cachedChannels ? new Map(cachedChannels.map(c => [c.id, c])) : null;
     return {
         systemChannel: systemId ? kenh(systemId) : null,
         members: coMe
             ? { me: { permissionsIn: ch => ({ has: p => p === PermissionFlagsBits.SendMessages && guiDuocO.includes(ch.id) }) } }
             : {},
         channels: {
+            cache: cacheMap,
             fetch: async id => {
                 if (kenhDat === null || id !== kenhDat) throw new Error('Unknown Channel');
                 return kenh(id);
@@ -96,4 +98,31 @@ test('hai khoá nhắc đều có bản dịch vi lẫn en', () => {
                 `${ngu}/${khoa} phải chỉ rõ lệnh cần chạy, nhắc chung chung thì admin không biết làm gì.`);
         }
     }
+});
+
+test('không có systemChannel nhưng có channels.cache -> tự fallback về kênh text có quyền gửi', async () => {
+    const g = guildGia({
+        systemId: null,
+        guiDuocO: ['chat-tong'],
+        cachedChannels: [
+            { id: 'kho-gui', name: 'kho-gui', type: 0 },
+            { id: 'chat-tong', name: 'chat-tong', type: 0 }
+        ]
+    });
+    const r = await chonKenhThongBao(g, {});
+    assert.strictEqual(r.channel.id, 'chat-tong');
+    assert.strictEqual(r.nhac, CHUA_DAT);
+});
+
+test('ưu tiên kênh có tên thong-bao / general / chat nếu có nhiều kênh có quyền gửi', async () => {
+    const g = guildGia({
+        systemId: null,
+        guiDuocO: ['random-text', 'thong-bao-server'],
+        cachedChannels: [
+            { id: 'random-text', name: 'random-text', type: 0 },
+            { id: 'thong-bao-server', name: 'thong-bao-server', type: 0 }
+        ]
+    });
+    const r = await chonKenhThongBao(g, {});
+    assert.strictEqual(r.channel.id, 'thong-bao-server');
 });

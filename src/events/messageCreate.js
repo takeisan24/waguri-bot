@@ -16,6 +16,7 @@ const { isBlocked, getJail } = require('../lib/jail');
 const { PIG_CMDS, handlePigPrefix } = require('../lib/pig');
 const { PLANT_CMDS, handlePlantPrefix } = require('../lib/plant');
 const { recordMembership } = require('../lib/membership');
+const { recordGuildActivity } = require('../lib/companionReminder');
 
 // Chat-leveling: thưởng xu/EXP khi chat. Cooldown RAM (chống spam, tiền-lọc); cap NGÀY ở DB
 // (qua claimDailyCounter) -> không farm được qua restart hay nhiều shard.
@@ -61,6 +62,7 @@ module.exports = {
         if (message.author.bot || !message.guild) return;
         if (isBanned(message.author.id)) return;
         recordMembership(message.guild.id, message.author.id); // BXH theo server — fire-and-forget
+        recordGuildActivity(message.guild.id); // Theo dõi độ sôi động server cho lời nhắc Waguri
 
         // Tự động đồng bộ role cấp độ nếu gửi tin nhắn ở Server Support
         if (message.guild.id === config.ROLE_REWARDS.SUPPORT_GUILD_ID && message.member) {
@@ -374,8 +376,7 @@ module.exports = {
             return;
         }
 
-        // --- 3) Chat thường: thưởng chat-leveling + nối từ (nếu có ván) ---
-        grantChatReward(message).catch(() => {}); // fire-and-forget (đã async vì có call DB)
+        // --- 3) Chat thường: Vô hiệu hoá chat-leveling thụ động (người dùng chỉ nhận EXP/Xu khi tương tác với Waguri hoặc chơi minigame) ---
         await handleNoiTu(message);
     },
 };

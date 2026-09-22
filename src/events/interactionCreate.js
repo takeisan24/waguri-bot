@@ -394,6 +394,120 @@ module.exports = {
                 }
                 return;
             }
+
+            // Nút điều hướng nhanh từ Announcement (1-Click Actions)
+            if (interaction.customId.startsWith('ann_btn_')) {
+                const action = interaction.customId.replace('ann_btn_', '');
+                const isEn = locale === 'en';
+                const guideMap = {
+                    tiembanh: {
+                        title: isEn ? '🧁 Gekka Bakery' : '🧁 Tiệm Bánh Gekka',
+                        desc: isEn
+                            ? 'Welcome to Gekka Bakery! You can explore with:\n• **/tiembanh xem**: View your bakery status & rush hours\n• **/tiembanh nuong**: Bake delicious pastries\n• **/tiembanh donhang**: Check VIP patron orders'
+                            : 'Chào mừng cậu đến với Tiệm Bánh Gekka! Cậu có thể bắt đầu bằng các lệnh:\n• **/tiembanh xem**: Xem tình trạng tiệm bánh & giờ cao điểm\n• **/tiembanh nuong**: Nướng bánh thơm ngon\n• **/tiembanh donhang**: Nhận đơn đặt hàng VIP từ khách quen'
+                    },
+                    market: {
+                        title: isEn ? '🛒 Market Exchange' : '🛒 Chợ Nông Thủy Sản',
+                        desc: isEn
+                            ? 'Hourly price changes at Waguri Market Exchange:\n• **/market prices**: Check current prices & 24h sparklines\n• **/market sell**: Sell your harvests at peak price!'
+                            : 'Biến động giá cả hàng giờ tại Chợ Nông Thủy Sản:\n• **/market prices**: Xem bảng giá & biểu đồ biến động 24h\n• **/market sell**: Bán nông sản/thủy sản lúc giá đạt đỉnh!'
+                    },
+                    quest: {
+                        title: isEn ? '📜 Kikyo Chronicles' : '📜 Hồi Ký & Cốt Truyện Kikyo',
+                        desc: isEn
+                            ? 'Your journey with Waguri at Kikyo Academy:\n• **/quest**: Open Quest Handbook (Story, Dailies & Achievements)\n• Complete quests to earn Coins, EXP, and Affection Points!'
+                            : 'Hành trình cùng Waguri tại Học Viện Kikyo:\n• **/quest**: Mở sổ tay nhiệm vụ (Cốt truyện 5 Hồi, Hàng ngày & Thành tựu)\n• Hoàn thành nhiệm vụ để nhận Xu, EXP và Điểm Gắn Kết!'
+                    },
+                    study: {
+                        title: isEn ? '☕ Pomodoro Lo-Fi Study Room' : '☕ Phòng Học Lo-Fi Pomodoro',
+                        desc: isEn
+                            ? 'Focus on studying & working with Waguri:\n• **/study start**: Start a Pomodoro study session\n• **/study status**: Check your study progress bar\n• Access the Web Lo-Fi Study Room for chill music and focus buffs!'
+                            : 'Cùng Waguri tập trung học tập & làm việc hiệu quả:\n• **/study start**: Bắt đầu phiên Pomodoro tập trung\n• **/study status**: Xem thanh tiến trình học\n• Truy cập Web Lo-Fi Study Room để nghe nhạc thư giãn và nhận buff!'
+                    },
+                    daily: {
+                        title: isEn ? '🎁 Daily Attendance' : '🎁 Điểm Danh Hằng Ngày',
+                        desc: isEn
+                            ? 'A daily gift from Waguri:\n• Type **/daily** to receive Coins, Energy, Gacha tickets, and Battle Pass XP!\n• Maintain your streak for massive bonus rewards!'
+                            : 'Mỗi ngày một niềm vui cùng Waguri:\n• Hãy gõ **/daily** để nhận Xu, Năng lượng, Vé quay số và Battle Pass XP!\n• Đừng quên duy trì chuỗi điểm danh để nhận thêm thưởng lớn nhé!'
+                    }
+                };
+
+                const guide = guideMap[action] || {
+                    title: isEn ? '📢 Waguri Companion' : '📢 Waguri Đồng Hành',
+                    desc: isEn ? 'Use slash commands to interact with Waguri!' : 'Hãy dùng các lệnh gạch chéo để tương tác cùng Waguri nhé!'
+                };
+
+                const embed = buildWaguriEmbed(interaction, 'info', {
+                    locale,
+                    title: guide.title,
+                    description: guide.desc
+                });
+
+                return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+            }
+
+            // Nút điều hướng nhanh từ Lời Nhắc Đồng Hành (Companion Reminders)
+            if (interaction.customId.startsWith('remind_btn_')) {
+                const action = interaction.customId.replace('remind_btn_', '');
+                const isEn = locale === 'en';
+                const guideMap = {
+                    study: {
+                        title: isEn ? '☕ Start Pomodoro Study' : '☕ Bắt Đầu Phiên Học Pomodoro',
+                        desc: isEn
+                            ? 'Use **/study start [minutes] [title]** to begin your focused Pomodoro session with Waguri!\nExample: **/study start 25 Math revision**\n\nOr click the Lo-Fi Study Room button to listen to cozy study music on web!'
+                            : 'Hãy dùng lệnh **/study start [phút] [tiêu đề]** để bắt đầu phiên học tập Pomodoro tập trung cùng Waguri nhé!\nVí dụ: **/study start 25 Ôn tập toán**\n\nHoặc bấm nút Phòng Học Lo-Fi Web để nghe nhạc thư giãn trên trình duyệt nha!'
+                    },
+                    tiembanh_orders: {
+                        title: isEn ? '📋 Gekka Bakery VIP Orders' : '📋 Đơn Hàng VIP Tiệm Bánh Gekka',
+                        desc: isEn
+                            ? 'Type **/tiembanh donhang** to inspect today\'s VIP orders from 8 lore characters!\nOnce ready, deliver with **/tiembanh giaodon [order_id]** for Coins, EXP, and Reputation 🌸'
+                            : 'Gõ **/tiembanh donhang** để kiểm tra các đơn hàng VIP từ 8 khách quen lore Waguri hôm nay!\nSau khi chuẩn bị đủ bánh, gõ **/tiembanh giaodon [mã_đơn]** để nhận Xu, EXP và Danh Tiếng nha 🌸'
+                    },
+                    tiembanh_bake: {
+                        title: isEn ? '🧁 Bake Pastries' : '🧁 Nướng Bánh Thơm Ngon',
+                        desc: isEn
+                            ? 'Type **/tiembanh nuong [item]** to start baking! Rush Hour provides +20% bonus baking speed 🥐'
+                            : 'Gõ **/tiembanh nuong [món]** để bắt đầu nướng bánh! Đang trong Giờ Cao Điểm tốc độ nướng được tăng thêm +20% đó nha 🥐'
+                    },
+                    market: {
+                        title: isEn ? '🛒 Market Exchange' : '🛒 Bảng Giá Chợ Nông Sản',
+                        desc: isEn
+                            ? 'Type **/market prices** to see 12 agricultural prices and 24h sparklines!\nSell at peak price with **/market sell** for maximum profits 📈'
+                            : 'Gõ **/market prices** để xem bảng giá 12 loại nông thủy sản kèm biểu đồ biến động nến 24h!\nKhi giá chạm đỉnh, dùng **/market sell** để chốt lời lớn nhé 📈'
+                    },
+                    games: {
+                        title: isEn ? '🎲 Weekend Entertainment' : '🎲 Giải Trí Cuối Tuần',
+                        desc: isEn
+                            ? 'Relax with friends through fun mini-games:\n• **/taixiu [bet] [tai|xiu]**: Lucky dice roll\n• **/blackjack [bet]**: 21-point Blackjack\n• **/masoi create**: Host a Werewolf party in server'
+                            : 'Thư giãn cùng bạn bè qua các minigame hấp dẫn:\n• **/taixiu [cược] [tai|xiu]**: Lắc xúc xắc may mắn\n• **/blackjack [cược]**: Đấu trí 21 điểm\n• **/masoi create**: Mở phòng Ma Sói cùng cả server'
+                    },
+                    daily: {
+                        title: isEn ? '🎁 Daily Attendance' : '🎁 Điểm Danh Hằng Ngày',
+                        desc: isEn
+                            ? 'Type **/daily** to claim your reward! Keep your streak going to earn bonus Coins, Energy, and Battle Pass XP 🌸'
+                            : 'Gõ **/daily** để nhận quà điểm danh hôm nay! Duy trì chuỗi ngày liên tục để nhận thêm Xu, Năng lượng và Battle Pass XP nhé 🌸'
+                    },
+                    rest: {
+                        title: isEn ? '💤 Rest & Recover' : '💤 Nghỉ Ngơi Phục Hồi',
+                        desc: isEn
+                            ? 'Type **/nghingoi** to rest and recharge energy! Wishing you a peaceful sleep and sweet dreams 🌙'
+                            : 'Gõ **/nghingoi** để nghỉ ngơi hồi phục thể lực và sạc lại năng lượng! Chúc cậu một giấc ngủ thật ngon lành và mơ những giấc mơ đẹp 🌙'
+                    }
+                };
+
+                const guide = guideMap[action] || {
+                    title: isEn ? '📢 Waguri Companion' : '📢 Waguri Đồng Hành',
+                    desc: isEn ? 'Use slash commands to interact with Waguri!' : 'Hãy dùng các lệnh gạch chéo để tương tác cùng Waguri nhé!'
+                };
+
+                const embed = buildWaguriEmbed(interaction, 'info', {
+                    locale,
+                    title: guide.title,
+                    description: guide.desc
+                });
+
+                return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+            }
             return;
         }
         // Handle Select Menu cho Ticket

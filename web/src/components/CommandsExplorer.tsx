@@ -93,7 +93,7 @@ const CATEGORIES_VI: Cat[] = [
       ["image", "xem ảnh động vật hoặc waifu dễ thương (cat · dog · waifu) 🖼️"],
       ["thoitiet", "xem thời tiết một thành phố"],
       ["claim-support", "nhận quà gia nhập Server Support độc quyền 🎁"],
-      ["announcement", "xem hoặc gửi thông báo cập nhật (view · send) 📢"],
+      ["announcement", "xem hoặc gửi thông báo cập nhật (view · send · clear) 📢"],
     ],
   },
   {
@@ -227,7 +227,7 @@ const CATEGORIES_EN: Cat[] = [
       ["image", "view cute animals or waifu photos (cat · dog · waifu) 🖼️"],
       ["thoitiet", "check weather in a city"],
       ["claim-support", "claim exclusive Support Server join rewards 🎁"],
-      ["announcement", "view or send announcements 📢"],
+      ["announcement", "view, send, or clear announcements 📢"],
     ],
   },
   {

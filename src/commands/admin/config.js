@@ -38,6 +38,18 @@ module.exports = {
                 )))
         .addSubcommand(s => s.setName('staff-role').setDescription('Đặt role Staff được xem ticket hỗ trợ (bỏ trống để tự dò theo quyền)')
             .addRoleOption(o => o.setName('role').setDescription('Role Staff / Support role')))
+        .addSubcommand(s => s.setName('reminders').setDescription('Cấu hình lời nhắc đồng hành từ Waguri (học bài, tiệm bánh, chợ, chúc ngủ ngon)')
+            .addStringOption(o => o.setName('status').setDescription('Bật hoặc tắt lời nhắc đồng hành').setRequired(true)
+                .addChoices(
+                    { name: 'Bật (Enabled)', value: '1' },
+                    { name: 'Tắt (Disabled)', value: '0' }
+                ))
+            .addChannelOption(o => o.setName('channel').setDescription('Kênh nhận lời nhắc (bỏ trống để dùng kênh thông báo / chung)').addChannelTypes(ChannelType.GuildText))
+            .addStringOption(o => o.setName('style').setDescription('Phong cách lời nhắn của Waguri')
+                .addChoices(
+                    { name: 'Dịu dàng, ấm áp (Warm - Mặc định)', value: 'warm' },
+                    { name: 'Năng động, nhiệt huyết (Energetic)', value: 'energetic' }
+                )))
         .addSubcommand(s => s.setName('view').setDescription('Xem cấu hình hiện tại')),
     async execute(interaction) {
         const locale = await getInteractionLanguage(interaction);
@@ -168,8 +180,39 @@ module.exports = {
                     : t(locale, 'commands.config.staff_role_cleared'))] });
         }
 
+        if (sub === 'reminders') {
+            const status = interaction.options.getString('status');
+            const ch = interaction.options.getChannel('channel');
+            const style = interaction.options.getString('style');
+
+            if (ch !== null) {
+                await ghiCauHinh('reminder_channel', ch ? ch.id : '', '');
+            }
+            if (style) {
+                await ghiCauHinh('reminder_style', style, '');
+            }
+
+            const isEnabled = status === '1';
+            const isEn = locale === 'en';
+            const styleName = style === 'energetic' 
+                ? (isEn ? 'Energetic' : 'Năng động') 
+                : (isEn ? 'Warm' : 'Dịu dàng');
+            const moTaOk = isEnabled
+                ? (isEn
+                    ? `Enabled Waguri companion reminders!${ch ? ` Channel: <#${ch.id}>.` : ''}${style ? ` Style: ${styleName}.` : ''}`
+                    : `Đã bật lời nhắc đồng hành từ Waguri!${ch ? ` Kênh: <#${ch.id}>.` : ''}${style ? ` Phong cách: ${styleName}.` : ''}`)
+                : (isEn
+                    ? 'Disabled Waguri companion reminders.'
+                    : 'Đã tắt lời nhắc đồng hành từ Waguri.');
+
+            return interaction.editReply({
+                embeds: [await ghiCauHinh('reminder_enabled', status, moTaOk)]
+            });
+        }
+
         if (sub === 'view') {
             const s = await db.getGuildSettings(gid);
+            const isEn = locale === 'en';
             const embed = buildWaguriEmbed(interaction, 'info', {
                 locale,
                 title: t(locale, 'commands.config.view_title'),
@@ -185,6 +228,7 @@ module.exports = {
                     { name: t(locale, 'commands.config.field_welcome_role'), value: s.welcome_role ? `<@&${s.welcome_role}>` : t(locale, 'commands.config.val_disabled_role'), inline: true },
                     { name: t(locale, 'commands.config.field_goodbye_channel'), value: s.goodbye_channel ? `<#${s.goodbye_channel}>` : t(locale, 'commands.config.val_disabled_goodbye'), inline: true },
                     { name: t(locale, 'commands.config.field_language'), value: s.language === 'en' ? '🇬🇧 English' : '🇻🇳 Tiếng Việt', inline: true },
+                    { name: isEn ? '🌸 Companion Reminders' : '🌸 Lời Nhắc Đồng Hành', value: s.reminder_enabled === '0' ? t(locale, 'commands.config.status_disabled_emoji') : `${t(locale, 'commands.config.status_enabled_emoji')} (${s.reminder_style === 'energetic' ? (isEn ? 'Energetic' : 'Năng động') : (isEn ? 'Warm' : 'Dịu dàng')}${s.reminder_channel ? ` · <#${s.reminder_channel}>` : ''})`, inline: true },
                     { name: t(locale, 'commands.config.field_announcement_channel'), value: s.announcement_channel ? `<#${s.announcement_channel}>` : t(locale, 'commands.config.val_disabled_announcement'), inline: false }
                 ]
             });

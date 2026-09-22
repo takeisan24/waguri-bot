@@ -38,8 +38,23 @@ async function chonKenhThongBao(guild, settings) {
         nhac = 'commands.announcement.nhac_kenh';
     }
 
-    // Cửa lui DUY NHẤT là systemChannel — không tự tiện gửi vào chat tổng.
+    // Cửa lui 1: systemChannel
     if (!channel && guiDuoc(guild.systemChannel)) channel = guild.systemChannel;
+
+    // Cửa lui 2 (Smart Fallback): Tìm kênh Text phù hợp nhất trong guild để giảm lỗi gửi về 0
+    if (!channel && guild.channels?.cache) {
+        const textChannels = Array.from(guild.channels.cache.values()).filter(ch => {
+            const isText = ch.type === 0 || (typeof ch.isTextBased === 'function' && ch.isTextBased() && !ch.isVoiceBased?.() && !ch.isThread?.());
+            return isText && guiDuoc(ch);
+        });
+
+        if (textChannels.length > 0) {
+            const priorityRegex = /(thong-bao|announcement|bot|general|chat|tro-chuyen|sanh-cho|thao-luan)/i;
+            const preferred = textChannels.find(ch => priorityRegex.test(ch.name || ''));
+            channel = preferred || textChannels[0];
+            if (!nhac) nhac = 'commands.announcement.nhac_kenh';
+        }
+    }
 
     return { channel, nhac };
 }

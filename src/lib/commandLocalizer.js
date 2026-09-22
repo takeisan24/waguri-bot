@@ -387,7 +387,6 @@ const SUBCOMMAND_DESCRIPTIONS = {
     "noitu.start": { vi: "Bắt đầu ván nối từ ở kênh này", en: "Start a word-chain game in this channel" },
     "noitu.stop": { vi: "Kết thúc ván nối từ", en: "End the word-chain game" },
     "noitu.status": { vi: "Xem từ hiện cần nối", en: "See the current word to chain from" },
-    "announcement.auto": { vi: "Tự động sinh thông báo từ Git Commit bằng AI (chỉ owner)", en: "Auto-generate an announcement from Git commits with AI (owner only)" },
     "bot.ping": { vi: "Kiểm tra độ trễ & trạng thái của bot", en: "Check the bot's latency & status" },
     "bot.about": { vi: "Giới thiệu Waguri & thông tin nhà phát triển 🌸", en: "About Waguri & developer info 🌸" },
     "bot.support": { vi: "Nhận trợ giúp & vào server hỗ trợ Waguri 🛟", en: "Get help & join the Waguri support server 🛟" },
@@ -409,6 +408,7 @@ const SUBCOMMAND_DESCRIPTIONS = {
     "config.goodbye-channel": { vi: "Đặt kênh tạm biệt thành viên rời server (bỏ trống để tắt)", en: "Set goodbye channel (empty to disable)" },
     "config.announcement-channel": { vi: "Đặt kênh nhận thông báo cập nhật", en: "Set update announcements channel" },
     "config.language": { vi: "Đặt ngôn ngữ hiển thị cho bot", en: "Set bot display language" },
+    "config.reminders": { vi: "Cấu hình lời nhắc đồng hành từ Waguri 🌸", en: "Configure Waguri companion reminders 🌸" },
     "config.view": { vi: "Xem cấu hình hiện tại của máy chủ", en: "View current server configuration" },
 
     // boi
@@ -498,7 +498,7 @@ const SUBCOMMAND_DESCRIPTIONS = {
 
     // announcements
     "announcement.view": { vi: "Xem thông báo mới nhất", en: "View latest announcements" },
-    "announcement.send": { vi: "Gửi thông báo mới", en: "Send a new announcement" },
+    "announcement.send": { vi: "Gửi thông báo mới qua Form Modal (chỉ owner)", en: "Send a new announcement via Form Modal (owner only)" },
 
     // worldevent
     "worldevent.view": { vi: "Xem tiến trình sự kiện co-op hôm nay", en: "View today's co-op event progress" },
@@ -694,6 +694,9 @@ const OPTION_DESCRIPTIONS = {
     "eco-admin.giveitem.qty": { vi: "Số lượng cấp phát (mặc định 1)", en: "Quantity to give (default 1)" },
     "eco-admin.setjob.job": { vi: "Mã nghề bổ nhiệm", en: "Job ID to set" },
     "eco-admin.premium.days": { vi: "Số ngày cấp", en: "Number of days" },
+    "config.reminders.status": { vi: "Bật hoặc tắt lời nhắc đồng hành", en: "Enable or disable companion reminders" },
+    "config.reminders.channel": { vi: "Kênh nhận lời nhắc (bỏ trống để dùng mặc định)", en: "Reminder channel (leave empty for default)" },
+    "config.reminders.style": { vi: "Phong cách lời nhắn của Waguri", en: "Waguri message style" },
 
     // Generic fallbacks
     "server": { vi: "Server cần chọn", en: "Target server" },
@@ -704,6 +707,11 @@ const OPTION_DESCRIPTIONS = {
 };
 
 const CHOICE_LOCALIZATIONS = {
+    // config reminders
+    "1": { vi: "Bật (Enabled)", en: "Enabled" },
+    "0": { vi: "Tắt (Disabled)", en: "Disabled" },
+    "warm": { vi: "Dịu dàng, ấm áp (Warm)", en: "Warm & gentle (Warm)" },
+    "energetic": { vi: "Năng động, nhiệt huyết (Energetic)", en: "Energetic & lively (Energetic)" },
     // chống nuke
     "dryrun": { vi: "Chỉ ghi log (an toàn, nên dùng 7 ngày đầu)", en: "Log only (safe — recommended for the first 7 days)" },
     "enforce": { vi: "Thi hành thật (trừng phạt + khoá server)", en: "Enforce (punish + lock the server)" },

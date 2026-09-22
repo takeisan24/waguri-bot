@@ -345,6 +345,23 @@ if (!client.shard || client.shard.ids.includes(0)) {
     setTimeout(runAuctionResolution, 60_000).unref();
 }
 
+// Trình kiểm tra và gửi lời nhắc đồng hành Waguri mỗi 5 phút
+const { checkAndSendReminders } = require('./src/lib/companionReminder');
+async function runCompanionReminders() {
+    try {
+        await checkAndSendReminders(client);
+    } catch (e) {
+        console.error('[REMINDER ERROR] runCompanionReminders():', e);
+    } finally {
+        if (!shuttingDown) {
+            setTimeout(runCompanionReminders, 5 * 60_000).unref();
+        }
+    }
+}
+if (!client.shard || client.shard.ids.includes(0)) {
+    setTimeout(runCompanionReminders, 60_000).unref();
+}
+
 // Đăng nhập có retry/backoff (5s, 10s, ... tối đa 60s) — không bỏ cuộc khi bắt tay timeout lúc khởi động.
 (async function startBot() {
     let attempt = 0;

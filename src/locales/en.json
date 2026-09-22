@@ -1254,7 +1254,7 @@
       "success_title": "📢 Announcement sent successfully!",
       "success_desc": "Broadcasted update announcement to **{sent}** servers/channels and saved the announcement to be viewed via `/announcement view`.\n❌ Failed: **{fail}** servers.",
       "clear_success_title": "🗑️ Announcement cleared successfully!",
-      "clear_success_desc": "Cleared all old announcements from system and reset commit history. You can now generate a fresh announcement using `/announcement auto`!",
+      "clear_success_desc": "Cleared all old announcements from system and reset commit history. You can now compose and broadcast a fresh announcement using `/announcement send`!",
       "nhac_kenh": "-# ⚙️ Server owner: run `/config announcement-channel` so future updates land in the channel you want!",
       "nhac_kenh_hong": "-# ⚠️ The announcement channel you set is unreachable (deleted, or I lost permission to post there), so this landed here instead. Run `/config announcement-channel` to set it again!"
     },
@@ -1367,7 +1367,7 @@
         "dovui": "trivia quiz 🧠 (answer fast in chat to win prizes)",
         "image": "images of cats 🐱, dogs 🐶, or waifus 🌸",
         "thoitiet": "check weather in a city",
-        "announcement": "view latest update announcements from developers (view · send) 📢",
+        "announcement": "view latest update announcements from developers (view · send · clear) 📢",
         "setup": "create custom Waguri channel + quick guide",
         "config": "configure bot settings for this server (Manage Server)",
         "clan": "create clan / mutual fund / ⚔️ clan war (create·join·info·list·deposit·withdraw·kick·disband·war)",

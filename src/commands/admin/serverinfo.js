@@ -180,6 +180,10 @@ function buildReport(guild, me, settings, locale) {
     push(isEn ? `- Welcome: ${kenh(s.welcome_channel)}` : `- Chào mừng: ${kenh(s.welcome_channel)}`);
     push(isEn ? `- Goodbye: ${kenh(s.goodbye_channel)}` : `- Tạm biệt: ${kenh(s.goodbye_channel)}`);
     push(isEn ? `- Update announcements: ${kenh(s.announcement_channel)}` : `- Thông báo cập nhật: ${kenh(s.announcement_channel)}`);
+    const reminderVal = s.reminder_enabled === '0' ? (isEn ? '🔴 Disabled' : '🔴 Tắt') : (isEn ? '🟢 Enabled' : '🟢 Bật');
+    push(isEn
+        ? `- Companion Reminders: ${reminderVal} · Channel: ${kenh(s.reminder_channel)} · Style: ${s.reminder_style || 'warm'}`
+        : `- Lời nhắc đồng hành: ${reminderVal} · Kênh: ${kenh(s.reminder_channel)} · Phong cách: ${s.reminder_style || 'warm'}`);
 
     push(isEn ? '### Roles' : '### Role');
     push(isEn

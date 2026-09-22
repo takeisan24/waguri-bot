@@ -1,9 +1,16 @@
-const { SlashCommandBuilder, ChannelType, PermissionFlagsBits, MessageFlags } = require('discord.js');
-const { execSync } = require('child_process');
+const { 
+    SlashCommandBuilder, 
+    ModalBuilder, 
+    TextInputBuilder, 
+    TextInputStyle, 
+    ActionRowBuilder, 
+    ButtonBuilder, 
+    ButtonStyle, 
+    MessageFlags 
+} = require('discord.js');
 const db = require('../../database.js');
 const { isOwner } = require('../../lib/owner');
 const { buildWaguriEmbed } = require('../../lib/embed');
-const gemini = require('../../lib/ai/gemini');
 const { getInteractionLanguage, t } = require('../../lib/i18n');
 const { chonKenhThongBao } = require('../../lib/kenhThongBao');
 
@@ -12,16 +19,15 @@ module.exports = {
         .setName('announcement')
         .setDescription('Xem hoặc gửi thông báo cập nhật từ nhà phát triển 📢')
         .addSubcommand(s => s.setName('view').setDescription('Xem thông báo cập nhật mới nhất'))
-        .addSubcommand(s => s.setName('auto').setDescription('Tự động sinh thông báo từ Git Commit bằng AI (chỉ owner)'))
-        .addSubcommand(s => s.setName('send').setDescription('Gửi thông báo mới tới toàn bộ server thủ công (chỉ owner)')
-            .addStringOption(o => o.setName('message').setDescription('Nội dung thông báo (hỗ trợ \\n để xuống dòng)').setRequired(true)))
-        .addSubcommand(s => s.setName('clear').setDescription('Xóa thông báo hiện tại và reset lịch sử commit (chỉ owner)')),
+        .addSubcommand(s => s.setName('send').setDescription('Gửi thông báo cập nhật tới toàn bộ server qua Form Modal (chỉ owner)'))
+        .addSubcommand(s => s.setName('clear').setDescription('Xóa thông báo hiện tại (chỉ owner)')),
     async execute(interaction) {
-        await interaction.deferReply();
         const locale = await getInteractionLanguage(interaction);
         const sub = interaction.options.getSubcommand();
 
+        // 1. CLEAR: Xóa thông báo hiện tại
         if (sub === 'clear') {
+            await interaction.deferReply();
             if (!await isOwner(interaction.client, interaction.user.id)) {
                 return interaction.editReply({ content: t(locale, 'commands.announcement.err_owner') });
             }
@@ -35,7 +41,9 @@ module.exports = {
             return interaction.editReply({ embeds: [embed] });
         }
 
+        // 2. VIEW: Xem thông báo mới nhất
         if (sub === 'view') {
+            await interaction.deferReply();
             const s = await db.getGuildSettings('global');
             const message = s?.latest_announcement;
 
@@ -61,85 +69,140 @@ module.exports = {
             return interaction.editReply({ embeds: [embed] });
         }
 
-        if (sub === 'send' || sub === 'auto') {
+        // 3. SEND: Mở Modal Form 5 trường nhập liệu chuẩn hóa
+        if (sub === 'send') {
             if (!await isOwner(interaction.client, interaction.user.id)) {
-                return interaction.editReply({ content: t(locale, 'commands.announcement.err_owner') });
+                return interaction.reply({ 
+                    content: t(locale, 'commands.announcement.err_owner'), 
+                    flags: MessageFlags.Ephemeral 
+                });
             }
 
-            let message = '';
-            let currentCommit = '';
+            const isEn = locale === 'en';
+            const modal = new ModalBuilder()
+                .setCustomId('announcement_modal')
+                .setTitle(isEn ? '📢 Compose Announcement' : '📢 Soạn Thông Báo Cập Nhật');
 
-            if (sub === 'auto') {
-                try {
-                    currentCommit = execSync('git rev-parse HEAD', { encoding: 'utf8' }).trim();
-                } catch (e) {
-                    return interaction.editReply({ content: t(locale, 'commands.announcement.git_err') });
-                }
+            const titleInput = new TextInputBuilder()
+                .setCustomId('ann_title')
+                .setLabel(isEn ? 'Update Title' : 'Tiêu đề bản cập nhật')
+                .setStyle(TextInputStyle.Short)
+                .setRequired(true)
+                .setMaxLength(100)
+                .setPlaceholder(isEn ? 'e.g. 🌸 UPDATE: GEKKA BAKERY & COMMODITY MARKET' : 'Vd: 🌸 CẬP NHẬT: TIỆM BÁNH GEKKA & CHỢ NÔNG SẢN');
 
-                const s = await db.getGuildSettings('global');
-                const lastCommit = s?.latest_announcement_commit;
+            const highlightsInput = new TextInputBuilder()
+                .setCustomId('ann_highlights')
+                .setLabel(isEn ? 'Feature Highlights (Bullet points)' : 'Chi tiết các điểm nổi bật')
+                .setStyle(TextInputStyle.Paragraph)
+                .setRequired(true)
+                .setMaxLength(2500)
+                .setPlaceholder(isEn 
+                    ? '✨ Bakery:\n- Added VIP orders...\n💼 Market:\n- MurmurMix32 hash upgrade...' 
+                    : '✨ Góc Tiệm Bánh Nhỏ:\n- Thêm đơn VIP khách quen...\n💼 Góc Chợ:\n- Nâng cấp bộ trộn MurmurMix32...');
 
-                if (lastCommit === currentCommit) {
-                    return interaction.editReply({ content: t(locale, 'commands.announcement.commit_dup') });
-                }
+            const imageInput = new TextInputBuilder()
+                .setCustomId('ann_image')
+                .setLabel(isEn ? 'Image / GIF URL (Optional)' : 'Link Ảnh / GIF minh họa (Tùy chọn)')
+                .setStyle(TextInputStyle.Short)
+                .setRequired(false)
+                .setMaxLength(300)
+                .setPlaceholder('https://... (URL ảnh GIF)');
 
-                let commits = '';
-                try {
-                    if (lastCommit) {
-                        commits = execSync(`git log ${lastCommit}..HEAD -n 20 --pretty=format:"- %s"`, { encoding: 'utf8' }).trim();
-                    } else {
-                        commits = execSync('git log -n 15 --pretty=format:"- %s"', { encoding: 'utf8' }).trim();
-                    }
-                } catch (err) {
-                    try {
-                        commits = execSync('git log -n 10 --pretty=format:"- %s"', { encoding: 'utf8' }).trim();
-                    } catch (err2) {
-                        commits = '';
-                    }
-                }
+            const ctaInput = new TextInputBuilder()
+                .setCustomId('ann_cta')
+                .setLabel(isEn ? '1-Click Buttons (Optional)' : 'Nút trải nghiệm nhanh 1-Click (Tùy chọn)')
+                .setStyle(TextInputStyle.Short)
+                .setRequired(false)
+                .setMaxLength(100)
+                .setPlaceholder('tiembanh, market, quest, study, daily');
 
-                if (!commits || commits.trim() === '') {
-                    return interaction.editReply({ content: t(locale, 'commands.announcement.no_commits') });
-                }
+            const noteInput = new TextInputBuilder()
+                .setCustomId('ann_note')
+                .setLabel(isEn ? 'Waguri Warm Note (Optional)' : 'Lời nhắn từ Waguri (Tùy chọn)')
+                .setStyle(TextInputStyle.Paragraph)
+                .setRequired(false)
+                .setMaxLength(500)
+                .setPlaceholder(isEn 
+                    ? 'A sweet note to our adventurers...' 
+                    : 'Mong rằng những cập nhật này sẽ mang lại cho cậu những phút giây thật ấm áp...');
 
-                const systemPrompt = t(locale, 'commands.announcement.ai_prompt');
+            modal.addComponents(
+                new ActionRowBuilder().addComponents(titleInput),
+                new ActionRowBuilder().addComponents(highlightsInput),
+                new ActionRowBuilder().addComponents(imageInput),
+                new ActionRowBuilder().addComponents(ctaInput),
+                new ActionRowBuilder().addComponents(noteInput)
+            );
 
-                try {
-                    message = await gemini.chat(systemPrompt, [], `List of new commits:\n${commits}`, { maxOutputTokens: 4000 });
-                } catch (err) {
-                    console.error('[AUTO ANNOUNCEMENT AI ERROR]', err);
-                    return interaction.editReply({ content: t(locale, 'commands.announcement.ai_err') });
-                }
-            } else {
-                const rawMessage = interaction.options.getString('message');
-                message = rawMessage.replace(/\\n/g, '\n');
+            await interaction.showModal(modal);
+
+            const submitted = await interaction.awaitModalSubmit({
+                time: 600_000,
+                filter: i => i.customId === 'announcement_modal' && i.user.id === interaction.user.id
+            }).catch(() => null);
+
+            if (!submitted) return;
+            await submitted.deferReply();
+
+            const title = submitted.fields.getTextInputValue('ann_title').trim();
+            const highlights = submitted.fields.getTextInputValue('ann_highlights').trim();
+            const imageUrl = submitted.fields.getTextInputValue('ann_image')?.trim() || null;
+            const ctaRaw = submitted.fields.getTextInputValue('ann_cta')?.trim() || '';
+            const note = submitted.fields.getTextInputValue('ann_note')?.trim() || '';
+
+            let fullMessage = `🌸 **${title.toUpperCase()}** 🌸\n\n${highlights}`;
+            if (note) {
+                fullMessage += `\n\n${note}`;
             }
+            if (fullMessage.length > 4000) fullMessage = fullMessage.slice(0, 4000) + '…';
 
-            // Cắt cho vừa giới hạn description của embed (4096) — AI (maxOutputTokens 4000) có thể vượt.
-            if (message && message.length > 4000) message = message.slice(0, 4000) + '…';
+            // 1. Lưu thông báo vào cấu hình global
+            await db.setGuildSetting('global', 'latest_announcement', fullMessage);
 
-            // 1. Lưu thông báo vào cấu hình global để người dùng và website có thể đọc được
-            await db.setGuildSetting('global', 'latest_announcement', message);
-            if (currentCommit) {
-                await db.setGuildSetting('global', 'latest_announcement_commit', currentCommit);
-            }
-
-            const embed = buildWaguriEmbed(interaction, 'jackpot', {
+            const embed = buildWaguriEmbed(submitted, 'jackpot', {
                 locale,
-                title: t(locale, 'commands.announcement.title_main'),
-                description: message
+                title: title.startsWith('📢') ? title : `📢 ${title}`,
+                description: fullMessage
             });
+
+            if (imageUrl && /^https?:\/\/.+/i.test(imageUrl)) {
+                embed.setImage(imageUrl);
+            }
             embed.setTimestamp();
             embed.setFooter({
-                text: t(locale, 'commands.announcement.footer_sent', { user: interaction.user.username }),
-                iconURL: interaction.client.user.displayAvatarURL()
+                text: t(locale, 'commands.announcement.footer_sent', { user: submitted.user.username }),
+                iconURL: submitted.client.user.displayAvatarURL()
             });
 
-            const guilds = interaction.client.guilds.cache;
+            // 2. Tạo các Action Buttons 1-Click
+            const ctaKeys = (ctaRaw || '').toLowerCase().split(/[\s,]+/).filter(Boolean);
+            const btnMap = {
+                tiembanh: { label: isEn ? '🧁 Gekka Bakery' : '🧁 Tiệm Bánh Gekka', style: ButtonStyle.Primary, id: 'ann_btn_tiembanh' },
+                market: { label: isEn ? '🛒 Market Prices' : '🛒 Chợ Nông Sản', style: ButtonStyle.Primary, id: 'ann_btn_market' },
+                quest: { label: isEn ? '📜 Kikyo Quests' : '📜 Cốt Truyện Kikyo', style: ButtonStyle.Secondary, id: 'ann_btn_quest' },
+                study: { label: isEn ? '☕ Lo-Fi Study' : '☕ Phòng Học Lo-Fi', style: ButtonStyle.Success, id: 'ann_btn_study' },
+                daily: { label: isEn ? '🎁 Daily Reward' : '🎁 Điểm Danh /daily', style: ButtonStyle.Secondary, id: 'ann_btn_daily' },
+            };
+
+            const components = [];
+            const buttons = [];
+            for (const k of ctaKeys) {
+                if (btnMap[k] && buttons.length < 5) {
+                    buttons.push(new ButtonBuilder().setCustomId(btnMap[k].id).setLabel(btnMap[k].label).setStyle(btnMap[k].style));
+                }
+            }
+            if (buttons.length > 0) {
+                components.push(new ActionRowBuilder().addComponents(buttons));
+            }
+
+            const payload = { embeds: [embed] };
+            if (components.length > 0) payload.components = components;
+
             let sentCount = 0;
             let failCount = 0;
 
-            // 2. Gửi lên kênh thông báo chính thức của Server Support (1517931376865710120)
+            // 3. Gửi lên kênh thông báo chính thức của Server Support
             const supportChannelId = '1517931376865710120';
             let supportChannel = null;
             try {
@@ -147,13 +210,13 @@ module.exports = {
             } catch { /* bỏ qua */ }
 
             if (supportChannel) {
-                const ok = await supportChannel.send({ embeds: [embed] }).then(() => true).catch(() => false);
+                const ok = await supportChannel.send(payload).then(() => true).catch(() => false);
                 if (ok) sentCount++;
             }
 
-            // 3. Gửi tới các server khác
+            // 4. Phát tới tất cả server qua Smart Fallback
+            const guilds = interaction.client.guilds.cache;
             for (const [gid, guild] of guilds) {
-                // Không gửi trùng nếu guild này chính là Guild chứa supportChannel
                 if (supportChannel && supportChannel.guild.id === gid) continue;
 
                 try {
@@ -161,11 +224,10 @@ module.exports = {
                     const { channel, nhac } = await chonKenhThongBao(guild, s);
 
                     if (channel) {
-                        // Nhắc đúng lúc: server chưa đặt kênh, hoặc kênh đã đặt nay hỏng. Không
-                        // tốn thêm tin nhắn nào, và server đặt đúng rồi sẽ không thấy dòng này.
-                        await channel.send(nhac
-                            ? { content: t(locale, nhac), embeds: [embed] }
-                            : { embeds: [embed] });
+                        const sendPayload = nhac
+                            ? { content: t(locale, nhac), ...payload }
+                            : payload;
+                        await channel.send(sendPayload);
                         sentCount++;
                     } else {
                         failCount++;
@@ -176,12 +238,12 @@ module.exports = {
                 }
             }
 
-            const resEmbed = buildWaguriEmbed(interaction, 'success', {
+            const resEmbed = buildWaguriEmbed(submitted, 'success', {
                 locale,
                 title: t(locale, 'commands.announcement.success_title'),
                 description: t(locale, 'commands.announcement.success_desc', { sent: sentCount, fail: failCount })
             });
-            await interaction.editReply({ embeds: [resEmbed] });
+            await submitted.editReply({ embeds: [resEmbed] });
         }
     },
 };

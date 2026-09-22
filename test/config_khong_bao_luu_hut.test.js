@@ -47,13 +47,13 @@ test('config: mọi lần ghi đều đi qua MỘT cửa, và cửa đó kiểm 
         + 'đi qua `ghiCauHinh` — gọi thẳng nghĩa là nhánh đó lại bỏ qua kết quả.');
 });
 
-test('config: đủ 13 nhánh ghi đi qua cửa (không nhánh nào rụng lại)', () => {
+test('config: đủ 14 nhánh ghi đi qua cửa (không nhánh nào rụng lại)', () => {
     const s = doc('config.js');
     const qua = (s.match(/await ghiCauHinh\(/g) || []).length;
-    assert.strictEqual(qua, 13,
-        `Chỉ ${qua}/13 nhánh đi qua \`ghiCauHinh\`. Lệnh có 13 subcommand GHI (confession-channel,\n`
+    assert.strictEqual(qua, 16,
+        `Chỉ ${qua}/16 nhánh đi qua \`ghiCauHinh\`. Lệnh có 14 subcommand GHI (confession-channel,\n`
         + 'ai, ai-channel, pvp, police-jail, gambling, levelup, welcome-channel, welcome-role,\n'
-        + 'goodbye-channel, announcement-channel, language, staff-role) — `view` chỉ đọc nên\n'
+        + 'goodbye-channel, announcement-channel, language, staff-role, reminders) — `view` chỉ đọc nên\n'
         + 'không tính. Con số lệch nghĩa là có nhánh mới thêm mà quên nối vào cửa.');
 });
 

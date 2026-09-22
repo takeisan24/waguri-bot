@@ -22,6 +22,7 @@
     "levelup",
     "police-jail",
     "pvp",
+    "reminders",
     "staff-role",
     "view",
     "welcome-channel",
@@ -242,7 +243,6 @@
   ],
   "xocdia": [],
   "announcement": [
-    "auto",
     "clear",
     "send",
     "view"

@@ -139,6 +139,10 @@ Waguri là **Discord economy/RPG bot bản địa hóa văn hóa Việt**. Bot N
   - Cửa hàng huy hiệu (`/cosmetic badge-buy`/`badge-equip`) và Hộp trưng bày 6 ô lấp lánh (Showcase Badges) trên Web `/u/[id]` đã được tích hợp hoàn chỉnh.
   - Thú cưng tiến hóa Stage 1..3 và Cây kỹ năng bị động (`/pet skill-up`); xây dựng sơ đồ Cây kỹ năng SVG tương tác trực quan tại Web `/dashboard/pet` cho phép cộng điểm thông qua Server Actions.
   - Đã có test tích hợp `test/backlog_max_depth.test.js` (97/97 tests pass) và type-checking Next.js frontend biên dịch hoàn toàn thành công.
+- **📢 Nâng Cấp Thông Báo Modal `/announcement send`, Lời Nhắc Đồng Hành Waguri `/config reminders` & Tinh Gọn Dữ Liệu Chat — ĐÃ HOÀN THÀNH 100%:**
+  - **Thông báo Modal & Smart Fallback:** Nâng cấp `/announcement send` mở Form Modal 5 trường trên Discord UI, loại bỏ chế độ tự động. Tích hợp thanh nút bấm 1-Click (`tiembanh`, `market`, `quest`, `study`, `daily`) và cơ chế Smart Channel Fallback 3 tầng (cấu hình -> tìm theo tên/quyền -> kênh bot có quyền gửi) triệt tiêu tình trạng trượt thông báo.
+  - **Lời nhắc đồng hành Waguri (`src/lib/companionReminder.js`):** Tự động gửi lời nhắn nhẹ nhàng theo 4 khung giờ ý nghĩa (Học bài Lo-Fi T2/T4, Giờ cao điểm Tiệm bánh T3/T5, Chợ phiên & Giải trí T6/T7, Chúc ngủ ngon CN). Chống spam nghiêm ngặt: tối đa 1 tin/ngày/server, kiểm tra hoạt động (bỏ qua server ngủ đông > 6h), 0 ping làm phiền, hỗ trợ lệnh quản trị `/config reminders` (bật/tắt, chọn kênh, phong cách Warm/Energetic).
+  - **Vệ sinh kinh tế & Dừng cày cấp thụ động qua chat:** Tắt hoàn toàn `grantChatReward` trong `src/events/messageCreate.js`. Bảo vệ tuyệt đối 101 Genuine Players (người chơi RPG/lệnh/AI/vật phẩm) và thu hồi số dư ảo của 784 ghost accounts cày thụ động từ chat nền.
 
 ---
 

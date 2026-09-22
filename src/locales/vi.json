@@ -1254,7 +1254,7 @@
       "success_title": "📢 Gửi thông báo thành công!",
       "success_desc": "Đã phát thông báo cập nhật tới **{sent}** server/kênh và đã lưu trữ thông báo để xem qua `/announcement view`.\n❌ Thất bại: **{fail}** server.",
       "clear_success_title": "🗑️ Dọn dẹp thông báo thành công!",
-      "clear_success_desc": "Đã xóa toàn bộ thông báo cũ trên hệ thống và reset lịch sử commit. Bạn có thể tự do tạo thông báo mới bằng `/announcement auto`!",
+      "clear_success_desc": "Đã xóa toàn bộ thông báo cũ trên hệ thống và reset lịch sử commit. Bạn có thể tự do tạo thông báo mới bằng `/announcement send`!",
       "nhac_kenh": "-# ⚙️ Chủ server ơi, chạy `/config announcement-channel` để tin cập nhật sau vào đúng kênh cậu muốn nhé!",
       "nhac_kenh_hong": "-# ⚠️ Kênh thông báo cậu đặt không gửi được nữa (bị xoá, hoặc mình mất quyền gửi ở đó), nên tin này vào tạm đây. Chạy `/config announcement-channel` để đặt lại nha!"
     },
@@ -1367,7 +1367,7 @@
         "dovui": "đố vui 🧠 (trả lời nhanh trong chat, thắng thưởng)",
         "image": "ảnh mèo 🐱, cún 🐶, hoặc waifu 🌸",
         "thoitiet": "xem thời tiết một thành phố",
-        "announcement": "xem thông báo cập nhật mới nhất từ nhà phát triển (view · send) 📢",
+        "announcement": "xem thông báo cập nhật mới nhất từ nhà phát triển (view · send · clear) 📢",
         "setup": "tạo phòng riêng cho Waguri + hướng dẫn nhanh",
         "config": "cấu hình bot cho server (Quản lý Server)",
         "clan": "lập bang / quỹ chung / ⚔️ chiến tranh bang (create·join·info·list·deposit·withdraw·kick·disband·war)",

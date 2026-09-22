@@ -192,6 +192,15 @@ async function buildPrefixInteraction(message, command, tokens) {
         editReply: send,
         reply: send,
         followUp: async (payload) => message.channel.send(typeof payload === 'string' ? payload : { ...payload, flags: undefined }),
+        showModal: async () => {
+            const isEn = userLocale === 'en';
+            await send({
+                content: isEn
+                    ? '⚠️ This feature uses an interactive Modal Form. Please use Discord Slash Commands (starting with `/`) to open the form!'
+                    : '⚠️ Tính năng này sử dụng Form tương tác (Modal), vui lòng gõ Slash Command (bắt đầu bằng `/`) để mở form nhé!'
+            });
+        },
+        awaitModalSubmit: async () => null,
     };
 }
 
