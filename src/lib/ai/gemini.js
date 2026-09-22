@@ -1,24 +1,24 @@
 // Provider AI: Google Gemini. Modern SDK: @google/genai
 const config = require('../../config');
 
+// Lịch sử con số này:
+//   20s -> 35s (2026-08-17): `gemini-3.6-flash` là model dòng "thinking", đo được 4,8s–39,5s;
+//                            mốc 20s cắt ngang cả những lượt đang chạy bình thường.
+//   35s -> 15s (2026-08-18): chuyển sang flash-lite, đo được ~1,4s và KHÔNG có pha suy nghĩ.
+//   15s -> 25s (2026-09-23): nâng lên 25s (hỗ trợ GEMINI_TIMEOUT_MS) để chống chịu tốt khi
+//                            mạng VPS/Container bị jitter hoặc TCP retransmission rớt gói.
+const REQUEST_TIMEOUT_MS = config.AI?.REQUEST_TIMEOUT_MS || Number(process.env.GEMINI_TIMEOUT_MS) || 25000;
+
 let aiClient = null;
 function getClient() {
     const rawKey = process.env.GEMINI_API_KEY ? process.env.GEMINI_API_KEY.trim() : '';
     if (!rawKey) return null;
     const { GoogleGenAI } = require('@google/genai');
-    return new GoogleGenAI({ apiKey: rawKey });
+    return new GoogleGenAI({
+        apiKey: rawKey,
+        httpOptions: { timeout: REQUEST_TIMEOUT_MS }
+    });
 }
-
-// Lịch sử con số này:
-//   20s -> 35s (2026-08-17): `gemini-3.6-flash` là model dòng "thinking", đo được 4,8s–39,5s;
-//                            mốc 20s cắt ngang cả những lượt đang chạy bình thường.
-//   35s -> 15s (2026-08-18): chuyển sang flash-lite, đo được ~1,4s và KHÔNG có pha suy nghĩ.
-//
-// Vì sao hạ xuống chứ không giữ rộng cho chắc: timeout phía client KHÔNG huỷ được request
-// phía server, nên mỗi lượt bỏ dở vẫn bị tính vào hạn mức. Chờ 35s rồi vứt đi là đốt hạn
-// mức mà chẳng ai nhận được gì — mà người dùng Discord cũng không đợi 35 giây. Thà hỏng
-// nhanh rồi thử lại model dự phòng.
-const REQUEST_TIMEOUT_MS = 15000;
 
 /**
  * Đọc kết quả từ Gemini — cẩn thận hơn `result.text || parts[0].text` cũ.
@@ -135,7 +135,7 @@ async function chat(systemPrompt, history, userText, options = {}) {
 
         let timer;
         const timeout = new Promise((_, reject) => {
-            timer = setTimeout(() => reject(new Error('Gemini timeout')), REQUEST_TIMEOUT_MS);
+            timer = setTimeout(() => reject(new Error(`Gemini timeout (sau ${REQUEST_TIMEOUT_MS}ms)`)), REQUEST_TIMEOUT_MS);
         });
 
         try {

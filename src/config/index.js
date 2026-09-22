@@ -136,6 +136,7 @@ module.exports = {
         // suy nghĩ (đo được: 0 token nghĩ, câu trả lời 98–104 token), nên trần 2000 là thừa.
         // 1200 vẫn dư cho model dự phòng có suy nghĩ (~574 nghĩ + ~150 đáp).
         MAX_OUTPUT_TOKENS: 1200,
+        REQUEST_TIMEOUT_MS: Number(process.env.GEMINI_TIMEOUT_MS) || 25000, // 25s cân bằng giữa mạng lag VPS và trải nghiệm
         USER_COOLDOWN_MS: 4000,  // chống spam mỗi người
         FREE_DAILY: 15,          // số lượt chat AI/ngày cho user thường
         PREMIUM_DAILY: 150,      // số lượt chat AI/ngày cho user Premium

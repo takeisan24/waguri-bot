@@ -148,7 +148,7 @@ Waguri là **Discord economy/RPG bot bản địa hóa văn hóa Việt**. Bot N
 
 ## 5. Ma trận fail-safe (dịch vụ bên thứ ba chập chờn)
 
-1. **Gemini lỗi/timeout** (`REQUEST_TIMEOUT_MS = 20000`, `src/lib/ai/gemini.js`) → trả lỗi nhẹ + `db.refundAiQuota(userId)` hoàn lượt đã trừ.
+1. **Gemini lỗi/timeout** (`REQUEST_TIMEOUT_MS = 25000`, `src/lib/ai/gemini.js`) → trả lỗi nhẹ + `db.refundAiQuota(userId)` hoàn lượt đã trừ.
 2. **Bot mất kết nối giữa ván có cược** → cược lưu nguyên tử vào `game_stakes`; restart tự hoàn qua `stakeRefundOrphans` (migration 0059).
 3. **Open-Meteo lỗi** → `/thoitiet` (và tiệm bánh khi tích hợp) fallback mặc định, không gián đoạn.
 
