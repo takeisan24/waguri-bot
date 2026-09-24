@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { handleBingoPrefix } = require('../../lib/bingoPrefix');
+const { handleBingoPrefix } = require('../../src/lib/bingoPrefix');
 
 module.exports = {
     data: new SlashCommandBuilder()

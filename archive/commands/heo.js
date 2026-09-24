@@ -1,7 +1,7 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { buildWaguriEmbed } = require('../../lib/embed');
-const pig = require('../../lib/pig');
-const { getInteractionLanguage, t } = require('../../lib/i18n');
+const { buildWaguriEmbed } = require('../../src/lib/embed');
+const pig = require('../../src/lib/pig');
+const { getInteractionLanguage, t } = require('../../src/lib/i18n');
 
 module.exports = {
     data: new SlashCommandBuilder()

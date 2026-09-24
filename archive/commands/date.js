@@ -1,6 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { runCouple } = require('../../lib/couple');
-const { getInteractionLanguage, t } = require('../../lib/i18n');
+const { runCouple } = require('../../src/lib/couple');
+const { getInteractionLanguage, t } = require('../../src/lib/i18n');
 
 const LINES = [
     '{a} rủ {b} đi hẹn hò, dạo phố ăn kem 🍦💕',

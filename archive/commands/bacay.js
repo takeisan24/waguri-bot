@@ -1,10 +1,10 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
-const { buildWaguriEmbed } = require('../../lib/embed');
-const db = require('../../database.js');
-const config = require('../../config');
-const { openLobby } = require('../../lib/lobby');
-const { checkBet } = require('../../lib/bet');
-const { getInteractionLanguage, t } = require('../../lib/i18n');
+const { buildWaguriEmbed } = require('../../src/lib/embed');
+const db = require('../../src/database.js');
+const config = require('../../src/config');
+const { openLobby } = require('../../src/lib/lobby');
+const { checkBet } = require('../../src/lib/bet');
+const { getInteractionLanguage, t } = require('../../src/lib/i18n');
 
 const fmt = (n, locale) => Number(n).toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN');
 const RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];

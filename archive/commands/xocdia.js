@@ -1,9 +1,9 @@
 const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, MessageFlags } = require('discord.js');
-const { buildWaguriEmbed } = require('../../lib/embed');
-const db = require('../../database.js');
-const config = require('../../config');
-const { checkBet } = require('../../lib/bet');
-const { getInteractionLanguage, t } = require('../../lib/i18n');
+const { buildWaguriEmbed } = require('../../src/lib/embed');
+const db = require('../../src/database.js');
+const config = require('../../src/config');
+const { checkBet } = require('../../src/lib/bet');
+const { getInteractionLanguage, t } = require('../../src/lib/i18n');
 
 const fmt = (n, locale) => Number(n).toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN');
 const MULT = config.GAMBLE.COINFLIP_MULT; // chẵn/lẻ ~50/50 như tung xu

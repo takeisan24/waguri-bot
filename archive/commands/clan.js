@@ -1,9 +1,9 @@
 const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, MessageFlags } = require('discord.js');
-const { buildWaguriEmbed, getWaguriFooter } = require('../../lib/embed');
-const db = require('../../database.js');
-const config = require('../../config');
-const { getLevelFromExp } = require('../../lib/leveling');
-const { getInteractionLanguage, t } = require('../../lib/i18n');
+const { buildWaguriEmbed, getWaguriFooter } = require('../../src/lib/embed');
+const db = require('../../src/database.js');
+const config = require('../../src/config');
+const { getLevelFromExp } = require('../../src/lib/leveling');
+const { getInteractionLanguage, t } = require('../../src/lib/i18n');
 
 const fmt = (n, locale) => Number(n).toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN');
 const clanLevel = xp => Math.floor(Math.sqrt(Number(xp || 0) / 10000)) + 1;

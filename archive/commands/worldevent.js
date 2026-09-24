@@ -1,8 +1,8 @@
 const { SlashCommandBuilder } = require('discord.js');
-const db = require('../../database.js');
-const config = require('../../config');
-const { getInteractionLanguage, t } = require('../../lib/i18n');
-const { buildWaguriEmbed, createWaguriBar } = require('../../lib/embed');
+const db = require('../../src/database.js');
+const config = require('../../src/config');
+const { getInteractionLanguage, t } = require('../../src/lib/i18n');
+const { buildWaguriEmbed, createWaguriBar } = require('../../src/lib/embed');
 
 const fmt = (n, locale) => Number(n).toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN');
 

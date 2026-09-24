@@ -1,6 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { buildWaguriEmbed } = require('../../lib/embed');
-const { getInteractionLanguage, t } = require('../../lib/i18n');
+const { buildWaguriEmbed } = require('../../src/lib/embed');
+const { getInteractionLanguage, t } = require('../../src/lib/i18n');
 
 // Độ hợp ổn định theo cặp (cùng cặp luôn ra cùng %)
 function compat(a, b) {
