@@ -1,7 +1,7 @@
 # Waguri — Branding & Thông tin đăng ký (Developer Portal / top.gg)
 
-> ⚠️ **Bản mô tả để submit bot list đã chuyển sang `docs/bot-listing-copy.md` (cập nhật v2.5.1).**
-> File này giữ lại phần Developer Portal / Privacy / ToS; các khối mô tả bên dưới là bản v2.4 cũ.
+> ⚠️ **Bản mô tả để submit bot list đã chuyển sang `docs/bot-listing-copy.md` (cập nhật v2.6.0).**
+> File này giữ lại phần Developer Portal / Privacy / ToS; các khối mô tả bên dưới là bản tham khảo.
 
 Tài liệu sẵn để copy vào **Discord Developer Portal** và **top.gg**. Hướng tới: list lên top.gg + verify bot.
 
@@ -12,7 +12,7 @@ Tài liệu sẵn để copy vào **Discord Developer Portal** và **top.gg**. H
 **Name:** `Waguri`
 
 **Description** (≤ 400 ký tự, hiện trong hồ sơ bot):
-> Waguri 🌸 — Bạn gái AI waifu & Quản gia kinh tế RPG bản địa hóa Việt Nam! Trò chuyện AI có trí nhớ, Phòng học Pomodoro 24/7 (/study) & Web Lofi Room, Sổ sứ mệnh Pass mùa giải, Chuyển sinh (/prestige), Thú cưng tiến hóa, Đền thờ Clan, Minigame (Tài xỉu, Bầu cua, Lì xì) & cày cuốc (/fish, /mine, /chop). Hỗ trợ Song ngữ Việt/Anh 100%, slash command & prefix `w!`.
+> Waguri 🌸 — Bạn gái AI waifu & Quản gia kinh tế RPG bản địa hóa Việt Nam! Trò chuyện AI có trí nhớ, Phòng học Pomodoro 24/7 (/study) & Web Lofi Room, Sổ sứ mệnh Pass mùa giải, Chuyển sinh (/prestige), Thú cưng tiến hóa, Tiệm bánh Gekka Cấp 3, Quỹ tín dụng Kikyo (/loan), Minigame (Tài xỉu, Bầu cua, Lì xì) & cày cuốc (/work, /fish, /mine, /chop). Hỗ trợ Song ngữ Việt/Anh 100%, 72 slash commands & prefix `w!`.
 
 **Tags / Interactions Endpoint:** để trống (bot dùng gateway, không dùng interactions endpoint URL).
 
@@ -24,22 +24,23 @@ Tài liệu sẵn để copy vào **Discord Developer Portal** và **top.gg**. H
 ---
 
 ## 2) top.gg — Mô tả ngắn (Short Description, < 140 ký tự)
-> AI waifu có trí nhớ & Game kinh tế RPG Việt: Trò chuyện AI, Pomodoro /study, Sổ sứ mệnh, Chuyển sinh, Thú cưng, Minigame. Slash & w!.
+> AI waifu có trí nhớ & Game kinh tế RPG Việt: Trò chuyện AI, Pomodoro /study, Sổ sứ mệnh, Chuyển sinh, Thú cưng, Minigame. 72 lệnh, Slash & w!.
 
 ## 3) top.gg — Mô tả dài (Long Description, Markdown)
 
 ```markdown
 # 🌸 Waguri — Bạn gái AI Waifu & Hệ sinh thái Kinh tế / RPG Discord
 
-> **Waguri** là cô bạn AI dịu dàng mang trí nhớ riêng, kết hợp với game kinh tế nhập vai đậm chất văn hóa Việt Nam, hỗ trợ **Song ngữ Việt/Anh (i18n 100%)**, lệnh **/slash** và **prefix `w!`**.
+> **Waguri** là cô bạn AI dịu dàng mang trí nhớ riêng, kết hợp với game kinh tế nhập vai đậm chất văn hóa Việt Nam, hỗ trợ **Song ngữ Việt/Anh (i18n 100%)**, 72 lệnh **/slash** chuẩn hóa và **prefix `w!`**.
 
 ---
 
-## ✨ TÍNH NĂNG NỔI BẬT (v2.4)
+## ✨ TÍNH NĂNG NỔI BẬT (v2.6.0)
 
 ### 🤖 1. Trò Chuyện AI & Trí Nhớ Riêng (`/ask`, Tag @Waguri)
 - **Persona Waguri**: Trò chuyện ngọt ngào, thông minh và dí dỏm bằng Gemini AI.
 - **Trí nhớ cá nhân (AI Memory)**: Waguri có khả năng ghi nhớ tên gọi, sở thích, tính cách của bạn qua từng cuộc trò chuyện.
+- **Lời Tự Thú Chữa Lành (`/confession`)**: Waguri lắng nghe và chia sẻ tâm sự riêng tư của bạn bằng góc nhìn AI ấm áp.
 
 ### 📚 2. Phòng Học Bài Pomodoro 24/7 & Web Lofi Study Room (`/study`)
 - **Tập trung cùng Waguri**: Chế độ Pomodoro trực quan ngay trong Discord, theo dõi chuỗi chuyên cần `study_streak`, nhận Xu, EXP và Điểm Tri Thức.
@@ -50,7 +51,7 @@ Tài liệu sẵn để copy vào **Discord Developer Portal** và **top.gg**. H
 - Làm nhiệm vụ daily/weekly, cày cuốc & trò chuyện để tăng cấp Pass, mở khóa kho phần thưởng cực giá trị.
 
 ### 🌟 4. Vòng Lặp Chuyển Sinh Prestige (`/prestige`)
-- Khi đạt cấp độ tối đa, thực hiện Chuyển Sinh để nhận buff chỉ số vĩnh viễn và hiệu ứng **Khung Avatar Hào Quang (Glow Border)** lấp lấp trên Web Profile.
+- Khi đạt cấp độ tối đa, thực hiện Chuyển Sinh để nhận buff chỉ số vĩnh viễn và hiệu ứng **Khung Avatar Hào Quang (Glow Border)** lấp lánh trên Web Profile.
 
 ### 🏆 5. Sổ Tay Sưu Tầm / Album & Rarity (`/album`)
 - Thu thập hàng trăm vật phẩm quý hiếm (Cá Rồng Vàng, Kỳ Nam, Vàng Đông Triều...) từ `/fish`, `/mine`, `/chop`, `/craft`.
@@ -60,22 +61,22 @@ Tài liệu sẵn để copy vào **Discord Developer Portal** và **top.gg**. H
 - Nuôi thú cưng qua 3 giai đoạn tiến hóa với hình ảnh sinh động.
 - Nâng điểm **Cây kỹ năng bị động (Skill Tree)** trên Web Dashboard để nhận buff sản lượng và may mắn.
 
-### ⛩️ 7. Bang Hội & Đền Thờ Clan (`/clan`)
-- Thành lập Bang hội, quyên góp tài nguyên nâng cấp **Đền Thờ Clan** (`/clan shrine`).
-- Kích hoạt buff bị động tăng +2% EXP cho tất cả thành viên trong Bang.
+### 🍞 7. Tiệm Bánh Gekka Cấp 3 & Đơn Hàng VIP (`/bakery` / `/tiembanh`)
+- Nâng cấp tiệm bánh lên tới Cấp 3 (Đại Tiệm Bánh Gekka) mở khóa lò nướng tự động và nhân viên thứ hai.
+- Giao đơn hàng VIP hằng ngày cho các nhân vật lore Waguri, kích hoạt Giờ Cao Điểm x1.2 doanh thu.
 
 ### 🎲 8. Kinh Tế & Minigame Dân Gian Đậm Chất Việt
 - 💼 **Nghề nghiệp & Cày cuốc**: đi làm `/work`, chọn nghề `/jobs`, đào khoáng `/mine`, chặt gỗ `/chop`, câu cá `/fish`.
-- 🍞 **Tiệm bánh Gekka**: Mở tiệm bánh `/gekka`, nạp nguyên liệu, nướng bánh và thu hoạch doanh thu.
-- 🧧 **Lì xì & Tương tác**: `/lixi` (phát lì xì cả channel), `/ship` (bói duyên), `/boi` (xem bói bài).
-- 🎲 **Minigames**: Tài xỉu `/taixiu`, Bầu cua `/baucua`, Lô tô `/loto`, Cướp tiền `/rob`.
+- 🏦 **Quỹ tín dụng Kikyo (`/loan`)**: Vay tiền trực tiếp từ quỹ trường Kikyo với kỳ hạn cố định 7 ngày và lãi suất 5%.
+- 🧧 **Lì xì & Tương tác**: `/lucky-money` (phát lì xì cả channel), `/ship` (bói duyên), `/date` (hẹn hò).
+- 🎲 **Minigames**: Tài xỉu `/sicbo`, Bầu cua `/bau-cua`, Xổ số `/lottery`, Blackjack `/blackjack`, Đua ngựa `/horserace`.
 - 🎖️ **Cửa hàng Huy hiệu**: `/cosmetic` sưu tầm huy hiệu lấp lánh trưng bày trên Web Profile.
 
 ---
 
 ## 🌐 WEBSITE DASHBOARD & COMMANDS EXPLORER
 - **Web Profile**: Xem chi tiết tài sản, thành tựu, khung chuyển sinh, huy hiệu và cây kỹ năng thú cưng tại Web Dashboard.
-- **Trang Tra Cứu Lệnh**: Tìm kiếm và lọc toàn bộ danh sách lệnh linh hoạt.
+- **Trang Tra Cứu Lệnh**: Tìm kiếm và lọc toàn bộ 72 lệnh chuẩn hóa linh hoạt.
 
 ---
 

@@ -1,5 +1,26 @@
 [
   {
+    "date": "24/09/2026",
+    "title_vi": "v2.6.0 — Chuẩn Hóa Kiến Trúc, Tiệm Bánh Gekka Mới & Quỹ Tín Dụng Kikyo",
+    "title_en": "v2.6.0 — Architectural Revamp, New Bakery Flow & Kikyo Credit Fund",
+    "tag": "v2.6.0",
+    "tagColor": "pink",
+    "details_vi": [
+      "**Chuẩn hóa 72 lệnh tiếng Anh:** Toàn bộ lệnh bot được đổi sang tên tiếng Anh chuẩn quốc tế (/bakery, /farm, /loan, /dating, /relief, /rest, /gift, /weather, /lunar, /fortune, /trivia, /wordchain), hỗ trợ đầy đủ tiếng Việt qua alias w! và mô tả song ngữ.",
+      "**Tiệm Bánh Gekka thân thiện:** Hạ điều kiện mở tiệm xuống Cấp 3 và 3.000 xu. Kết nối nông sản lúa mì và dâu tây từ /farm vào lò nướng.",
+      "**Quỹ Tín Dụng Học Đường Kikyo (/loan):** Vay vốn trực tiếp từ hệ thống, loại bỏ triệt để vấn nạn quỵt nợ và cho vay nặng lãi P2P.",
+      "**Tỉa gọn hệ thống:** Cất kho 9 trò chơi và tính năng ít người dùng; gỡ bỏ hoàn toàn vòng lặp nền đấu giá giúp bot chạy mượt mà, tiết kiệm RAM.",
+      "**Trải nghiệm nâng cấp:** /confession có AI Waguri hồi âm chữa lành; /ticket mở form Modal góp ý trực tiếp về Server Support; /blackjack có giao diện emoji lá bài trực quan."
+    ],
+    "details_en": [
+      "**Standardized 72 English Commands:** All commands unified to standard English (/bakery, /farm, /loan, /dating, /relief, /rest, /gift, /weather, /lunar, /fortune, /trivia, /wordchain) with full bilingual autocomplete & localization.",
+      "**Friendly Gekka Bakery:** Lowered opening requirements to Level 3 and 3,000 coins. Linked wheat and berries from /farm to baking recipes.",
+      "**Kikyo Student Credit Fund (/loan):** System-backed lending with automated credit scoring, completely removing toxic P2P loans.",
+      "**Codebase Pruning:** Archived 9 inactive minigames and obsolete background auction loops for maximum performance and zero RAM waste.",
+      "**Enhanced Interactions:** /confession now features instant healing AI replies; /ticket uses a clean modal form sending directly to Support Server; /blackjack features rich playing card emojis."
+    ]
+  },
+  {
     "date": "21/08/2026",
     "title_vi": "Đại tu: Chống nuke, Kinh tế minh bạch & Bạn đồng hành AI",
     "title_en": "Major: Antinuke, Transparent Economy & AI Companion",

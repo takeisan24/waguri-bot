@@ -77,9 +77,18 @@ Waguri là **Discord economy/RPG bot bản địa hóa văn hóa Việt**. Bot N
 
 ---
 
-## 4. TRẠNG THÁI HIỆN TẠI (cập nhật 2026-09-21 — sửa khi đổi lớn)
+## 4. TRẠNG THÁI HIỆN TẠI (cập nhật 2026-09-24 — sửa khi đổi lớn)
 
-- **Release:** GitHub tag mới nhất `v2.4.0` ("Feature /study Pomodoro Companion & Web Lofi Study Room Ecosystem"). `package.json` = `2.5.1`.
+- **Release:** GitHub tag mới nhất `v2.6.0` ("Architectural Restructure: Standardize 72 Commands, Prune Dead Minigames, Kikyo Credit Fund & Gekka Bakery Flow"). `package.json` = `2.6.0`.
+- **🏛️ Đại Phẫu Kiến Trúc & Chuẩn Hóa 72 Lệnh Slash Song Ngữ — HẠNG MỤC ƯU TIÊN #1 ĐÃ HOÀN THÀNH 100%:**
+  - **Tỉa cành & Cất kho 9 tính năng cũ:** Đã di dời an toàn `clan.js`, `worldevent.js`, `bacay.js`, `duangua.js`, `xocdia.js`, `bingo.js`, `heo.js`, `date.js`, `ship.js` vào `archive/commands/`.
+  - **Dọn dẹp vòng lặp nền & Tối ưu hiệu năng:** Gỡ bỏ hoàn toàn interval 60s `runAuctionResolution()` và cron đấu giá trong `index.js`, giải phóng RAM tối đa cho bot VPS. Tinh giản `/market` tập trung vào Chợ Nông Sản MurmurMix32.
+  - **Chuẩn hóa 72 lệnh tiếng Anh:** Đổi tên toàn bộ lệnh thành tiếng Anh chuẩn quốc tế (`/bakery`, `/farm`, `/loan`, `/dating`, `/relief`, `/rest`, `/gift`, `/weather`, `/lunar`, `/fortune`, `/trivia`, `/wordchain`), đồng thời giữ alias gõ tắt `w!tiembanh`, `w!vay`... và hỗ trợ 100% bản dịch song ngữ `vi` + `en`.
+  - **Quỹ Tín Dụng Học Đường Kikyo (`/loan`):** Thiết kế lại hệ thống tín dụng vay trực tiếp từ quỹ hệ thống Waguri với hạn mức theo cấp độ, loại bỏ hoàn toàn toxic, quỵt nợ và cho vay nặng lãi P2P.
+  - **Mở khóa Tiệm Bánh Gekka (`/bakery`):** Hạ điều kiện mở tiệm xuống **Cấp 3 + 3.000 xu** (thay vì Cấp 5 + 10.000 xu), kết nối nguồn nông sản lúa mì/dâu tây từ `/farm`.
+  - **Nâng cấp Trải nghiệm:** `/confession` tích hợp AI Waguri hồi âm chữa lành (ephemeral); `/ticket` chuyển sang form Modal 3 trường gửi trực tiếp Webhook Support Server (không tạo channel); `/blackjack` bổ sung giao diện emoji lá bài trực quan.
+  - **Đồng bộ toàn diện & Test Suite:** Đã đồng bộ 72/72 lệnh với Web `CommandsExplorer.tsx`, `scripts/command-surface.json`. 572/572 tests passed 100%, CI passes 100%.
+
 - **📈 Biểu Đồ Giá Chợ Nông Thủy Sản Biến Động Hàng Giờ, Khử Dốc Tuyến Tính MurmurMix32 & Sparklines (`/market` & Web) — HẠNG MỤC ƯU TIÊN #1 ĐÃ HOÀN THÀNH 100%:**
   - **Migration `0150_market_avalanche_hash.sql` & RPC `market_multiplier`:** Đã áp dụng 1:1 trên cả Supabase Test & Production DB. Tích hợp bộ trộn tuyết lở (Avalanche Mixer) MurmurMix32 vào hàm băm PL/pgSQL, khử dốc tuyến tính cùng ngày: tần suất bước nhảy $\pm 1\%$ giảm từ **82,3%** xuống còn **2,31%** (phân phối đều tự nhiên).
   - **Đồng bộ bit-exact 100%:** `src/lib/market.js` (bot Node.js) và `web/src/lib/market.ts` (Next.js TS) cùng triển khai `murmurMix32(hash >>> 0)`. Kiểm thử 2.880 trường hợp khớp vân tay DB `f49bc44ff9d21deb22d4da79ee28fbc4` trong `test/market_gia_hien_dung_gia_tra.test.js`.

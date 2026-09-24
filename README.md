@@ -22,53 +22,48 @@ chơi minigame nhiều người, kết đôi, buôn bán… — tất cả bằn
 
 ---
 
-## ✨ Tính năng (79 lệnh)
+## ✨ Tính năng (72 lệnh slash chuẩn hóa)
 
 | Nhóm | Lệnh tiêu biểu |
 |---|---|
-| 💼 **Kiếm tiền** | `/work` `/fish` `/mine` `/chop` `/daily` `/quest` `/jobs` `/cuutro` — năng lượng + mệt mỏi + lên cấp + nghề |
-| 🏪 **Cửa hàng & Kho** | `/store list·buy·sell` `/inventory` `/eat` `/nghingoi` `/cosmetic` `/craft` — mua bán, chế tạo từ gỗ/quặng |
-| 💸 **Tiền & Nợ** | `/bank balance·deposit·withdraw` `/give` `/rob` · vay nợ P2P `/vay` `/trano` `/donno` `/no` |
-| 🎲 **Minigame** | `/coinflip` `/taixiu` `/baucua` `/blackjack` `/crate` |
-| 👥 **Game nhiều người** | `/bacay` `/bingo` `/loto` `/masoi` (Ma Sói) `/xocdia` `/duangua` (đua ngựa) `/dovui` (đố vui) |
-| 💞 **Cộng đồng** | `/couple status·marry·divorce` `/action hug·kiss·pat·poke·slap` `/date` `/lixi` `/confession` `/noitu` `/ship` `/boi` |
-| 🏰 **Bang hội** | `/clan create·join·info·list·deposit·withdraw·kick·disband·war` (chiến tranh bang PvP) |
-| 🛒 **Chợ** | `/market view·mine·sell·buy·cancel` — mua bán đồ giữa người chơi (ký gửi) |
-| 💬 **AI & Premium** | `/ask` + @tag Waguri trò chuyện · `/premium` (quota AI cao + 10% thu nhập) · `/status` |
-| 🐷 **Nuôi & Trồng** | `/heo` (nuôi heo đất) · `/trongcay` (trồng cây) · `/pet` (thú cưng) |
-| 🏥 **Sức khoẻ & Xe** | `/hospital` (nhập viện) · `/tangdo` (độ xe) · `/repair` (sửa công cụ) |
-| 🗓️ **Thông tin** | `/amlich` (lịch âm) · `/thoitiet` (thời tiết) · `/image cat·dog·waifu` (ảnh ngẫu nhiên) |
-| 🏆 **Bảng xếp hạng** | `/leaderboard` (tài sản / cấp / tình cảm) · `/achievements` · `/event` · `/invite` · `/help` |
-| ℹ️ **Tiện ích & Bot** | `/bot ping·about·support·invite` · `/announcement view·send·auto` · `/user` · `/server` |
-| ⚙️ **Quản trị** | `/setup` (tạo phòng + cấu hình) · `/config` (AI/PvP/nhiệm vụ/thông báo) · `/eco-admin` |
+| 💼 **Kinh tế & Nghề** | `/work` `/fish` `/mine` `/chop` `/daily` `/quest` `/jobs` `/pet` `/prestige` `/relief` — năng lượng, mệt mỏi, chuyển sinh & trợ cấp phá sản |
+| 🏪 **Cửa hàng & Kho** | `/store` `/market` *(chợ nông sản biến động MurmurMix32)* `/inventory` `/album` `/pass` `/eat` `/rest` `/cosmetic` `/craft` `/repair` `/hospital` |
+| 💸 **Giao dịch & Tín dụng** | `/give` `/bank` `/rob` `/loan` *(Quỹ tín dụng học đường Kikyo)* `/gift` *(tặng vật phẩm)* |
+| 🍰 **Nuôi trồng & Tiệm bánh** | `/farm` *(nông trại Kikyo: lúa mì & dâu tây)* · `/bakery` *(Tiệm Bánh Gekka mở từ Cấp 3: nướng bánh thụ động & đơn hàng VIP)* |
+| 🎲 **Minigame & Cược** | `/blackjack` *(xì dách bài tây emoji)* `/taixiu` `/baucua` `/coinflip` `/crate` `/loto` *(voice)* `/masoi` *(ma sói)* |
+| 🎀 **Vui & Cộng đồng** | `/trivia` *(đố vui)* `/wordchain` *(nối từ)* `/fortune` *(bói toán)* `/lunar` *(âm lịch)* `/lixi` `/couple` `/action` `/confession` *(AI an ủi)* `/study` *(Pomodoro 24/7)* |
+| 💬 **AI & Hẹn hò** | `/ask` + @tag Waguri trò chuyện có trí nhớ · `/premium` *(ưu đãi AI & kinh tế)* · `/dating` *(hẹn hò bồi đắp tình cảm)* |
+| 🖼️ **Ảnh & Tiện ích** | `/image` `/weather` *(thời tiết)* `/claim-support` `/announcement` *(thông báo cập nhật)* |
+| ⚙️ **Quản trị & Thông tin** | `/setup` `/config` `/serverinfo` `/antinuke` *(chống nuke server)* · `/leaderboard` `/start` `/ticket` `/vote` `/bot` `/help` |
 
-**Hệ thống nền:** năng lượng & hồi lười (lazy regen) · mệt mỏi giảm thu nhập · sức khỏe & nhập viện ·
-xe cộ tiết kiệm năng lượng · độ bền & sửa công cụ · bảo hiểm · thú cưng · **chống lạm phát**
-(thuế tài sản, lãi bank có cap, sink đa tầng) · **chống lạm dụng** (rate-limit, ban, công an trò may rủi) ·
+**Hệ thống nền:** năng lượng & hồi phục khi ngủ `/rest` · mệt mỏi giảm thu nhập · sức khỏe & nhập viện ·
+độ bền & sửa công cụ · thú cưng 3 giai đoạn & cây kỹ năng · **chống lạm phát**
+(thuế tài sản, không P2P loan lạm dụng, sink đa tầng) · **chống lạm dụng** (rate-limit, ban, kiểm tra điều kiện cốt truyện) ·
 **sự kiện x2** toàn cục · **graceful shutdown**.
 
 ---
 
 ## 🧠 Kiến trúc
 
-- **discord.js v14** — Slash **và** prefix (`w!`) song song qua `prefixShim`; tương tác bằng button/select/collector.
-- **Atomic-first**: mọi thao tác tiền/EXP/kho/quỹ chạy bằng **RPC PostgreSQL nguyên tử** (chống dupe & race).
+- **discord.js v14** — Slash **và** prefix (`w!`) song song qua `prefixShim`; tương tác bằng modal/button/select/collector.
+- **Atomic-first**: mọi thao tác tiền/EXP/kho/quỹ chạy bằng **RPC PostgreSQL nguyên tử** (chống dupe & race condition).
 - **Config tập trung** ở `src/config/index.js` — tinh chỉnh toàn bộ cân bằng game tại 1 chỗ.
-- **AI Gemini** — persona Waguri trò chuyện qua Google Gemini (free tier); quota theo ngày (free/premium).
+- **AI Gemini** — persona Waguri trò chuyện qua Google Gemini kèm hệ thống ghi nhớ `ai_memory`.
 - **Embed chuẩn hoá** qua `src/lib/embed.js` (`buildWaguriEmbed`): màu theo trạng thái + ảnh/GIF Waguri + footer cá tính.
-- **Logic thuần tách riêng** (leveling, fatigue, ma sói engine…) → có **unit test** (`node --test`).
+- **Logic thuần tách riêng** (leveling, market, fatigue, masoi engine…) → phủ **572 automated tests** (`npm test`).
 
 ```text
 waguri/
-├── index.js                  # Nạp lệnh + đăng ký slash + nạp event + ban + scheduler
+├── index.js                  # Nạp lệnh + đăng ký slash + nạp event + scheduler
 ├── src/
 │   ├── config/index.js       # ⚙️ Toàn bộ hằng số cân bằng + WAGURI_IMAGES
-│   ├── database.js           # Helper Supabase (gọi RPC)
-│   ├── lib/                  # embed, leveling, fatigue, lobby, couple, loto, bingoPrefix, masoi/engine, ...
-│   ├── commands/{economy,games,fun,utility,admin}/*.js
+│   ├── database.js           # Helper Supabase (gọi RPC nguyên tử)
+│   ├── lib/                  # embed, leveling, fatigue, market, lobby, couple, loto, masoi, ...
+│   ├── commands/{economy,games,fun,utility,admin,owner}/*.js
 │   └── events/{ready,interactionCreate,messageCreate,guildCreate}.js
-├── supabase/migrations/      # 0001 → 0076 (schema + RPC; đã áp qua Supabase)
-└── test/*.test.js            # Unit + integration test (amlich, amount, fatigue, leveling, loto_bingo, masoi, paymatch, sprint3, bakery, disease, quest, economy.integration)
+├── archive/                  # 📦 Lưu kho an toàn các lệnh và tính năng cũ
+├── supabase/migrations/      # 0001 → 0161 (schema + RPC nguyên tử; idempotent)
+└── test/*.test.js            # Test suite tự động (572 tests, 100% pass)
 ```
 
 ---
@@ -112,10 +107,9 @@ npm test        # unit test
 
 ---
 
-## 🎱 Loto & Bingo (chơi trong voice)
-`/loto` mở phòng, mỗi người `.so` mua vé **5 số 01–90**, `.ds` xem danh sách, chủ phòng `.start`/`.end`.
-`/bingo` mở phòng, `.mua` mua vé, `.check` xem vé, chủ phòng `.start`/`.end` — máy tự gọi số.
-Cả hai **yêu cầu vào phòng voice** để mở game.
+## 🎱 Loto (chơi trong voice)
+`/loto` mở phòng chơi Lô tô tương tác, mỗi người mua vé **5 số 01–90**, vào voice để cùng quay số và so khớp nhận thưởng.
+Yêu cầu người mở game phải **ở trong phòng voice**.
 
 ---
 
