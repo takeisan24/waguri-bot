@@ -251,7 +251,9 @@ test('dò mã bằng máy bị chặn sau 5 lần sai', async () => {
 const path2 = require('path');
 
 function chayEcoAdmin(sub, { options = {}, stubs = {} } = {}) {
-    const lenh = require('../src/commands/admin/eco-admin.js');
+    const lenh = fs.existsSync(path2.join(__dirname, '..', 'src', 'commands', 'owner', 'eco-admin.js'))
+        ? require('../src/commands/owner/eco-admin.js')
+        : require('../src/commands/admin/eco-admin.js');
     const { OWNER_ID } = require('./helpers/mockInteraction');
     const { interaction, calls } = makeInteraction({ sub, options, userId: OWNER_ID, locale: 'vi' });
     const hoan = stubDb(db, {
@@ -300,7 +302,10 @@ test('code-list không vượt trần 4096 ký tự của mô tả embed', async
 });
 
 test('code-list không ghi cứng chữ tiếng Việt trong mã nguồn', () => {
-    const js = fs.readFileSync(path2.join(ROOT, 'src', 'commands', 'admin', 'eco-admin.js'), 'utf8');
+    const ecoPath = fs.existsSync(path2.join(ROOT, 'src', 'commands', 'owner', 'eco-admin.js'))
+        ? path2.join(ROOT, 'src', 'commands', 'owner', 'eco-admin.js')
+        : path2.join(ROOT, 'src', 'commands', 'admin', 'eco-admin.js');
+    const js = fs.readFileSync(ecoPath, 'utf8');
     const khoi = js.slice(js.indexOf("sub === 'code-list'"), js.indexOf("sub === 'code-revoke'"));
     const banChay = khoi.split('\n').filter(d => !d.trim().startsWith('//'))
         .filter(d => /`[^`]*[àáâãèéêìíòóôõùúýăđĩũơưạảấầẩậắằẳẵặẹẻẽếềểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹ]/i.test(d));

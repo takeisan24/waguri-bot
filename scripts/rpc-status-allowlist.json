@@ -4,6 +4,16 @@
     "src/commands/admin/antinuke.js::antinuke_whitelist_add": [
       "kind_invalid"
     ],
+    "src/commands/economy/loan.js::loan_create": [
+      "bad",
+      "bad_fee",
+      "co_no_qua_han",
+      "poor"
+    ],
+    "src/commands/economy/loan.js::loan_repay": [
+      "none",
+      "poor"
+    ],
     "src/commands/economy/pet.js::adopt_pet": [
       "bad_species",
       "not_adoptable"
@@ -18,10 +28,6 @@
     "src/commands/economy/quest.js::adopt_pet": [
       "bad_species",
       "not_adoptable"
-    ],
-    "src/commands/economy/vay.js::loan_create": [
-      "bad",
-      "bad_fee"
     ],
     "src/lib/couple.js::couple_love": [
       "single"

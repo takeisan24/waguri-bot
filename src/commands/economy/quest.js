@@ -346,9 +346,10 @@ module.exports = {
                     });
                 }
 
-                if (Number(user?.wallet || 0) < 10000) {
+                const openCost = config.BAKERY?.OPEN_COST || 3000;
+                if (Number(user?.wallet || 0) < openCost) {
                     return i.reply({
-                        content: `🌸 Cậu ơi, chúng mình cần 10.000 xu tiền vốn để chuẩn bị lò nướng nhen~ (Hiện tại ví cậu có: ${Number(user?.wallet || 0).toLocaleString('vi-VN')} xu)`,
+                        content: `🌸 Cậu ơi, chúng mình cần ${openCost.toLocaleString('vi-VN')} xu tiền vốn để chuẩn bị lò nướng nhen~ (Hiện tại ví cậu có: ${Number(user?.wallet || 0).toLocaleString('vi-VN')} xu)`,
                         flags: MessageFlags.Ephemeral
                     });
                 }
@@ -358,7 +359,7 @@ module.exports = {
                     await db.giveItemAdmin(userId, 'bo_lam_banh', 1);
                 }
 
-                const res = await db.bakeryOpen(userId, 10000, 'bo_lam_banh');
+                const res = await db.bakeryOpen(userId, openCost, 'bo_lam_banh');
                 if (res === 'ok' || res === 'has') {
                     user = await db.getUser(userId);
                     const refreshedStory = await buildStoryTab(user, locale);

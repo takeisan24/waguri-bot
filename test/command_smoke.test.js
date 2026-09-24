@@ -20,7 +20,7 @@ const { makeInteraction, textOf, stubDb, OWNER_ID } = require('./helpers/mockInt
 
 const db = require('../src/database.js');
 const config = require('../src/config');
-const ecoAdmin = require(path.join(__dirname, '..', 'src', 'commands', 'admin', 'eco-admin.js'));
+const ecoAdmin = require(path.join(__dirname, '..', 'src', 'commands', 'owner', 'eco-admin.js'));
 
 // Locale phải giải xong mà không chạm DB thật, nếu không i18n sẽ nuốt lỗi rồi in ra
 // console đầy nhiễu. Trả thẳng người dùng nói tiếng Việt.

@@ -1,4 +1,4 @@
-const { Events, MessageFlags } = require('discord.js');
+const { Events, MessageFlags, EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder } = require('discord.js');
 const { rateLimited } = require('../lib/ratelimit');
 const { isBanned } = require('../lib/bans');
 // `isJailed` chứ không phải `getJail`: cả hai nơi gọi trong file này đều nằm TRƯỚC khi
@@ -521,6 +521,62 @@ module.exports = {
                 await ackButtonError(interaction, locale);
             }
             return;
+        }
+
+        // Handle Modal Submit cho Ticket & Feedback
+        if (interaction.isModalSubmit() && interaction.customId === 'ticket_feedback_modal') {
+            const locale = await getInteractionLanguage(interaction);
+            await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+
+            try {
+                const category = interaction.fields.getTextInputValue('category');
+                const title = interaction.fields.getTextInputValue('title');
+                const content = interaction.fields.getTextInputValue('content');
+
+                const feedbackEmbed = new EmbedBuilder()
+                    .setColor('#f472b6')
+                    .setTitle(`📩 Feedback/Ticket: ${title}`)
+                    .setDescription(content)
+                    .addFields(
+                        { name: '👤 Người gửi', value: `<@${interaction.user.id}> (\`${interaction.user.id}\`)`, inline: true },
+                        { name: '🏷️ Phân loại', value: category, inline: true },
+                        { name: '🌐 Server gửi', value: interaction.guild ? `${interaction.guild.name} (\`${interaction.guild.id}\`)` : 'Direct Message (DM)', inline: false }
+                    )
+                    .setTimestamp();
+
+                // Gửi vào Support Server nếu có thể
+                const supportGuildId = config.ROLE_REWARDS.SUPPORT_GUILD_ID;
+                const supportGuild = interaction.client.guilds.cache.get(supportGuildId);
+                if (supportGuild) {
+                    const targetChannel = supportGuild.channels.cache.find(c => 
+                        c.isTextBased() && (c.name.includes('feedback') || c.name.includes('ticket') || c.name.includes('tiep-nhan') || c.name.includes('gop-y'))
+                    ) || supportGuild.systemChannel;
+
+                    if (targetChannel && targetChannel.permissionsFor(supportGuild.members.me)?.has('SendMessages')) {
+                        await targetChannel.send({ embeds: [feedbackEmbed] }).catch(() => {});
+                    }
+                }
+
+                const thanksEmbed = buildWaguriEmbed(interaction, 'success', {
+                    locale,
+                    title: locale === 'en' ? '🌸 Feedback Sent Successfully!' : '🌸 Gửi Hỗ Trợ Thành Công!',
+                    description: locale === 'en'
+                        ? `Thank you **${interaction.user.username}**! Your feedback has been sent directly to the Waguri Support & Dev Team.`
+                        : `Cảm ơn **${interaction.user.username}** nha! Lời nhắn của cậu đã được gửi thẳng tới Đội ngũ Hỗ trợ & Phát triển Waguri.`
+                });
+
+                const supportRow = new ActionRowBuilder().addComponents(
+                    new ButtonBuilder()
+                        .setLabel(locale === 'en' ? '🛟 Join Official Support Server' : '🛟 Tham Gia Support Server')
+                        .setStyle(ButtonStyle.Link)
+                        .setURL(config.ROLE_REWARDS.SUPPORT_INVITE || 'https://discord.gg/waguri')
+                );
+
+                return interaction.editReply({ embeds: [thanksEmbed], components: [supportRow] });
+            } catch (err) {
+                logError('ticket_feedback_modal', err);
+                return interaction.editReply({ content: t(locale, 'common.generic_error') });
+            }
         }
         // Các component khác: định tuyến theo customId (phase sau sẽ nạp động).
     },

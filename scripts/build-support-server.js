@@ -183,7 +183,7 @@ client.once('ready', async () => {
             '• 🍜 Thêm 14 đặc sản vùng miền + đồ mùa lễ (bánh chưng/trung thu)',
             '• 💎 Mở bán **Premium** (quét VietQR)',
             '• 🎴 Đồ giới hạn theo mùa lễ + bật/tắt trò may rủi theo server',
-            '• 🗓️ Lệnh `/amlich` — lịch âm, can chi, giờ hoàng đạo',
+            '• 🗓️ Lệnh `/lunar` — lịch âm, can chi, giờ hoàng đạo',
         ]),
         guide: E('🌸・Bắt đầu với Waguri', [
             '**💰 Kiếm tiền & nuôi nhân vật**',
@@ -194,10 +194,10 @@ client.once('ready', async () => {
             // lệnh mà người mới gõ vào bảng gợi ý của Discord sẽ không thấy đâu.
             '`/eat` hồi năng lượng/sức khoẻ · `/store list` `/store buy` `/store sell` mua bán', '',
             '**👤 Hồ sơ & cộng đồng**',
-            '`/profile` · `/leaderboard` · `/couple marry` · `/clan` · `/market`', '',
+            '`/profile` · `/leaderboard` · `/couple marry` · `/market` · `/bakery`', '',
             '**🎲 Giải trí**',
-            '`/taixiu` `/bacay` `/baucua` `/blackjack` `/masoi`… minigame nhiều người',
-            '`/dovui` đố vui · `/boi` xem bói · `/amlich` lịch âm', '',
+            '`/taixiu` `/baucua` `/blackjack` `/masoi`… minigame nhiều người',
+            '`/trivia` đố vui · `/fortune` xem bói · `/lunar` lịch âm', '',
             '**💬 Trò chuyện AI**: tag **@Waguri** hoặc `/ask`',
             '**🎁 Thưởng**: `/vote` mỗi 12h 💝 · `/premium` xem Premium 💎', '',
             // Đo trên prod 21-08-2026: 85 trên 134 người hoạt động CHƯA TỪNG gõ một lệnh

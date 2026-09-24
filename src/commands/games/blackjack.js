@@ -31,7 +31,9 @@ function handValue(cards) {
     while (sum > 21 && aces > 0) { sum -= 10; aces--; }
     return sum;
 }
-const render = cards => cards.map(c => `${c.r}${c.s}`).join(' ');
+const SUIT_EMOJIS = { '♠': '♠️', '♥': '♥️', '♦': '♦️', '♣': '♣️' };
+const render = cards => cards.map(c => `[\`${c.r}\` ${SUIT_EMOJIS[c.s] || c.s}]`).join('  ');
+
 // Bài tổng 17 "mềm" (còn 1 Át tính 11) -> nhà cái vẫn rút (luật H17), thêm nhẹ lợi thế nhà cái.
 function isSoft17(cards) {
     let sum = 0, aces = 0;
@@ -47,8 +49,10 @@ function isSoft17(cards) {
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('blackjack')
-        .setDescription('Chơi Blackjack (Xì Dách) với nhà cái Waguri 🃏')
-        .addStringOption(o => o.setName('bet').setDescription('Số tiền cược (vd 1000, 1k, all)').setRequired(true)),
+        .setNameLocalizations({ vi: 'blackjack' })
+        .setDescription('Play Blackjack (21) against dealer Waguri 🃏')
+        .setDescriptionLocalizations({ vi: 'Chơi Blackjack (Xì Dách) với nhà cái Waguri 🃏' })
+        .addStringOption(o => o.setName('bet').setNameLocalizations({ vi: 'cuoc' }).setDescription('Bet amount (e.g. 1000, 1k, all)').setDescriptionLocalizations({ vi: 'Số tiền cược (vd 1000, 1k, all)' }).setRequired(true)),
     async execute(interaction) {
         await interaction.deferReply();
         const locale = await getInteractionLanguage(interaction);
@@ -156,8 +160,8 @@ module.exports = {
         }
 
         const row = new ActionRowBuilder().addComponents(
-            new ButtonBuilder().setCustomId('hit').setLabel(t(locale, 'commands.blackjack.btn_hit')).setStyle(ButtonStyle.Primary),
-            new ButtonBuilder().setCustomId('stand').setLabel(t(locale, 'commands.blackjack.btn_stand')).setStyle(ButtonStyle.Secondary),
+            new ButtonBuilder().setCustomId('hit').setLabel(t(locale, 'commands.blackjack.btn_hit')).setEmoji('🃏').setStyle(ButtonStyle.Primary),
+            new ButtonBuilder().setCustomId('stand').setLabel(t(locale, 'commands.blackjack.btn_stand')).setEmoji('🛑').setStyle(ButtonStyle.Secondary),
         );
         const msg = await interaction.editReply({ embeds: [embed(false)], components: [row] });
 

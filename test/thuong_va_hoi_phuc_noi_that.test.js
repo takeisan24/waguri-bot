@@ -29,7 +29,13 @@ const { execFileSync } = require('child_process');
 
 const ROOT = path.join(__dirname, '..');
 const boCmt = s => s.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:])\/\/.*$/gm, '$1');
-const doc = (...p) => boCmt(fs.readFileSync(path.join(ROOT, 'src', 'commands', 'economy', ...p), 'utf8'));
+const doc = (...p) => {
+    let target = path.join(ROOT, 'src', 'commands', 'economy', ...p);
+    if (!fs.existsSync(target) && p[0] === 'nghingoi.js') {
+        target = path.join(ROOT, 'src', 'commands', 'economy', 'rest.js');
+    }
+    return boCmt(fs.readFileSync(target, 'utf8'));
+};
 
 test('nghingoi: giữ kết quả setEnergy và nói thật khi hỏng', () => {
     const s = doc('nghingoi.js');

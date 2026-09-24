@@ -346,10 +346,108 @@ const COMMAND_DESCRIPTIONS = {
     "vote": {
         vi: "Lấy link vote và nhận phần thưởng từ Top.gg 🗳️",
         en: "Get vote link and claim rewards from Top.gg 🗳️"
+    },
+    "bakery": {
+        vi: "Tiệm bánh Gekka 🍰 (kinh doanh bánh ngọt)",
+        en: "Gekka Bakery 🍰 (pastry & bakery business)"
+    },
+    "dating": {
+        vi: "Hẹn hò và dắt Waguri đi chơi để bồi đắp tình cảm 💖",
+        en: "Go on a date with Waguri to increase affection 💖"
+    },
+    "farm": {
+        vi: "Vườn nông sản Gekka 🌱 (trồng lúa mì, dâu tây làm bánh)",
+        en: "Gekka Farm 🌱 (grow wheat, strawberries for baking)"
+    },
+    "gift": {
+        vi: "Tặng vật phẩm trong kho cho người khác 🎁",
+        en: "Gift inventory items to another player 🎁"
+    },
+    "loan": {
+        vi: "Quỹ Tín Dụng Học Đường Kikyo 🤝 (vay vốn hệ thống)",
+        en: "Kikyo Student Credit Fund 🤝 (system loan facility)"
+    },
+    "relief": {
+        vi: "Nhận trợ cấp cứu trợ khi tài khoản cạn sạch tiền 💸",
+        en: "Claim bailout grant when completely broke 💸"
+    },
+    "rest": {
+        vi: "Đi ngủ hồi đầy năng lượng 😴",
+        en: "Go to sleep to fully restore energy 😴"
+    },
+    "fortune": {
+        vi: "Xem bói tình duyên, vận mệnh 🔮",
+        en: "Fortune telling: love, career 🔮"
+    },
+    "lunar": {
+        vi: "Tra cứu âm lịch, can chi, giờ hoàng đạo 🌙",
+        en: "Look up lunar calendar, zodiacs, auspicious hours 🌙"
+    },
+    "trivia": {
+        vi: "Đố vui 🧠 — trả lời câu hỏi nhanh để nhận thưởng",
+        en: "Trivia Quiz 🧠 — answer fast to win rewards"
+    },
+    "wordchain": {
+        vi: "Chơi nối từ tiếng Việt 🔤",
+        en: "Play Vietnamese word chain game 🔤"
+    },
+    "weather": {
+        vi: "Xem thời tiết một thành phố 🌦️",
+        en: "View weather conditions of a city 🌦️"
     }
 };
 
 const SUBCOMMAND_DESCRIPTIONS = {
+    // bakery
+    "bakery.xem": { vi: "Xem tình trạng tiệm bánh của cậu", en: "Check your bakery's status" },
+    "bakery.mo": { vi: "Mở tiệm bánh Gekka (Cấp 3 + 3.000 xu)", en: "Open a Gekka bakery (requires Lv.3 + 3,000 coins)" },
+    "bakery.nhapnl": { vi: "Nhập nguyên liệu (lúa mì, dâu tây, bột) vào tiệm", en: "Stock ingredients (wheat, strawberries, flour) into the shop" },
+    "bakery.thu": { vi: "Thu doanh thu tiệm về ví (có thể ra bánh!)", en: "Collect the shop's revenue to your wallet (may yield cakes!)" },
+    "bakery.thue": { vi: "Thuê nhân viên NPC phụ tiệm", en: "Hire an NPC staff member to help at the shop" },
+    "bakery.sathai": { vi: "Sa thải nhân viên NPC", en: "Fire an NPC staff member" },
+    "bakery.trangtri": { vi: "Trang trí tiệm bánh bằng nội thất gỗ / trang sức", en: "Decorate the bakery with wooden furniture / jewelry" },
+    "bakery.nangcap": { vi: "Nâng cấp tiệm (tăng tốc nướng & trần doanh thu)", en: "Upgrade the shop (faster baking & higher revenue cap)" },
+    "bakery.donhang": { vi: "Xem danh sách đơn hàng VIP đặc biệt hôm nay 📋", en: "View special VIP catering orders today 📋" },
+    "bakery.giaodon": { vi: "Giao đơn hàng VIP nhận Xu, EXP, Danh Tiếng 🎁", en: "Deliver a VIP order to earn Coins, EXP, Reputation 🎁" },
+
+    // dating
+    "dating.view": { vi: "Xem trạng thái tình cảm của cậu với Waguri", en: "View your affection status with Waguri" },
+    "dating.di-choi": { vi: "Dắt Waguri đi dạo ngắm cảnh Kikyo (Tốn 20 năng lượng)", en: "Take Waguri for a stroll around Kikyo (costs 20 energy)" },
+    "dating.tang-qua": { vi: "Tặng quà trong túi đồ để tăng độ thiện cảm", en: "Give gifts from your bag to increase affection" },
+
+    // farm
+    "farm.info": { vi: "Xem tình trạng cây nông sản của cậu", en: "View your crop status" },
+    "farm.muagiong": { vi: "Mua giống & gieo hạt nông sản", en: "Buy seed & plant crop" },
+    "farm.tuoi": { vi: "Tưới nước cho cây", en: "Water crop" },
+    "farm.bonphan": { vi: "Bón phân cho cây nhanh lớn", en: "Fertilize crop to grow instantly" },
+    "farm.thuhoach": { vi: "Thu hoạch nông sản làm bánh", en: "Harvest crop products for baking" },
+    "farm.hoisinh": { vi: "Hồi sinh cây đã héo", en: "Revive withered crop" },
+    "farm.phacay": { vi: "Phá cây hiện tại để trồng cây mới", en: "Destroy current crop to replant" },
+    "farm.trom": { vi: "Trộm cây trưởng thành của người khác", en: "Steal crop from another player" },
+    "farm.box": { vi: "Mở Plantbox may mắn", en: "Open a lucky Plantbox" },
+
+    // loan
+    "loan.borrow": { vi: "Vay vốn từ Quỹ Tín Dụng Học Đường Kikyo (hạn mức theo Cấp)", en: "Borrow coins from Kikyo Student Credit Fund (limit based on Level)" },
+    "loan.pay": { vi: "Thanh toán trả nợ trước hạn", en: "Repay loan early" },
+    "loan.status": { vi: "Xem thông tin hợp đồng vay và dư nợ hiện tại", en: "View current loan contract and outstanding balance" },
+
+    // fortune
+    "fortune.daily": { vi: "Vận mệnh hôm nay của cậu", en: "Your fortune today" },
+    "fortune.zodiac": { vi: "Tử vi theo cung hoàng đạo", en: "Horoscope by zodiac sign" },
+    "fortune.oracle": { vi: "Thầy đồ phán một quẻ (mỗi lần một khác)", en: "A fun fortune telling reading" },
+    "fortune.hangngay": { vi: "Vận mệnh hôm nay của cậu", en: "Your fortune today" },
+    "fortune.cunghoangdao": { vi: "Tử vi theo cung hoàng đạo", en: "Horoscope by zodiac sign" },
+    "fortune.thaydo": { vi: "Thầy đồ phán một quẻ (mỗi lần một khác)", en: "A fun fortune telling reading" },
+
+    // wordchain
+    "wordchain.start": { vi: "Bắt đầu ván nối từ ở kênh này", en: "Start a word chain game in this channel" },
+    "wordchain.stop": { vi: "Kết thúc ván nối từ", en: "End the word chain game" },
+    "wordchain.status": { vi: "Xem từ hiện cần nối", en: "Check the current word to match" },
+
+    // ticket
+    "ticket.create": { vi: "Mở biểu mẫu gửi góp ý hoặc hỗ trợ 🌸", en: "Submit a feedback or support ticket 🌸" },
+    "ticket.panel": { vi: "Gửi bảng điều khiển Ticket cố định vào kênh (Dành cho Admin)", en: "Send persistent Ticket Panel to channel (Admin only)" },
+    "ticket.close": { vi: "Đóng ticket hỗ trợ hiện tại", en: "Close the current support ticket" },
     "eco-admin.code-create": { vi: "🎁 Tạo mã quà", en: "🎁 Create a gift code" },
     "eco-admin.code-list": { vi: "🎁 Xem các mã quà đã tạo", en: "🎁 List the gift codes you created" },
     "eco-admin.code-revoke": { vi: "🎁 Thu hồi một mã quà", en: "🎁 Revoke a gift code" },
@@ -462,10 +560,6 @@ const SUBCOMMAND_DESCRIPTIONS = {
     "heo.trom": { vi: "Trộm heo trưởng thành của người khác", en: "Steal adult pig from another player" },
     "heo.box": { vi: "Mở Pigbox may mắn", en: "Open a lucky Pigbox" },
 
-    // ticket
-    "ticket.create": { vi: "Mở ticket hỗ trợ riêng tư", en: "Create a private support ticket" },
-    "ticket.panel": { vi: "Gửi bảng điều khiển Ticket cố định (Admin)", en: "Send static ticket panel (Admin)" },
-    "ticket.close": { vi: "Đóng ticket hỗ trợ hiện tại", en: "Close current support ticket" },
     "trongcay.info": { vi: "Xem tình trạng cây của cậu", en: "View your crop status" },
     "trongcay.muagiong": { vi: "Mua giống & trồng cây", en: "Buy seed & plant crop" },
     "trongcay.tuoi": { vi: "Tưới nước cho cây", en: "Water crop" },
@@ -628,6 +722,15 @@ const OPTION_DESCRIPTIONS = {
     "tiembanh.sathai.nhan_vien": { vi: "Nhân vật muốn sa thải", en: "Character to fire" },
     "tiembanh.trangtri.vat_pham": { vi: "Nội thất trang trí", en: "Decoration furnishing" },
     "tiembanh.giaodon.stt": { vi: "Số thứ tự đơn hàng (1, 2 hoặc 3)", en: "Order slot number (1, 2 or 3)" },
+    "bakery.nhapnl.loai": { vi: "ID nguyên liệu, vd trai_2000 / thit_heo_2500 / ca_tuoi", en: "Ingredient ID, e.g. trai_2000 / thit_heo_2500 / ca_tuoi" },
+    "bakery.nhapnl.sl": { vi: "Số lượng", en: "Quantity" },
+    "bakery.thue.nhan_vien": { vi: "Nhân vật muốn thuê", en: "Character to hire" },
+    "bakery.sathai.nhan_vien": { vi: "Nhân vật muốn sa thải", en: "Character to fire" },
+    "bakery.trangtri.vat_pham": { vi: "Nội thất trang trí", en: "Decoration furnishing" },
+    "bakery.giaodon.stt": { vi: "Số thứ tự đơn hàng (1, 2 hoặc 3)", en: "Order slot number (1, 2 or 3)" },
+    "fortune.zodiac.sign": { vi: "Cung của cậu", en: "Your zodiac sign" },
+    "lunar.date": { vi: "Ngày dương lịch (dd/mm/yyyy) — bỏ trống = hôm nay", en: "Solar date (dd/mm/yyyy) — leave blank = today" },
+    "weather.city": { vi: "Tên thành phố (vd: Hanoi, Da Nang)", en: "City name (e.g. Hanoi, Tokyo)" },
     "vay.muon.lender": { vi: "Người cậu muốn vay", en: "The person you want to borrow from" },
     "vay.tra.lender": { vi: "Chủ nợ", en: "Creditor" },
     "vay.doi.borrower": { vi: "Con nợ", en: "Debtor" },

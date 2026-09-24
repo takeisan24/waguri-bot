@@ -3,9 +3,9 @@ const assert = require('node:assert');
 const config = require('../src/config');
 const { STORY_CHAPTERS } = require('../src/data/story_chapters');
 
-test('CÂN BẰNG TIỆM BÁNH GEKKA: mở ở Cấp 5, phí 10,000 xu và dùng được banh_mi', () => {
-    assert.strictEqual(config.BAKERY.MIN_LEVEL, 5, 'Cấp mở tiệm phải là 5');
-    assert.strictEqual(config.BAKERY.OPEN_COST, 10000, 'Phí mở tiệm phải là 10,000 xu');
+test('CÂN BẰNG TIỆM BÁNH GEKKA: mở ở Cấp 3, phí 3,000 xu và dùng được banh_mi', () => {
+    assert.strictEqual(config.BAKERY.MIN_LEVEL, 3, 'Cấp mở tiệm phải là 3');
+    assert.strictEqual(config.BAKERY.OPEN_COST, 3000, 'Phí mở tiệm phải là 3,000 xu');
     assert.ok(config.BAKERY.FILLINGS.includes('banh_mi'), 'FILLINGS phải chứa banh_mi để giải cứu kho tồn');
 });
 
@@ -133,26 +133,26 @@ test('ĐIỀU KIỆN CỐT TRUYỆN: checkStoryNodeCondition cho cả 5 Hồi', 
 
     // 4. Hồi 3 Tiết 1: Mở tiệm bánh Gekka
     db.getBakery = async () => null;
-    // Cấp < 5: Không pass, có progress bar
-    const h3n1LowLvl = await checkStoryNodeCondition('user1', 3, 1, { exp: 500, wallet: 20000 });
+    // Cấp < 3 (exp 200): Không pass, có progress bar
+    const h3n1LowLvl = await checkStoryNodeCondition('user1', 3, 1, { exp: 200, wallet: 20000 });
     assert.strictEqual(h3n1LowLvl.pass, false);
     assert.ok(h3n1LowLvl.progressText.includes('EXP'));
     assert.strictEqual(h3n1LowLvl.actionButton, undefined);
 
-    // Cấp >= 5 (exp 1600) nhưng thiếu tiền (< 10,000 xu)
-    const h3n1Poor = await checkStoryNodeCondition('user1', 3, 1, { exp: 1600, wallet: 5000 });
+    // Cấp >= 3 (exp 400) nhưng thiếu tiền (< 3,000 xu)
+    const h3n1Poor = await checkStoryNodeCondition('user1', 3, 1, { exp: 400, wallet: 1000 });
     assert.strictEqual(h3n1Poor.pass, false);
-    assert.ok(h3n1Poor.progressText.includes('10.000 xu'));
+    assert.ok(h3n1Poor.progressText.includes('3.000 xu'));
 
-    // Cấp >= 5 và đủ tiền (>= 10,000 xu) -> CÓ Nút 1-Click mở tiệm!
-    const h3n1Ready = await checkStoryNodeCondition('user1', 3, 1, { exp: 1600, wallet: 10000 });
+    // Cấp >= 3 và đủ tiền (>= 3,000 xu) -> CÓ Nút 1-Click mở tiệm!
+    const h3n1Ready = await checkStoryNodeCondition('user1', 3, 1, { exp: 400, wallet: 3000 });
     assert.strictEqual(h3n1Ready.pass, false);
     assert.ok(h3n1Ready.actionButton, 'Phải có action button');
     assert.strictEqual(h3n1Ready.actionButton.customId, 'quest_quick_open_bakery');
 
     // Đã mở tiệm -> Pass
     db.getBakery = async () => ({ level: 1, stock: 100 });
-    const h3n1Done = await checkStoryNodeCondition('user1', 3, 1, { exp: 1600, wallet: 10000 });
+    const h3n1Done = await checkStoryNodeCondition('user1', 3, 1, { exp: 400, wallet: 3000 });
     assert.strictEqual(h3n1Done.pass, true);
 
     // 5. Hồi 4: Pomodoro & Thú cưng

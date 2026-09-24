@@ -28,6 +28,146 @@
     "welcome-channel",
     "welcome-role"
   ],
+  "serverinfo": [],
+  "setup": [],
+  "achievements": [],
+  "album": [],
+  "bakery": [
+    "donhang",
+    "giaodon",
+    "mo",
+    "nangcap",
+    "nhapnl",
+    "sathai",
+    "thu",
+    "thue",
+    "trangtri",
+    "xem"
+  ],
+  "bank": [
+    "balance",
+    "gui",
+    "rut"
+  ],
+  "chop": [],
+  "cosmetic": [
+    "badge-buy",
+    "badge-equip",
+    "color",
+    "title",
+    "view"
+  ],
+  "craft": [
+    "list",
+    "make"
+  ],
+  "daily": [],
+  "dating": [
+    "di-choi",
+    "tang-qua",
+    "view"
+  ],
+  "eat": [],
+  "farm": [
+    "bonphan",
+    "box",
+    "hoisinh",
+    "info",
+    "muagiong",
+    "phacay",
+    "thuhoach",
+    "trom",
+    "tuoi"
+  ],
+  "fish": [],
+  "gift": [],
+  "give": [],
+  "hospital": [],
+  "inventory": [],
+  "jobs": [
+    "apply",
+    "info",
+    "list"
+  ],
+  "leaderboard": [],
+  "loan": [
+    "borrow",
+    "pay",
+    "status"
+  ],
+  "market": [
+    "prices",
+    "sell"
+  ],
+  "mine": [],
+  "pass": [
+    "buy",
+    "view"
+  ],
+  "pet": [
+    "adopt",
+    "ascend",
+    "feed",
+    "hatch",
+    "rename",
+    "skill-up",
+    "view"
+  ],
+  "prestige": [],
+  "profile": [],
+  "quest": [],
+  "redeem": [],
+  "relief": [],
+  "repair": [],
+  "rest": [],
+  "rob": [],
+  "store": [
+    "buy",
+    "list",
+    "sell"
+  ],
+  "work": [],
+  "action": [],
+  "confession": [],
+  "couple": [
+    "divorce",
+    "marry",
+    "status"
+  ],
+  "fortune": [
+    "daily",
+    "oracle",
+    "zodiac"
+  ],
+  "image": [],
+  "lixi": [],
+  "lunar": [],
+  "study": [
+    "leaderboard",
+    "shop",
+    "start",
+    "status",
+    "stop"
+  ],
+  "trivia": [],
+  "wordchain": [
+    "start",
+    "status",
+    "stop"
+  ],
+  "baucua": [],
+  "blackjack": [],
+  "coinflip": [],
+  "crate": [],
+  "loto": [
+    "end",
+    "join",
+    "list",
+    "open",
+    "start"
+  ],
+  "masoi": [],
+  "taixiu": [],
   "eco-admin": [
     "addmoney",
     "ban",
@@ -50,198 +190,6 @@
     "cho",
     "duyet"
   ],
-  "serverinfo": [],
-  "setup": [],
-  "achievements": [],
-  "album": [],
-  "bank": [
-    "balance",
-    "gui",
-    "rut"
-  ],
-  "chop": [],
-  "clan": [
-    "create",
-    "deposit",
-    "disband",
-    "info",
-    "invite",
-    "join",
-    "kick",
-    "leave",
-    "list",
-    "shrine",
-    "war",
-    "withdraw"
-  ],
-  "cosmetic": [
-    "badge-buy",
-    "badge-equip",
-    "color",
-    "title",
-    "view"
-  ],
-  "craft": [
-    "list",
-    "make"
-  ],
-  "cuutro": [],
-  "daily": [],
-  "henho": [
-    "di-choi",
-    "tang-qua",
-    "view"
-  ],
-  "eat": [],
-  "fish": [],
-  "give": [],
-  "hospital": [],
-  "inventory": [],
-  "jobs": [
-    "apply",
-    "info",
-    "list"
-  ],
-  "leaderboard": [],
-  "market": [
-    "auction",
-    "auctions",
-    "bid",
-    "buy",
-    "cancel",
-    "cancel-auction",
-    "list",
-    "mine",
-    "prices",
-    "sell",
-    "view"
-  ],
-  "mine": [],
-  "nghingoi": [],
-  "pass": [
-    "buy",
-    "view"
-  ],
-  "pet": [
-    "adopt",
-    "ascend",
-    "feed",
-    "hatch",
-    "rename",
-    "skill-up",
-    "view"
-  ],
-  "prestige": [],
-  "profile": [],
-  "quest": [],
-  "redeem": [],
-  "repair": [],
-  "rob": [],
-  "store": [
-    "buy",
-    "list",
-    "sell"
-  ],
-  "tangdo": [],
-  "tiembanh": [
-    "donhang",
-    "giaodon",
-    "mo",
-    "nangcap",
-    "nhapnl",
-    "sathai",
-    "thu",
-    "thue",
-    "trangtri",
-    "xem"
-  ],
-  "vay": [
-    "doi",
-    "muon",
-    "so",
-    "tra"
-  ],
-  "work": [],
-  "worldevent": [
-    "claim",
-    "contribute",
-    "view"
-  ],
-  "action": [],
-  "amlich": [],
-  "boi": [
-    "cunghoangdao",
-    "hangngay",
-    "thaydo"
-  ],
-  "confession": [],
-  "couple": [
-    "divorce",
-    "marry",
-    "status"
-  ],
-  "date": [],
-  "dovui": [],
-  "image": [],
-  "lixi": [],
-  "noitu": [
-    "start",
-    "status",
-    "stop"
-  ],
-  "ship": [],
-  "study": [
-    "leaderboard",
-    "shop",
-    "start",
-    "status",
-    "stop"
-  ],
-  "bacay": [],
-  "baucua": [],
-  "bingo": [
-    "buy",
-    "check",
-    "end",
-    "open",
-    "start"
-  ],
-  "blackjack": [],
-  "coinflip": [],
-  "crate": [],
-  "duangua": [],
-  "heo": [
-    "an",
-    "ban",
-    "box",
-    "chuabenh",
-    "info",
-    "mua",
-    "ngu",
-    "tam",
-    "trom"
-  ],
-  "loto": [
-    "end",
-    "join",
-    "list",
-    "open",
-    "start"
-  ],
-  "masoi": [],
-  "taixiu": [],
-  "trongcay": [
-    "bonphan",
-    "box",
-    "hoisinh",
-    "info",
-    "muagiong",
-    "phacay",
-    "thuhoach",
-    "trom",
-    "tuoi"
-  ],
-  "xocdia": [],
   "announcement": [
     "clear",
     "send",
@@ -267,12 +215,12 @@
   "server": [],
   "start": [],
   "status": [],
-  "thoitiet": [],
   "ticket": [
     "close",
     "create",
     "panel"
   ],
   "user": [],
-  "vote": []
+  "vote": [],
+  "weather": []
 }

@@ -15,8 +15,10 @@ module.exports = {
     // không phải bản sao — bản sao lệch một ký tự là gate mất tác dụng mà vẫn xanh.
     _norm: norm,
     data: new SlashCommandBuilder()
-        .setName('dovui')
-        .setDescription('Đố vui 🧠 — trả lời nhanh & đúng nhất trong chat để thắng thưởng'),
+        .setName('trivia')
+        .setNameLocalizations({ vi: 'dovui' })
+        .setDescription('Trivia quiz 🧠 — answer quickly in chat to win rewards')
+        .setDescriptionLocalizations({ vi: 'Đố vui 🧠 — trả lời nhanh & đúng nhất trong chat để thắng thưởng' }),
     async execute(interaction) {
         await interaction.deferReply();
         const locale = await getInteractionLanguage(interaction);

@@ -1393,7 +1393,19 @@
         "ticket": "Open a private support channel with Waguri Staff 🌸 — for help you would rather not ask publicly (create · panel · close)",
         "serverinfo": "Export a report of the server structure: channels, roles, settings — for auditing. Requires Manage Server.",
         "antinuke": "Anti-nuke: detect and stop mass channel/role deletion, ban waves and self-granted permissions. Only the SERVER OWNER can change settings. Start with `/antinuke check`.",
-        "redeem": "redeem a gift code for coins, items or Premium days"
+        "redeem": "redeem a gift code for coins, items or Premium days",
+        "relief": "Bankruptcy relief from Waguri 🌸 — only available when both your wallet and bank are completely empty.",
+        "rest": "Sleep to restore full energy (once every 6 hours) 😴",
+        "loan": "Kikyo student credit fund 🤝 — borrow & repay system loans (borrow · pay · status)",
+        "gift": "Give an item from your inventory to someone else 🎁 — any kind: food, tools, vehicles.",
+        "farm": "Kikyo farm 🌱 — buy seeds, water, fertilize and harvest (info · plant · water · harvest · steal)",
+        "bakery": "Gekka Bakery 🍰 — passive income & VIP catering (view · open · stock · collect · hire · fire · decor · upgrade · orders · deliver)",
+        "dating": "Date and gift Waguri to build affection 💖",
+        "trivia": "Trivia quiz 🧠 — answer quickly in chat to win rewards",
+        "wordchain": "Vietnamese word chaining game 🔤 (start · stop · status)",
+        "fortune": "Fortune telling: daily / horoscope / master 🔮 (daily · zodiac · thaydo)",
+        "lunar": "Lunar calendar, can-chi, auspicious hours + Waguri wishes 🌙",
+        "weather": "Check weather in a city 🌤️"
       }
     },
     "action": {

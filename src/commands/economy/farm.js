@@ -5,8 +5,16 @@ const { getInteractionLanguage, t } = require('../../lib/i18n');
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('trongcay')
-        .setDescription('Trồng cây 🌱 — mua giống, tưới, thu hoạch, trộm (cũng dùng được prefix w!muagiong...)')
+        .setName('farm')
+        .setNameLocalizations({
+            vi: 'trongcay'
+        })
+        .setDescription('Vườn nông sản Gekka 🌱 — mua giống, tưới nước, thu hoạch trái cây & lúa mì')
+        .setDescriptionLocalizations({
+            vi: 'Vườn nông sản Gekka 🌱 — mua giống, tưới nước, thu hoạch trái cây & lúa mì',
+            'en-US': 'Gekka Farm 🌱 — plant seeds, water, harvest crops & fruits for bakery',
+            'en-GB': 'Gekka Farm 🌱 — plant seeds, water, harvest crops & fruits for bakery'
+        })
         .addSubcommand(s => s.setName('info').setDescription('Xem tình trạng cây của cậu'))
         .addSubcommand(s => s.setName('muagiong').setDescription('Mua giống & trồng cây (500)'))
         .addSubcommand(s => s.setName('tuoi').setDescription('Tưới nước (hoặc tưới hộ cây người khác)')

@@ -6,12 +6,14 @@ const { getInteractionLanguage, t } = require('../../lib/i18n');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('confession')
-        .setDescription('Gửi confession ẩn danh (nên dùng /slash để ẩn danh)')
-        .addStringOption(o => o.setName('message').setDescription('Điều cậu muốn gửi').setRequired(true)),
+        .setNameLocalizations({ vi: 'confession' })
+        .setDescription('Send an anonymous confession or heart-to-heart whisper with Waguri 💌')
+        .setDescriptionLocalizations({ vi: 'Gửi confession ẩn danh & nhận lời hồi đáp chữa lành từ Waguri 💌' })
+        .addStringOption(o => o.setName('message').setNameLocalizations({ vi: 'noidung' }).setDescription('What you want to share').setDescriptionLocalizations({ vi: 'Điều cậu muốn gửi gắm' }).setRequired(true)),
     async execute(interaction) {
         await interaction.deferReply({ flags: MessageFlags.Ephemeral });
         const locale = await getInteractionLanguage(interaction);
-        const content = interaction.options.getString('message');
+        const content = interaction.options.getString('message') || interaction.options.getString('noidung');
         const gid = interaction.guild?.id;
         if (!gid) {
             const embed = buildWaguriEmbed(interaction, 'error', {
@@ -111,9 +113,27 @@ module.exports = {
             return interaction.editReply({ embeds: [embedHong] });
         }
 
+        let aiReply = '';
+        try {
+            const { chatWithWaguri } = require('../../lib/ai');
+            const aiRes = await chatWithWaguri(
+                userId,
+                `confession:${userId}`,
+                `Đây là lời tâm sự ẩn danh của mình: "${content}". Hãy hồi đáp cho mình một lời an ủi, động viên dịu dàng, ấm áp đúng phong cách Waguri Kaoruko nhé!`,
+                locale,
+                interaction.user.username
+            );
+            if (aiRes?.ok && aiRes.reply) {
+                aiReply = `\n\n💌 **Lời nhắn nhủ từ Waguri gửi riêng cậu:**\n${aiRes.reply}`;
+            }
+        } catch {
+            // fail-safe: nhẹ nhàng bỏ qua nếu AI lỗi/timeout
+        }
+
         const successEmbed = buildWaguriEmbed(interaction, 'success', {
             locale,
-            description: t(locale, 'commands.confession.success_reply')
+            title: locale === 'en' ? '🌸 Confession Sent Anonymously' : '🌸 Đã Gửi Confession Ẩn Danh',
+            description: `${t(locale, 'commands.confession.success_reply')}${aiReply}`
         });
         return interaction.editReply({ embeds: [successEmbed] });
     },

@@ -22,7 +22,11 @@ const path = require('path');
 
 const ROOT = path.join(__dirname, '..');
 const boCmt = s => s.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:])\/\/.*$/gm, '$1');
-const vay = () => boCmt(fs.readFileSync(path.join(ROOT, 'src', 'commands', 'economy', 'vay.js'), 'utf8'));
+const vay = () => {
+    const p1 = path.join(ROOT, 'src', 'commands', 'economy', 'vay.js');
+    const p2 = path.join(ROOT, 'archive', 'commands', 'vay.js');
+    return boCmt(fs.readFileSync(fs.existsSync(p1) ? p1 : p2, 'utf8'));
+};
 const i18n = ngu => require(`../src/locales/${ngu}.json`).commands.vay;
 
 test('tỉ lệ phí có MỘT nguồn duy nhất, và được truyền xuống RPC', () => {

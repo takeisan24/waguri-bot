@@ -9,8 +9,10 @@ const fmt = (n, locale) => Number(n).toLocaleString(locale === 'en' ? 'en-US' : 
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('cuutro')
-        .setDescription('Nhận trợ cấp phá sản từ Waguri khi ví và ngân hàng hết sạch tiền 🌸'),
+        .setName('relief')
+        .setNameLocalizations({ vi: 'cuutro' })
+        .setDescription('Claim bankruptcy relief from Waguri when out of coins 🌸')
+        .setDescriptionLocalizations({ vi: 'Nhận trợ cấp phá sản từ Waguri khi ví và ngân hàng hết sạch tiền 🌸' }),
     async execute(interaction) {
         const locale = await getInteractionLanguage(interaction);
         await interaction.deferReply();

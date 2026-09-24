@@ -1393,7 +1393,19 @@
         "ticket": "Mở kênh hỗ trợ riêng tư với Staff Waguri 🌸 — dùng khi cần trợ giúp mà không muốn hỏi công khai (create · panel · close)",
         "serverinfo": "Xuất báo cáo cấu trúc server: kênh, role, cấu hình — để rà soát. Cần quyền Quản lý Server.",
         "antinuke": "Chống nuke server: phát hiện & chặn xoá kênh/role hàng loạt, ban hàng loạt, tự phong quyền. Chỉ CHỦ SERVER đổi được cấu hình. Bắt đầu bằng `/antinuke check`.",
-        "redeem": "đổi mã quà nhận xu, vật phẩm hoặc ngày Premium"
+        "redeem": "đổi mã quà nhận xu, vật phẩm hoặc ngày Premium",
+        "relief": "Nhận trợ cấp phá sản từ Waguri 🌸 — chỉ dùng được khi cả ví lẫn ngân hàng đã hết sạch tiền.",
+        "rest": "Đi ngủ hồi đầy năng lượng (6 tiếng/lần) 😴",
+        "loan": "Quỹ tín dụng học đường Kikyo 🤝 — vay vốn & trả nợ hệ thống (borrow · pay · status)",
+        "gift": "Tặng vật phẩm trong kho cho người khác 🎁 — mọi loại: đồ ăn, dụng cụ, xe cộ.",
+        "farm": "Nông trại Kikyo 🌱 — mua giống, tưới, bón phân rồi thu hoạch (info · plant · water · harvest · steal)",
+        "bakery": "Tiệm bánh Gekka 🍰 — kinh doanh thụ động & đơn hàng VIP (view · open · stock · collect · hire · fire · decor · upgrade · orders · deliver)",
+        "dating": "Hẹn hò và tặng quà cho Waguri để bồi đắp tình cảm 💖",
+        "trivia": "Đố vui 🧠 — trả lời nhanh trong chat để thắng thưởng",
+        "wordchain": "Chơi nối từ tiếng Việt 🔤 (start · stop · status)",
+        "fortune": "Xem bói: hằng ngày / cung hoàng đạo / thầy đồ 🔮 (daily · zodiac · thaydo)",
+        "lunar": "Xem âm lịch, can-chi, giờ hoàng đạo + lời Waguri 🌙",
+        "weather": "Xem thời tiết một thành phố 🌤️"
       }
     },
     "action": {

@@ -98,25 +98,25 @@ async function checkStoryNodeCondition(userId, chapterId, nodeId, user, locale =
                 };
             }
             if (nd === 3) {
-                // Tiết 3: Gieo mầm hy vọng (/trongcay muagiong)
+                // Tiết 3: Gieo mầm hy vọng (/farm seed / gieo mầm lúa mì)
                 const plant = await db.getPlant(userId);
                 const pass = Boolean(plant);
                 return {
                     pass,
                     guideText: pass
-                        ? (isEn ? '🌱 The seedling is growing in your garden!' : '🌱 Mầm cây hy vọng đang lớn lên trong khu vườn của cậu rồi!')
-                        : (isEn ? '🌱 Visit the agriculture shop with `/trongcay muagiong` to plant your very first seed.' : '🌱 Cậu hãy ghé tiệm nông sản gieo mầm bằng lệnh `/trongcay muagiong` để cùng Waguri chăm sóc mầm cây đầu tiên nhé!')
+                        ? (isEn ? '🌱 The wheat seedling is growing in your garden!' : '🌱 Mầm lúa mì hy vọng đang lớn lên trong khu vườn của cậu rồi!')
+                        : (isEn ? '🌱 Visit the agriculture shop with `/farm` to plant your very first seed.' : '🌱 Cậu hãy ghé thăm vườn nông sản bằng lệnh `/farm` để cùng Waguri gieo mầm lúa mì đầu tiên nhé!')
                 };
             }
         }
 
         // ========================================================
-        // HỒI 3: ÁNH LỬA LÒ GEKKA (Cấp 5 & Mở Tiệm Bánh Gekka)
+        // HỒI 3: ÁNH LỬA LÒ GEKKA (Cấp 3 & Mở Tiệm Bánh Gekka)
         // ========================================================
         if (ch === 3) {
             const bakery = await db.getBakery(userId);
             if (nd === 1) {
-                // Tiết 1: Mở tiệm bánh Gekka (/tiembanh mo)
+                // Tiết 1: Mở tiệm bánh Gekka (/bakery open)
                 if (bakery) {
                     return {
                         pass: true,
@@ -128,34 +128,34 @@ async function checkStoryNodeCondition(userId, chapterId, nodeId, user, locale =
                 const level = getLevelFromExp(exp);
                 const wallet = Number(user?.wallet || 0);
 
-                if (level < 5) {
-                    const bar = createWaguriBar(exp, 1600, 8);
-                    const progressPct = Math.min(100, Math.floor((exp / 1600) * 100));
+                if (level < 3) {
+                    const bar = createWaguriBar(exp, 400, 8);
+                    const progressPct = Math.min(100, Math.floor((exp / 400) * 100));
                     return {
                         pass: false,
                         guideText: isEn
-                            ? `🌸 You need to reach Level 5 (1,600 EXP) to open the bakery hearth with Waguri! Try \`/work\` or \`/fish\` to level up.`
-                            : `🌸 Cậu cần đạt Cấp 5 (1.600 EXP) để cùng Waguri phụ trách lò nướng tại Tiệm Gekka nhé~ Hãy làm thêm \`/work\` hoặc câu cá \`/fish\` nhen!`,
-                        progressText: `📊 [${bar}] ${progressPct}% (${exp.toLocaleString('vi-VN')}/1.600 EXP)`
+                            ? `🌸 You need to reach Level 3 (400 EXP) to open the bakery hearth with Waguri! Try \`/work\` or \`/fish\` to level up.`
+                            : `🌸 Cậu cần đạt Cấp 3 (400 EXP) để cùng Waguri phụ trách lò nướng tại Tiệm Gekka nhé~ Hãy làm thêm \`/work\` hoặc câu cá \`/fish\` nhen!`,
+                        progressText: `📊 [${bar}] ${progressPct}% (${exp.toLocaleString('vi-VN')}/400 EXP)`
                     };
                 }
 
-                if (wallet < 10000) {
+                if (wallet < 3000) {
                     return {
                         pass: false,
                         guideText: isEn
-                            ? `🌸 Level 5 reached! We still need 10,000 coins for initial baking supplies (you have ${wallet.toLocaleString('en-US')} coins).`
-                            : `🌸 Cậu đã đạt Cấp 5 rồi! Chúng mình cần thêm 10.000 xu tiền vốn để chuẩn bị lò bánh nhen (hiện có: ${wallet.toLocaleString('vi-VN')} xu).`,
-                        progressText: `🪙 ${wallet.toLocaleString('vi-VN')} / 10.000 xu`
+                            ? `🌸 Level 3 reached! We still need 3,000 coins for initial baking supplies (you have ${wallet.toLocaleString('en-US')} coins).`
+                            : `🌸 Cậu đã đạt Cấp 3 rồi! Chúng mình cần thêm 3.000 xu tiền vốn để chuẩn bị lò bánh nhen (hiện có: ${wallet.toLocaleString('vi-VN')} xu).`,
+                        progressText: `🪙 ${wallet.toLocaleString('vi-VN')} / 3.000 xu`
                     };
                 }
 
-                // Đủ Cấp 5 và đủ 10.000 xu -> Cung cấp Nút 1-Click mở tiệm ngay!
+                // Đủ Cấp 3 và đủ 3.000 xu -> Cung cấp Nút 1-Click mở tiệm ngay!
                 return {
                     pass: false,
                     guideText: isEn
-                        ? '✨ Conditions met! Click [🍰 Open Bakery Now] below or use `/tiembanh mo` to light the hearth!'
-                        : '✨ Đã đủ điều kiện! Cậu hãy bấm nút [🍰 Mở Tiệm Bánh Ngay] bên dưới hoặc gõ `/tiembanh mo` để nhóm lửa lò Gekka nhé! 🧁',
+                        ? '✨ Conditions met! Click [🍰 Open Bakery Now] below or use `/bakery` to light the hearth!'
+                        : '✨ Đã đủ điều kiện! Cậu hãy bấm nút [🍰 Mở Tiệm Bánh Ngay] bên dưới hoặc gõ `/bakery` để nhóm lửa lò Gekka nhé! 🧁',
                     actionButton: {
                         customId: 'quest_quick_open_bakery',
                         label: isEn ? '🍰 Open Bakery Now' : '🍰 Mở Tiệm Bánh Ngay',

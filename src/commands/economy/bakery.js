@@ -435,8 +435,16 @@ async function subGiaodon(interaction, locale) {
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('tiembanh')
-        .setDescription('Tiệm Bánh Gekka 🍰 — kinh doanh thụ động')
+        .setName('bakery')
+        .setNameLocalizations({
+            vi: 'tiembanh'
+        })
+        .setDescription('Tiệm Bánh Gekka 🍰 — kinh doanh thụ động & đơn hàng VIP')
+        .setDescriptionLocalizations({
+            vi: 'Tiệm Bánh Gekka 🍰 — kinh doanh thụ động & đơn hàng VIP',
+            'en-US': 'Manage Gekka Bakery 🍰 — passive baking & VIP orders',
+            'en-GB': 'Manage Gekka Bakery 🍰 — passive baking & VIP orders'
+        })
         .addSubcommand(s => s.setName('xem').setDescription('Xem tình trạng tiệm bánh của cậu'))
         .addSubcommand(s => s.setName('mo').setDescription(`Mở tiệm bánh (cần Lv.${B.MIN_LEVEL} + Bộ Dụng Cụ Làm Bánh)`))
         .addSubcommand(s => s.setName('nhapnl').setDescription('Nhập nguyên liệu (trái/hoa/thịt/cá đã farm) vào tiệm')

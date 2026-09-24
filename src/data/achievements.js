@@ -19,7 +19,7 @@ module.exports = [
     { id: 'married',      name: '💕 Đã Có Đôi',  desc: 'Kết hôn với một người',       reward: 2000,   check: c => c.married },
     { id: 'love_500',     name: '💗 Mặn Nồng',   desc: 'Tình cảm cặp đôi đạt 500',    reward: 5000,   check: c => c.love >= 500 },
     { id: 'love_2000',    name: '💞 Phu Thê',    desc: 'Tình cảm cặp đôi đạt 2.000',  reward: 20000,  check: c => c.love >= 2000 },
-    { id: 'has_clan',     name: '🏰 Bang Chúng', desc: 'Gia nhập một bang hội',       reward: 2000,   check: c => c.clan },
+    { id: 'has_clan',     name: '🛟 Bạn Đồng Hành', desc: 'Gia nhập Server Support Waguri', reward: 2000,   check: c => c.support },
     { id: 'is_premium',   name: '💎 Quý Tộc',    desc: 'Sở hữu gói Premium',          reward: 5000,   check: c => c.premium },
     { id: 'streak_30',    name: '🔥 Chuyên Cần', desc: 'Điểm danh 30 ngày liên tiếp', reward: 10000,  check: c => c.streak >= 30 },
 

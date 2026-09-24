@@ -1,6 +1,7 @@
 const {
     SlashCommandBuilder, EmbedBuilder, ButtonBuilder, ButtonStyle,
     ActionRowBuilder, StringSelectMenuBuilder, PermissionsBitField, MessageFlags,
+    ModalBuilder, TextInputBuilder, TextInputStyle,
 } = require('discord.js');
 const { buildWaguriEmbed } = require('../../lib/embed');
 const { logError } = require('../../lib/logger');
@@ -10,13 +11,19 @@ const db = require('../../database');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('ticket')
-        .setDescription('Hệ thống hỗ trợ riêng tư với Staff Waguri 🌸')
+        .setNameLocalizations({ vi: 'ticket' })
+        .setDescription('Open a feedback or support ticket with Waguri Team 🌸')
+        .setDescriptionLocalizations({ vi: 'Hệ thống hỗ trợ riêng tư với Staff Waguri 🌸' })
         .addSubcommand(sub =>
             sub.setName('create')
-                .setDescription('Mở ticket hỗ trợ riêng tư 🌸')
+                .setNameLocalizations({ vi: 'taomoi' })
+                .setDescription('Submit a feedback or support ticket 🌸')
+                .setDescriptionLocalizations({ vi: 'Mở biểu mẫu gửi góp ý hoặc hỗ trợ 🌸' })
                 .addStringOption(opt =>
                     opt.setName('category')
-                        .setDescription('Loại vấn đề cần hỗ trợ')
+                        .setNameLocalizations({ vi: 'phanloai' })
+                        .setDescription('Category of issue')
+                        .setDescriptionLocalizations({ vi: 'Loại vấn đề cần hỗ trợ' })
                         .setRequired(false)
                         .addChoices(
                             { name: 'Thắc mắc chung (General)', value: 'general' },
@@ -39,8 +46,52 @@ module.exports = {
         const subcommand = interaction.options.getSubcommand();
         const { user, channel, guild } = interaction;
 
+        if (subcommand === 'create') {
+            const category = interaction.options.getString('category') || 'bug';
+            const catMap = {
+                bug: locale === 'en' ? 'Bug Report' : 'Báo lỗi Game (Bug)',
+                general: locale === 'en' ? 'General Inquiry' : 'Thắc mắc chung',
+                premium: locale === 'en' ? 'Premium Support' : 'Hỗ trợ Premium / Nạp'
+            };
+
+            const modal = new ModalBuilder()
+                .setCustomId('ticket_feedback_modal')
+                .setTitle(locale === 'en' ? '🌸 Waguri Support & Feedback' : '🌸 Hỗ Trợ & Góp Ý Waguri');
+
+            const categoryInput = new TextInputBuilder()
+                .setCustomId('category')
+                .setLabel(locale === 'en' ? 'Category' : 'Phân loại')
+                .setStyle(TextInputStyle.Short)
+                .setValue(catMap[category] || category)
+                .setRequired(true);
+
+            const titleInput = new TextInputBuilder()
+                .setCustomId('title')
+                .setLabel(locale === 'en' ? 'Summary / Title' : 'Tiêu đề ngắn gọn')
+                .setStyle(TextInputStyle.Short)
+                .setPlaceholder(locale === 'en' ? 'Brief summary of your issue or idea...' : 'Tóm tắt lỗi hoặc ý tưởng của bạn...')
+                .setMaxLength(100)
+                .setRequired(true);
+
+            const contentInput = new TextInputBuilder()
+                .setCustomId('content')
+                .setLabel(locale === 'en' ? 'Details' : 'Nội dung chi tiết')
+                .setStyle(TextInputStyle.Paragraph)
+                .setPlaceholder(locale === 'en' ? 'Describe what happened or steps to reproduce...' : 'Mô tả chi tiết để đội ngũ hỗ trợ kiểm tra nhen...')
+                .setMaxLength(1000)
+                .setRequired(true);
+
+            modal.addComponents(
+                new ActionRowBuilder().addComponents(categoryInput),
+                new ActionRowBuilder().addComponents(titleInput),
+                new ActionRowBuilder().addComponents(contentInput)
+            );
+
+            return interaction.showModal(modal);
+        }
+
         if (subcommand === 'panel') {
-            if (!interaction.member.permissions.has(PermissionsBitField.Flags.ManageChannels)) {
+            if (!interaction.member?.permissions?.has(PermissionsBitField.Flags.ManageChannels)) {
                 const errEmbed = buildWaguriEmbed(interaction, 'error', {
                     locale,
                     description: t(locale, 'commands.ticket.no_admin_perm')
@@ -96,14 +147,6 @@ module.exports = {
             const row = new ActionRowBuilder().addComponents(confirmBtn, cancelBtn);
 
             return interaction.reply({ embeds: [confirmEmbed], components: [row] });
-        }
-
-        // Subcommand 'create'
-        const category = interaction.options.getString('category') || 'general';
-        // Trigger button open logic
-        const interactionCreate = require('../../events/interactionCreate');
-        if (interactionCreate.handleTicketOpen) {
-            return interactionCreate.handleTicketOpen(interaction, category);
         }
     },
 };

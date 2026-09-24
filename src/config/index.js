@@ -130,6 +130,8 @@ module.exports = {
         // là chỗ sập. Muốn bật lại thì phải kiểm hạn mức model đó TRƯỚC — test/ai_model_premium
         // sẽ chặn nếu trỏ sang model có hạn mức nhỏ hơn.
         GEMINI_PREMIUM_MODEL: process.env.GEMINI_PREMIUM_MODEL || process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite',
+        // Model dự phòng khi model chính quá tải/503 (chọn dòng flash-lite có RPD 500, tránh dòng 3.6 Flash RPD 20)
+        GEMINI_FALLBACK_MODEL: process.env.GEMINI_FALLBACK_MODEL || 'gemini-3.1-flash-lite',
         MAX_CONTEXT_TURNS: 6,    // số lượt hội thoại gần nhất giữ lại theo kênh
         // Lịch sử: 600 -> 2000 (2026-08-17) vì model dòng "thinking" tiêu token suy nghĩ
         // chung ngân sách này, làm cắt ngang từ. Nay 2000 -> 1200: flash-lite KHÔNG có pha
@@ -428,8 +430,8 @@ module.exports = {
     // tiệm tự nướng RATE/phút, dồn vào doanh thu tới TRẦN capacity -> /thu về ví.
     // Cân bằng hướng ỔN ĐỊNH: passive < cày chủ động; trần + gate NL chống lạm phát.
     BAKERY: {
-        OPEN_COST: 10000,          // phí mở tiệm (cân bằng lại về 10k xu)
-        MIN_LEVEL: 5,              // cấp tối thiểu để mở (cân bằng lại về Cấp 5)
+        OPEN_COST: 3000,           // phí mở tiệm (hạ xuống 3.000 xu để người mới đạt được ở Ngày 2)
+        MIN_LEVEL: 3,              // cấp tối thiểu để mở (hạ xuống Cấp 3 = 400 EXP)
         TOOL: 'bo_lam_banh',       // vật phẩm "giấy phép" (đã có trong catalog, 8k)
         BAKE_MARKUP: 0.8,          // 1 nguyên liệu (giá p) -> +p*0.8 vào kho tiềm năng (so với /sell chỉ 0.5)
         CAKE_EVERY: 15000,         // mỗi 15k doanh thu thu được -> tặng 1 bánh (hybrid: tiền + item)

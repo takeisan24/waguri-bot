@@ -5,8 +5,10 @@ const { getInteractionLanguage, t } = require('../../lib/i18n');
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('tangdo')
-        .setDescription('Tặng vật phẩm trong kho cho người khác (mọi loại: đồ ăn, dụng cụ, xe...) 🎁')
+        .setName('gift')
+        .setNameLocalizations({ vi: 'tangdo' })
+        .setDescription('Gift items from your inventory to another user 🎁')
+        .setDescriptionLocalizations({ vi: 'Tặng vật phẩm trong kho cho người khác (mọi loại: đồ ăn, dụng cụ, xe...) 🎁' })
         .addUserOption(o => o.setName('user').setDescription('Người nhận').setRequired(true))
         .addStringOption(o => o.setName('item').setDescription('Vật phẩm muốn tặng').setRequired(true).setAutocomplete(true))
         .addIntegerOption(o => o.setName('quantity').setDescription('Số lượng (mặc định 1)').setMinValue(1)),

@@ -16,7 +16,15 @@ const path = require('path');
 
 const ROOT = path.join(__dirname, '..');
 const boCmt = s => s.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:])\/\/.*$/gm, '$1');
-const doc = (...p) => boCmt(fs.readFileSync(path.join(ROOT, ...p), 'utf8'));
+const doc = (...p) => {
+    let target = path.join(ROOT, ...p);
+    if (!fs.existsSync(target)) {
+        const fname = path.basename(path.join(...p));
+        const arc = path.join(ROOT, 'archive', 'commands', fname);
+        if (fs.existsSync(arc)) target = arc;
+    }
+    return boCmt(fs.readFileSync(target, 'utf8'));
+};
 const i18n = ngu => require(`../src/locales/${ngu}.json`).commands.vay;
 
 test('trần lãi phạt phải THẬT SỰ là trần', () => {

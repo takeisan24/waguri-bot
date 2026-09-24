@@ -42,13 +42,15 @@ async function fetchJson(url) {
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('thoitiet')
-        .setDescription('Xem thời tiết một thành phố (miễn phí qua Open-Meteo)')
-        .addStringOption(o => o.setName('thanh_pho').setDescription('Tên thành phố (vd: Hanoi, Da Nang)').setRequired(true)),
+        .setName('weather')
+        .setNameLocalizations({ vi: 'thoitiet' })
+        .setDescription('Check the weather of a city (powered by Open-Meteo) 🌤️')
+        .setDescriptionLocalizations({ vi: 'Xem thời tiết một thành phố (miễn phí qua Open-Meteo) 🌤️' })
+        .addStringOption(o => o.setName('city').setNameLocalizations({ vi: 'thanh_pho' }).setDescription('City name (e.g. Hanoi, Tokyo)').setDescriptionLocalizations({ vi: 'Tên thành phố (vd: Hanoi, Da Nang)' }).setRequired(true)),
     async execute(interaction) {
         await interaction.deferReply();
         const locale = await getInteractionLanguage(interaction);
-        const city = interaction.options.getString('thanh_pho');
+        const city = interaction.options.getString('city') || interaction.options.getString('thanh_pho');
         const cacheKey = city.toLowerCase().trim();
 
         // 1. Kiểm tra bộ nhớ đệm

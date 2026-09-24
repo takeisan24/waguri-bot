@@ -214,7 +214,10 @@ test('tổng quan AI: RPC có trong migration và khoá quyền đúng', () => {
 });
 
 test('tổng quan AI: được nối vào /eco-admin report (không cần lệnh mới)', () => {
-    const src = fs.readFileSync(path.join(__dirname, '..', 'src', 'commands', 'admin', 'eco-admin.js'), 'utf8');
+    const p = fs.existsSync(path.join(__dirname, '..', 'src', 'commands', 'owner', 'eco-admin.js'))
+        ? path.join(__dirname, '..', 'src', 'commands', 'owner', 'eco-admin.js')
+        : path.join(__dirname, '..', 'src', 'commands', 'admin', 'eco-admin.js');
+    const src = fs.readFileSync(p, 'utf8');
     assert.ok(/db\.aiOverview\(\)/.test(src), 'report chưa gọi db.aiOverview()');
     assert.ok(/server_tat_ai/.test(src), 'report chưa hiện danh sách server tắt AI');
     assert.ok(/GLOBAL_DAILY/.test(src), 'report chưa hiện ngân sách chung đã dùng');

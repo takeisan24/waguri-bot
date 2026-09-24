@@ -69,20 +69,22 @@ const today = () => new Date().toISOString().slice(0, 10);
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('boi')
-        .setDescription('Waguri xem bói cho cậu 🔮')
-        .addSubcommand(s => s.setName('hangngay').setDescription('Vận mệnh hôm nay của cậu'))
-        .addSubcommand(s => s.setName('cunghoangdao').setDescription('Tử vi theo cung hoàng đạo')
-            .addStringOption(o => o.setName('cung').setDescription('Cung của cậu').setRequired(true)
+        .setName('fortune')
+        .setNameLocalizations({ vi: 'boi' })
+        .setDescription('Fortune telling and daily horoscope by Waguri 🔮')
+        .setDescriptionLocalizations({ vi: 'Waguri xem bói cho cậu 🔮' })
+        .addSubcommand(s => s.setName('daily').setNameLocalizations({ vi: 'hangngay' }).setDescription('Your fortune today').setDescriptionLocalizations({ vi: 'Vận mệnh hôm nay của cậu' }))
+        .addSubcommand(s => s.setName('zodiac').setNameLocalizations({ vi: 'cunghoangdao' }).setDescription('Horoscope by zodiac sign').setDescriptionLocalizations({ vi: 'Tử vi theo cung hoàng đạo' })
+            .addStringOption(o => o.setName('sign').setNameLocalizations({ vi: 'cung' }).setDescription('Your zodiac sign').setDescriptionLocalizations({ vi: 'Cung của cậu' }).setRequired(true)
                 .addChoices(...ZODIAC.map(z => ({ name: z.name, value: z.id })))))
-        .addSubcommand(s => s.setName('thaydo').setDescription('Thầy đồ phán một quẻ (mỗi lần một khác)')),
+        .addSubcommand(s => s.setName('oracle').setNameLocalizations({ vi: 'thaydo' }).setDescription('A fun fortune telling reading').setDescriptionLocalizations({ vi: 'Thầy đồ phán một quẻ (mỗi lần một khác)' })),
     async execute(interaction) {
         const locale = await getInteractionLanguage(interaction);
         await interaction.deferReply();
         const sub = interaction.options.getSubcommand();
 
-        if (sub === 'cunghoangdao') {
-            const cung = interaction.options.getString('cung');
+        if (sub === 'zodiac' || sub === 'cunghoangdao') {
+            const cung = interaction.options.getString('sign') || interaction.options.getString('cung');
             const z = ZODIAC.find(x => x.id === cung);
             const zName = t(locale, `data.zodiac.${cung}`) || z.name;
             const h = seed(cung + today());
@@ -106,7 +108,7 @@ module.exports = {
             return interaction.editReply({ embeds: [embed] });
         }
 
-        if (sub === 'thaydo') {
+        if (sub === 'oracle' || sub === 'thaydo') {
             const thaydoArr = t(locale, 'commands.boi.thaydo_prophecies') || THAYDO;
             const embed = buildWaguriEmbed(interaction, 'info', {
                 locale,

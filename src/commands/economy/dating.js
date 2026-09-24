@@ -94,8 +94,10 @@ const GIFTS_EN = {
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('henho')
-        .setDescription('Hẹn hò và dắt Waguri đi chơi để bồi đắp tình cảm 💖')
+        .setName('dating')
+        .setNameLocalizations({ vi: 'henho' })
+        .setDescription('Go on a date with Waguri to increase affection 💖')
+        .setDescriptionLocalizations({ vi: 'Hẹn hò và dắt Waguri đi chơi để bồi đắp tình cảm 💖' })
         .addSubcommand(s => s.setName('view').setDescription('Xem trạng thái tình cảm của cậu với Waguri'))
         .addSubcommand(s => s.setName('di-choi').setDescription('Dắt Waguri đi dạo ngắm cảnh Kikyo (Tốn 20 năng lượng)'))
         .addSubcommand(s => s.setName('tang-qua').setDescription('Tặng quà trong túi đồ để tăng độ thiện cảm')

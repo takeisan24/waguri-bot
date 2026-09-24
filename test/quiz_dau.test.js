@@ -19,7 +19,10 @@ const fs = require('fs');
 const path = require('path');
 
 const QUIZ = require('../src/data/quiz');
-const { _norm: norm } = require('../src/commands/fun/dovui.js');
+const dovuiPath = fs.existsSync(path.join(__dirname, '..', 'src', 'commands', 'fun', 'trivia.js'))
+    ? path.join(__dirname, '..', 'src', 'commands', 'fun', 'trivia.js')
+    : path.join(__dirname, '..', 'src', 'commands', 'fun', 'dovui.js');
+const { _norm: norm } = require(dovuiPath);
 
 const CO_DAU = /[àáảãạăằắẳẵặâầấẩẫậđèéẻẽẹêềếểễệìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵ]/i;
 
@@ -70,7 +73,7 @@ test('quiz: mọi biến thể phụ đều chuẩn hoá về chuỗi không r�
 test('dovui: vẫn chuẩn hoá CẢ HAI vế trước khi so', () => {
     // Nếu ai đó bỏ .map(norm), dữ liệu có dấu sẽ không khớp được nữa với người gõ
     // không dấu — và test trên vẫn xanh vì nó tự chuẩn hoá. Nên phải soi thẳng mã.
-    const src = fs.readFileSync(path.join(__dirname, '..', 'src', 'commands', 'fun', 'dovui.js'), 'utf8');
+    const src = fs.readFileSync(dovuiPath, 'utf8');
     assert.match(src, /item\.a\.map\(norm\)/,
         'dovui.js không còn chuẩn hoá bộ đáp án — dữ liệu có dấu sẽ không khớp người gõ không dấu.');
     assert.match(src, /accepted\.includes\(norm\(m\.content\)\)/,

@@ -27,7 +27,15 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.join(__dirname, '..');
-const doc = (...p) => fs.readFileSync(path.join(ROOT, ...p), 'utf8');
+const doc = (...p) => {
+    let target = path.join(ROOT, ...p);
+    if (!fs.existsSync(target)) {
+        const fname = path.basename(path.join(...p));
+        const arc = path.join(ROOT, 'archive', 'commands', fname);
+        if (fs.existsSync(arc)) target = arc;
+    }
+    return fs.readFileSync(target, 'utf8');
+};
 
 /** Cắt thân một hàm `async function <ten>` cho tới dấu `}` ở cột 0. */
 function thanHam(src, ten) {
