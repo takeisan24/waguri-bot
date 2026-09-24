@@ -73,24 +73,20 @@ async function chat(systemPrompt, history, userText, options = {}) {
     const ai = getClient();
     if (!ai) throw new Error('Thiếu GEMINI_API_KEY');
 
-    // Thứ tự dự phòng, xếp theo ĐỘ TIN CẬY ĐO ĐƯỢC trên gói free chứ không theo "model xịn hơn":
-    //   1. model chính (mặc định flash-lite — ~1,4s, chưa lần nào lỗi trong 8/8 lượt thử)
-    //   2. gemini-3.6-flash: nặng hơn, hay 503 — chỉ dùng khi model chính hỏng vì lý do
-    //      KHÔNG PHẢI cạn hạn mức (xem chỗ bắt lỗi bên dưới)
+    // Thứ tự dự phòng, xếp theo ĐỘ TIN CẬY ĐO ĐƯỢC trên gói free:
+    //   1. model chính (mặc định gemini-3.5-flash-lite — ~1,4s, RPD 500 / RPM 15)
+    //   2. gemini-3.1-flash-lite: dòng flash-lite, có túi RPD 500 / RPM 15 ĐỘC LẬP
     //
-    // ĐÃ BỎ `gemini-flash-lite-latest` khỏi chuỗi (2026-08-23). Nó KHÔNG phải cửa lui:
-    // hỏi thẳng API thì `modelVersion` nó trả về đúng `gemini-3.5-flash-lite`, tức cùng
-    // một model dưới hai cái tên, dùng chung một túi hạn mức. Bậc 1 dính 429 thì nó dính
-    // ngay lập tức, chỉ tổ tốn thêm 1,5 giây chờ.
-    //
-    // Bản cũ có `gemini-3.1-pro-preview` ở cuối — model đó có hạn mức **bằng 0** trên gói
-    // free (API trả thẳng `limit: 0`), nên nhánh dự phòng cuối BẢO ĐẢM hỏng, chỉ tổ tốn thêm
-    // 1,5s rồi ném lỗi. Nó còn làm lỗi giới hạn-theo-phút của flash trông như cạn hạn mức
-    // ngày, khiến tôi chẩn đoán sai hôm 2026-08-17.
+    // ĐÃ GỠ `gemini-3.6-flash` (2026-09-24):
+    // Trên gói free, model dòng flash thông thường (3.6 Flash) chỉ có RPD 20 và RPM 5,
+    // lại có pha suy nghĩ (chậm, dễ timeout). Bảng hạn mức thực tế cho thấy nó nhanh chóng
+    // bị đỏ ở mức 21/20, làm nhánh dự phòng tê liệt. Thay bằng `gemini-3.1-flash-lite`
+    // (RPD 500, RPM 15 riêng biệt) giúp hệ thống bền bỉ tối đa.
     const primaryModel = options.model || config.AI.GEMINI_MODEL;
+    const fallbackModel = config.AI?.GEMINI_FALLBACK_MODEL || 'gemini-3.1-flash-lite';
     const candidates = [
         primaryModel,
-        'gemini-3.6-flash'
+        fallbackModel
     ].filter((m, i, self) => m && self.indexOf(m) === i);
 
     let lastError = null;
@@ -98,9 +94,10 @@ async function chat(systemPrompt, history, userText, options = {}) {
     for (let rawModelName of candidates) {
         let modelName = rawModelName;
         if (typeof modelName === 'string') {
-            if (modelName === 'gemini-2.5-flash') modelName = 'gemini-3.6-flash';
-            else if (modelName === 'gemini-2.5-pro') modelName = 'gemini-3.1-pro-preview';
-            else if (modelName.includes('2.5')) modelName = 'gemini-3.6-flash';
+            if (modelName === 'gemini-2.5-flash') modelName = 'gemini-3.5-flash-lite';
+            else if (modelName === 'gemini-2.5-pro') modelName = 'gemini-3.5-flash-lite';
+            else if (modelName.includes('2.5')) modelName = 'gemini-3.5-flash-lite';
+            else if (modelName === 'gemini-3.6-flash') modelName = 'gemini-3.1-flash-lite';
         }
 
         const contents = history.map(m => ({

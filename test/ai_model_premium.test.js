@@ -24,6 +24,7 @@ const assert = require('node:assert');
 // KHÔNG phải danh sách đầy đủ — chỉ những model dự án từng trỏ tới.
 const HAN_MUC = {
     'gemini-3.5-flash-lite': { rpm: 15, rpd: 500 },
+    'gemini-3.1-flash-lite': { rpm: 15, rpd: 500 },
     'gemini-flash-lite-latest': { rpm: 15, rpd: 500 }, // bí danh của 3.5-flash-lite
     'gemini-3.6-flash': { rpm: 5, rpd: 20 },
     'gemini-2.5-flash': { rpm: 5, rpd: 20 },
