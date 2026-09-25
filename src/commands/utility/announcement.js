@@ -117,6 +117,9 @@ function resolveAnnouncementBanner(raw) {
     if (lower === 'event' || lower === 'trungthu' || lower === 'festival') {
         return config.PRESET_BANNERS?.MID_AUTUMN;
     }
+    if (lower === 'blush' || lower === 'cute' || lower === 'ngai') {
+        return config.PRESET_BANNERS?.BLUSH;
+    }
     if (lower === 'update' || lower === 'capnhat' || lower === 'pastel') {
         return config.PRESET_BANNERS?.UPDATE;
     }
@@ -132,7 +135,7 @@ function resolveAnnouncementBanner(raw) {
                 .setStyle(TextInputStyle.Short)
                 .setRequired(false)
                 .setMaxLength(300)
-                .setPlaceholder('update, bakery, study, trungthu hoặc link URL');
+                .setPlaceholder('update, bakery, study, event, cute hoặc link URL');
 
             const ctaInput = new TextInputBuilder()
                 .setCustomId('ann_cta')

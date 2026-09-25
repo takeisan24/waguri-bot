@@ -79,6 +79,7 @@ module.exports = {
         BAKERY: 'https://raw.githubusercontent.com/takeisan24/waguri-bot/master/web/public/assets/banners/banner_bakery.jpg',
         STUDY: 'https://raw.githubusercontent.com/takeisan24/waguri-bot/master/web/public/assets/banners/banner_study.jpg',
         MID_AUTUMN: 'https://raw.githubusercontent.com/takeisan24/waguri-bot/master/web/public/assets/banners/banner_mid_autumn.jpg',
+        BLUSH: 'https://raw.githubusercontent.com/takeisan24/waguri-bot/master/web/public/assets/banners/banner_blush.jpg',
     },
 
     LEVELING: {
