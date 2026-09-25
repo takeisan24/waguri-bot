@@ -73,6 +73,14 @@ module.exports = {
     // Ảnh/GIF Waguri theo trạng thái — nạp động từ file mediaPool.json
     WAGURI_IMAGES: loadedMediaPool,
 
+    // Bộ Preset Banners 16:9 chuẩn thương hiệu cho thông báo, sự kiện và embed
+    PRESET_BANNERS: {
+        UPDATE: 'https://raw.githubusercontent.com/takeisan24/waguri-bot/master/web/public/assets/banners/banner_update.jpg',
+        BAKERY: 'https://raw.githubusercontent.com/takeisan24/waguri-bot/master/web/public/assets/banners/banner_bakery.jpg',
+        STUDY: 'https://raw.githubusercontent.com/takeisan24/waguri-bot/master/web/public/assets/banners/banner_study.jpg',
+        MID_AUTUMN: 'https://raw.githubusercontent.com/takeisan24/waguri-bot/master/web/public/assets/banners/banner_mid_autumn.jpg',
+    },
+
     LEVELING: {
         BASE: 100, // tổng EXP để đạt level L = BASE * (L-1)^2
     },

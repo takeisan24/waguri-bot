@@ -10,6 +10,7 @@ const {
     PermissionFlagsBits 
 } = require('discord.js');
 const db = require('../../database.js');
+const config = require('../../config');
 const { isOwner } = require('../../lib/owner');
 const { buildWaguriEmbed } = require('../../lib/embed');
 const { getInteractionLanguage, t } = require('../../lib/i18n');
@@ -104,13 +105,34 @@ module.exports = {
                     ? '✨ Bakery:\n- Added VIP orders...\n💼 Market:\n- MurmurMix32 hash upgrade...' 
                     : '✨ Góc Tiệm Bánh Nhỏ:\n- Thêm đơn VIP khách quen...\n💼 Góc Chợ:\n- Nâng cấp bộ trộn MurmurMix32...');
 
+function resolveAnnouncementBanner(raw) {
+    if (!raw) return config.PRESET_BANNERS?.UPDATE;
+    const lower = raw.trim().toLowerCase();
+    if (lower === 'bakery' || lower === 'tiembanh' || lower === 'farm') {
+        return config.PRESET_BANNERS?.BAKERY;
+    }
+    if (lower === 'study' || lower === 'lofi' || lower === 'hocbai') {
+        return config.PRESET_BANNERS?.STUDY;
+    }
+    if (lower === 'event' || lower === 'trungthu' || lower === 'festival') {
+        return config.PRESET_BANNERS?.MID_AUTUMN;
+    }
+    if (lower === 'update' || lower === 'capnhat' || lower === 'pastel') {
+        return config.PRESET_BANNERS?.UPDATE;
+    }
+    if (/^https?:\/\/.+/i.test(raw)) {
+        return raw.trim();
+    }
+    return config.PRESET_BANNERS?.UPDATE;
+}
+
             const imageInput = new TextInputBuilder()
                 .setCustomId('ann_image')
-                .setLabel(isEn ? 'Image / GIF URL (Optional)' : 'Link Ảnh / GIF minh họa (Tùy chọn)')
+                .setLabel(isEn ? 'Banner Preset / Image URL (Optional)' : 'Banner Preset / Link ảnh (Tùy chọn)')
                 .setStyle(TextInputStyle.Short)
                 .setRequired(false)
                 .setMaxLength(300)
-                .setPlaceholder('https://... (URL ảnh GIF)');
+                .setPlaceholder('update, bakery, study, trungthu hoặc link URL');
 
             const ctaInput = new TextInputBuilder()
                 .setCustomId('ann_cta')
@@ -170,8 +192,10 @@ module.exports = {
                 description: content
             });
 
-            if (imageUrl && /^https?:\/\/.+/i.test(imageUrl)) {
-                embed.setImage(imageUrl);
+            // Tự động giải quyết Preset Banner hoặc URL người dùng nhập
+            const finalBanner = resolveAnnouncementBanner(imageUrl);
+            if (finalBanner) {
+                embed.setImage(finalBanner);
             }
             embed.setTimestamp();
             embed.setFooter({
