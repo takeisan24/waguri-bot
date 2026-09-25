@@ -1,6 +1,7 @@
 "use client";
 
 import { useLanguage } from "./LanguageProvider";
+import UserAvatar from "./UserAvatar";
 
 type Review = { name: string; handle?: string; text: string; avatar?: string };
 
@@ -39,12 +40,7 @@ export default function Testimonials() {
             <div key={r.name} className="glass-panel rounded-2xl p-5 space-y-3 border border-pink-300/10">
               <p className="text-slate-300 text-sm leading-relaxed">“{r.text}”</p>
               <div className="flex items-center gap-3 pt-3 border-t border-pink-300/10">
-                {r.avatar ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={r.avatar} alt={r.name} width={32} height={32} className="rounded-full" />
-                ) : (
-                  <span className="w-8 h-8 rounded-full bg-pink-300/20" />
-                )}
+                <UserAvatar src={r.avatar} alt={r.name} size={32} />
                 <div>
                   <p className="text-sm font-bold text-white">{r.name}</p>
                   {r.handle ? <p className="text-xs text-slate-500">{r.handle}</p> : null}

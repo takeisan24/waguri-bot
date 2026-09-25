@@ -208,8 +208,8 @@ export default async function Wiki() {
                 ["#kiem-tien", "💼 Earning & Energy"],
                 ["#cua-hang", "🏪 Store & Buffs"],
                 ["#minigame", "🎲 Minigames"],
-                ["#nuoi-heo", "🐷 Pig Farming"],
-                ["#trong-cay", "🌱 Plant Farming"],
+                ["#tiem-banh", "🍰 Gekka Bakery"],
+                ["#nong-trai-farm", "🌱 Kikyo Farm"],
                 ["#che-tao", "🔨 Crafting"],
                 ["#nong-trai", "🔁 Farm Loop"],
                 ["#he-giam", "🚓 Jail System"],
@@ -244,7 +244,7 @@ export default async function Wiki() {
             <CmdList
               items={[
                 { c: "/work /fish /mine /chop", d: "various ways to earn coins (consumes energy)" },
-                { c: "/nghingoi", d: "sleep to restore full energy (cooldown applies)" },
+                { c: "/rest · w!ngu", d: "sleep to restore 100% full energy (cooldown applies)" },
                 { c: "/eat <item>", d: "consume food to restore energy or get income buffs" },
                 { c: "/hospital", d: "fully restore health (costs 10% of total wealth)" },
                 { c: "/jobs", d: "change jobs for higher salary when leveling up" },
@@ -312,43 +312,34 @@ export default async function Wiki() {
             />
           </Card>
 
-          <Card id="nuoi-heo" title="Pig Raising 🐷" emoji="🐷">
+          <Card id="tiem-banh" title="Gekka Bakery 🍰" emoji="🍰">
             <p>
-              Cycle: <strong>buy &rarr; feed &rarr; wash &rarr; sleep &rarr; feed again (matures) &rarr; sell</strong>. Each action
-              is spaced ~15 minutes apart; neglecting pigs for over 4 hours makes them sick. Selling pigs yields <strong>Pork</strong> (inventory item){" "}
-              to <code>/eat</code> for energy or <code>/store sell</code> for money. Rarity increases sell value (2,000 to 50,000 for legendary Hologram Pig).
+              Open a pastry shop at <strong>Level 3 + 3,000 coins</strong>. Your bakery passively bakes cakes, creates VIP catering orders, and generates steady coin income. Hire staff and decorate your shop to boost baking speed!
             </p>
             <CmdList
               items={[
-                { c: "/heo mua · w!muaheo", d: "buy a piglet (1,000, yields 1 free feed)" },
-                { c: "/heo an · w!heoan", d: "feed (1st free, 2nd costs 500 -> matures)" },
-                { c: "/heo tam · w!tamheo [@user]", d: "wash pig (or help wash someone else's pig)" },
-                { c: "/heo ngu · w!heongu", d: "put pig to sleep" },
-                { c: "/heo ban · w!banheo", d: "process & sell mature pig" },
-                { c: "/heo chuabenh · w!chuabenh", d: "cure sick pig (1,000)" },
-                { c: "/heo trom · w!tromheo @user", d: "steal someone else's mature pig (risky!)" },
-                { c: "/heo box · w!pigbox [@user]", d: "open/gift lucky Pigbox (2,400, max 10/day)" },
+                { c: "/bakery view · w!tiembanh xem", d: "view bakery status, pending coins & reputation" },
+                { c: "/bakery open · w!tiembanh mo", d: "open Gekka Bakery (Lv.3 + 3,000 coins)" },
+                { c: "/bakery stock · w!nhapnl", d: "stock wheat & strawberries from farm into oven" },
+                { c: "/bakery collect · w!thutien", d: "collect passive bakery profits" },
+                { c: "/bakery orders · w!donhang", d: "check daily VIP customer orders" },
+                { c: "/bakery deliver · w!giaodon", d: "deliver catering orders for coins, EXP & reputation" },
+                { c: "/bakery upgrade · w!nangcaptiem", d: "upgrade bakery level for higher capacity" },
               ]}
             />
           </Card>
 
-          <Card id="trong-cay" title="Plant Cultivation 🌱" emoji="🌱">
+          <Card id="nong-trai-farm" title="Kikyo Farm 🌱" emoji="🌱">
             <p>
-              Cycle: <strong>buy seed &rarr; water 3 times (every 3 hours) &rarr; mature &rarr; harvest (within 1 hour)</strong>.
-              Fertilize or ask others to water to speed up. Neglecting watering for over 5 hours kills the plant (requires revive). Harvesting yields{" "}
-              <strong>fruits</strong> (<code>/eat</code> / <code>/store sell</code>) or <strong>flowers</strong> (<code>/store sell</code>).
-              Leaving it mature for over 1.5h allows others to steal; over 4h bugs destroy the harvest.
+              Plant crops, water them, and harvest ingredients like wheat and berries for Gekka Bakery or direct selling at the commodity market!
             </p>
             <CmdList
               items={[
-                { c: "/trongcay muagiong · w!muagiong", d: "buy seed & plant (500)" },
-                { c: "/trongcay tuoi · w!tuoinuoc [@user]", d: "water plant (or help water others' plants)" },
-                { c: "/trongcay bonphan · w!bonphan", d: "fertilize to add 1 water step instantly (200)" },
-                { c: "/trongcay thuhoach · w!thuhoach", d: "harvest mature crop" },
-                { c: "/trongcay hoisinh · w!hoisinh", d: "revive dead crop (1,000)" },
-                { c: "/trongcay phacay · w!phacay", d: "destroy current plant to sow new seed" },
-                { c: "/trongcay trom · w!trom @user", d: "steal someone else's mature crop (risky!)" },
-                { c: "/trongcay box · w!plantbox [@user]", d: "open/gift lucky Plantbox (240, max 10/day)" },
+                { c: "/farm info · w!farm xem", d: "check your farm plots & crop status" },
+                { c: "/farm plant · w!farm gieo", d: "plant seeds (wheat, strawberry, potato...)" },
+                { c: "/farm water · w!farm tuoi", d: "water your crops to accelerate growth" },
+                { c: "/farm harvest · w!farm thu", d: "harvest mature crops into your inventory" },
+                { c: "/farm steal · w!farm trom", d: "sneak into neighboring farms to steal unharvested crops" },
               ]}
             />
           </Card>
@@ -500,8 +491,8 @@ export default async function Wiki() {
                 ["#kiem-tien", "💼 Kiếm tiền"],
                 ["#cua-hang", "🏪 Cửa hàng & Buff"],
                 ["#minigame", "🎲 Minigame"],
-                ["#nuoi-heo", "🐷 Nuôi heo"],
-                ["#trong-cay", "🌱 Trồng cây"],
+                ["#tiem-banh", "🍰 Tiệm bánh Gekka"],
+                ["#nong-trai-farm", "🌱 Nông trại Kikyo"],
                 ["#che-tao", "🔨 Chế tạo"],
                 ["#nong-trai", "🔁 Nông trại"],
                 ["#he-giam", "🚓 Hệ giam"],
@@ -536,7 +527,7 @@ export default async function Wiki() {
             <CmdList
               items={[
                 { c: "/work /fish /mine /chop", d: "các cách kiếm tiền (tốn năng lượng)" },
-                { c: "/nghingoi", d: "ngủ hồi đầy năng lượng (có thời gian chờ)" },
+                { c: "/rest · w!ngu", d: "đi ngủ hồi đầy 100% năng lượng (có thời gian chờ)" },
                 { c: "/eat <món>", d: "ăn đồ để hồi năng lượng hoặc nhận buff" },
                 { c: "/hospital", d: "hồi đầy sức khỏe (tốn 10% tài sản)" },
                 { c: "/jobs", d: "đổi nghề để lương cao hơn khi lên cấp" },
@@ -604,44 +595,34 @@ export default async function Wiki() {
             />
           </Card>
 
-          <Card id="nuoi-heo" title="Nuôi heo 🐷" emoji="🐷">
+          <Card id="tiem-banh" title="Tiệm bánh Gekka 🍰" emoji="🍰">
             <p>
-              Chu trình: <strong>mua → cho ăn → tắm → cho ngủ → cho ăn lần 2 (trưởng thành) → bán</strong>. Mỗi bước chăm
-              sóc cách nhau ~15 phút; bỏ bê quá 4 tiếng heo sẽ bệnh. Bán heo cho ra <strong>Thịt Heo</strong> (vào kho){" "}
-              <code>/eat</code> hồi sức hoặc <code>/store sell</code> lấy tiền. Heo càng hiếm giá càng cao (2.000 → 50.000 với
-              Heo Hologram huyền thoại).
+              Mở tiệm bánh từ <strong>Cấp 3 + 3.000 VNĐ</strong>. Tiệm bánh tự động làm bánh ngọt, nhận đơn hàng tiệc VIP, và tạo dòng thu nhập thụ động đều đặn. Cậu có thể thuê thêm nhân viên và trang trí tiệm để tăng tốc độ nướng bánh!
             </p>
             <CmdList
               items={[
-                { c: "/heo mua · w!muaheo", d: "mua heo con (1.000, tặng 1 cám)" },
-                { c: "/heo an · w!heoan", d: "cho ăn (lần 1 free, lần 2 tốn 500 → trưởng thành)" },
-                { c: "/heo tam · w!tamheo [@ai]", d: "tắm cho heo (hoặc tắm hộ người khác)" },
-                { c: "/heo ngu · w!heongu", d: "cho heo ngủ" },
-                { c: "/heo ban · w!banheo", d: "chế biến & bán heo trưởng thành" },
-                { c: "/heo chuabenh · w!chuabenh", d: "chữa bệnh cho heo (1.000)" },
-                { c: "/heo trom · w!tromheo @ai", d: "trộm heo trưởng thành của người khác (rủi ro!)" },
-                { c: "/heo box · w!pigbox [@ai]", d: "mở/tặng hộp may mắn Pigbox (2.400, tối đa 10 lần/ngày)" },
+                { c: "/bakery view · w!tiembanh xem", d: "xem tình trạng tiệm, tiền chờ thu & điểm uy tín" },
+                { c: "/bakery open · w!tiembanh mo", d: "mở tiệm bánh Gekka (Cấp 3 + 3.000 VNĐ)" },
+                { c: "/bakery stock · w!nhapnl", d: "nhập lúa mì & dâu tây từ nông trại vào lò nướng" },
+                { c: "/bakery collect · w!thutien", d: "thu lợi nhuận thụ động tích lũy của tiệm" },
+                { c: "/bakery orders · w!donhang", d: "xem đơn đặt hàng VIP hằng ngày từ thực khách" },
+                { c: "/bakery deliver · w!giaodon", d: "giao đơn nhận tiền, EXP & điểm uy tín tiệm" },
+                { c: "/bakery upgrade · w!nangcaptiem", d: "nâng cấp tiệm để tăng sức chứa nguyên liệu" },
               ]}
             />
           </Card>
 
-          <Card id="trong-cay" title="Trồng cây 🌱" emoji="🌱">
+          <Card id="nong-trai-farm" title="Nông trại Kikyo 🌱" emoji="🌱">
             <p>
-              Chu trình: <strong>mua giống → tưới 3 lần (mỗi lần cách 3 tiếng) → trưởng thành → thu hoạch (sau 1 giờ)</strong>.
-              Bón phân hoặc nhờ người tưới hộ để nhanh hơn. Bón tưới quá 5 tiếng cây chết (cần hồi sinh). Thu hoạch ra{" "}
-              <strong>trái cây</strong> (<code>/eat</code> hồi sức / <code>/store sell</code>) hoặc <strong>hoa</strong> (<code>/store sell</code>).
-              Để mặc quá 1h30 người khác có thể trộm; quá 4 tiếng bị sâu bọ phá mất trắng.
+              Trồng trọt các loại nông sản, tưới nước và thu hoạch lúa mì, dâu tây để cung cấp nguyên liệu làm bánh cho Tiệm bánh Gekka hoặc bán ra chợ nông sản!
             </p>
             <CmdList
               items={[
-                { c: "/trongcay muagiong · w!muagiong", d: "mua giống & trồng (500)" },
-                { c: "/trongcay tuoi · w!tuoinuoc [@ai]", d: "tưới nước (hoặc tưới hộ người khác)" },
-                { c: "/trongcay bonphan · w!bonphan", d: "bón phân để cây thêm 1 nước ngay (200)" },
-                { c: "/trongcay thuhoach · w!thuhoach", d: "thu hoạch cây trưởng thành" },
-                { c: "/trongcay hoisinh · w!hoisinh", d: "hồi sinh cây đã chết (1.000)" },
-                { c: "/trongcay phacay · w!phacay", d: "phá cây hiện tại để trồng cây mới" },
-                { c: "/trongcay trom · w!trom @ai", d: "trộm cây trưởng thành của người khác (rủi ro!)" },
-                { c: "/trongcay box · w!plantbox [@ai]", d: "mở/tặng hộp may mắn Plantbox (240, tối đa 10 lần/ngày)" },
+                { c: "/farm info · w!farm xem", d: "kiểm tra thửa ruộng & tình trạng cây trồng" },
+                { c: "/farm plant · w!farm gieo", d: "gieo hạt giống (lúa mì, dâu tây, khoai tây...)" },
+                { c: "/farm water · w!farm tuoi", d: "tưới nước để cây phát triển nhanh hơn" },
+                { c: "/farm harvest · w!farm thu", d: "thu hoạch nông sản chín về kho đồ" },
+                { c: "/farm steal · w!farm trom", d: "rình trộm nông sản chưa thu hoạch của hàng xóm" },
               ]}
             />
           </Card>

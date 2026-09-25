@@ -11,6 +11,7 @@ import EventBanner from "../../components/EventBanner";
 import SiteHeader from "../../components/SiteHeader";
 import { getLocaleServer, t } from "../../lib/i18n";
 import { ghiLoi } from "../../lib/ghiLoi";
+import UserAvatar from "../../components/UserAvatar";
 
 export const dynamic = "force-dynamic";
 
@@ -50,6 +51,9 @@ export default async function Dashboard() {
   const { data: row, error: loi1 } = await admin.from("users").select("*").eq("user_id", id).single();
   ghiLoi("dashboard", loi1);
 
+  const displayAvatar = row?.avatar || avatar;
+  const displayUsername = username || row?.username || "Người chơi";
+
   let jobName: string | null = null;
   let clanName: string | null = null;
   let achievements = 0;
@@ -80,21 +84,24 @@ export default async function Dashboard() {
   const eUpdatedAt = row?.energy_updated_at ? new Date(row.energy_updated_at).getTime() : nowMs;
   const energy = Math.max(0, Math.min(ENERGY_MAX, storedEnergy + Math.floor((nowMs - eUpdatedAt) / 60000)));
 
-  // Trạng thái nông trại / thú cưng
-  type PigRow = { stage?: string; tier?: number; sick?: boolean };
+  // Trạng thái nông trại / tiệm bánh / thú cưng
+  type BakeryRow = { level?: number; likes_count?: number; staff?: unknown[]; reputation?: number };
   type PlantRow = { stage?: string; type?: string };
   // `ascended_to` là bậc ĐÃ LÀM LỄ — thiếu nó thì dashboard tính bậc thấp hơn bot.
   type PetRow = { name?: string; species?: string; exp?: number; ascended_to?: string | null };
-  let pig: PigRow | null = null;
+  let bakery: BakeryRow | null = null;
   let plant: PlantRow | null = null;
   let pet: PetRow | null = null;
   if (row) {
-    const [pg, pl, pt] = await Promise.all([
-      admin.from("pigs").select("*").eq("user_id", id).maybeSingle(),
+    const [bk, pl, pt] = await Promise.all([
+      admin.from("bakeries").select("level, likes_count, staff, reputation").eq("user_id", id).maybeSingle(),
       admin.from("plants").select("*").eq("user_id", id).maybeSingle(),
       admin.from("user_pets").select("*").eq("user_id", id).maybeSingle(),
     ]);
-    pig = (pg.data as unknown as PigRow) ?? null;
+    ghiLoi("dashboard/bakery", bk.error);
+    ghiLoi("dashboard/plant", pl.error);
+    ghiLoi("dashboard/pet", pt.error);
+    bakery = (bk.data as unknown as BakeryRow) ?? null;
     plant = (pl.data as unknown as PlantRow) ?? null;
     pet = (pt.data as unknown as PetRow) ?? null;
   }
@@ -137,13 +144,15 @@ export default async function Dashboard() {
         <EventBanner />
         {/* Header user */}
         <div className="glass-panel rounded-3xl p-7 flex flex-col sm:flex-row items-center gap-5 border border-pink-300/20">
-          {avatar ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={avatar} alt={username} width={80} height={80} className="rounded-full border-2 border-pink-300/40" />
-          ) : null}
+          <UserAvatar
+            src={displayAvatar}
+            alt={displayUsername}
+            size={80}
+            className="w-20 h-20 rounded-full border-2 border-pink-300/40 object-cover shrink-0"
+          />
           <div className="flex-1 text-center sm:text-left">
             <h1 className="text-2xl font-black text-white">
-              {username} {isPremium ? "💎" : ""}
+              {displayUsername} {isPremium ? "💎" : ""}
             </h1>
             <p className="text-pink-300 text-sm mt-1">
               {jobName || t("dashboard.default_job", locale)} · Lv.{prog.level}
@@ -321,13 +330,21 @@ export default async function Dashboard() {
               </Link>
             </div>
 
-            {/* Nông trại & thú cưng */}
+            {/* Nông trại & tiệm bánh */}
             <div className="glass-panel rounded-3xl p-6 space-y-3 border border-pink-300/10">
               <h2 className="text-lg font-extrabold text-white">{t("dashboard.farm_pets_title", locale)}</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                 <div className="rounded-2xl bg-pink-500/5 px-4 py-3">
-                  <p className="text-xs text-pink-300/80">{t("dashboard.pig_label", locale)}</p>
-                  <p className="text-white font-semibold">{pig ? (pig.sick ? t("dashboard.pig_sick", locale) : t("dashboard.pig_stage", locale, { stage: pig.stage ?? "" })) : t("dashboard.pig_none", locale)}</p>
+                  <p className="text-xs text-pink-300/80">{t("dashboard.bakery_label", locale)}</p>
+                  <p className="text-white font-semibold">
+                    {bakery ? (
+                      <Link href={`/tiem/${id}`} className="hover:text-pink-300 hover:underline">
+                        {t("dashboard.bakery_status", locale, { level: bakery.level ?? 1, likes: bakery.likes_count ?? 0 })}
+                      </Link>
+                    ) : (
+                      t("dashboard.bakery_none", locale)
+                    )}
+                  </p>
                 </div>
                 <div className="rounded-2xl bg-pink-500/5 px-4 py-3">
                   <p className="text-xs text-pink-300/80">{t("dashboard.plant_label", locale)}</p>

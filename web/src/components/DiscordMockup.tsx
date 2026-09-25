@@ -113,13 +113,13 @@ export default function DiscordMockup() {
         const hits = roll.filter((s) => s === "🦀").length;
         const win = hits > 0;
         response = mk(win ? "#8de0a6" : "#ff8e9e", M.baucua(win, roll.join("  "), hits, fmt(hits * 50000)), win ? WIN_GIF : LOSE_GIF);
-      } else if (command === "/heo") {
-        const age = Math.floor(Math.random() * 20) + 5;
-        const weight = (age * 1.3 + 2).toFixed(1);
-        const value = Math.floor(age * 1500) + 10000;
-        response = mk("#ffb7c5", M.heo(age, weight, fmt(value)), "https://media.tenor.com/saOAfF_zx6UAAAAM/kaoruko-waguri-the-fragrant-flower-blooms-with-dignity.gif");
-      } else if (command === "/amlich") {
-        response = mk("#d8b4fe", M.amlich(now.toLocaleDateString(locale === "en" ? "en-US" : "vi-VN")), "https://media.tenor.com/WMRHrfBlNmEAAAAM/kaoruko-waguri-waguri-kaoruko.gif");
+      } else if (command === "/bakery") {
+        const level = Math.floor(Math.random() * 3) + 1;
+        const income = Math.floor(Math.random() * 5000) + 1200;
+        const rep = level * 10 + Math.floor(Math.random() * 15);
+        response = mk("#ff9eaa", M.bakery(level, fmt(income), rep), "https://media.tenor.com/saOAfF_zx6UAAAAM/kaoruko-waguri-the-fragrant-flower-blooms-with-dignity.gif");
+      } else if (command === "/lunar" || command === "/amlich") {
+        response = mk("#d8b4fe", M.lunar(now.toLocaleDateString(locale === "en" ? "en-US" : "vi-VN")), "https://media.tenor.com/WMRHrfBlNmEAAAAM/kaoruko-waguri-waguri-kaoruko.gif");
       } else {
         response = mk("#ff9eaa", M.jobs, "https://media.tenor.com/WMRHrfBlNmEAAAAM/kaoruko-waguri-waguri-kaoruko.gif");
       }
@@ -341,7 +341,7 @@ export default function DiscordMockup() {
           {/* Nút chạy thử lệnh */}
           <div className="bg-[#383a40] px-4 py-3 flex flex-wrap items-center gap-2 select-none">
             <span className="text-xs text-[#b5bac1] font-semibold mr-1">{M.tryPrefix}</span>
-            {["/ask", "/work", "/jobs", "/taixiu", "/daily", "/baucua", "/heo", "/amlich"].map((cmd) => (
+            {["/ask", "/work", "/jobs", "/bakery", "/daily", "/taixiu", "/baucua", "/lunar"].map((cmd) => (
               <button
                 key={cmd}
                 onClick={() => handleCommandClick(cmd)}

@@ -9,6 +9,7 @@ import { createAdminClient } from "../../lib/supabase/admin";
 import { getDiscordIdentity } from "../../lib/discord";
 import { getLocaleServer, t } from "../../lib/i18n";
 import { ghiLoi } from "../../lib/ghiLoi";
+import UserAvatar from "../../components/UserAvatar";
 
 export async function generateMetadata() {
   const locale = await getLocaleServer();
@@ -44,12 +45,23 @@ async function getBoard(type: "wealth" | "level" | "bakery", guild?: string): Pr
       // RPC còn lọc `profile_public` và `exclude_from_economy`, thứ truy vấn thẳng không có.
       const { data, error } = await admin.rpc("get_bakery_leaderboard", { p_limit: 10, p_offset: 0 });
       if (error) console.error("[leaderboard] bakery RPC lỗi:", error.message);
-      if (data) {
+      if (data && data.length > 0) {
+        const userIds = data.map((r: { user_id: string }) => r.user_id);
+        const { data: usersInfo, error: uLoi } = await admin
+          .from("users")
+          .select("user_id, username, avatar")
+          .in("user_id", userIds);
+        ghiLoi("leaderboard", uLoi);
+        const userMap = new Map(
+          (usersInfo || []).map((u: { user_id: string; username: string | null; avatar: string | null }) => [u.user_id, u])
+        );
+
         for (const r of data) {
+          const u = userMap.get(r.user_id);
           rows.push({
             id: r.user_id,
-            username: `Chủ tiệm #${r.user_id.slice(-4)}`,
-            avatar: null,
+            username: u?.username || `Chủ tiệm #${r.user_id.slice(-4)}`,
+            avatar: u?.avatar || null,
             value: Number(r.bakery_score || 0),
             level: r.level || 1,
             likes: r.likes_count || 0,
@@ -164,12 +176,7 @@ function Board({
                 className="flex items-center gap-3 rounded-xl px-3 py-2 hover:bg-pink-500/5 transition-colors"
               >
                 <span className="w-7 text-center font-bold text-pink-300">{MEDALS[i] || i + 1}</span>
-                {r.avatar ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={r.avatar} alt={r.username} width={32} height={32} className="rounded-full" />
-                ) : (
-                  <span className="w-8 h-8 rounded-full bg-[#241a2e]" />
-                )}
+                <UserAvatar src={r.avatar} alt={r.username} size={32} />
                 <span className="flex-1 truncate text-slate-200">{r.username}</span>
                 <span className="font-bold text-white">
                   {type === "bakery" ? (

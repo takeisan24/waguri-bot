@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "../../../lib/supabase/server";
 import { createAdminClient } from "../../../lib/supabase/admin";
 import { BOT_API } from "../../../lib/botApi";
+import { getDiscordIdentity } from "../../../lib/discord";
 
 // Đích redirect sau khi Supabase xử lý OAuth Discord -> đổi code lấy phiên.
 export async function GET(request: Request) {
@@ -41,6 +42,39 @@ export async function GET(request: Request) {
               const admin = createAdminClient();
               await admin.auth.admin.updateUserById(uid, { app_metadata: { guilds: mutual } });
             }
+          }
+        }
+        // Đồng bộ Discord ID, tên và avatar vào bảng public.users để BXH & trang cá nhân hiển thị ảnh thật
+        const { id: discordId, username, avatar } = getDiscordIdentity(data.user);
+        let liveAvatar = avatar;
+        let liveUsername = username;
+        if (token) {
+          try {
+            const meRes = await fetch("https://discord.com/api/users/@me", {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            if (meRes.ok) {
+              const meData = await meRes.json();
+              if (meData.avatar) {
+                const ext = meData.avatar.startsWith("a_") ? "gif" : "png";
+                liveAvatar = `https://cdn.discordapp.com/avatars/${meData.id}/${meData.avatar}.${ext}?size=128`;
+              }
+              if (meData.global_name || meData.username) {
+                liveUsername = meData.global_name || meData.username;
+              }
+            }
+          } catch {
+            /* best-effort */
+          }
+        }
+        if (discordId) {
+          const admin = createAdminClient();
+          const updatePayload: { username?: string; avatar?: string } = {};
+          if (liveUsername) updatePayload.username = liveUsername;
+          if (liveAvatar) updatePayload.avatar = liveAvatar;
+          if (Object.keys(updatePayload).length > 0) {
+            const { error: syncErr } = await admin.from("users").update(updatePayload).eq("user_id", discordId);
+            if (syncErr) console.error("[auth] sync user error:", syncErr.message);
           }
         }
       } catch {

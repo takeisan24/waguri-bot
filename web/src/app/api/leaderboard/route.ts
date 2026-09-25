@@ -37,11 +37,22 @@ export async function GET(request: Request) {
       if (error) console.error("[leaderboard] bakery RPC lỗi:", error.message);
 
       if (data && data.length > 0) {
+        const userIds = data.map((r: { user_id: string }) => r.user_id);
+        const { data: usersInfo, error: bakeryUsersErr } = await admin
+          .from("users")
+          .select("user_id, username, avatar")
+          .in("user_id", userIds);
+        if (bakeryUsersErr) console.error("[leaderboard] bakery users error:", bakeryUsersErr.message);
+        const userMap = new Map(
+          (usersInfo || []).map((u: { user_id: string; username: string | null; avatar: string | null }) => [u.user_id, u])
+        );
+
         for (const r of data) {
+          const u = userMap.get(r.user_id);
           rows.push({
             id: r.user_id,
-            username: `Chủ tiệm #${r.user_id.slice(-4)}`,
-            avatar: null,
+            username: u?.username || `Chủ tiệm #${r.user_id.slice(-4)}`,
+            avatar: u?.avatar || null,
             value: Number(r.bakery_score || 0),
             level: r.level || 1,
             likes: r.likes_count || 0,

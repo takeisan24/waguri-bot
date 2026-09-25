@@ -8,6 +8,7 @@ import { affectionTier } from "../../../lib/game";
 import { getLocaleServer, t } from "../../../lib/i18n";
 import { createAdminClient } from "../../../lib/supabase/admin";
 import { ghiLoi } from "../../../lib/ghiLoi";
+import UserAvatar from "../../../components/UserAvatar";
 
 const API = BOT_API;
 const INVITE_URL =
@@ -214,25 +215,21 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
               <div className="space-y-6">
                 {/* Header card */}
                 <div className="glass-panel rounded-3xl p-8 flex flex-col sm:flex-row items-center gap-6 border border-pink-300/20">
-                  {prof.avatar ? (
-                    <div className="relative group flex-shrink-0">
-                      {prof.prestige && prof.prestige > 0 ? (
-                        <div className={`absolute -inset-1 rounded-full blur-sm opacity-80 group-hover:opacity-100 transition-opacity animate-pulse bg-gradient-to-r ${
-                          prof.prestige === 1 ? 'from-amber-400 to-yellow-500' :
-                          prof.prestige === 2 ? 'from-cyan-400 via-pink-500 to-purple-600' :
-                          'from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500 bg-[length:400%_400%]'
-                        }`} />
-                      ) : null}
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={prof.avatar}
-                        alt={prof.username}
-                        width={96}
-                        height={96}
-                        className="relative rounded-full border-2 border-pink-300/40 bg-[#0d0812] z-10"
-                      />
-                    </div>
-                  ) : null}
+                  <div className="relative group flex-shrink-0">
+                    {prof.prestige && prof.prestige > 0 ? (
+                      <div className={`absolute -inset-1 rounded-full blur-sm opacity-80 group-hover:opacity-100 transition-opacity animate-pulse bg-gradient-to-r ${
+                        prof.prestige === 1 ? 'from-amber-400 to-yellow-500' :
+                        prof.prestige === 2 ? 'from-cyan-400 via-pink-500 to-purple-600' :
+                        'from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500 bg-[length:400%_400%]'
+                      }`} />
+                    ) : null}
+                    <UserAvatar
+                      src={prof.avatar}
+                      alt={prof.username}
+                      size={96}
+                      className="relative rounded-full border-2 border-pink-300/40 bg-[#0d0812] z-10 w-24 h-24 object-cover"
+                    />
+                  </div>
                   <div className="flex-1 text-center sm:text-left">
                     {prof.title ? (
                       <p className="text-xs font-semibold mb-0.5" style={prof.color ? { color: prof.color } : undefined}>

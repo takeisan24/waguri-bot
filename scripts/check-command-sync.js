@@ -36,6 +36,7 @@ const SUBCOMMAND_GROUP = 2;
 // Chính xác hơn regex (bắt được cả subcommand lồng trong group), và là đúng thứ
 // index.js gửi lên Discord API.
 const surface = {};
+const ownerCmds = new Set();
 const loadErrors = [];
 for (const cat of fs.readdirSync(cmdRoot)) {
     const dir = path.join(cmdRoot, cat);
@@ -50,6 +51,7 @@ for (const cat of fs.readdirSync(cmdRoot)) {
         }
         if (!cmd?.data?.toJSON) continue;
         const json = cmd.data.toJSON();
+        if (cat === 'owner') ownerCmds.add(json.name);
         const subs = [];
         for (const opt of json.options || []) {
             if (opt.type === SUBCOMMAND) subs.push(opt.name);
@@ -76,17 +78,24 @@ if (process.argv.includes('--update')) {
 }
 
 // --- (A) Bot ↔ Web ---
+// Web công khai chỉ hiển thị các lệnh người chơi / admin server.
+// Lệnh nội bộ trong nhóm 'owner' (eco-admin, premium-admin, getinvite) được ẩn khỏi web.
 const tsx = fs.readFileSync(webFile, 'utf8');
 const webCmds = new Set([...tsx.matchAll(/\[\s*"([^"]+)"\s*,/g)].map(m => m[1]));
-const slashBot = Object.keys(surface).filter(n => !/\s/.test(n)); // loại context-menu ("Xem hồ sơ Waguri")
+const slashBotPublic = Object.keys(surface).filter(n => !/\s/.test(n) && !ownerCmds.has(n)); // loại context-menu & lệnh owner
 
-const missingInWeb = slashBot.filter(n => !webCmds.has(n)).sort();
+const missingInWeb = slashBotPublic.filter(n => !webCmds.has(n)).sort();
 const extraInWeb = [...webCmds].filter(n => !surface[n]).sort();
+const ownerOnWeb = [...webCmds].filter(n => ownerCmds.has(n)).sort();
 
-console.log(`Bot: ${slashBot.length} lệnh slash · Web: ${webCmds.size} lệnh liệt kê`);
+console.log(`Bot: ${slashBotPublic.length} lệnh slash công khai (ẩn ${ownerCmds.size} lệnh owner) · Web: ${webCmds.size} lệnh liệt kê`);
 if (extraInWeb.length) console.warn(`⚠️  Web có lệnh KHÔNG còn trong bot: ${extraInWeb.join(', ')}`);
 
 let failed = false;
+if (ownerOnWeb.length) {
+    console.error(`❌ Web đang để lộ lệnh nội bộ của Bot Owner: ${ownerOnWeb.join(', ')}`);
+    failed = true;
+}
 if (missingInWeb.length) {
     console.error(`❌ Lệnh bot CHƯA lên web: ${missingInWeb.join(', ')}`);
     failed = true;

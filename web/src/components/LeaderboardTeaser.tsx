@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useLanguage } from "./LanguageProvider";
+import UserAvatar from "./UserAvatar";
 
 // Teaser top đại gia — fetch CLIENT-side (như LiveStats) để KHÔNG chặn render landing.
 // (Không cần host của bot ở đây: component này vốn đã gọi `/api/leaderboard` — một route
@@ -59,12 +60,7 @@ export default function LeaderboardTeaser() {
                   className="flex items-center gap-3 rounded-xl px-3 py-2 hover:bg-pink-500/5 transition-colors"
                 >
                   <span className="w-7 text-center font-bold text-pink-300">{MEDALS[i] || i + 1}</span>
-                  {r.avatar ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={r.avatar} alt={r.username} width={32} height={32} className="rounded-full" />
-                  ) : (
-                    <span className="w-8 h-8 rounded-full bg-[#241a2e]" />
-                  )}
+                  <UserAvatar src={r.avatar} alt={r.username} size={32} />
                   <span className="flex-1 truncate text-slate-200">{r.username}</span>
                   <span className="font-bold text-white">
                     {fmt(r.value)} <span className="text-pink-300/70 text-xs">{t("lb_teaser.currency")}</span>

@@ -28,8 +28,10 @@ export interface MockupContent {
   taixiu: (win: boolean, roll: string, total: number, isOver: boolean) => MockEmbedText;
   daily: (total: string, streak: number, bonus: string) => MockEmbedText;
   baucua: (win: boolean, roll: string, hits: number, won: string) => MockEmbedText;
-  heo: (age: number, weight: string, value: string) => MockEmbedText;
-  amlich: (dateStr: string) => MockEmbedText;
+  bakery: (level: number, income: string, rep: number) => MockEmbedText;
+  lunar: (dateStr: string) => MockEmbedText;
+  heo?: (age: number, weight: string, value: string) => MockEmbedText;
+  amlich?: (dateStr: string) => MockEmbedText;
   jobs: MockEmbedText;
 }
 
@@ -102,6 +104,25 @@ const vi: MockupContent = {
     title: "🦀 BẦU CUA - Hụt mất rồi!",
     description: `Bàn lắc ra: ${roll}\nCậu đặt **🦀 Cua (50,000 VNĐ)** nhưng không con nào ra~ Mất **50,000 VNĐ**. Thử lại ván sau nhé! 🥺`,
   },
+  bakery: (level, income, rep) => ({
+    title: "🍰 TIỆM BÁNH GEKKA CỦA CẬU",
+    description: "Tiệm bánh đang thơm nức mùi bánh kem dâu mới ra lò! Khách quen đang ghé mua rất tấp nập đó~ 🌸",
+    fields: [
+      { name: "⭐ Cấp tiệm", value: `Cấp ${level}`, inline: true },
+      { name: "💰 Thu nhập chờ thu", value: `${income} VNĐ`, inline: true },
+      { name: "✨ Điểm uy tín", value: `${rep} ⭐`, inline: true },
+      { name: "🔥 Giờ cao điểm", value: "Đang x1.2 tốc độ nướng!", inline: false },
+    ],
+  }),
+  lunar: (dateStr) => ({
+    title: "🌙 ÂM LỊCH & VẬN TRÌNH HÔM NAY",
+    description: "Tra cứu âm lịch, can-chi và giờ hoàng đạo để chọn ngày lành tháng tốt nhé! 🌙🌸",
+    fields: [
+      { name: "📅 Dương lịch", value: dateStr, inline: true },
+      { name: "🐉 Can chi", value: "Giáp Thìn", inline: true },
+      { name: "⏰ Giờ hoàng đạo", value: "Tý, Sửu, Mão, Ngọ", inline: true },
+    ],
+  }),
   heo: (age, weight, value) => ({
     title: "🐷 CHUỒNG HEO CỦA CẬU",
     description: "Chú heo đất của cậu đang lớn nhanh lắm! Nhớ cho ăn đều và canh chừng kẻo bị hàng xóm rình trộm nhé~ 🌸",
@@ -202,6 +223,25 @@ const en: MockupContent = {
     title: "🦀 BAU CUA - So close!",
     description: `The board rolled: ${roll}\nYou bet **🦀 Crab (50,000 coins)** but none showed up~ You lost **50,000 coins**. Try again next round! 🥺`,
   },
+  bakery: (level, income, rep) => ({
+    title: "🍰 YOUR GEKKA BAKERY",
+    description: "Your bakery smells sweetly of fresh strawberry shortcakes! Customers are lining up happily~ 🌸",
+    fields: [
+      { name: "⭐ Shop Level", value: `Level ${level}`, inline: true },
+      { name: "💰 Pending Income", value: `${income} coins`, inline: true },
+      { name: "✨ Reputation", value: `${rep} ⭐`, inline: true },
+      { name: "🔥 Rush Hour", value: "+20% baking speed active!", inline: false },
+    ],
+  }),
+  lunar: (dateStr) => ({
+    title: "🌙 TODAY'S LUNAR CALENDAR",
+    description: "Look up the lunar date, Can-Chi and auspicious hours to pick a lucky day! 🌙🌸",
+    fields: [
+      { name: "📅 Solar date", value: dateStr, inline: true },
+      { name: "🐉 Can-Chi", value: "Giáp Thìn (Wood Dragon)", inline: true },
+      { name: "⏰ Auspicious hours", value: "Rat, Ox, Rabbit, Horse", inline: true },
+    ],
+  }),
   heo: (age, weight, value) => ({
     title: "🐷 YOUR PIGGY PEN",
     description: "Your piggy bank is growing fast! Remember to feed it regularly and watch out so the neighbors don't steal it~ 🌸",

@@ -6,6 +6,7 @@ import { createClient } from "../lib/supabase/client";
 import { getDiscordIdentity } from "../lib/discord";
 import { useLanguage } from "./LanguageProvider";
 import LanguageSelector from "./LanguageSelector";
+import UserAvatar from "./UserAvatar";
 
 const BOT_ID = "1482620714690543738";
 const INVITE_URL = `https://discord.com/oauth2/authorize?client_id=${BOT_ID}&permissions=1099512007760&integration_type=0&scope=bot+applications.commands`;
@@ -48,10 +49,7 @@ export default function SiteHeader() {
           href="/dashboard"
           className={`flex items-center gap-2 ${mobile ? "px-4 py-2 w-full justify-center" : "px-3 py-1.5"} rounded-full text-xs font-bold border border-pink-300/30 text-pink-100 hover:border-pink-300/60 bg-pink-500/5 transition-all`}
         >
-          {me.avatar ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={me.avatar} alt="" width={20} height={20} className="rounded-full" />
-          ) : null}
+          <UserAvatar src={me.avatar} alt={me.username} size={20} className="rounded-full w-5 h-5 object-cover" />
           {t("nav.dashboard")}
         </Link>
         <Link

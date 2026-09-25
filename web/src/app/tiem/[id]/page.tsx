@@ -7,6 +7,7 @@ import SiteFooter from "../../../components/SiteFooter";
 import { BOT_API } from "../../../lib/botApi";
 import { getLocaleServer, t } from "../../../lib/i18n";
 import LikeButton from "./LikeButton";
+import UserAvatar from "../../../components/UserAvatar";
 
 const API = BOT_API;
 
@@ -148,14 +149,7 @@ export default async function BakeryPage({ params }: { params: Promise<{ id: str
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 glass-panel rounded-3xl p-6 border border-rose-500/10 shadow-2xl">
           <div className="flex items-center gap-5">
             <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-rose-400/30">
-              {b.avatar ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={b.avatar} alt={shopName} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full bg-[#1c1224] flex items-center justify-center font-bold text-rose-400">
-                  {shopName.slice(0, 2).toUpperCase()}
-                </div>
-              )}
+              <UserAvatar src={b.avatar} alt={shopName} size={64} className="w-full h-full object-cover" />
             </div>
             <div>
               <h1 className="text-xl md:text-2xl font-black text-white">
