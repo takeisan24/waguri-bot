@@ -244,8 +244,11 @@ module.exports = {
 
             let gate3Status = '🟢';
             const deadCount = cmdTelemetry.deadCommands.length;
-            if (deadCount > 15) gate3Status = '🔴';
-            else if (deadCount > 8) gate3Status = '🟡';
+            const isWarmingUp = Number(uptimeHours) < 4 || cmdTelemetry.totalCalls < 25;
+            if (!isWarmingUp) {
+                if (deadCount > 15) gate3Status = '🔴';
+                else if (deadCount > 8) gate3Status = '🟡';
+            }
 
             // 3. Gate 4: Kinh Tế (Faucet vs Sink)
             const ledgerFlow = await db.getLedgerFlow(24, 15);
@@ -269,7 +272,8 @@ module.exports = {
             const loanMetrics = await db.getLoanMetrics();
             const nplPct = (loanMetrics.nplRatio * 100).toFixed(1);
             let gate5Status = '🟢';
-            if (loanMetrics.activeLoans > 0) {
+            const isMicroDebt = loanMetrics.activeLoans < 5 && loanMetrics.totalRemaining < 100_000;
+            if (!isMicroDebt && loanMetrics.activeLoans > 0) {
                 if (loanMetrics.nplRatio > 0.25) gate5Status = '🔴';
                 else if (loanMetrics.nplRatio > 0.15) gate5Status = '🟡';
             }
@@ -306,10 +310,18 @@ module.exports = {
                 ? cmdTelemetry.deadCommands.slice(0, 8).map(c => `\`/${c}\``).join(' ') + (cmdTelemetry.deadCommands.length > 8 ? ` *(+${cmdTelemetry.deadCommands.length - 8} lệnh)*` : '')
                 : '✅ 100% lệnh đều có người dùng';
 
+            const deadSectionTitle = isWarmingUp
+                ? `⏳ **Đang tích lũy dữ liệu** (Khởi động ${uptimeHours}h · ${cmdTelemetry.totalCalls} lượt gọi):\n*Danh sách lệnh chưa gọi tạm thời (${cmdTelemetry.deadCommands.length}/${cmdTelemetry.totalRegisteredCommands}):*`
+                : `💤 **Lệnh không ai dùng hôm nay (${cmdTelemetry.deadCommands.length}/${cmdTelemetry.totalRegisteredCommands}):**`;
+
             embed.addFields({
                 name: `${gate3Status} Cổng 3: Sức Hút Tính Năng (Top & Dead Commands)`,
-                value: `🔥 **Top lệnh phổ biến:**\n${topCmdsStr}\n\n💤 **Lệnh không ai dùng hôm nay (${cmdTelemetry.deadCommands.length}/${cmdTelemetry.totalRegisteredCommands}):**\n${deadSampleStr}`
+                value: `🔥 **Top lệnh phổ biến:**\n${topCmdsStr}\n\n${deadSectionTitle}\n${deadSampleStr}`
             });
+
+            const gate5Eval = isMicroDebt
+                ? '• Đánh giá: Dư nợ vi mô an toàn (< 100k xu, dưới 5 khoản vay)'
+                : (gate5Status === '🟢' ? '• Đánh giá: Tỷ lệ nợ lành mạnh' : (gate5Status === '🟡' ? '• Đánh giá: Nợ xấu tăng nhẹ' : '• Đánh giá: Cần siết điều kiện vay!'));
 
             embed.addFields({
                 name: `${gate4Status} Cổng 4: Cân Bằng Tiền Tệ (Faucet / Sink)`,
@@ -317,7 +329,7 @@ module.exports = {
                 inline: true
             }, {
                 name: `${gate5Status} Cổng 5: Quỹ Tín Dụng Kikyo (/loan)`,
-                value: `• Khoản vay hoạt động: **${loanMetrics.activeLoans}**\n• Nợ quá hạn: **${loanMetrics.overdueLoans}**\n• Tỷ lệ nợ xấu (NPL): **${nplPct}%** *(Trần: < 25%)*\n• Dư nợ: **${fmt(loanMetrics.totalRemaining, locale)}** ${C}`,
+                value: `• Khoản vay hoạt động: **${loanMetrics.activeLoans}**\n• Nợ quá hạn: **${loanMetrics.overdueLoans}**\n• Tỷ lệ nợ xấu (NPL): **${nplPct}%** *(Trần: < 25%)*\n• Dư nợ: **${fmt(loanMetrics.totalRemaining, locale)}** ${C}\n${gate5Eval}`,
                 inline: true
             });
 

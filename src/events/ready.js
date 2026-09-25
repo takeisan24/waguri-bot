@@ -126,9 +126,25 @@ function startStatsAutopost(client) {
                 console.warn(`[STATS] ${t.name} kết nối thất bại:`, e?.message || e);
             }
         }
+        // Đồng bộ số liệu bot lên DB để Web Next.js luôn hiển thị số server/thành viên thật
+        await syncBotStatsToDb(client);
     };
     post();
     setInterval(post, 30 * 60 * 1000).unref(); // mỗi 30 phút
+}
+
+// Đồng bộ số server và thành viên của bot vào Supabase (hàng guild_id='global' trong guild_settings)
+async function syncBotStatsToDb(client) {
+    try {
+        const db = require('../database.js');
+        const servers = client.guilds.cache.size;
+        const users = client.guilds.cache.reduce((s, g) => s + (g.memberCount || 0), 0);
+        await db.setGuildSetting('global', 'bot_stats', {
+            servers,
+            users,
+            updated_at: new Date().toISOString()
+        });
+    } catch (_) {}
 }
 
 // Tạo danh sách status (gồm số liệu động: thành viên, số server)
@@ -144,7 +160,7 @@ function buildStatuses(client) {
         { type: ActivityType.Listening, name: '/ask · @Waguri to chat 💬 | để trò chuyện' },
         { type: ActivityType.Watching, name: "Kaoruko eating Rintaro's cake 🍰 | Kaoruko ăn bánh nhà Rintaro" },
         { type: ActivityType.Playing, name: '/work · /fish · /daily every day 🌾 | mỗi ngày' },
-        { type: ActivityType.Playing, name: '/loto · /bingo · /masoi with friends 🎲 | cùng bạn bè' },
+        { type: ActivityType.Playing, name: '/loto · /farm · /bakery with friends 🎲 | cùng bạn bè' },
         { type: ActivityType.Competing, name: 'intense Werewolf match 🐺 | ván Ma Sói gay cấn' },
         { type: ActivityType.Watching, name: 'Gekka Bakery 月下 🧁 | tiệm bánh Gekka' },
         { type: ActivityType.Listening, name: '/help for all commands 🌸 | để xem tất cả lệnh' },
@@ -159,6 +175,9 @@ module.exports = {
     execute(client) {
         console.log(`Ready! Logged in as ${client.user.tag}`);
         client.user.setStatus('online');
+
+        // Đồng bộ thống kê lên DB ngay khi ready
+        syncBotStatsToDb(client);
 
         // Dọn lệnh guild thừa ở nền (không chặn việc set status)
         cleanupDuplicateGuildCommands(client).catch(e => console.error('[SYSTEM] Lỗi dọn lệnh guild:', e?.message || e));

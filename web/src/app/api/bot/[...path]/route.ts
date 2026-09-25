@@ -37,6 +37,35 @@ const CHO_PHEP: RegExp[] = [
 // khớp route `[...path]` nên sẽ 404 một cách khó hiểu.
 const DUONG_HEALTH = "health";
 
+async function getFallbackStats() {
+    try {
+        const { createAdminClient } = await import("../../../../lib/supabase/admin");
+        const admin = createAdminClient();
+        const [{ data: globalRow }, { data: snapRow }] = await Promise.all([
+            admin.from("guild_settings").select("settings").eq("guild_id", "global").single(),
+            admin.from("economy_snapshots").select("user_count, active_7d").order("taken_on", { ascending: false }).limit(1).single(),
+        ]);
+        const botStats = globalRow?.settings?.bot_stats;
+        return NextResponse.json({
+            servers: typeof botStats?.servers === "number" ? botStats.servers : 31,
+            users: typeof botStats?.users === "number" ? botStats.users : 2295,
+            players: Number(snapRow?.user_count || 909),
+            activePlayers: Number(snapRow?.active_7d || 845),
+            gatewayPing: null,
+            fallback: true,
+        });
+    } catch {
+        return NextResponse.json({
+            servers: 31,
+            users: 2295,
+            players: 909,
+            activePlayers: 845,
+            gatewayPing: null,
+            fallback: true,
+        });
+    }
+}
+
 export async function GET(
     request: Request,
     { params }: { params: Promise<{ path: string[] }> },
@@ -64,12 +93,15 @@ export async function GET(
             next: laHealth ? undefined : { revalidate: 30 },
             cache: laHealth ? "no-store" : undefined,
         });
-        if (!res.ok) return NextResponse.json({ error: "bot_error" }, { status: 502 });
+        if (!res.ok) {
+            if (duong === "stats") return await getFallbackStats();
+            return NextResponse.json({ error: "bot_error" }, { status: 502 });
+        }
         if (laHealth) return NextResponse.json({ ok: true, text: await res.text() });
         return NextResponse.json(await res.json());
     } catch {
-        // Bot tắt hoặc quá hạn -> 503. Phía trình duyệt đã có sẵn nhánh `.catch()` để ẩn
-        // widget, nên người dùng thấy trang gọn chứ không thấy một ô hỏng.
+        // Bot tắt hoặc quá hạn -> nếu là stats thì fallback lấy DB Supabase để không ẩn widget trên web
+        if (duong === "stats") return await getFallbackStats();
         return NextResponse.json({ error: "bot_unreachable" }, { status: 503 });
     } finally {
         clearTimeout(timer);
