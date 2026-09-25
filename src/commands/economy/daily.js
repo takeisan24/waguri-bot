@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const { buildWaguriEmbed } = require('../../lib/embed');
 const db = require('../../database.js');
 const config = require('../../config');
@@ -79,14 +79,30 @@ module.exports = {
         const description = greet + `> ${rewardsDesc}\n\n` + nudge;
         
         const embed = buildWaguriEmbed(interaction, 'success', {
-            title: t(locale, 'commands.daily.success_title'),
+            title: `${config.CORE_THEMES.DAILY.EMOJI} ` + t(locale, 'commands.daily.success_title'),
             description,
             fields: [
                 { name: t(locale, 'commands.daily.field_streak'), value: t(locale, 'commands.daily.field_streak_val', { streak: r.streak }), inline: true },
                 { name: t(locale, 'commands.daily.field_wallet'), value: `${fmt(u?.wallet || 0, locale)} ${config.CURRENCY}`, inline: true },
             ]
-        }).setTimestamp();
+        }).setColor(config.CORE_THEMES.DAILY.COLOR).setTimestamp();
 
-        await interaction.editReply({ embeds: [embed] });
+        const isEn = locale?.startsWith('en');
+        const row = new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+                .setCustomId('ann_btn_farm')
+                .setLabel(isEn ? '🌾 Gekka Farm' : '🌾 Vườn Nông Sản')
+                .setStyle(ButtonStyle.Success),
+            new ButtonBuilder()
+                .setCustomId('ann_btn_tiembanh')
+                .setLabel(isEn ? '🧁 Gekka Bakery' : '🧁 Tiệm Bánh Gekka')
+                .setStyle(ButtonStyle.Primary),
+            new ButtonBuilder()
+                .setLabel(isEn ? '🎧 Lo-Fi Study Room' : '🎧 Phòng Học Lo-Fi')
+                .setStyle(ButtonStyle.Link)
+                .setURL('https://waguri-bot.vercel.app/study')
+        );
+
+        await interaction.editReply({ embeds: [embed], components: [row] });
     },
 };

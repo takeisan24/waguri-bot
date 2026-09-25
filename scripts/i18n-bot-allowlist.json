@@ -12,7 +12,6 @@
   "files": {
     "src/commands/economy/chop.js": "Chuỗi là KHOÁ tra bảng chiến lợi phẩm, không phải chữ hiển thị. Dịch ở RESOURCE_NAMES trong src/lib/gather.js (phủ 6/6 món).",
     "src/commands/economy/mine.js": "Như chop.js — khoá tra bảng, RESOURCE_NAMES phủ 7/7 món.",
-    "src/commands/games/bingo.js": "Chỉ còn .setDescription() của slash, do src/lib/commandLocalizer.js dịch. Logic chạy nằm ở src/lib/bingoPrefix.js (32 lời gọi i18n).",
     "src/commands/games/loto.js": "Như bingo.js — logic ở src/lib/loto.js (33 lời gọi i18n).",
     "src/events/channelDelete.js": "Một dòng console.log nội bộ, người dùng không đọc.",
     "src/lib/ai/dauVao.js": "Chuỗi là NHÃN GỬI CHO MODEL, không phải chữ người dùng đọc. Model nhận nhãn tiếng Việt rồi trả lời theo ngôn ngữ mà chỉ thị [Ngôn ngữ] trong systemPrompt ép — người dùng EN vẫn nhận câu trả lời tiếng Anh. Dịch nhãn sang EN chỉ tốn thêm token mà không đổi gì cho người đọc, vì persona vốn đã thuần tiếng Việt.",

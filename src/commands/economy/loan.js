@@ -4,7 +4,7 @@
 // Cơ chế: Người chơi vay trực tiếp từ quỹ hệ thống Waguri dựa theo cấp độ,
 // không hỗ trợ vay giữa người chơi để chống toxic, lừa đảo, phá giá kinh tế.
 // ============================================================
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType } = require('discord.js');
 const { buildWaguriEmbed } = require('../../lib/embed');
 const db = require('../../database.js');
 const config = require('../../config');
@@ -84,7 +84,7 @@ module.exports = {
 
             const embed = buildWaguriEmbed(interaction, 'info', {
                 locale,
-                title: isEn ? '🤝 Kikyo Student Credit Bureau' : '🤝 Quỹ Tín Dụng Học Đường Kikyo',
+                title: `${config.CORE_THEMES.LOAN.EMOJI} ` + (isEn ? 'Kikyo Student Credit Bureau' : 'Quỹ Tín Dụng Học Đường Kikyo'),
                 description: isEn
                     ? `Welcome to the Kikyo Credit Fund! Loans are granted based on your Level reputation to support student ventures.\n\n` +
                       `🎖️ **Your Level:** \`Lv.${level}\`\n` +
@@ -94,7 +94,7 @@ module.exports = {
                       `🎖️ **Cấp độ của cậu:** \`Lv.${level}\`\n` +
                       `💳 **Hạn mức vay tối đa:** **${fmt(maxCreditLimit, locale)}** ${config.CURRENCY} ${level < 5 ? '*(Cần Cấp 5 trở lên)*' : ''}\n` +
                       `📈 **Lãi suất:** \`2%/ngày\` (thời hạn 7 ngày)`
-            });
+            }).setColor(config.CORE_THEMES.LOAN.COLOR);
 
             if (activeLoan) {
                 const dueTs = Math.floor(new Date(activeLoan.due_at).getTime() / 1000);
@@ -109,6 +109,72 @@ module.exports = {
                           `• Số tiền cần trả: **${fmt(activeLoan.remaining, locale)}** ${config.CURRENCY}\n` +
                           `• Hạn chót: <t:${dueTs}:R> ${isOverdue ? '🔴 **QUÁ HẠN**' : '🟢'}`
                 });
+
+                const buttons = [
+                    new ButtonBuilder()
+                        .setCustomId('loan_btn_pay_all')
+                        .setLabel(isEn ? '💳 Clear Full Debt' : '💳 Trả Hết Nợ Ngay')
+                        .setStyle(ButtonStyle.Success)
+                ];
+
+                const row = new ActionRowBuilder().addComponents(buttons);
+                const msg = await interaction.editReply({ embeds: [embed], components: [row] });
+
+                const collector = msg.createMessageComponentCollector({
+                    componentType: ComponentType.Button,
+                    time: 60_000,
+                    max: 1
+                });
+
+                collector.on('collect', async i => {
+                    if (i.user.id !== userId) {
+                        return i.reply({ content: isEn ? 'Not your loan!' : 'Đây là hồ sơ của người khác nhen! 🌸', ephemeral: true });
+                    }
+                    await i.deferUpdate();
+                    const curUser = await db.getUser(userId);
+                    const wallet = Number(curUser?.wallet || 0);
+                    const remainingDebt = Number(activeLoan.remaining || 0);
+
+                    if (wallet < remainingDebt) {
+                        const warnEmbed = buildWaguriEmbed(interaction, 'warning', {
+                            locale,
+                            title: isEn ? '⚠️ Insufficient Funds' : '⚠️ Ví Không Đủ Tiền',
+                            description: isEn
+                                ? `You need **${fmt(remainingDebt, locale)}** ${config.CURRENCY} to clear your debt, but only have **${fmt(wallet, locale)}** ${config.CURRENCY} in your wallet!`
+                                : `Cậu cần **${fmt(remainingDebt, locale)}** ${config.CURRENCY} để tất toán nợ, nhưng trong ví chỉ còn **${fmt(wallet, locale)}** ${config.CURRENCY}!`
+                        }).setColor(config.CORE_THEMES.LOAN.COLOR);
+                        await interaction.editReply({ embeds: [warnEmbed], components: [] });
+                        collector.stop('acted');
+                        return;
+                    }
+
+                    const repayRes = await db.loanRepay(userId, activeLoan.id, remainingDebt);
+                    if (!repayRes || !repayRes.ok) {
+                        return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'error', { locale, description: t(locale, 'common.generic_error') })], components: [] });
+                    }
+
+                    const successEmbed = buildWaguriEmbed(interaction, 'success', {
+                        locale,
+                        title: isEn ? '🎉 Debt Cleared Successfully!' : '🎉 Tất Toán Nợ Thành Công!',
+                        description: isEn
+                            ? `You have fully paid off your loan of **${fmt(remainingDebt, locale)}** ${config.CURRENCY}! Your credit standing is in pristine shape. 🌸`
+                            : `Cậu đã trả hết toàn bộ khoản nợ **${fmt(remainingDebt, locale)}** ${config.CURRENCY}! Hồ sơ tín dụng của cậu đã hoàn toàn sạch sẽ nhen. 🌸`
+                    }).setColor(config.CORE_THEMES.LOAN.COLOR);
+
+                    await interaction.editReply({ embeds: [successEmbed], components: [] });
+                    collector.stop('acted');
+                });
+
+                collector.on('end', async (_, reason) => {
+                    if (reason !== 'acted') {
+                        const disabledRow = new ActionRowBuilder().addComponents(
+                            buttons.map(b => ButtonBuilder.from(b).setDisabled(true))
+                        );
+                        await interaction.editReply({ components: [disabledRow] }).catch(() => {});
+                    }
+                });
+
+                return;
             } else {
                 embed.addFields({
                     name: isEn ? '✨ Credit Status' : '✨ Tình Trạng Tín Dụng',

@@ -1,7 +1,8 @@
-const { Events } = require('discord.js');
+const { Events, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const config = require('../config');
 const db = require('../database.js');
 const { getInteractionLanguage, t, detectVietnamese } = require('../lib/i18n');
+const { buildWaguriEmbed } = require('../lib/embed');
 const { buildPrefixInteraction } = require('../lib/prefixShim');
 const { PREFIX_ALIASES } = require('../lib/prefixTen');
 const { logError } = require('../lib/logger');
@@ -96,43 +97,28 @@ module.exports = {
             const ds = DEFAULT_SUB[cmdName];
             if (ds && !ds.subs.includes((tokens[0] || '').toLowerCase())) tokens.unshift(ds.def);
 
-            // Intercept Lệnh Bí Mật Easter Egg HVL - MCK (w!hvl, w!mck)
+            // Chuyển hướng yêu cầu âm nhạc thư giãn sang Web Lo-Fi Study Room (0MB RAM VPS)
             if (cmdName === 'hvl' || cmdName === 'mck') {
-                try {
-                    const { startHvlPlayer } = require('../lib/hvlPlayer');
-                    // Shim nhẹ — Easter Egg không phải slash command nên không dùng buildPrefixInteraction
-                    const shimState = { sent: null, deferred: false, replied: false };
-                    const shimSend = async (payload) => {
-                        const body = typeof payload === 'string' ? { content: payload } : { ...payload };
-                        delete body.flags;
-                        if (shimState.sent) return shimState.sent.edit(body).catch(() => null);
-                        shimState.sent = await message.reply(body).catch(() => null);
-                        shimState.replied = true;
-                        return shimState.sent;
-                    };
-                    // Lệnh prefix không có hạn ack 3 giây nên tra ngôn ngữ ở đây là an toàn.
-                    const hvlLocale = await getInteractionLanguage({
-                        guildId: message.guildId,
-                        user: message.author,
-                        guildLocale: message.guild?.preferredLocale
-                    });
-                    await startHvlPlayer({
-                        user: message.author,
-                        member: message.member,
-                        guild: message.guild,
-                        guildId: message.guildId,
-                        channel: message.channel,
-                        client: message.client,
-                        get deferred() { return shimState.deferred; },
-                        get replied() { return shimState.replied; },
-                        deferReply: async () => { shimState.deferred = true; await message.channel.sendTyping().catch(() => {}); },
-                        editReply: shimSend,
-                        reply: shimSend,
-                    }, hvlLocale);
-                } catch (error) {
-                    console.error('[EASTER EGG ERROR] w!hvl:', error);
-                    logError('Lỗi easter egg w!hvl', error, { user: `<@${message.author.id}>`, guild: message.guildId });
-                }
+                const hvlLocale = await getInteractionLanguage({
+                    guildId: message.guildId,
+                    user: message.author,
+                    guildLocale: message.guild?.preferredLocale
+                });
+                const isEn = hvlLocale === 'en';
+                const row = new ActionRowBuilder().addComponents(
+                    new ButtonBuilder()
+                        .setLabel(isEn ? '🎧 Waguri Lo-Fi Study Room' : '🎧 Phòng Học Lo-Fi Waguri')
+                        .setStyle(ButtonStyle.Link)
+                        .setURL('https://waguri-bot.vercel.app/study')
+                );
+                const embed = buildWaguriEmbed(message, 'info', {
+                    locale: hvlLocale,
+                    title: isEn ? '🌸 Waguri Relaxation & Music' : '🌸 Âm Nhạc & Thư Giãn Cùng Waguri',
+                    description: isEn
+                        ? 'Waguri has transitioned audio listening to the **Web Lo-Fi Study Room** to deliver high-quality, uninterrupted sound without eating your voice channel bandwidth! Visit the study room to listen to chill tunes together with Waguri.'
+                        : 'Waguri đã chuyển không gian âm nhạc sang **Phòng Học Lo-Fi Trên Web** để mang lại chất lượng âm thanh 320kbps trong trẻo, không bị giật lag mạng hay chiếm kênh thoại! Cậu hãy ghé thăm phòng học để cùng nghe nhạc Lo-Fi với Waguri nhé. ☕'
+                });
+                await message.reply({ embeds: [embed], components: [row] }).catch(() => {});
                 return;
             }
 

@@ -8,6 +8,7 @@ const { buildWaguriEmbed } = require('../lib/embed');
 const { recordMembership } = require('../lib/membership');
 const { logError, skipLog } = require('../lib/logger');
 const { theoDoiAck, kiemAutocomplete } = require('../lib/canhAck');
+const { recordCommand } = require('../lib/commandTelemetry');
 const db = require('../database.js');
 const config = require('../config');
 const { getInteractionLanguage, t } = require('../lib/i18n');
@@ -139,8 +140,10 @@ module.exports = {
             try {
                 await command.execute(interaction);
                 canh.xong(false);
+                recordCommand(interaction.commandName, interaction.user.id, true);
             } catch (error) {
                 canh.xong(true);   // lỗi đã được log riêng ngay dưới, đừng báo trùng
+                recordCommand(interaction.commandName, interaction.user.id, false);
                 console.error(`Lỗi khi thực thi lệnh ${interaction.commandName}:`, error);
                 logError('Lỗi thực thi lệnh', error, { command: interaction.commandName, user: `<@${interaction.user.id}>`, guild: interaction.guildId });
                 // Interaction đã hết hạn (10062) / đã ack (40060) do mạng chậm -> không thể phản hồi nữa, bỏ qua tránh lỗi dây chuyền.
@@ -381,20 +384,6 @@ module.exports = {
                 return;
             }
 
-            // Nút điều khiển Easter Egg Player HVL - MCK
-            if (interaction.customId.startsWith('hvl_')) {
-                try {
-                    const { handleHvlButton } = require('../lib/hvlPlayer');
-                    // Truyền `locale` đã phân giải sẵn ở đầu nhánh nút — hvlPlayer không tự
-                    // tra lại, tránh thêm một lượt đọc DB vào đường trước ack.
-                    await handleHvlButton(interaction, locale);
-                } catch (error) {
-                    logError('hvl_button', error, { customId: interaction.customId });
-                    await ackButtonError(interaction, locale);
-                }
-                return;
-            }
-
             // Nút điều hướng nhanh từ Announcement (1-Click Actions)
             if (interaction.customId.startsWith('ann_btn_')) {
                 const action = interaction.customId.replace('ann_btn_', '');
@@ -429,6 +418,18 @@ module.exports = {
                         desc: isEn
                             ? 'A daily gift from Waguri:\n• Type **/daily** to receive Coins, Energy, Gacha tickets, and Battle Pass XP!\n• Maintain your streak for massive bonus rewards!'
                             : 'Mỗi ngày một niềm vui cùng Waguri:\n• Hãy gõ **/daily** để nhận Xu, Năng lượng, Vé quay số và Battle Pass XP!\n• Đừng quên duy trì chuỗi điểm danh để nhận thêm thưởng lớn nhé!'
+                    },
+                    farm: {
+                        title: isEn ? '🌾 Gekka Farm & Orchard' : '🌾 Vườn Nông Sản Gekka',
+                        desc: isEn
+                            ? 'Grow fresh crops and harvest bakery ingredients:\n• **/farm info**: View plant status\n• **/farm muagiong**: Plant new seeds (Wheat, Strawberry)\n• **/farm tuoi**: Water your plant or help friends'
+                            : 'Trồng trọt và thu hoạch nguyên liệu làm bánh:\n• **/farm info**: Xem tình trạng cây trồng\n• **/farm muagiong**: Mua giống cây mới (Lúa mì, Dâu tây)\n• **/farm tuoi**: Tưới nước chăm sóc cây hoặc tưới hộ bạn bè'
+                    },
+                    loan: {
+                        title: isEn ? '🤝 Kikyo Student Credit Bureau' : '🤝 Quỹ Tín Dụng Học Đường Kikyo',
+                        desc: isEn
+                            ? 'Student credit fund powered by Kikyo Academy:\n• **/loan status**: Check your Level credit limit\n• **/loan borrow**: Borrow funds for business ventures\n• **/loan pay**: Repay your loan within 7 days'
+                            : 'Quỹ hỗ trợ vốn sinh viên Học Viện Kikyo:\n• **/loan status**: Kiểm tra hạn mức tín dụng theo Cấp\n• **/loan borrow**: Vay vốn làm ăn / kinh doanh\n• **/loan pay**: Thanh toán khoản nợ trong 7 ngày'
                     }
                 };
 

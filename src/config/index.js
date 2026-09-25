@@ -34,6 +34,30 @@ module.exports = {
         JACKPOT: 0xFFC107,   // Caramel Gold
     },
 
+    // Bảng màu & biểu tượng nhận diện Pastel cho 5 lệnh Core (Brand Identity)
+    CORE_THEMES: {
+        DAILY: {
+            COLOR: 0xF8BBD0,  // Waguri Cherry Blossom Pink
+            EMOJI: '🎁'
+        },
+        FARM: {
+            COLOR: 0xB2DFDB,  // Kikyo Field Mint Green
+            EMOJI: '🌾'
+        },
+        BAKERY: {
+            COLOR: 0xFFE082,  // Gekka Warm Honey Pastry Yellow
+            EMOJI: '🧁'
+        },
+        LOAN: {
+            COLOR: 0x90CAF9,  // Kikyo Credit Academy Soft Blue
+            EMOJI: '🤝'
+        },
+        STUDY: {
+            COLOR: 0xCE93D8,  // Lo-Fi Afternoon Tea Lavender
+            EMOJI: '📖'
+        }
+    },
+
     EMOJIS: {
         FLOWER: '🌸',
         CAKE: '🍰',

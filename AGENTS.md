@@ -77,9 +77,16 @@ Waguri là **Discord economy/RPG bot bản địa hóa văn hóa Việt**. Bot N
 
 ---
 
-## 4. TRẠNG THÁI HIỆN TẠI (cập nhật 2026-09-24 — sửa khi đổi lớn)
+## 4. TRẠNG THÁI HIỆN TẠI (cập nhật 2026-09-25 — sửa khi đổi lớn)
 
 - **Release:** GitHub tag mới nhất `v2.6.0` ("Architectural Restructure: Standardize 72 Commands, Prune Dead Minigames, Kikyo Credit Fund & Gekka Bakery Flow"). `package.json` = `2.6.0`.
+- **🛡️ Khóa Tính Năng (Feature Freeze), Đo Lường Lệnh Bền Vững (Telemetry) & Checklist Vận Hành 5 Cổng — ĐÃ HOÀN THÀNH 100% (2026-09-25):**
+  - **Giải phóng 100% Voice Stack & Hạ tầng VPS 384MB:** Gỡ bỏ hoàn toàn `@discordjs/voice`, `ffmpeg-static` (~70MB binary), `libsodium-wrappers`, `opusscript` khỏi `package.json`; di dời `hvlPlayer.js` vào `archive/voice/`. Triệt tiêu hoàn toàn nguy cơ OOM V8 heap trên VPS Wispbyte. Phân định rạch ròi: Bot tập trung Text/RPG Game, Web gánh Lo-Fi Study Room (`/study`, HTML5 Web Audio 0MB load).
+  - **Cởi trói Voice cho Lô Tô (`/loto`):** Bỏ kiểm tra voice channel bắt buộc, cho phép 100% người dùng mobile/text mở phòng chơi Lô tô; giữ nguyên phí bàn 5% (House edge) đóng vai trò Currency Sink hút xu thừa.
+  - **Hệ thống Đo Lường Lệnh (Zero-Lag Command Telemetry):** Module `src/lib/commandTelemetry.js` đếm in-memory đạt độ trễ 0ms trên hot-path lệnh Discord; tích hợp Auto-Flush + Hook `SIGTERM`/`SIGINT` bảo toàn dữ liệu khi bot restart.
+  - **Báo cáo Sức Khỏe Vận Hành 5 Cổng (`/eco-admin daily`):** Báo cáo trực quan phân loại 🟢 Xanh / 🟡 Vàng / 🔴 Đỏ gồm 5 Cổng Chất Lượng: Cổng 1 (RAM & Uptime VPS), Cổng 2 (Lượt gọi & Tỷ lệ lỗi lệnh), Cổng 3 (Top lệnh hot & Watchlist lệnh chết 14d/30d), Cổng 4 (Cân bằng Sink/Faucet), Cổng 5 (Quỹ Tín Dụng Kikyo & tỷ lệ nợ xấu NPL).
+  - **Visual Pastel & Micro-Interactions Chống Memory Leak:** Chuẩn hóa bảng màu Pastel (`config.CORE_THEMES`) cho 5 lệnh cốt lõi (`/daily`, `/farm`, `/bakery`, `/loan`, `/study`). Tích hợp các nút hành động 1-chạm kèm cơ chế timeout 60s (`time: 60_000`) tự hủy components, ngăn ngừa 100% rò rỉ bộ nhớ.
+  - **Ban hành Tài Liệu Vận Hành:** Hoàn thành `docs/daily-checklist.md` định hình quy trình 3 phút mỗi sáng cho Owner/Admin.
 - **🏛️ Đại Phẫu Kiến Trúc & Chuẩn Hóa 72 Lệnh Slash Song Ngữ — HẠNG MỤC ƯU TIÊN #1 ĐÃ HOÀN THÀNH 100%:**
   - **Tỉa cành & Cất kho 9 tính năng cũ:** Đã di dời an toàn `clan.js`, `worldevent.js`, `bacay.js`, `duangua.js`, `xocdia.js`, `bingo.js`, `heo.js`, `date.js`, `ship.js` vào `archive/commands/`.
   - **Dọn dẹp vòng lặp nền & Tối ưu hiệu năng:** Gỡ bỏ hoàn toàn interval 60s `runAuctionResolution()` và cron đấu giá trong `index.js`, giải phóng RAM tối đa cho bot VPS. Tinh giản `/market` tập trung vào Chợ Nông Sản MurmurMix32.

@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType } = require('discord.js');
 const db = require('../../database.js');
 const config = require('../../config');
 const { buildWaguriEmbed } = require('../../lib/embed');
@@ -81,10 +81,60 @@ async function subXem(interaction, locale) {
         fields.push({ name: t(locale, 'commands.tiembanh.field_upgrade'), value: t(locale, 'commands.tiembanh.field_upgrade_val', { level: bk.level + 1, cost: fmt(nx.upCost, locale), currency: C, mats: matStr(nx.mats, locale) }), inline: false });
     }
 
-    return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'info', {
+    const embed = buildWaguriEmbed(interaction, 'info', {
         locale,
-        title: t(locale, 'commands.tiembanh.title_user', { user: interaction.user.username }), description: note, fields
-    })] });
+        title: `${config.CORE_THEMES.BAKERY.EMOJI} ` + t(locale, 'commands.tiembanh.title_user', { user: interaction.user.username }),
+        description: note,
+        fields
+    }).setColor(config.CORE_THEMES.BAKERY.COLOR);
+
+    const isEn = locale?.startsWith('en');
+    const buttons = [];
+    if (estRevenue > 0) {
+        buttons.push(
+            new ButtonBuilder()
+                .setCustomId('bk_btn_collect')
+                .setLabel(isEn ? '🥐 Collect Revenue' : '🥐 Thu Doanh Thu')
+                .setStyle(ButtonStyle.Success)
+        );
+    }
+    buttons.push(
+        new ButtonBuilder()
+            .setCustomId('bk_btn_orders')
+            .setLabel(isEn ? '📦 VIP Orders' : '📦 Đơn Hàng VIP')
+            .setStyle(ButtonStyle.Primary)
+    );
+
+    const row = new ActionRowBuilder().addComponents(buttons);
+    const msg = await interaction.editReply({ embeds: [embed], components: [row] });
+
+    const collector = msg.createMessageComponentCollector({
+        componentType: ComponentType.Button,
+        time: 60_000,
+        max: 2
+    });
+
+    collector.on('collect', async i => {
+        if (i.user.id !== interaction.user.id) {
+            return i.reply({ content: isEn ? 'This is not your bakery!' : 'Đây là tiệm bánh của người khác nhen! 🌸', ephemeral: true });
+        }
+        await i.deferUpdate();
+        if (i.customId === 'bk_btn_collect') {
+            await subThu(interaction, locale);
+        } else if (i.customId === 'bk_btn_orders') {
+            await subDonhang(interaction, locale);
+        }
+        collector.stop('acted');
+    });
+
+    collector.on('end', async (_, reason) => {
+        if (reason !== 'acted') {
+            const disabledRow = new ActionRowBuilder().addComponents(
+                buttons.map(b => ButtonBuilder.from(b).setDisabled(true))
+            );
+            await interaction.editReply({ components: [disabledRow] }).catch(() => {});
+        }
+    });
 }
 
 // --- mo ---

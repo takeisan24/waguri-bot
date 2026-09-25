@@ -1867,6 +1867,46 @@ async function loanCollect(lenderId, borrowerId) {
     } catch (error) { console.error('[DATABASE ERROR] loanCollect():', error); return null; }
 }
 
+/** Lấy các chỉ số nợ xấu và quy mô Quỹ Tín Dụng Kikyo (cho báo cáo daily checklist). */
+async function getLoanMetrics() {
+    try {
+        const { data, error } = await supabase.from('loans')
+            .select('status, principal, remaining, due_at');
+        if (error) throw error;
+        if (!data || !data.length) return { totalLoans: 0, activeLoans: 0, overdueLoans: 0, totalPrincipal: 0, totalRemaining: 0, nplRatio: 0 };
+
+        const now = Date.now();
+        let activeLoans = 0;
+        let overdueLoans = 0;
+        let totalPrincipal = 0;
+        let totalRemaining = 0;
+
+        for (const l of data) {
+            totalPrincipal += Number(l.principal || 0);
+            totalRemaining += Number(l.remaining || 0);
+            if (l.status === 'active' || l.status === 'overdue') {
+                activeLoans++;
+                if (new Date(l.due_at).getTime() < now || l.status === 'overdue') {
+                    overdueLoans++;
+                }
+            }
+        }
+
+        const nplRatio = activeLoans > 0 ? (overdueLoans / activeLoans) : 0;
+        return {
+            totalLoans: data.length,
+            activeLoans,
+            overdueLoans,
+            totalPrincipal,
+            totalRemaining,
+            nplRatio
+        };
+    } catch (error) {
+        console.error('[DATABASE ERROR] getLoanMetrics():', error);
+        return { totalLoans: 0, activeLoans: 0, overdueLoans: 0, totalPrincipal: 0, totalRemaining: 0, nplRatio: 0 };
+    }
+}
+
 // ============================================================
 //  BANG HỘI (clan)
 // ============================================================
@@ -2894,6 +2934,7 @@ module.exports = {
     loanCollectAll,
     loanCredit,
     loansOf,
+    getLoanMetrics,
     // craft
     craftItem,
     // ban

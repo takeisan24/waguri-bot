@@ -1,6 +1,7 @@
-const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder, MessageFlags } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder, MessageFlags } = require('discord.js');
 const studyLib = require('../../lib/study');
 const db = require('../../database');
+const config = require('../../config');
 const { getInteractionLanguage, t } = require('../../lib/i18n');
 
 module.exports = {
@@ -91,9 +92,10 @@ module.exports = {
                 const totalMinutes = userRow?.total_study_minutes || 0;
                 const points = userRow?.study_points || 0;
 
+                const isEn = locale?.startsWith('en');
                 const embed = new EmbedBuilder()
-                    .setColor('#8B5CF6')
-                    .setTitle(t(locale, 'commands.study.log_title'))
+                    .setColor(config.CORE_THEMES.STUDY.COLOR)
+                    .setTitle(`${config.CORE_THEMES.STUDY.EMOJI} ` + t(locale, 'commands.study.log_title'))
                     .setDescription(
                         t(locale, 'commands.study.log_stats', {
                             streak, hours: Math.floor(totalMinutes / 60), minutes: totalMinutes % 60, points,
@@ -101,7 +103,14 @@ module.exports = {
                     )
                     .setTimestamp();
 
-                return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+                const row = new ActionRowBuilder().addComponents(
+                    new ButtonBuilder()
+                        .setLabel(isEn ? '🎧 Open Web Lo-Fi Room' : '🎧 Mở Phòng Học Lo-Fi Web')
+                        .setStyle(ButtonStyle.Link)
+                        .setURL('https://waguri-bot.vercel.app/study')
+                );
+
+                return interaction.reply({ embeds: [embed], components: [row], flags: MessageFlags.Ephemeral });
             }
 
             const remaining = session.endsAt - Date.now();

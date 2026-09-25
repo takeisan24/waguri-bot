@@ -7,7 +7,7 @@ module.exports = {
         .setDescription('Trò chơi Loto 🎟️')
         .addSubcommand(sub =>
             sub.setName('open')
-               .setDescription('Mở phòng chơi Loto (yêu cầu vào voice)')
+               .setDescription('Mở phòng chơi Loto')
         )
         .addSubcommand(sub =>
             sub.setName('join')

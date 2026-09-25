@@ -39,13 +39,7 @@ async function handleLotoPrefix(message, cmd, args) {
 
     if (cmd === 'loto') {
         const voiceChannel = getVoiceChannel(message.member);
-        if (!voiceChannel) {
-            const embed = buildWaguriEmbed(message, 'warning', {
-                locale,
-                description: t(locale, 'commands.loto.err_voice_required')
-            });
-            return message.reply({ embeds: [embed] });
-        }
+        const channelDisplayName = voiceChannel?.name || (message.channel?.name ? `#${message.channel.name}` : 'Sảnh Lô Tô');
 
         const { hasActiveBingoGame } = require('./bingoPrefix');
         if (activeLotoGames.has(channelId) || hasActiveBingoGame(channelId)) {
@@ -73,7 +67,7 @@ async function handleLotoPrefix(message, cmd, args) {
         activeLotoGames.set(channelId, {
             hostId: userId,
             hostTag: message.author.tag,
-            voiceChannelName: voiceChannel.name,
+            voiceChannelName: channelDisplayName,
             status: 'lobby',
             sessionId: sessionId, // để ghi/hoàn cược qua DB (chống mất tiền khi restart)
             players: new Map(),
@@ -91,7 +85,7 @@ async function handleLotoPrefix(message, cmd, args) {
             title: t(locale, 'commands.loto.lobby_opened_title'),
             description: t(locale, 'commands.loto.lobby_opened_desc', {
                 hostId: userId,
-                voiceName: voiceChannel.name,
+                voiceName: channelDisplayName,
                 prefix: config.PREFIX,
                 price: TICKET_PRICE.toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN'),
                 currency: config.CURRENCY

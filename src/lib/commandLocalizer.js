@@ -661,6 +661,7 @@ const SUBCOMMAND_DESCRIPTIONS = {
     "eco-admin.unban": { vi: "Bỏ chặn user", en: "Unban a user" },
     "eco-admin.resetuser": { vi: "Xóa sạch dữ liệu một người chơi", en: "Wipe all data of a player" },
     "eco-admin.report": { vi: "📊 Báo cáo telemetry kinh tế (cung tiền, hoạt động, dòng tiền, top nhận)", en: "📊 Economy telemetry (supply, activity, money flow, top gainers)" },
+    "eco-admin.daily": { vi: "📋 Báo cáo Checklist vận hành hằng ngày (5 Cổng chất lượng)", en: "📋 Daily operational checklist report (5 Quality Gates)" },
     "eco-admin.trace": { vi: "🔎 Xem nhật ký giao dịch của một người chơi", en: "🔎 View a player's transaction ledger" },
 
     // premium-admin

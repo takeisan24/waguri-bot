@@ -1,6 +1,8 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType } = require('discord.js');
 const { buildWaguriEmbed } = require('../../lib/embed');
 const plant = require('../../lib/plant');
+const config = require('../../config');
+const db = require('../../database.js');
 const { getInteractionLanguage, t } = require('../../lib/i18n');
 
 module.exports = {
@@ -31,6 +33,7 @@ module.exports = {
     async execute(interaction) {
         await interaction.deferReply();
         const locale = await getInteractionLanguage(interaction);
+        const isEn = locale?.startsWith('en');
         const sub = interaction.options.getSubcommand();
         const userId = interaction.user.id;
         const target = interaction.options.getUser('user');
@@ -48,7 +51,94 @@ module.exports = {
             case 'box': r = await plant.plantBox(userId, target, locale); break;
             default: r = { type: 'error', title: t(locale, 'plant.title'), description: t(locale, 'common.invalid_subcommand') };
         }
-        const embed = buildWaguriEmbed(interaction, r.type, { locale, title: r.title, description: r.description });
+
+        const embed = buildWaguriEmbed(interaction, r.type, {
+            locale,
+            title: `${config.CORE_THEMES.FARM.EMOJI} ` + (r.title || 'Vườn Nông Sản Gekka'),
+            description: r.description
+        }).setColor(config.CORE_THEMES.FARM.COLOR);
+
+        // Nút bấm 1-chạm chỉ hiển thị khi xem /farm info để thao tác nhanh
+        if (sub === 'info') {
+            const p = await db.getPlant(userId);
+            const buttons = [];
+
+            if (!p) {
+                buttons.push(
+                    new ButtonBuilder()
+                        .setCustomId('farm_btn_buy')
+                        .setLabel(isEn ? '🌱 Plant Seed (500)' : '🌱 Mua Giống Trồng Cây (500)')
+                        .setStyle(ButtonStyle.Success)
+                );
+            } else if (p.stage === 'mature') {
+                buttons.push(
+                    new ButtonBuilder()
+                        .setCustomId('farm_btn_harvest')
+                        .setLabel(isEn ? '🧺 Harvest Crop' : '🧺 Thu Hoạch Ngay')
+                        .setStyle(ButtonStyle.Success)
+                );
+            } else {
+                buttons.push(
+                    new ButtonBuilder()
+                        .setCustomId('farm_btn_water')
+                        .setLabel(isEn ? '💧 Water Plant' : '💧 Tưới Nước')
+                        .setStyle(ButtonStyle.Primary),
+                    new ButtonBuilder()
+                        .setCustomId('farm_btn_fertilize')
+                        .setLabel(isEn ? '🌿 Fertilize (200)' : '🌿 Bón Phân (200)')
+                        .setStyle(ButtonStyle.Secondary)
+                );
+            }
+
+            if (buttons.length > 0) {
+                const row = new ActionRowBuilder().addComponents(buttons);
+                const msg = await interaction.editReply({ embeds: [embed], components: [row] });
+
+                // Collector an toàn: TTL 60s, tự hủy để triệt tiêu 100% rủi ro Memory Leak
+                const collector = msg.createMessageComponentCollector({
+                    componentType: ComponentType.Button,
+                    time: 60_000,
+                    max: 3
+                });
+
+                collector.on('collect', async i => {
+                    if (i.user.id !== userId) {
+                        return i.reply({
+                            content: isEn ? 'This is not your farm!' : 'Đây là vườn nông sản của người khác nhen! 🌸',
+                            ephemeral: true
+                        });
+                    }
+
+                    await i.deferUpdate();
+                    let actRes;
+                    if (i.customId === 'farm_btn_buy') actRes = await plant.buyPlant(userId, locale);
+                    else if (i.customId === 'farm_btn_water') actRes = await plant.waterPlant(userId, locale);
+                    else if (i.customId === 'farm_btn_harvest') actRes = await plant.harvest(userId, locale);
+                    else if (i.customId === 'farm_btn_fertilize') actRes = await plant.fertilize(userId, locale);
+
+                    const updatedEmbed = buildWaguriEmbed(interaction, actRes.type, {
+                        locale,
+                        title: `${config.CORE_THEMES.FARM.EMOJI} ` + (actRes.title || 'Vườn Nông Sản Gekka'),
+                        description: actRes.description
+                    }).setColor(config.CORE_THEMES.FARM.COLOR);
+
+                    await interaction.editReply({ embeds: [updatedEmbed], components: [] });
+                    collector.stop('acted');
+                });
+
+                collector.on('end', async (_, reason) => {
+                    if (reason !== 'acted') {
+                        const disabledRow = new ActionRowBuilder().addComponents(
+                            buttons.map(b => ButtonBuilder.from(b).setDisabled(true))
+                        );
+                        await interaction.editReply({ components: [disabledRow] }).catch(() => {});
+                    }
+                });
+
+                return;
+            }
+        }
+
         await interaction.editReply({ embeds: [embed] });
     },
 };

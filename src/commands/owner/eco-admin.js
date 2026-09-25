@@ -5,6 +5,7 @@ const { isOwner } = require('../../lib/owner');
 const { setBan } = require('../../lib/bans');
 const { buildWaguriEmbed } = require('../../lib/embed');
 const { getInteractionLanguage, t } = require('../../lib/i18n');
+const { getDailyStats } = require('../../lib/commandTelemetry');
 
 const fmt = (n, locale) => Number(n).toLocaleString(locale?.startsWith('en') ? 'en-US' : 'vi-VN');
 
@@ -43,6 +44,7 @@ module.exports = {
             .addUserOption(o => o.setName('user').setDescription('Người chơi').setRequired(true)))
         .addSubcommand(s => s.setName('resetuser').setDescription('Xóa sạch dữ liệu một người chơi')
             .addUserOption(o => o.setName('user').setDescription('Người chơi').setRequired(true)))
+        .addSubcommand(s => s.setName('daily').setDescription('📋 Báo cáo Checklist vận hành hằng ngày (5 Cổng chất lượng: RAM, Lệnh, Lỗi, Kinh tế, Nợ)'))
         .addSubcommand(s => s.setName('report').setDescription('📊 Báo cáo telemetry kinh tế (cung tiền, hoạt động, dòng tiền, top nhận)'))
         .addSubcommand(s => s.setName('trace').setDescription('🔎 Xem nhật ký giao dịch của một người chơi')
             .addUserOption(o => o.setName('user').setDescription('Người chơi cần truy vết').setRequired(true))
@@ -215,6 +217,116 @@ module.exports = {
             console.log(`[ECO-ADMIN AUDIT] owner=${interaction.user.id} action=code-revoke code=${String(ma).toUpperCase()}`);
             return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'success', {
                 description: t(locale, 'commands.eco-admin.code.revoked', { code: String(ma).toUpperCase() }) })] });
+        }
+
+        // --- Báo cáo Checklist vận hành hằng ngày (5 Cổng chất lượng) ---
+        if (sub === 'daily') {
+            console.log(`[ECO-ADMIN AUDIT] owner=${interaction.user.id} action=daily_checklist`);
+            const isEn = locale?.startsWith('en');
+
+            // 1. Gate 1: RAM & System Health
+            const mem = process.memoryUsage();
+            const rssMB = Math.round(mem.rss / 1024 / 1024);
+            const heapMB = Math.round(mem.heapUsed / 1024 / 1024);
+            const uptimeSec = Math.floor(process.uptime());
+            const uptimeHours = (uptimeSec / 3600).toFixed(1);
+
+            let gate1Status = '🟢';
+            if (rssMB > 280) gate1Status = '🔴';
+            else if (rssMB > 220) gate1Status = '🟡';
+
+            // 2. Gate 2 & 3: Command Telemetry & Dead Commands
+            const cmdTelemetry = getDailyStats();
+            const errRatePct = (cmdTelemetry.errorRate * 100).toFixed(2);
+            let gate2Status = '🟢';
+            if (cmdTelemetry.errorRate > 0.015) gate2Status = '🔴';
+            else if (cmdTelemetry.errorRate > 0.005) gate2Status = '🟡';
+
+            let gate3Status = '🟢';
+            const deadCount = cmdTelemetry.deadCommands.length;
+            if (deadCount > 15) gate3Status = '🔴';
+            else if (deadCount > 8) gate3Status = '🟡';
+
+            // 3. Gate 4: Kinh Tế (Faucet vs Sink)
+            const ledgerFlow = await db.getLedgerFlow(24, 15);
+            let totalFaucet = 0;
+            let totalSink = 0;
+            if (Array.isArray(ledgerFlow)) {
+                for (const row of ledgerFlow) {
+                    const delta = Number(row.tong_xu || 0);
+                    if (delta > 0) totalFaucet += delta;
+                    else totalSink += Math.abs(delta);
+                }
+            }
+            const sinkRatio = totalFaucet > 0 ? (totalSink / totalFaucet) : 1;
+            let gate4Status = '🟢';
+            if (totalFaucet > 0) {
+                if (sinkRatio < 0.70 || sinkRatio > 1.30) gate4Status = '🔴';
+                else if (sinkRatio < 0.85 || sinkRatio > 1.05) gate4Status = '🟡';
+            }
+
+            // 4. Gate 5: Quỹ Tín Dụng Kikyo (/loan NPL)
+            const loanMetrics = await db.getLoanMetrics();
+            const nplPct = (loanMetrics.nplRatio * 100).toFixed(1);
+            let gate5Status = '🟢';
+            if (loanMetrics.activeLoans > 0) {
+                if (loanMetrics.nplRatio > 0.25) gate5Status = '🔴';
+                else if (loanMetrics.nplRatio > 0.15) gate5Status = '🟡';
+            }
+
+            // Đánh giá tổng quát
+            const allGates = [gate1Status, gate2Status, gate3Status, gate4Status, gate5Status];
+            const hasRed = allGates.includes('🔴');
+            const hasYellow = allGates.includes('🟡');
+            const overallStatus = hasRed ? '🔴 CẦN XỬ LÝ KHẨN CẤP' : (hasYellow ? '🟡 CẦN CHÚ Ý' : '🟢 TẤT CẢ KHỎE MẠNH (HEALTHY)');
+            const embedType = hasRed ? 'error' : (hasYellow ? 'warning' : 'success');
+
+            const embed = buildWaguriEmbed(interaction, embedType, {
+                locale,
+                title: isEn ? '📋 Waguri Daily Operational Checklist' : '📋 Báo Cáo Checklist Vận Hành Hằng Ngày Waguri',
+                description: isEn
+                    ? `**System State:** ${overallStatus}\n📅 **Date:** \`${cmdTelemetry.date}\` · **Uptime:** \`${uptimeHours}h\`\n───────────────────────────────`
+                    : `**Trạng thái hệ thống:** ${overallStatus}\n📅 **Ngày theo dõi:** \`${cmdTelemetry.date}\` · **Uptime:** \`${uptimeHours} giờ\`\n───────────────────────────────`
+            });
+
+            embed.addFields({
+                name: `${gate1Status} Cổng 1: Hạ Tầng VPS (384MB)`,
+                value: `• RSS RAM: **${rssMB} MB** / 384 MB (Heap: **${heapMB} MB**)\n• Uptime: **${uptimeHours} giờ** (${uptimeSec.toLocaleString()}s)\n• Đánh giá: ${gate1Status === '🟢' ? 'RAM rất an toàn' : (gate1Status === '🟡' ? 'RAM hơi cao' : 'Nguy cơ OOM!')}`,
+                inline: true
+            }, {
+                name: `${gate2Status} Cổng 2: Lệnh & Tỷ Lệ Lỗi`,
+                value: `• Tổng lượt gọi: **${cmdTelemetry.totalCalls.toLocaleString()}**\n• User tương tác: **${cmdTelemetry.uniqueUsersCount.toLocaleString()}**\n• Lỗi: **${cmdTelemetry.totalErrors}** (\`${errRatePct}%\`)\n• Đánh giá: ${gate2Status === '🟢' ? 'Độ ổn định cao' : 'Có lệnh lỗi cần soi log'}`,
+                inline: true
+            });
+
+            const topCmdsStr = cmdTelemetry.topCommands.length
+                ? cmdTelemetry.topCommands.map((c, i) => `\`#${i+1}\` **/${c.name}**: ${c.total} lượt (${c.uniqueUsers} users)`).join('\n')
+                : '*Chưa có lệnh nào được gọi hôm nay*';
+            const deadSampleStr = cmdTelemetry.deadCommands.length
+                ? cmdTelemetry.deadCommands.slice(0, 8).map(c => `\`/${c}\``).join(' ') + (cmdTelemetry.deadCommands.length > 8 ? ` *(+${cmdTelemetry.deadCommands.length - 8} lệnh)*` : '')
+                : '✅ 100% lệnh đều có người dùng';
+
+            embed.addFields({
+                name: `${gate3Status} Cổng 3: Sức Hút Tính Năng (Top & Dead Commands)`,
+                value: `🔥 **Top lệnh phổ biến:**\n${topCmdsStr}\n\n💤 **Lệnh không ai dùng hôm nay (${cmdTelemetry.deadCommands.length}/${cmdTelemetry.totalRegisteredCommands}):**\n${deadSampleStr}`
+            });
+
+            embed.addFields({
+                name: `${gate4Status} Cổng 4: Cân Bằng Tiền Tệ (Faucet / Sink)`,
+                value: `• Tiền sinh ra (Faucet): **+${fmt(totalFaucet, locale)}** ${C}\n• Tiền tiêu đi (Sink): **-${fmt(totalSink, locale)}** ${C}\n• Tỷ lệ Sink / Faucet: **${sinkRatio.toFixed(2)}** *(Chuẩn: 0.85 - 1.05)*\n• Đánh giá: ${gate4Status === '🟢' ? 'Kinh tế cân bằng hoàn hảo' : (sinkRatio < 0.85 ? 'Bơm tiền nhiều hơn đốt (Lạm phát)' : 'Hút tiền quá mạnh (Thắt chặt)')}`,
+                inline: true
+            }, {
+                name: `${gate5Status} Cổng 5: Quỹ Tín Dụng Kikyo (/loan)`,
+                value: `• Khoản vay hoạt động: **${loanMetrics.activeLoans}**\n• Nợ quá hạn: **${loanMetrics.overdueLoans}**\n• Tỷ lệ nợ xấu (NPL): **${nplPct}%** *(Trần: < 25%)*\n• Dư nợ: **${fmt(loanMetrics.totalRemaining, locale)}** ${C}`,
+                inline: true
+            });
+
+            embed.setFooter({
+                text: 'Waguri SRE & Operations • Cập nhật mỗi nhịp gọi',
+                iconURL: interaction.client.user.displayAvatarURL()
+            });
+
+            return interaction.editReply({ embeds: [embed] });
         }
 
         // --- Báo cáo telemetry kinh tế (không cần target user) ---
