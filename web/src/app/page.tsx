@@ -210,18 +210,18 @@ export default async function Home() {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {(isEn ? [
               ["🗓️", "Lunar Calendar & Fortune Telling", "Check lunar dates, stem-branch, auspicious hours, and daily fortune telling."],
-              ["🐷", "Piggy Bank Breeding", "Buy piglets, feed them, sell for profit — or raid friends' piggies!"],
+              ["🍰", "Gekka Bakery & Artisan Pastries", "Run your own bakery, bake specialty pastries from farm crops, and serve VIP orders."],
               ["🌱", "Time-based Farming", "Sow seeds, water them, and harvest agricultural crops in real-time."],
               ["🧧", "Lucky Red Envelopes", "Distribute lucky money to the text channel — fastest hands win the most."],
-              ["🎱", "Voice Loto & Bingo", "Open a room in voice channel, automate number calling, and play with groups."],
-              ["🏰", "Clans & Alliance Wars", "Form a clan, contribute funds, and declare PvP wars to seize enemy treasuries."],
+              ["🎱", "Folk Loto Discord Rooms", "Open a room in text chat, automated number calling, and celebrate with the server."],
+              ["📈", "Dynamic Commodity Market", "Live price charts for crops and minerals shift every 4 hours to maximize trading profit."],
             ] : [
               ["🗓️", "Lịch âm & Bói vui", "Xem âm lịch, can-chi, giờ hoàng đạo và bói toán mỗi ngày."],
-              ["🐷", "Nuôi heo đất", "Mua heo, chăm bẵm, bán kiếm lời — hoặc rình trộm heo bạn bè!"],
+              ["🍰", "Tiệm Bánh Gekka", "Tự làm chủ tiệm bánh, chế biến nông sản thành bánh ngọt và phục vụ đơn hàng VIP."],
               ["🌱", "Trồng cây", "Gieo giống, tưới nước, thu hoạch nông sản theo thời gian thực."],
               ["🧧", "Lì xì may mắn", "Phát lì xì cho cả kênh — ai nhanh tay người đó hưởng nhiều."],
-              ["🎱", "Loto & Bingo voice", "Mở phòng trong kênh thoại, máy tự gọi số, chơi cả nhóm."],
-              ["🏰", "Bang hội & Đại chiến", "Lập bang, góp quỹ, tuyên chiến PvP cướp quỹ bang địch."],
+              ["🎱", "Hội Lô Tô Dân Gian", "Mở sòng gọi số ngay trên chat Discord, hồi hộp từng con số, vui nhộn cùng cả server."],
+              ["📈", "Chợ Nông Thủy Sản", "Biểu đồ giá nông sản, khoáng sản biến động tự động mỗi 4 giờ. Căn giờ để chốt lời tối đa."],
             ]).map(([icon, title, desc]) => (
               <div key={title as string} className="glass-panel glass-panel-hover p-5 rounded-2xl space-y-2">
                 <span className="text-2xl">{icon}</span>

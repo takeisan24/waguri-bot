@@ -62,14 +62,14 @@
     "copyright": "© {year} Waguri Bot. All rights reserved by the Waguri development team."
   },
   "home": {
-    "float_bubble": "Welcome to my humble place~ Wishing you a day full of joy and good luck! 🌸",
+    "float_bubble": "Welcome to my little corner~ Wishing you a day full of joy and good luck! 🌸",
     "float_scroll_top": "Scroll to top",
     "float_chat": "Chat with Waguri",
     "hero": {
       "badge": "AI Waifu & RPG Game 🌸",
       "title_1": "AI Waifu Chat &",
       "title_2": "RPG Economy Game",
-      "subtitle": "Experience a fun RPG world, work, career progression, high-stakes minigames, clans, and chat with sweet Waguri Kaoruko right on your Discord server!",
+      "subtitle": "Experience a fun RPG world, work, manage Gekka Bakery, time the commodity market, play minigames, and chat with sweet Waguri Kaoruko right on your Discord server!",
       "invite_btn": "Invite Waguri to Discord 🌸",
       "login_btn": "Dashboard Login ⚡",
       "explore_btn": "Explore Features",
@@ -83,7 +83,9 @@
       "economy_title": "💼 Detailed Economy Game",
       "economy_desc": "Work system, unlock 13 professions, buy vehicles for travel, rank up, and upgrade Gekka Bakery to bake cakes for coins.",
       "minigames_title": "🎲 Fun Minigames",
-      "minigames_desc": "Test your luck with Loto, Bingo, Dice, Fish-Prawn-Crab, and intense card games right inside your Discord server.",
+      "minigames_desc": "Test your luck with Folk Loto, Dice, Fish-Prawn-Crab, Blackjack, and exciting minigames right inside your Discord server.",
+      "bakery_title": "🍰 Gekka Bakery",
+      "bakery_desc": "Own your famous bakery, craft artisan pastry recipes from farm harvests, serve regulars and daily VIP orders.",
       "clans_title": "🏰 Clans & Bakeries",
       "clans_desc": "Form clans to grind, distribute clan dividends, manage Gekka Bakery together, and hire NPC staff to get rich collectively.",
       "antinuke_title": "🛡️ Anti-Nuke Protection",
@@ -106,7 +108,7 @@
       "q3": "How does the AI chat feature work?",
       "a3": "You can type `/ask <message>` or ping the bot directly in the chat channel. Waguri will automatically detect your language and reply sweetly.",
       "q4": "How do I earn the most coins?",
-      "a4": "Use `/work` regularly, complete `/quest` daily, go `/fish` or `/mine` for ingredients, then bake them in `/tiembanh` to sell cakes for profit!"
+      "a4": "Use `/work` regularly, complete `/quest` daily, go `/fish`, `/mine`, or `/farm` for ingredients, then bake them in `/bakery` to sell cakes for profit!"
     }
   },
   "game": {
@@ -458,10 +460,10 @@
   },
   "commands": {
     "meta_title": "Commands List 📜 — Waguri Bot",
-    "meta_desc": "Explore all commands of Waguri: economy, minigames, farming, clans, relationships, AI, and admin.",
+    "meta_desc": "Explore all commands of Waguri: economy, bakery, farming, study room, minigames, AI, and admin.",
     "title": "Commands List",
     "subtitle": "All commands are available using /slash or w! prefix. Type /help in Discord to view details.",
-    "search_placeholder": "🔎 Search {count} commands... (e.g. work, mini-game, clan)",
+    "search_placeholder": "🔎 Search {count} commands... (e.g. work, bakery, farm, study)",
     "no_results": "No matching commands found~ 🌸",
     "usage": "Usage:",
     "or_prefix": "or",

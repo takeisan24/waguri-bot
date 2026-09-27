@@ -10,7 +10,7 @@ export default function HeroContent() {
   const { t } = useLanguage();
 
   return (
-    <div className="text-center max-w-3xl mx-auto mb-16 space-y-6">
+    <div className="text-center max-w-3xl mx-auto mb-8 md:mb-12 space-y-6">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src="https://media.tenor.com/saOAfF_zx6UAAAAM/kaoruko-waguri-the-fragrant-flower-blooms-with-dignity.gif"

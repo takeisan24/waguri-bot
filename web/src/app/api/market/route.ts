@@ -13,7 +13,7 @@ export async function GET() {
       prices,
       updatedAt: new Date().toISOString(),
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ success: false, error: "FAILED_TO_LOAD_MARKET" }, { status: 500 });
   }
 }

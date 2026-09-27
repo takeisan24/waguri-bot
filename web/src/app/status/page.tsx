@@ -97,7 +97,7 @@ export default function StatusPage() {
       );
 
       const queryPromise = supabase
-        .from("world_events")
+        .from("items")
         .select("id")
         .limit(1);
 

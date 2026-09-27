@@ -6,7 +6,7 @@ const feats = [
   { emoji: "💬", titleKey: "home.features.ai_chat_title", descKey: "home.features.ai_chat_desc" },
   { emoji: "💼", titleKey: "home.features.economy_title", descKey: "home.features.economy_desc" },
   { emoji: "🎲", titleKey: "home.features.minigames_title", descKey: "home.features.minigames_desc" },
-  { emoji: "🏰", titleKey: "home.features.clans_title", descKey: "home.features.clans_desc" },
+  { emoji: "🍰", titleKey: "home.features.bakery_title", descKey: "home.features.bakery_desc" },
   { emoji: "🛡️", titleKey: "home.features.antinuke_title", descKey: "home.features.antinuke_desc" },
   { emoji: "📚", titleKey: "home.features.study_title", descKey: "home.features.study_desc" },
 ];

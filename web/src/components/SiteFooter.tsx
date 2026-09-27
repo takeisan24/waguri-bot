@@ -34,6 +34,8 @@ export default function SiteFooter() {
           <a href={VOTE_URL} target="_blank" rel="noopener noreferrer" className="hover:text-pink-300 transition-colors">
             Vote Top.gg
           </a>
+          <Link href="/study" className="hover:text-pink-300 transition-colors">{t("nav.study")}</Link>
+          <Link href="/market" className="hover:text-pink-300 transition-colors">{t("nav.market")}</Link>
           <Link href="/wiki" className="hover:text-pink-300 transition-colors">{t("nav.wiki")}</Link>
           <Link href="/leaderboard" className="hover:text-pink-300 transition-colors">{t("nav.leaderboard")}</Link>
           <Link href="/changelog" className="hover:text-pink-300 transition-colors">{t("nav.changelog")}</Link>

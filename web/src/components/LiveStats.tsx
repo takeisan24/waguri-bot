@@ -47,7 +47,7 @@ export default function LiveStats() {
   if (!stats || stats.servers <= 0) return null;
 
   return (
-    <div className="flex flex-wrap items-center justify-center gap-3 pt-2 text-sm">
+    <div className="flex flex-wrap items-center justify-center gap-3 pt-2 text-sm animate-in fade-in duration-500">
       <span className="inline-flex items-center gap-2 rounded-full border border-pink-300/20 bg-pink-500/5 px-4 py-1.5 text-pink-200 backdrop-blur-md">
         🌸 {t("livestats.serving")} <strong className="text-pink-300">{fmt(stats.servers)}</strong> {t("livestats.servers")}
       </span>

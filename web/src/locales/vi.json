@@ -69,7 +69,7 @@
       "badge": "Waifu AI & RPG Việt Nam 🌸",
       "title_1": "Trò chuyện AI Waifu &",
       "title_2": "Game Kinh Tế RPG Việt Nam",
-      "subtitle": "Trải nghiệm thế giới nhập vai vui nhộn, đi làm, thăng tiến nghề nghiệp, minigame may rủi, bang hội, và trò chuyện cùng bé Waguri Kaoruko ngọt ngào ngay trên server Discord của bạn!",
+      "subtitle": "Trải nghiệm thế giới nhập vai vui nhộn, đi làm, quản lý tiệm bánh Gekka, canh chợ nông sản, minigame may rủi, và trò chuyện cùng bé Waguri Kaoruko ngọt ngào ngay trên server Discord của bạn!",
       "invite_btn": "Mời Waguri vào Discord 🌸",
       "login_btn": "Đăng nhập Dashboard ⚡",
       "explore_btn": "Khám Phá Tính Năng",
@@ -83,7 +83,9 @@
       "economy_title": "💼 Game Kinh Tế Chi Tiết",
       "economy_desc": "Hệ thống đi làm, mở 13 nghề, mua xe di chuyển, thăng tiến cấp bậc và nâng cấp tiệm bánh Gekka nướng bánh kiếm xu.",
       "minigames_title": "🎲 Minigames Giải Trí",
-      "minigames_desc": "Thử thách vận may cùng Loto, Bingo, Tài Xỉu, Bầu Cua, và các ván bài kịch tính ngay trong Discord server.",
+      "minigames_desc": "Thử thách vận may cùng Loto dân gian, Tài Xỉu, Bầu Cua, Xì Dách (Blackjack), và các minigame kịch tính ngay trong Discord server.",
+      "bakery_title": "🍰 Tiệm Bánh Gekka",
+      "bakery_desc": "Tự làm chủ tiệm bánh danh tiếng, chế tạo công thức bánh ngọt từ nông sản, phục vụ khách quen và đơn hàng VIP mỗi ngày.",
       "clans_title": "🏰 Bang Hội & Tiệm Bánh",
       "clans_desc": "Lập bang cày cuốc, chia cổ tức bang hội, cùng quản lý Tiệm Bánh Gekka, thuê NPC làm việc để làm giàu tập thể.",
       "antinuke_title": "🛡️ Chống Phá Hoại Server",
@@ -106,7 +108,7 @@
       "q3": "Tính năng trò chuyện AI hoạt động thế nào?",
       "a3": "Bạn có thể gõ lệnh `/ask <nội dung>` hoặc ping trực tiếp bot trong kênh chat. Waguri sẽ tự động nhận diện ngôn ngữ và phản hồi cậu thật ngọt ngào.",
       "q4": "Làm sao để kiếm được nhiều xu nhất?",
-      "a4": "Hãy đi `/work` đều đặn, hoàn thành nhiệm vụ `/quest`, chăm chỉ đi `/fish` hay `/mine` kiếm nguyên liệu, sau đó nướng bánh ở `/tiembanh` để bán bánh thu tiền nhé!"
+      "a4": "Hãy đi `/work` đều đặn, hoàn thành nhiệm vụ `/quest`, chăm chỉ đi `/fish`, `/mine` hay `/farm` kiếm nguyên liệu, sau đó nướng bánh ở `/bakery` để bán bánh thu tiền nhé!"
     }
   },
   "game": {
@@ -458,10 +460,10 @@
   },
   "commands": {
     "meta_title": "Danh sách lệnh 📜 — Waguri Bot",
-    "meta_desc": "Tra cứu toàn bộ lệnh của Waguri: kiếm tiền, minigame, nuôi trồng, bang hội, tình cảm, AI và quản trị.",
+    "meta_desc": "Tra cứu toàn bộ lệnh của Waguri: kiếm tiền, tiệm bánh, nông trại, phòng học, minigame, AI và quản trị.",
     "title": "Danh sách lệnh",
     "subtitle": "Tất cả lệnh dùng được bằng /slash hoặc prefix w!. Gõ /help trong Discord để xem chi tiết từng lệnh.",
-    "search_placeholder": "🔎 Tìm trong {count} lệnh... (vd: work, may rủi, bang)",
+    "search_placeholder": "🔎 Tìm trong {count} lệnh... (vd: work, bakery, farm, study)",
     "no_results": "Không tìm thấy lệnh nào khớp~ 🌸",
     "usage": "Cách dùng:",
     "or_prefix": "cũng được",
