@@ -45,7 +45,10 @@ async function getFallbackStats() {
             admin.from("guild_settings").select("settings").eq("guild_id", "global").single(),
             admin.from("economy_snapshots").select("user_count, active_7d").order("taken_on", { ascending: false }).limit(1).single(),
         ]);
-        const botStats = globalRow?.settings?.bot_stats;
+        let botStats = globalRow?.settings?.bot_stats;
+        if (typeof botStats === "string" && botStats.startsWith("{")) {
+            try { botStats = JSON.parse(botStats); } catch {}
+        }
         return NextResponse.json({
             servers: typeof botStats?.servers === "number" ? botStats.servers : 31,
             users: typeof botStats?.users === "number" ? botStats.users : 2295,

@@ -1253,7 +1253,8 @@ async function getGuildSettings(guildId) {
 /** Đặt 1 khóa cấu hình cho guild. */
 async function setGuildSetting(guildId, key, value) {
     try {
-        const { error } = await supabase.rpc('set_guild_setting', { p_guild: guildId, p_key: key, p_value: String(value) });
+        const valStr = typeof value === 'object' && value !== null ? JSON.stringify(value) : String(value);
+        const { error } = await supabase.rpc('set_guild_setting', { p_guild: guildId, p_key: key, p_value: valStr });
         if (error) throw error;
         return true;
     } catch (error) {
