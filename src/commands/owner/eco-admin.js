@@ -256,14 +256,14 @@ module.exports = {
             let totalSink = 0;
             if (Array.isArray(ledgerFlow)) {
                 for (const row of ledgerFlow) {
-                    const delta = Number(row.tong_xu || 0);
-                    if (delta > 0) totalFaucet += delta;
-                    else totalSink += Math.abs(delta);
+                    totalFaucet += Number(row.bom_vao || 0);
+                    totalSink += Number(row.hut_ra || 0);
                 }
             }
             const sinkRatio = totalFaucet > 0 ? (totalSink / totalFaucet) : 1;
             let gate4Status = '🟢';
-            if (totalFaucet > 0) {
+            const isMicroFlow = (totalFaucet + totalSink) < 100_000;
+            if (!isMicroFlow && totalFaucet > 0) {
                 if (sinkRatio < 0.70 || sinkRatio > 1.30) gate4Status = '🔴';
                 else if (sinkRatio < 0.85 || sinkRatio > 1.05) gate4Status = '🟡';
             }
@@ -325,7 +325,7 @@ module.exports = {
 
             embed.addFields({
                 name: `${gate4Status} Cổng 4: Cân Bằng Tiền Tệ (Faucet / Sink)`,
-                value: `• Tiền sinh ra (Faucet): **+${fmt(totalFaucet, locale)}** ${C}\n• Tiền tiêu đi (Sink): **-${fmt(totalSink, locale)}** ${C}\n• Tỷ lệ Sink / Faucet: **${sinkRatio.toFixed(2)}** *(Chuẩn: 0.85 - 1.05)*\n• Đánh giá: ${gate4Status === '🟢' ? 'Kinh tế cân bằng hoàn hảo' : (sinkRatio < 0.85 ? 'Bơm tiền nhiều hơn đốt (Lạm phát)' : 'Hút tiền quá mạnh (Thắt chặt)')}`,
+                value: `• Tiền sinh ra (Faucet): **+${fmt(totalFaucet, locale)}** ${C}\n• Tiền tiêu đi (Sink): **-${fmt(totalSink, locale)}** ${C}\n• Tỷ lệ Sink / Faucet: **${sinkRatio.toFixed(2)}** *(Chuẩn: 0.85 - 1.05)*\n• Đánh giá: ${isMicroFlow ? 'Dòng tiền vi mô an toàn (< 100k xu)' : (gate4Status === '🟢' ? 'Kinh tế cân bằng hoàn hảo' : (sinkRatio < 0.85 ? 'Bơm tiền nhiều hơn đốt (Lạm phát)' : 'Hút tiền quá mạnh (Thắt chặt)'))}`,
                 inline: true
             }, {
                 name: `${gate5Status} Cổng 5: Quỹ Tín Dụng Kikyo (/loan)`,

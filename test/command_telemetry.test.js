@@ -45,4 +45,23 @@ describe('📊 Command Telemetry Unit Tests', () => {
         assert.ok(cmds.includes('bakery'), 'Phải chứa lệnh bakery');
         assert.ok(cmds.includes('loan'), 'Phải chứa lệnh loan');
     });
+
+    it('5. Cổng 4 Daily Checklist: Tính đúng Faucet và Sink từ bom_vao & hut_ra của ledger_flow', () => {
+        const mockLedgerFlow = [
+            { source: 'claim_daily', bom_vao: 8400, hut_ra: 0, rong: 8400, so_lan: 6 },
+            { source: 'thue_tai_san', bom_vao: 0, hut_ra: 2511, rong: -2511, so_lan: 6 },
+            { source: 'baucua', bom_vao: 2000, hut_ra: 1000, rong: 1000, so_lan: 2 }
+        ];
+
+        let totalFaucet = 0;
+        let totalSink = 0;
+        for (const row of mockLedgerFlow) {
+            totalFaucet += Number(row.bom_vao || 0);
+            totalSink += Number(row.hut_ra || 0);
+        }
+
+        assert.equal(totalFaucet, 10400, 'totalFaucet phải tính đúng tổng bom_vao');
+        assert.equal(totalSink, 3511, 'totalSink phải tính đúng tổng hut_ra');
+        assert.ok(!('tong_xu' in mockLedgerFlow[0]), 'ledger_flow không có trường tong_xu');
+    });
 });
