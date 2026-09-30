@@ -1883,9 +1883,9 @@ async function getLoanMetrics() {
         let totalRemaining = 0;
 
         for (const l of data) {
-            totalPrincipal += Number(l.principal || 0);
-            totalRemaining += Number(l.remaining || 0);
             if (l.status === 'active' || l.status === 'overdue') {
+                totalPrincipal += Number(l.principal || 0);
+                totalRemaining += Number(l.remaining || 0);
                 activeLoans++;
                 if (new Date(l.due_at).getTime() < now || l.status === 'overdue') {
                     overdueLoans++;
