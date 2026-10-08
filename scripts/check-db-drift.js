@@ -11,6 +11,14 @@
 // độ lệch schema là lỗ rò chậm: ngoại lệ tích tụ rồi có ngày một độ lệch THẬT lọt vào mà
 // không ai nhận ra. Muốn hết lệch thì SỬA DB, không phải sửa danh sách miễn trừ.
 //
+// PHẠM VI (2026-10-08): gương 1:1 chỉ áp cho ĐỐI TƯỢNG CỦA WAGURI. DB `waguri-test` dùng
+// chung với một app khác của chủ dự án (bảng `invitations` của app thiệp hẹn) — thứ đó
+// không được xoá mà cũng không bao giờ có ở prod, nên cổng sẽ đỏ vĩnh viễn nếu so tất cả.
+// Phạm vi suy ra TỪ CHÍNH các file migration (scripts/lib/phamViWaguri.js), không phải từ
+// danh sách miễn trừ viết tay — cùng tinh thần migration 0115 `fingerprint_only_our_objects`.
+// Đối tượng ngoài phạm vi vẫn được IN RA cuối báo cáo: thấy tên mình trong đó là dấu hiệu
+// đã tạo tay trên DB mà quên viết migration.
+//
 // So DB test với ẢNH CHỤP prod (không nối thẳng prod) -> CI chỉ cần khoá test, khoá prod
 // không bao giờ rời máy local. Xem scripts/db-snapshot.js.
 // ============================================================
@@ -18,16 +26,32 @@
 const fs = require('fs');
 const path = require('path');
 const { layVanTay, coCauHinh } = require('./lib/dbFingerprint');
+const { trongPhamVi } = require('./lib/phamViWaguri');
 
 const ANH_CHUP = path.join(__dirname, '..', 'supabase', 'schema-snapshot.json');
 // DB test ngủ (Supabase free tier tự ngủ khi lâu không dùng) KHÔNG được chặn mọi lần push.
 const meoNhe = process.argv.includes('--soft');
 
 const lech = [];
-const soSanhMang = (ten, a = [], b = []) => {
+const ngoaiPhamVi = [];
+
+/**
+ * @param {string} ten nhãn hiển thị ("bảng", "hàm", "cột users"...)
+ * @param {string[]} a phía ảnh chụp prod
+ * @param {string[]} b phía DB test
+ * @param {'table'|'function'|'index'|'event_trigger'|null} loai để soi phạm vi Waguri.
+ *   Bỏ trống (cột) = so tuyệt đối: cột chỉ được so cho bảng ĐÃ có ở prod, tức đã là của mình.
+ */
+const soSanhMang = (ten, a = [], b = [], loai = null) => {
     const A = new Set(a), B = new Set(b);
+    // Hướng "TEST THIẾU" luôn tuyệt đối: prod có mà test không có thì chắc chắn là của
+    // Waguri (ảnh chụp prod là của mình), không bao giờ được bỏ qua.
     for (const x of a) if (!B.has(x)) lech.push(`${ten}: TEST THIẾU  →  ${x}`);
-    for (const x of b) if (!A.has(x)) lech.push(`${ten}: TEST DƯ     →  ${x}`);
+    for (const x of b) {
+        if (A.has(x)) continue;
+        if (loai && !trongPhamVi(loai, x)) { ngoaiPhamVi.push(`${ten}: ${x}`); continue; }
+        lech.push(`${ten}: TEST DƯ     →  ${x}`);
+    }
 };
 
 (async () => {
@@ -58,16 +82,16 @@ const soSanhMang = (ten, a = [], b = []) => {
 
     // --- bảng & cột ---
     const bangChuan = chuan.tables || {}, bangTest = test.tables || {};
-    soSanhMang('bảng', Object.keys(bangChuan), Object.keys(bangTest));
+    soSanhMang('bảng', Object.keys(bangChuan), Object.keys(bangTest), 'table');
     for (const b of Object.keys(bangChuan)) {
         if (!bangTest[b]) continue;                       // đã báo ở trên
         soSanhMang(`cột ${b}`, bangChuan[b], bangTest[b]);
     }
 
     // --- hàm, index, event trigger ---
-    soSanhMang('hàm', chuan.functions, test.functions);
-    soSanhMang('index', chuan.indexes, test.indexes);
-    soSanhMang('event trigger', chuan.event_triggers, test.event_triggers);
+    soSanhMang('hàm', chuan.functions, test.functions, 'function');
+    soSanhMang('index', chuan.indexes, test.indexes, 'index');
+    soSanhMang('event trigger', chuan.event_triggers, test.event_triggers, 'event_trigger');
 
     // --- thuộc tính bảo mật: không so hai chiều mà bắt tuyệt đối, cả hai DB đều phải sạch ---
     for (const b of test.bang_chua_bat_rls || []) lech.push(`BẢO MẬT: bảng test chưa bật RLS → ${b}`);
@@ -100,12 +124,23 @@ const soSanhMang = (ten, a = [], b = []) => {
     console.log(`So DB test với ảnh chụp prod: ${soBang} bảng · ${(chuan.functions || []).length} hàm · ` +
                 `${(chuan.indexes || []).length} index`);
 
+    // In các đối tượng NGOÀI phạm vi Waguri: không chặn, nhưng không được im lặng. Nếu một
+    // tên trong đây là của Waguri thì nghĩa là nó được tạo tay trên DB mà chưa có migration.
+    if (ngoaiPhamVi.length) {
+        console.log(`\nℹ️  ${ngoaiPhamVi.length} đối tượng chỉ có ở DB test và KHÔNG do migration nào`);
+        console.log('   của Waguri khai báo (DB test dùng chung với app khác) — bỏ qua, không chặn:');
+        ngoaiPhamVi.forEach(l => console.log('     · ' + l));
+        console.log('   Nếu thấy tên của Waguri ở đây: nó được tạo tay trên DB -> phải viết migration.');
+    }
+
     if (lech.length) {
         console.error(`\n❌ ${lech.length} độ lệch giữa DB test và prod:\n`);
         lech.forEach(l => console.error('  • ' + l));
         console.error('\nWORKFLOW §6: áp migration thì áp CẢ HAI DB. Test lệch prod = lưới an toàn hỏng');
         console.error('đúng lúc cần nhất. Sửa DB cho khớp — KHÔNG có danh sách miễn trừ ở gate này.');
+        console.error('(Phạm vi = đối tượng do migration của Waguri khai báo. Các kiểm tra BẢO MẬT');
+        console.error(' bên trên vẫn tuyệt đối, áp cho mọi bảng trong DB, kể cả của app khác.)');
         process.exit(1);
     }
-    console.log('✅ DB test khớp ảnh chụp prod, không độ lệch nào.');
+    console.log('✅ DB test khớp ảnh chụp prod trong phạm vi Waguri, không độ lệch nào.');
 })();
