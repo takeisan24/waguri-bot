@@ -55,6 +55,16 @@ jobs:
         env:
           TEST_SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
           TEST_SUPABASE_SERVICE_KEY: ${{ secrets.TEST_SUPABASE_SERVICE_KEY }}
+      # Quyền mở cho khoá CÔNG KHAI (anon) — thứ Postgres/PostgREST âm thầm cấp, không phải
+      # thứ ta viết, nên gate quét-văn-bản không thể thấy. Phải hỏi thẳng DB.
+      # Soi cả HÀM (0138) lẫn BẢNG (0153): hai bảng do 0149/0151 sinh ra đã mở cho anon suốt
+      # 11/09 → 08/10 mà không lưới nào kêu, vì cổng cũ chỉ soi hàm.
+      # Chỉ chạy với khoá TEST; thiếu secret thì tự bỏ qua. `--soft` để DB test ngủ (free
+      # tier) không chặn mọi lần push.
+      - run: node scripts/check-rpc-anon.js --soft
+        env:
+          TEST_SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
+          TEST_SUPABASE_SERVICE_KEY: ${{ secrets.TEST_SUPABASE_SERVICE_KEY }}
 
   web-build:
     name: Web — build

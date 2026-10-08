@@ -19,15 +19,19 @@
 // ============================================================
 require('dotenv').config();
 const { coCauHinh, KHOA } = require('./lib/dbFingerprint');
+const { trongPhamVi } = require('./lib/phamViWaguri');
 
 // DB test ngủ (Supabase free tier) không được chặn mọi lần push.
 const meoNhe = process.argv.includes('--soft');
 
-async function soi(moiTruong) {
+function noi(moiTruong) {
     const k = KHOA[moiTruong];
     const { createClient } = require('@supabase/supabase-js');
-    const db = createClient(process.env[k.url], process.env[k.key], { auth: { persistSession: false } });
-    const { data, error } = await db.rpc('rpc_mo_cho_anon');
+    return createClient(process.env[k.url], process.env[k.key], { auth: { persistSession: false } });
+}
+
+async function soi(moiTruong) {
+    const { data, error } = await noi(moiTruong).rpc('rpc_mo_cho_anon');
     if (error) {
         throw new Error(
             `Không gọi được rpc_mo_cho_anon() trên DB ${moiTruong}: ${error.message}\n` +
@@ -35,6 +39,30 @@ async function soi(moiTruong) {
         );
     }
     return Array.isArray(data) ? data : [];
+}
+
+// --- Soi BẢNG (không chỉ hàm) --------------------------------
+// VÌ SAO THÊM (audit 2026-10-08): cổng này chỉ soi HÀM, nên hai bảng do 0149/0151 sinh ra
+// (`study_shop_catalog`, `bakery_completed_orders` — bảng sau chứa user_id) mang policy
+// `FOR SELECT` mở cho anon suốt từ 11/09 và 21/09 mà không lưới nào kêu. Phát hiện ra là
+// nhờ Supabase advisor, tức nhờ công cụ bên ngoài — đúng nghĩa điểm mù.
+async function soiBang(moiTruong) {
+    const { data, error } = await noi(moiTruong).rpc('bang_mo_cho_anon');
+    if (error) {
+        throw new Error(
+            `Không gọi được bang_mo_cho_anon() trên DB ${moiTruong}: ${error.message}\n` +
+            '   -> Có thể migration 0153_thu_quyen_anon_bang_moi.sql chưa được áp lên DB đó.'
+        );
+    }
+    // Tên bảng nằm trước dấu ' [' trong mỗi dòng mô tả. Bảng của app khác dùng chung DB
+    // (xem scripts/lib/phamViWaguri.js) không thuộc trách nhiệm của repo này.
+    const tat = Array.isArray(data) ? data : [];
+    const cua_minh = [], cua_app_khac = [];
+    for (const d of tat) {
+        const ten = String(d).split(' [')[0];
+        (trongPhamVi('table', ten) ? cua_minh : cua_app_khac).push(d);
+    }
+    return { cua_minh, cua_app_khac };
 }
 
 (async () => {
@@ -59,6 +87,37 @@ async function soi(moiTruong) {
             process.exit(1);
         }
 
+        // --- Bảng ---
+        try {
+            const b = await soiBang(mt);
+            if (b.cua_app_khac.length) {
+                console.log(`ℹ️  DB ${mt}: ${b.cua_app_khac.length} bảng mở cho anon nhưng KHÔNG do migration`);
+                console.log('   của Waguri khai báo (DB dùng chung với app khác) — bỏ qua, không chặn:');
+                for (const x of b.cua_app_khac) console.log('     · ' + x);
+            }
+            if (b.cua_minh.length) {
+                hong = true;
+                console.error(`\n❌ DB ${mt}: ${b.cua_minh.length} BẢNG của Waguri đang đọc/ghi được bằng khoá CÔNG KHAI.`);
+                console.error('   RLS bật mà có policy permissive cho anon là vẫn mở — grant không thôi thì không.');
+                for (const x of b.cua_minh) console.error('     · ' + x);
+                console.error('\n   Cách sửa — thêm vào migration mới:');
+                console.error('     drop policy if exists "<tên policy>" on public.<bảng>;');
+                console.error('     revoke all on public.<bảng> from anon, authenticated;');
+                console.error('     grant select, insert, update, delete on public.<bảng> to service_role;');
+            } else {
+                console.log(`✅ DB ${mt}: không bảng nào của Waguri mở cho anon/authenticated.`);
+            }
+        } catch (e) {
+            if (meoNhe) {
+                console.warn(`⚠️  KHÔNG soi được quyền bảng ở DB ${mt} — bỏ qua để không chặn push.`);
+                console.warn('   ' + e.message.split('\n')[0]);
+            } else {
+                console.error('❌ ' + e.message);
+                process.exit(1);
+            }
+        }
+
+        // --- Hàm ---
         if (ho.length === 0) {
             console.log(`✅ DB ${mt}: không RPC ghi nào mở cho anon/authenticated.`);
             continue;
