@@ -16,7 +16,7 @@
 // ============================================================
 const fs = require('fs');
 const path = require('path');
-const { bocObject } = require('./sqlObjects');
+const { bocObject, boComment } = require('./sqlObjects');
 
 const MIG_DIR = path.join(__dirname, '..', '..', 'supabase', 'migrations');
 
@@ -45,6 +45,13 @@ function phamViWaguri() {
         for (const o of bocObject(sql)) {
             if (ra[o.loai]) ra[o.loai].add(chuanHoa(o.ten));
         }
+        // `bocObject` cắt bỏ thân hàm/khối `$$...$$` trước khi quét, nên nó KHÔNG thấy
+        // `CREATE EVENT TRIGGER ensure_rls` của 0112 — câu đó buộc phải nằm trong `DO $$`
+        // vì `CREATE EVENT TRIGGER` không có `IF NOT EXISTS`. Quét thêm trên bản đã bỏ chú
+        // thích (vẫn còn thân khối) để event trigger của mình không bị coi là của app khác.
+        for (const m of boComment(sql).matchAll(/\bcreate\s+event\s+trigger\s+([\w."]+)/gi)) {
+            ra.event_trigger.add(chuanHoa(m[1]));
+        }
     }
     cache = ra;
     return ra;
@@ -59,6 +66,12 @@ function phamViWaguri() {
 function trongPhamVi(loai, ten) {
     const pv = phamViWaguri();
     if (!pv[loai]) return true;
+    // HỎNG VỀ PHÍA CHẶN: tập rỗng nghĩa là KHÔNG suy được phạm vi cho loại này (thư mục
+    // migration không đọc được, hoặc khai báo nằm ở chỗ bộ quét không thấy). Lúc đó phải coi
+    // mọi thứ là của mình để cổng vẫn chặn — nếu trả false thì cổng im lặng bỏ qua đúng thứ
+    // nó sinh ra để canh. Đã mắc thật ngày 08/10: event trigger `ensure_rls` nằm trong khối
+    // `DO $$` nên tập event_trigger rỗng, và `ensure_rls` bị xếp là "của app khác".
+    if (pv[loai].size === 0) return true;
     const sach = loai === 'function' ? chuanHoa(String(ten).split('(')[0]) : chuanHoa(ten);
     return pv[loai].has(sach);
 }
