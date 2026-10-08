@@ -1909,6 +1909,52 @@ async function getLoanMetrics() {
 }
 
 // ============================================================
+//  TELEMETRY LỆNH (Cổng 2 + Cổng 3) — xem migration 0154
+//
+//  Ba hàm này CỐ Ý trả `null` khi lỗi, không trả 0 hay mảng rỗng: "không đọc được DB" phải
+//  phân biệt được với "không có lượt gọi nào". Nhầm hai thứ đó là cách Cổng 3 báo nhầm cả
+//  73 lệnh đã chết lúc mạng rớt.
+// ============================================================
+
+/** Đẩy phần tăng thêm của telemetry xuống DB. @returns {Promise<boolean>} gửi được hay không. */
+async function ghiTelemetryLenh(rows) {
+    if (!Array.isArray(rows) || !rows.length) return true;
+    try {
+        const { data, error } = await supabase.rpc('ghi_telemetry_lenh', { p_rows: rows });
+        if (error) throw error;
+        if (!data || data.success !== true) throw new Error(data?.error || 'RPC trả về không thành công');
+        return true;
+    } catch (error) {
+        console.error('[DATABASE ERROR] ghiTelemetryLenh():', error?.message || error);
+        return false;
+    }
+}
+
+/** Thống kê lệnh trong N ngày gần nhất (tính cả hôm nay). @returns {Promise<object|null>} */
+async function telemetryLenhCuaSo(days = 1) {
+    try {
+        const { data, error } = await supabase.rpc('telemetry_lenh_cua_so', { p_days: Number(days) || 1 });
+        if (error) throw error;
+        return data || null;
+    } catch (error) {
+        console.error('[DATABASE ERROR] telemetryLenhCuaSo():', error?.message || error);
+        return null;
+    }
+}
+
+/** Dọn telemetry cũ hơn p_keep_days. @returns {Promise<number|null>} số dòng đã xoá. */
+async function donTelemetryLenh(keepDays = 180) {
+    try {
+        const { data, error } = await supabase.rpc('don_telemetry_lenh', { p_keep_days: Number(keepDays) || 180 });
+        if (error) throw error;
+        return Number(data || 0);
+    } catch (error) {
+        console.error('[DATABASE ERROR] donTelemetryLenh():', error?.message || error);
+        return null;
+    }
+}
+
+// ============================================================
 //  BANG HỘI (clan)
 // ============================================================
 const { CLAN } = config;
@@ -2936,6 +2982,9 @@ module.exports = {
     loanCredit,
     loansOf,
     getLoanMetrics,
+    ghiTelemetryLenh,
+    telemetryLenhCuaSo,
+    donTelemetryLenh,
     // craft
     craftItem,
     // ban

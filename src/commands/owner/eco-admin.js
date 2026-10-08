@@ -5,7 +5,7 @@ const { isOwner } = require('../../lib/owner');
 const { setBan } = require('../../lib/bans');
 const { buildWaguriEmbed } = require('../../lib/embed');
 const { getInteractionLanguage, t } = require('../../lib/i18n');
-const { getDailyStats } = require('../../lib/commandTelemetry');
+const { getDailyStats, getWindowStats, getDeadWatchlist, getAllRegisteredCommands } = require('../../lib/commandTelemetry');
 
 const fmt = (n, locale) => Number(n).toLocaleString(locale?.startsWith('en') ? 'en-US' : 'vi-VN');
 
@@ -235,16 +235,36 @@ module.exports = {
             if (rssMB > 280) gate1Status = '🔴';
             else if (rssMB > 220) gate1Status = '🟡';
 
-            // 2. Gate 2 & 3: Command Telemetry & Dead Commands
+            // 2. Cổng 2 & 3: telemetry lệnh.
+            // Số liệu CHÍNH lấy từ DB (migration 0154) nên KHÔNG mất khi bot restart; số
+            // trong RAM chỉ còn dùng để đối chiếu "kể từ lần khởi động này".
+            // `null` từ DB nghĩa là KHÔNG ĐO ĐƯỢC — không phải "0 lỗi", nên cổng để VÀNG
+            // chứ không xanh: phép đo hỏng thì không được phép báo khoẻ.
             const cmdTelemetry = getDailyStats();
-            const errRatePct = (cmdTelemetry.errorRate * 100).toFixed(2);
+            const dbHomNay = await getWindowStats(1);
+            const watch = await getDeadWatchlist();
+            const doDuoc = Boolean(dbHomNay);
+
+            const tongGoi = doDuoc ? dbHomNay.totalCalls : cmdTelemetry.totalCalls;
+            const tongLoi = doDuoc ? dbHomNay.totalErrors : cmdTelemetry.totalErrors;
+            const soNguoiDung = doDuoc ? dbHomNay.uniqueUsers : cmdTelemetry.uniqueUsersCount;
+            const tyLeLoi = tongGoi > 0 ? (tongLoi / tongGoi) : 0;
+            const errRatePct = (tyLeLoi * 100).toFixed(2);
+
             let gate2Status = '🟢';
-            if (cmdTelemetry.errorRate > 0.015) gate2Status = '🔴';
-            else if (cmdTelemetry.errorRate > 0.005) gate2Status = '🟡';
+            if (!doDuoc) gate2Status = '🟡';
+            else if (tyLeLoi > 0.015) gate2Status = '🔴';
+            else if (tyLeLoi > 0.005) gate2Status = '🟡';
+
+            const dangKyAll = getAllRegisteredCommands();
+            const coLuotHomNay = doDuoc
+                ? new Set(dbHomNay.commands.filter(c => c.calls > 0).map(c => c.name))
+                : new Set(cmdTelemetry.rawStats.filter(c => c.total > 0).map(c => c.name));
+            const deadToday = dangKyAll.filter(c => !coLuotHomNay.has(c));
 
             let gate3Status = '🟢';
-            const deadCount = cmdTelemetry.deadCommands.length;
-            const isWarmingUp = Number(uptimeHours) < 4 || cmdTelemetry.totalCalls < 25;
+            const deadCount = deadToday.length;
+            const isWarmingUp = Number(uptimeHours) < 4 || tongGoi < 25;
             if (!isWarmingUp) {
                 if (deadCount > 15) gate3Status = '🔴';
                 else if (deadCount > 8) gate3Status = '🟡';
@@ -299,24 +319,51 @@ module.exports = {
                 inline: true
             }, {
                 name: `${gate2Status} Cổng 2: Lệnh & Tỷ Lệ Lỗi`,
-                value: `• Tổng lượt gọi: **${cmdTelemetry.totalCalls.toLocaleString()}**\n• User tương tác: **${cmdTelemetry.uniqueUsersCount.toLocaleString()}**\n• Lỗi: **${cmdTelemetry.totalErrors}** (\`${errRatePct}%\`)\n• Đánh giá: ${gate2Status === '🟢' ? 'Độ ổn định cao' : 'Có lệnh lỗi cần soi log'}`,
+                value: doDuoc
+                    ? `• Tổng lượt gọi: **${tongGoi.toLocaleString()}** *(cả ngày, từ DB)*\n• User tương tác: **${soNguoiDung.toLocaleString()}**\n• Lỗi: **${tongLoi}** (\`${errRatePct}%\`)\n• Phiên này: ${cmdTelemetry.totalCalls.toLocaleString()} lượt / ${cmdTelemetry.totalErrors} lỗi\n• Đánh giá: ${gate2Status === '🟢' ? 'Độ ổn định cao' : 'Có lệnh lỗi cần soi log'}`
+                    : `• ⚠️ **Không đọc được telemetry từ DB** — số dưới đây CHỈ của phiên hiện tại\n• Tổng lượt gọi: **${cmdTelemetry.totalCalls.toLocaleString()}**\n• User tương tác: **${soNguoiDung.toLocaleString()}**\n• Lỗi: **${tongLoi}** (\`${errRatePct}%\`)\n• Đánh giá: chưa kết luận được, soi log kết nối Supabase`,
                 inline: true
             });
 
-            const topCmdsStr = cmdTelemetry.topCommands.length
-                ? cmdTelemetry.topCommands.map((c, i) => `\`#${i+1}\` **/${c.name}**: ${c.total} lượt (${c.uniqueUsers} users)`).join('\n')
-                : '*Chưa có lệnh nào được gọi hôm nay*';
-            const deadSampleStr = cmdTelemetry.deadCommands.length
-                ? cmdTelemetry.deadCommands.slice(0, 8).map(c => `\`/${c}\``).join(' ') + (cmdTelemetry.deadCommands.length > 8 ? ` *(+${cmdTelemetry.deadCommands.length - 8} lệnh)*` : '')
+            const topDb = doDuoc ? dbHomNay.commands.slice(0, 10) : [];
+            const topCmdsStr = doDuoc
+                ? (topDb.length
+                    ? topDb.map((c, i) => `\`#${i+1}\` **/${c.name}**: ${c.calls} lượt (${c.users} users)`).join('\n')
+                    : '*Chưa có lệnh nào được gọi hôm nay*')
+                : (cmdTelemetry.topCommands.length
+                    ? cmdTelemetry.topCommands.map((c, i) => `\`#${i+1}\` **/${c.name}**: ${c.total} lượt (${c.uniqueUsers} users)`).join('\n')
+                    : '*Chưa có lệnh nào được gọi hôm nay*');
+
+            const deadSampleStr = deadCount
+                ? deadToday.slice(0, 8).map(c => `\`/${c}\``).join(' ') + (deadCount > 8 ? ` *(+${deadCount - 8} lệnh)*` : '')
                 : '✅ 100% lệnh đều có người dùng';
 
             const deadSectionTitle = isWarmingUp
-                ? `⏳ **Đang tích lũy dữ liệu** (Khởi động ${uptimeHours}h · ${cmdTelemetry.totalCalls} lượt gọi):\n*Danh sách lệnh chưa gọi tạm thời (${cmdTelemetry.deadCommands.length}/${cmdTelemetry.totalRegisteredCommands}):*`
-                : `💤 **Lệnh không ai dùng hôm nay (${cmdTelemetry.deadCommands.length}/${cmdTelemetry.totalRegisteredCommands}):**`;
+                ? `⏳ **Đang tích lũy dữ liệu** (Khởi động ${uptimeHours}h · ${tongGoi} lượt gọi):\n*Danh sách lệnh chưa gọi tạm thời (${deadCount}/${dangKyAll.length}):*`
+                : `💤 **Lệnh không ai dùng hôm nay (${deadCount}/${dangKyAll.length}):**`;
+
+            // Quy tắc khai tử (docs/daily-checklist.md Cổng 3): 14 ngày -> watchlist,
+            // 30 ngày -> dời sang archive/commands/. CHỈ phán khi đã đủ ngày lịch sử.
+            let sunsetStr;
+            if (!watch) {
+                sunsetStr = '⚠️ *Không đọc được telemetry nhiều ngày từ DB.*';
+            } else if (!watch.duLieu14) {
+                sunsetStr = `⏳ *Đang tích luỹ lịch sử: ${watch.ngayCo}/14 ngày. Chưa đủ để phán lệnh chết — đừng khai tử gì trước mốc này.*`;
+            } else {
+                const dongWatch = watch.watchlist.length
+                    ? `👀 **Watchlist (0 lượt / 14 ngày — ${watch.watchlist.length} lệnh):** ` + watch.watchlist.slice(0, 10).map(c => `\`/${c}\``).join(' ') + (watch.watchlist.length > 10 ? ` *(+${watch.watchlist.length - 10})*` : '')
+                    : '👀 **Watchlist 14 ngày:** ✅ trống';
+                const dongKhaiTu = !watch.duLieu30
+                    ? `⏳ *Mốc 30 ngày: còn ${30 - watch.ngayCo} ngày nữa mới đủ dữ liệu.*`
+                    : (watch.khaiTu.length
+                        ? `⚰️ **Đề nghị khai tử (0 lượt / 30 ngày — ${watch.khaiTu.length} lệnh):** ` + watch.khaiTu.slice(0, 10).map(c => `\`/${c}\``).join(' ') + (watch.khaiTu.length > 10 ? ` *(+${watch.khaiTu.length - 10})*` : '')
+                        : '⚰️ **Mốc 30 ngày:** ✅ không lệnh nào cần khai tử');
+                sunsetStr = `${dongWatch}\n${dongKhaiTu}`;
+            }
 
             embed.addFields({
                 name: `${gate3Status} Cổng 3: Sức Hút Tính Năng (Top & Dead Commands)`,
-                value: `🔥 **Top lệnh phổ biến:**\n${topCmdsStr}\n\n${deadSectionTitle}\n${deadSampleStr}`
+                value: `🔥 **Top lệnh phổ biến:**\n${topCmdsStr}\n\n${deadSectionTitle}\n${deadSampleStr}\n\n${sunsetStr}`
             });
 
             const gate5Eval = isMicroDebt

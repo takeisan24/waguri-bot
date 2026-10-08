@@ -207,6 +207,11 @@ module.exports = {
         // + mọi shard refresh cache hệ số định kỳ (đồng bộ đa shard).
         require('../lib/eventCalendar').scheduleEventCalendar(client);
 
+        // Telemetry lệnh: đẩy phần tăng thêm xuống DB mỗi 5 phút. MỌI shard đều đẩy số của
+        // riêng mình — RPC `ghi_telemetry_lenh` cộng dồn (`+=`) nên không ai ghi đè ai.
+        // Bot rảnh thì vòng này không gọi DB lần nào (không có delta -> không có request).
+        require('../lib/commandTelemetry').startTelemetryFlush();
+
         // Hoàn cược các ván game đa người (loto/bingo/masoi) bị treo do bot restart.
         // Chỉ 1 shard chịu trách nhiệm (tránh hoàn trùng).
         if (!client.shard || client.shard.ids.includes(0)) {
@@ -218,6 +223,12 @@ module.exports = {
             // Xem migration 0099 — tiền test của owner từng nuốt 99% tín hiệu cung tiền.
             require('../database.js').syncAdminExclusions(require('../config').OWNER_IDS)
                 .then(n => { if (n > 0) console.log(`[ECONOMY] Đã loại ${n} tài khoản vận hành khỏi thống kê kinh tế.`); })
+                .catch(() => {});
+
+            // Dọn telemetry lệnh cũ. Chỉ 1 shard chạy để không xoá trùng.
+            const { GIU_NGAY } = require('../lib/commandTelemetry');
+            require('../database.js').donTelemetryLenh(GIU_NGAY)
+                .then(n => { if (n > 0) console.log(`[TELEMETRY] Đã dọn ${n} dòng telemetry cũ hơn ${GIU_NGAY} ngày.`); })
                 .catch(() => {});
         }
 
