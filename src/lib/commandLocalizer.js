@@ -394,6 +394,10 @@ const COMMAND_DESCRIPTIONS = {
     "weather": {
         vi: "Xem thời tiết một thành phố 🌦️",
         en: "View weather conditions of a city 🌦️"
+    },
+    "language": {
+        vi: "Chọn ngôn ngữ Waguri nói với riêng cậu 🌐",
+        en: "Choose the language Waguri uses with you 🌐"
     }
 };
 
@@ -847,6 +851,8 @@ const CHOICE_LOCALIZATIONS = {
     // config lang
     "vi": { vi: "Tiếng Việt 🇻🇳", en: "Vietnamese 🇻🇳" },
     "en": { vi: "Tiếng Anh 🇬🇧", en: "English 🇬🇧" },
+    // language
+    "auto": { vi: "Tự động theo app Discord", en: "Auto (follow Discord app)" },
     "wallet": { vi: "Ví", en: "Wallet" },
     "bank": { vi: "Ngân hàng", en: "Bank" }
 };

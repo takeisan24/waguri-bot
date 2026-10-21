@@ -129,9 +129,17 @@ Waguri là **Discord economy/RPG bot bản địa hóa văn hóa Việt**. Bot N
     nên bậc học ngôn ngữ không bao giờ chạy. Hệ quả: **mọi lệnh prefix `w!` đều ra tiếng
     Việt** (shim lấy ngôn ngữ *chỉ* từ cột này), và người Việt trong server tiếng Anh bị
     bot nói tiếng Anh mà không cách nào sửa.
-  - **Thứ tự ưu tiên hiện tại** (chủ động thắng ngầm định; trong ngầm định, cá nhân thắng
-    môi trường): `/config language` của admin → `users.locale` đã nhớ → `interaction.locale`
-    → `guildLocale` → `'vi'`. Có test khoá thứ tự này (`test/i18n_priority.test.js`).
+  - **Thứ tự ưu tiên hiện tại** (chủ động thắng ngầm định; cá nhân thắng môi trường):
+    `/language` người dùng tự chọn (`users.locale_chosen`, migration `0156`) → `/config
+    language` của admin → `interaction.locale` (app Discord, học lại vào DB khi đổi) →
+    `users.locale` học được (chỉ còn tác dụng ở đường prefix `w!`) → `guildLocale` → `'vi'`.
+    Có test khoá thứ tự này (`test/i18n_priority.test.js`). **Sửa 2026-10-21:** bậc "học
+    được" từng đứng trên app Discord và chỉ ghi khi rỗng → ngôn ngữ lần đầu bị khoá vĩnh
+    viễn (25 người khoá ở `en` trên prod), và không có cách nào tự đổi.
+  - **Tên lệnh:** Discord chỉ đăng ký tên TIẾNG ANH cho mọi ngôn ngữ (`commandLocalizer` ghi
+    đè `name_localizations`). Tên Việt cũ (`tiembanh`, `vay`, `dovui`…) sống dưới dạng gõ tắt
+    `w!` trong `lib/prefixTen.js`. `scripts/check-command-refs.js` chặn chữ hướng dẫn nhắc
+    lệnh không tồn tại (từng có ~100 chỗ `/tiembanh`, `/vay`, `/clan`…).
   - **Discord Bot:** Bản dịch song ngữ Anh & Việt đã phủ 100% tất cả các nhóm lệnh (bao gồm Economy, Games, Fun, Utility, Admin), hỗ trợ đầy đủ localization cho slash command definitions, choices và autocomplete.
   - **Web Next.js:** Dịch toàn bộ trang Landing, cá nhân, Sổ sứ mệnh, Premium, Leaderboard, `/u/[id]`, lỗi. Trang Wiki được tách song ngữ tĩnh, đổi tên hiển thị tiếng Việt thành "Cẩm nang". Các components được hoàn thiện i18n 100%.
 - **Giới hạn bản tin AI:** Sửa lỗi cắt cụt bản tin bằng cách tăng giới hạn `maxOutputTokens` lên 2000 cho Gemini API.

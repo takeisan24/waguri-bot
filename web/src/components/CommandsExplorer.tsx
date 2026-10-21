@@ -85,6 +85,7 @@ const CATEGORIES_VI: Cat[] = [
     cmds: [
       ["image", "xem ảnh động vật hoặc waifu dễ thương (cat · dog · waifu) 🖼️"],
       ["weather", "xem thời tiết một thành phố 🌤️"],
+      ["language", "chọn ngôn ngữ Waguri nói với riêng cậu 🌐 (vi · en · auto)"],
       ["claim-support", "nhận quà gia nhập Server Support độc quyền 🎁"],
       ["announcement", "xem hoặc gửi thông báo cập nhật (view · send) 📢"],
     ],
@@ -202,6 +203,7 @@ const CATEGORIES_EN: Cat[] = [
     cmds: [
       ["image", "view cute animals or waifu photos (cat · dog · waifu) 🖼️"],
       ["weather", "check weather in a city 🌤️"],
+      ["language", "choose the language Waguri uses with you 🌐 (vi · en · auto)"],
       ["claim-support", "claim exclusive Support Server join rewards 🎁"],
       ["announcement", "view or send announcements 📢"],
     ],

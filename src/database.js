@@ -2590,16 +2590,47 @@ async function updateUserLocale(userId, locale) {
         // xuống 'vi' — ghi sai vĩnh viễn vào DB. `getLanguage` cắt vùng rồi đối chiếu danh
         // sách ngôn ngữ có thật. Require trong hàm để tránh vòng lặp require với i18n.
         const lang = require('./lib/i18n').getLanguage(locale);
+        // Chỉ ghi khi người dùng CHƯA tự chọn (0156): điều kiện nằm trong chính câu UPDATE
+        // nên dù `/language` chạy xen giữa thì ngôn ngữ học được cũng không đè lựa chọn.
         const { error } = await supabase
             .from('users')
             .update({ locale: lang })
-            .eq('user_id', userId);
+            .eq('user_id', userId)
+            .eq('locale_chosen', false);
         if (error) throw error;
         // Xoá cache locale để lần tương tác kế tiếp phản ánh ngôn ngữ mới ngay (không chờ TTL 60s).
         try { require('./lib/i18n').invalidateLocaleCache(userId); } catch { /* ignore */ }
         return true;
     } catch (error) {
         console.error(`[DATABASE ERROR] Lỗi updateUserLocale(${userId}, ${locale}):`, error);
+        return false;
+    }
+}
+
+/**
+ * Người dùng TỰ CHỌN ngôn ngữ qua `/language` (0156).
+ * @param {string} userId - Discord ID
+ * @param {'vi'|'en'|'auto'} lua - 'auto' = bỏ lựa chọn, quay về theo app Discord
+ * @returns {Promise<boolean>} true nếu đã ghi được
+ */
+async function setUserLocaleChoice(userId, lua) {
+    try {
+        // getUser tự tạo hàng cho người mới — UPDATE trên hàng chưa có sẽ "thành công" mà
+        // không ghi gì, và lệnh sẽ báo đã lưu sai sự thật.
+        const user = await getUser(userId);
+        if (!user) return false;
+        const thayDoi = lua === 'auto'
+            ? { locale_chosen: false }
+            : { locale: require('./lib/i18n').getLanguage(lua), locale_chosen: true };
+        const { error } = await supabase
+            .from('users')
+            .update(thayDoi)
+            .eq('user_id', userId);
+        if (error) throw error;
+        try { require('./lib/i18n').invalidateLocaleCache(userId); } catch { /* ignore */ }
+        return true;
+    } catch (error) {
+        console.error(`[DATABASE ERROR] Lỗi setUserLocaleChoice(${userId}, ${lua}):`, error);
         return false;
     }
 }
@@ -2812,6 +2843,7 @@ module.exports = {
     getUserDiscoveries,
     getUser,
     updateUserLocale,
+    setUserLocaleChoice,
     redeemPremiumOrderByCode,
     getPendingPremiumOrders,
     getPremiumOrder,

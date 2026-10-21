@@ -113,12 +113,19 @@ async function getInteractionLanguage(interaction) {
     return resolved;
 }
 
-// Thứ tự ưu tiên: CHỦ ĐỘNG thắng NGẦM ĐỊNH; trong nhóm ngầm định, CÁ NHÂN thắng MÔI TRƯỜNG.
-//   1. gs.language        — admin chủ động chạy `/config language` cho server này
-//   2. u.locale           — ngôn ngữ đã học được của người dùng, lưu trong DB
-//   3. interaction.locale — ngôn ngữ Discord của chính người dùng
-//   4. guildLocale        — ngôn ngữ Discord của server (tín hiệu môi trường, yếu nhất)
-//   5. 'vi'
+// Thứ tự ưu tiên: CHỦ ĐỘNG thắng NGẦM ĐỊNH; CÁ NHÂN thắng MÔI TRƯỜNG (ở cả hai nhóm).
+//   1. u.locale + u.locale_chosen — người dùng TỰ CHỌN qua `/language`
+//   2. gs.language        — admin chủ động chạy `/config language` cho server này
+//   3. interaction.locale — ngôn ngữ app Discord của chính người dùng (và HỌC vào DB)
+//   4. u.locale (học được) — chỉ còn tác dụng ở đường prefix, nơi không có bậc 3
+//   5. guildLocale        — ngôn ngữ Discord của server (tín hiệu môi trường, yếu nhất)
+//   6. 'vi'
+//
+// Bậc "học được" trước đây đứng TRÊN bậc app Discord, mà nó chỉ được ghi khi đang rỗng — nên
+// ngôn ngữ của LẦN ĐẦU gọi bot bị khoá vĩnh viễn: người Việt lỡ để app tiếng Anh một lần thì
+// đổi app cũng không ăn, và không có lệnh nào để tự đổi (feedback 2026-10-21; prod lúc đó
+// 25 người khoá ở 'en'). Nay bậc học chỉ là trí nhớ cho đường prefix, còn ý muốn thật đi
+// qua `/language` (migration 0156).
 //
 // Bậc 3 và 4 trước đây ĐẢO NGƯỢC: `guildLocale` được xét trước nên người Việt trong server
 // đặt tiếng Anh luôn bị bot nói tiếng Anh. Tệ hơn, bậc 3 là NƠI DUY NHẤT gọi
@@ -158,33 +165,38 @@ async function resolveInteractionLanguage(interaction, userId) {
         else console.error('[i18n] Lỗi getUser locale:', rU.reason?.message || rU.reason);
     }
 
-    // 1. Cấu hình ngôn ngữ của server do admin đặt — vẫn thắng như cũ.
+    // 1. Người dùng tự chọn qua `/language` — thắng cả cấu hình server: câu trả lời gửi cho
+    //    chính họ, "tôi chọn" phải thắng "server chọn hộ".
+    if (u?.locale_chosen && u?.locale) return getLanguage(u.locale);
+
+    // 2. Cấu hình ngôn ngữ của server do admin đặt.
     if (gs?.language) return getLanguage(gs.language);
 
-    // 2. Ngôn ngữ của người dùng đã ghi nhớ trong DB.
-    //    Đây là nguồn DUY NHẤT cho đường prefix (`w!`): interaction giả do prefixShim dựng
-    //    không có `locale` lẫn `guildLocale` từ Discord.
-    if (u?.locale) return getLanguage(u.locale);
-
-    // 3. Ngôn ngữ Discord của chính người dùng — và HỌC lại vào DB để lần sau
-    //    (nhất là để lệnh prefix biết được, vì đường đó không có tín hiệu nào từ Discord).
+    // 3. Ngôn ngữ app Discord của chính người dùng — và HỌC vào DB khi nó KHÁC giá trị đã
+    //    nhớ (để đường prefix theo kịp khi người dùng đổi app). Chỉ ghi khi khác nên lượt
+    //    thường không tốn thêm lần ghi nào.
     if (interaction.locale) {
-        if (userId) {
+        const lang = getLanguage(interaction.locale);
+        if (userId && u && u.locale !== lang) {
             try {
                 const db = require('../database');
                 db.updateUserLocale(userId, interaction.locale).catch(() => {});
             } catch { /* ignore */ }
         }
-        return getLanguage(interaction.locale);
+        return lang;
     }
 
-    // 4. Ngôn ngữ Discord của server — tín hiệu môi trường, chỉ dùng khi không biết gì về
+    // 4. Ngôn ngữ đã học. Đây là nguồn DUY NHẤT cho đường prefix (`w!`): interaction giả do
+    //    prefixShim dựng không có `locale` lẫn `guildLocale` từ Discord.
+    if (u?.locale) return getLanguage(u.locale);
+
+    // 5. Ngôn ngữ Discord của server — tín hiệu môi trường, chỉ dùng khi không biết gì về
     //    cá nhân người dùng.
     if (interaction.guildLocale) {
         return getLanguage(interaction.guildLocale);
     }
 
-    // 5. Mặc định là tiếng Việt
+    // 6. Mặc định là tiếng Việt
     return 'vi';
 }
 

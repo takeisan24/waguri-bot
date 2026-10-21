@@ -77,6 +77,7 @@ const PREFIX_ALIASES = {
     cuutro: 'relief',
     boi: 'fortune',
     amlich: 'lunar',
+    ngonngu: 'language',
     trano: { cmd: 'loan', sub: 'pay' },
     no: { cmd: 'loan', sub: 'status' },
     // `w!donno` (đòi nợ P2P) đã bỏ: /loan chỉ vay quỹ hệ thống, không còn chủ nợ là người.

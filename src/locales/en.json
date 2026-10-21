@@ -834,6 +834,11 @@
       "not_enough_title": "{title} — Not Enough Players",
       "try_again": "Try again later~"
     },
+    "language": {
+      "title": "🌐・Language",
+      "success_set": "From now on I will talk to you in **English**~ 🌸\n*This choice overrides the server language setting. Type `/language auto` to follow your Discord app again.*",
+      "success_auto": "I will follow your **Discord app language**~ 🌸\n*(If the server set `/config language`, that applies instead.)*"
+    },
     "vote": {
       "desc_no_api": "Please vote to support me on Top.gg, each vote helps me reach more friends~ 🌸\n\n[**🗳️ Click to vote (every 12h)**]({url})\n\n*After voting, come back and type `/vote` to claim **{reward}** {currency} + **{exp} EXP**!*",
       "title_not_voted": "💝・You haven't voted",
@@ -1273,7 +1278,7 @@
       "params_title": "🔸 Parameters",
       "param_req": " *(required)*",
       "guide_title": "🌸・Waguri Help Guide Book",
-      "guide_desc": "Hello there! I am Waguri Kaoruko~ Would you like to explore Kikyo Academy with me, or drop by Gekka Bakery for some strawberry shortcake? 🍰\n\nBelow is a list of command categories I can help you with. Choose a category from the select menu below, and I will introduce each command to you in detail!\n\n*(Both **Slash** `/work` and **Prefix** `{prefix}work` are supported)*",
+      "guide_desc": "Hello there! I am Waguri Kaoruko~ Would you like to explore Kikyo Academy with me, or drop by Gekka Bakery for some strawberry shortcake? 🍰\n\nBelow is a list of command categories I can help you with. Choose a category from the select menu below, and I will introduce each command to you in detail!\n\n*(Both **Slash** `/work` and **Prefix** `{prefix}work` are supported)*\n🌐 *Nói tiếng Việt? Gõ `/language vi` để Waguri nói tiếng Việt với cậu.*",
       "footer_guide": "Select a category below • {original}",
       "select_placeholder": "🌸 Choose a command category...",
       "select_desc_cat": "View commands in category {name}",
@@ -1406,7 +1411,8 @@
         "wordchain": "Vietnamese word chaining game 🔤 (start · stop · status)",
         "fortune": "Fortune telling: daily / horoscope / master 🔮 (daily · zodiac · thaydo)",
         "lunar": "Lunar calendar, can-chi, auspicious hours + Waguri wishes 🌙",
-        "weather": "Check weather in a city 🌤️"
+        "weather": "Check weather in a city 🌤️",
+        "language": "Choose the language Waguri uses with you 🌐 (vi · en · auto)"
       }
     },
     "action": {

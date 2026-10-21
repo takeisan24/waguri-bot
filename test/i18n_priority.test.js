@@ -7,8 +7,13 @@
 //     -> không ai ghi vào DB, kể cả khi cột có tồn tại.
 // Sửa một nửa thì tính năng vẫn chết, nên phải có test khoá CẢ thứ tự.
 //
-// Thứ tự đã chốt (PA-A): chủ động thắng ngầm định; trong ngầm định, cá nhân thắng môi trường.
-//   1. gs.language  2. u.locale  3. interaction.locale  4. guildLocale  5. 'vi'
+// Thứ tự đã chốt (PA-A): chủ động thắng ngầm định; cá nhân thắng môi trường.
+//   1. u.locale + locale_chosen (`/language`)  2. gs.language  3. interaction.locale
+//   4. u.locale học được (chỉ đường prefix)    5. guildLocale  6. 'vi'
+//
+// Lỗi thứ hai (2026-10-21): bậc "học được" từng đứng TRÊN app Discord, mà chỉ ghi khi rỗng
+// -> ngôn ngữ của lần đầu dùng bot bị KHOÁ VĨNH VIỄN, người Việt lỡ để app tiếng Anh một
+// lần là bị nói tiếng Anh mãi. Ca "bậc 4 KHÔNG thắng app Discord" dưới đây khoá lỗi đó.
 
 const test = require('node:test');
 const assert = require('node:assert');
@@ -32,29 +37,72 @@ const boiCanh = ({ userId, locale = null, guildLocale = null, guildId = GUILD })
 
 test('i18n — thứ tự ưu tiên chọn ngôn ngữ', async t => {
 
-    await t.test('bậc 1: admin đặt /config language thì THẮNG tất cả', async () => {
+    await t.test('bậc 1: người dùng TỰ CHỌN qua /language thắng cả cấu hình server', async () => {
         const id = nguoiMoi();
         const khoiPhuc = stubDb(db, {
             getGuildSettings: async () => ({ language: 'en' }),
-            getUser: async () => ({ locale: 'vi' }),      // người dùng là vi
+            getUser: async () => ({ locale: 'vi', locale_chosen: true }),
             updateUserLocale: async () => true,
         });
         try {
-            const kq = await getInteractionLanguage(boiCanh({ userId: id, locale: 'vi', guildLocale: 'vi' }));
-            assert.strictEqual(kq, 'en', 'cấu hình admin phải thắng mọi tín hiệu khác');
+            const kq = await getInteractionLanguage(boiCanh({ userId: id, locale: 'en-US', guildLocale: 'en-US' }));
+            assert.strictEqual(kq, 'vi', 'người Việt để app tiếng Anh, server tiếng Anh, đã chọn vi -> vi');
         } finally { khoiPhuc(); invalidateLocaleCache(id); }
     });
 
-    await t.test('bậc 2: không có cấu hình admin -> dùng ngôn ngữ đã nhớ trong DB', async () => {
+    await t.test('bậc 2: admin đặt /config language thắng mọi tín hiệu NGẦM ĐỊNH', async () => {
         const id = nguoiMoi();
         const khoiPhuc = stubDb(db, {
-            getGuildSettings: async () => ({}),
-            getUser: async () => ({ locale: 'en' }),
+            getGuildSettings: async () => ({ language: 'en' }),
+            getUser: async () => ({ locale: 'vi', locale_chosen: false }),  // vi chỉ là học được
             updateUserLocale: async () => true,
         });
         try {
             const kq = await getInteractionLanguage(boiCanh({ userId: id, locale: 'vi', guildLocale: 'vi' }));
-            assert.strictEqual(kq, 'en', 'ngôn ngữ đã nhớ phải thắng tín hiệu Discord');
+            assert.strictEqual(kq, 'en', 'cấu hình admin phải thắng ngôn ngữ học được và app Discord');
+        } finally { khoiPhuc(); invalidateLocaleCache(id); }
+    });
+
+    // Ca hồi quy của lỗi KHOÁ: trước bản vá kết quả là 'en' mãi mãi.
+    await t.test('bậc 4 KHÔNG thắng app Discord: đổi app sang tiếng Việt thì bot theo', async () => {
+        const id = nguoiMoi();
+        let daGhi = null;
+        const khoiPhuc = stubDb(db, {
+            getGuildSettings: async () => ({}),
+            getUser: async () => ({ locale: 'en', locale_chosen: false }),  // học từ lần đầu
+            updateUserLocale: async (u, l) => { daGhi = { u, l }; return true; },
+        });
+        try {
+            const kq = await getInteractionLanguage(boiCanh({ userId: id, locale: 'vi', guildLocale: 'vi' }));
+            assert.strictEqual(kq, 'vi', 'app Discord hiện tại phải thắng ngôn ngữ học từ lần đầu');
+            assert.deepStrictEqual(daGhi, { u: id, l: 'vi' }, 'phải học lại để đường prefix theo kịp');
+        } finally { khoiPhuc(); invalidateLocaleCache(id); }
+    });
+
+    await t.test('bậc 3 không ghi DB khi ngôn ngữ không đổi (lượt thường không tốn lần ghi)', async () => {
+        const id = nguoiMoi();
+        let daGhi = false;
+        const khoiPhuc = stubDb(db, {
+            getGuildSettings: async () => ({}),
+            getUser: async () => ({ locale: 'en', locale_chosen: false }),
+            updateUserLocale: async () => { daGhi = true; return true; },
+        });
+        try {
+            await getInteractionLanguage(boiCanh({ userId: id, locale: 'en-US', guildLocale: 'vi' }));
+            assert.strictEqual(daGhi, false);
+        } finally { khoiPhuc(); invalidateLocaleCache(id); }
+    });
+
+    await t.test('bậc 4: đường prefix (không có app Discord) dùng ngôn ngữ đã học', async () => {
+        const id = nguoiMoi();
+        const khoiPhuc = stubDb(db, {
+            getGuildSettings: async () => ({}),
+            getUser: async () => ({ locale: 'en', locale_chosen: false }),
+            updateUserLocale: async () => true,
+        });
+        try {
+            const kq = await getInteractionLanguage(boiCanh({ userId: id, locale: null, guildLocale: 'vi' }));
+            assert.strictEqual(kq, 'en', 'ngôn ngữ học được phải thắng ngôn ngữ server ở đường prefix');
         } finally { khoiPhuc(); invalidateLocaleCache(id); }
     });
 

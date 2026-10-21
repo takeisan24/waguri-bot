@@ -716,6 +716,7 @@
       "last_study_date:date",
       "last_vote_at:timestamp with time zone",
       "locale:text",
+      "locale_chosen:boolean",
       "love:bigint",
       "married_at:timestamp with time zone",
       "newbie_progress:integer",

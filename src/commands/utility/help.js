@@ -70,6 +70,7 @@ const CATEGORIES = [
     { name: '🖼️ Ảnh & Tiện ích', cmds: [
         ['image', 'ảnh mèo 🐱, cún 🐶, hoặc waifu 🌸'],
         ['weather', 'xem thời tiết một thành phố 🌤️'],
+        ['language', 'chọn ngôn ngữ Waguri nói với riêng cậu 🌐 (vi · en · auto)'],
         ['announcement', 'xem thông báo cập nhật mới nhất từ nhà phát triển (view · send) 📢'],
         ['claim-support', 'nhận quà gia nhập Server Support độc quyền 🎁'],
     ] },

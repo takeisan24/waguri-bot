@@ -68,4 +68,43 @@ if (!hasTestDb) {
 
         await don();
     });
+
+    // 0156: ngôn ngữ TỰ CHỌN qua /language không được bị tầng học (app Discord) ghi đè.
+    test('users.locale_chosen — lựa chọn của người dùng thắng ngôn ngữ học được', async t => {
+        const docCo = async () => {
+            const { data } = await supabase.from('users').select('locale, locale_chosen').eq('user_id', nguoiTest).single();
+            return data;
+        };
+        await don();
+
+        await t.test('người mới: locale_chosen = false (chưa ai chọn)', async () => {
+            await supabase.from('users').insert({ user_id: nguoiTest });
+            assert.strictEqual((await docCo()).locale_chosen, false);
+        });
+
+        await t.test("/language vi -> locale 'vi', chosen = true", async () => {
+            assert.strictEqual(await db.setUserLocaleChoice(nguoiTest, 'vi'), true);
+            assert.deepStrictEqual(await docCo(), { locale: 'vi', locale_chosen: true });
+        });
+
+        await t.test('app Discord tiếng Anh KHÔNG ghi đè lựa chọn', async () => {
+            await db.updateUserLocale(nguoiTest, 'en-US');
+            assert.deepStrictEqual(await docCo(), { locale: 'vi', locale_chosen: true });
+        });
+
+        await t.test('/language auto -> bỏ chọn, tầng học được ghi lại', async () => {
+            assert.strictEqual(await db.setUserLocaleChoice(nguoiTest, 'auto'), true);
+            assert.strictEqual((await docCo()).locale_chosen, false);
+            await db.updateUserLocale(nguoiTest, 'en-US');
+            assert.deepStrictEqual(await docCo(), { locale: 'en', locale_chosen: false });
+        });
+
+        await t.test('người chưa có hàng: /language tự tạo hàng chứ không "thành công" suông', async () => {
+            await don();
+            assert.strictEqual(await db.setUserLocaleChoice(nguoiTest, 'en'), true);
+            assert.deepStrictEqual(await docCo(), { locale: 'en', locale_chosen: true });
+        });
+
+        await don();
+    });
 }

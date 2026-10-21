@@ -834,6 +834,11 @@
       "not_enough_title": "{title} — không đủ người",
       "try_again": "Thử lại sau nhé~"
     },
+    "language": {
+      "title": "🌐・Ngôn ngữ",
+      "success_set": "Từ giờ mình sẽ nói **Tiếng Việt** với cậu nha~ 🌸\n*Lựa chọn này thắng cả cài đặt ngôn ngữ của server. Muốn quay lại theo app Discord thì gõ `/language auto` nhé.*",
+      "success_auto": "Mình sẽ nói theo **ngôn ngữ app Discord** của cậu nha~ 🌸\n*(Nếu server đã đặt `/config language` thì theo server.)*"
+    },
     "vote": {
       "desc_no_api": "Cậu vote ủng hộ mình trên Top.gg nha, mỗi lượt giúp mình tiếp cận nhiều bạn hơn đó~ 🌸\n\n[**🗳️ Bấm để vote (12 tiếng/lần)**]({url})\n\n*Vote xong quay lại gõ `/vote` để nhận **{reward}** {currency} + **{exp} EXP** nhé!*",
       "title_not_voted": "💝・Cậu chưa vote",
@@ -1273,7 +1278,7 @@
       "params_title": "🔸 Tham số",
       "param_req": " *(bắt buộc)*",
       "guide_title": "🌸・Sổ Tay Hướng Dẫn Của Waguri",
-      "guide_desc": "Chào cậu! Tớ là Waguri Kaoruko đây~ Cậu có muốn cùng tớ khám phá Kikyo Academy hay ghé tiệm bánh Gekka ăn bánh kem dâu không? 🍰\n\nDưới đây là danh sách các danh mục lệnh tớ có thể giúp cậu. Hãy chọn một danh mục ở menu bên dưới để tớ giới thiệu chi tiết từng lệnh nhé!\n\n*(Dùng được cả **Slash** `/work` lẫn **Prefix** `{prefix}work`)*",
+      "guide_desc": "Chào cậu! Tớ là Waguri Kaoruko đây~ Cậu có muốn cùng tớ khám phá Kikyo Academy hay ghé tiệm bánh Gekka ăn bánh kem dâu không? 🍰\n\nDưới đây là danh sách các danh mục lệnh tớ có thể giúp cậu. Hãy chọn một danh mục ở menu bên dưới để tớ giới thiệu chi tiết từng lệnh nhé!\n\n*(Dùng được cả **Slash** `/work` lẫn **Prefix** `{prefix}work`)*\n🌐 *Muốn tớ nói tiếng Anh? Gõ `/language en`.*",
       "footer_guide": "Chọn danh mục bên dưới • {original}",
       "select_placeholder": "🌸 Chọn một danh mục lệnh...",
       "select_desc_cat": "Xem các lệnh thuộc nhóm {name}",
@@ -1406,7 +1411,8 @@
         "wordchain": "Chơi nối từ tiếng Việt 🔤 (start · stop · status)",
         "fortune": "Xem bói: hằng ngày / cung hoàng đạo / thầy đồ 🔮 (daily · zodiac · thaydo)",
         "lunar": "Xem âm lịch, can-chi, giờ hoàng đạo + lời Waguri 🌙",
-        "weather": "Xem thời tiết một thành phố 🌤️"
+        "weather": "Xem thời tiết một thành phố 🌤️",
+        "language": "Chọn ngôn ngữ Waguri nói với riêng cậu 🌐 (vi · en · auto)"
       }
     },
     "action": {

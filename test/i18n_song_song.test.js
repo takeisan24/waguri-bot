@@ -25,7 +25,7 @@ const DUONG_I18N = require.resolve('../src/lib/i18n');
  * Nạp lại i18n với một `database` giả mà mỗi truy vấn chậm `treMs`.
  * Trả về { locale, tongMs, soLanGoi }.
  */
-async function doVoiDbCham(treMs, { guildLanguage = null, userLocale = null } = {}) {
+async function doVoiDbCham(treMs, { guildLanguage = null, userLocale = null, userChosen = true } = {}) {
     const cacheDbCu = require.cache[DUONG_DB];
     const goiLuc = [];
 
@@ -34,7 +34,7 @@ async function doVoiDbCham(treMs, { guildLanguage = null, userLocale = null } = 
     require.cache[DUONG_DB] = {
         id: DUONG_DB, filename: DUONG_DB, loaded: true, exports: {
             getGuildSettings: (...a) => { goiLuc.push(['gs', Date.now()]); return cham(guildLanguage ? { language: guildLanguage } : {}); },
-            getUser: (...a) => { goiLuc.push(['user', Date.now()]); return cham(userLocale ? { locale: userLocale } : {}); },
+            getUser: (...a) => { goiLuc.push(['user', Date.now()]); return cham(userLocale ? { locale: userLocale, locale_chosen: userChosen } : {}); },
             updateUserLocale: async () => {},
         }
     };
@@ -80,12 +80,12 @@ test('tổng thời gian nằm trong ngân sách ack kể cả khi DB chậm h�
 });
 
 test('thứ tự ưu tiên KHÔNG đổi: cấu hình server thắng ngôn ngữ đã nhớ của người dùng', async () => {
-    const r = await doVoiDbCham(10, { guildLanguage: 'en', userLocale: 'vi' });
+    const r = await doVoiDbCham(10, { guildLanguage: 'en', userLocale: 'vi', userChosen: false });
     assert.strictEqual(r.locale, 'en',
         'Admin chủ động đặt /config language phải thắng ngôn ngữ ngầm định học được của cá nhân.');
 });
 
-test('không có cấu hình server thì dùng ngôn ngữ đã nhớ của người dùng', async () => {
+test('không có cấu hình server thì dùng ngôn ngữ người dùng tự chọn', async () => {
     const r = await doVoiDbCham(10, { guildLanguage: null, userLocale: 'en' });
     assert.strictEqual(r.locale, 'en');
 });
@@ -96,7 +96,7 @@ test('một truy vấn hỏng không kéo sập lần tra còn lại', async () 
     require.cache[DUONG_DB] = {
         id: DUONG_DB, filename: DUONG_DB, loaded: true, exports: {
             getGuildSettings: async () => { throw new Error('DB sập'); },
-            getUser: async () => ({ locale: 'en' }),
+            getUser: async () => ({ locale: 'en', locale_chosen: true }),
             updateUserLocale: async () => {},
         }
     };
