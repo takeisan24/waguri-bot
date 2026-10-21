@@ -265,9 +265,10 @@
       "active_game": "There is already an active quiz in this channel, please wait for it to finish~ 🌸",
       "cooldown": "You just started a quiz~ take a break and start a new one {time}! 🌸",
       "quiz_title": "🧠・Trivia Quiz!",
-      "quiz_desc": "**{question}**\n\nType your answer in chat — the fastest correct answer wins **{amount}** {currency} + {exp} EXP!\n⏰ {time}s",
+      "quiz_desc": "**{question}**\n\nType your answer in chat — the fastest correct answer wins **{amount}** {currency} + {exp} EXP!\n⏰ {time}s · *The quiz starter can't answer~*",
       "won_desc": "🎉 <@{user}> answered correctly (**{answer}**) and wins **{amount}** {currency} + {exp} EXP!",
-      "timeout_desc": "⏰ Time's up! The correct answer was **{answer}**. Better luck next time~ 🌸"
+      "timeout_desc": "⏰ Time's up and nobody got it~ The answer was **{answer}**! 🌸",
+      "creator_excluded": "You started this quiz, so your answers don't count~ Let the others guess! 🌸"
     },
     "daily": {
       "success_title": "🎁・Daily Attendance Successful!",

@@ -265,9 +265,10 @@
       "active_game": "Kênh này đang có một câu đố rồi, chờ xong đã nhé~ 🌸",
       "cooldown": "Cậu vừa ra đố xong~ nghỉ chút rồi tạo câu mới {time} nhé! 🌸",
       "quiz_title": "🧠・Đố Vui!",
-      "quiz_desc": "**{question}**\n\nGõ đáp án vào chat — ai đúng & nhanh nhất thắng **{amount}** {currency} + {exp} EXP!\n⏰ {time}s",
+      "quiz_desc": "**{question}**\n\nGõ đáp án vào chat — ai đúng & nhanh nhất thắng **{amount}** {currency} + {exp} EXP!\n⏰ {time}s · *Người ra đề không được trả lời nha~*",
       "won_desc": "🎉 <@{user}> trả lời đúng (**{answer}**) và nhận **{amount}** {currency} + {exp} EXP!",
-      "timeout_desc": "⏰ Hết giờ! Đáp án đúng là **{answer}**. Lần sau nhanh tay hơn nhé~ 🌸"
+      "timeout_desc": "⏰ Hết giờ mà chưa ai trả lời đúng~ Đáp án là **{answer}** nè! 🌸",
+      "creator_excluded": "Cậu là người ra đề nên câu trả lời không được tính điểm nha~ Để bạn khác đoán nhé! 🌸"
     },
     "daily": {
       "success_title": "🎁・Điểm danh thành công!",

@@ -64,11 +64,24 @@ module.exports = {
             const channel = interaction.channel;
             // Loại chính người ra đề khỏi việc trả lời: đáp án thuộc bộ CỐ ĐỊNH nên người tạo biết trước
             // -> tự trả lời câu của mình để farm (~300 xu/60s). Chỉ người KHÁC mới được thắng.
-            const collector = channel.createMessageCollector({ filter: m => !m.author.bot && m.author.id !== interaction.user.id, time: config.QUIZ.TIME_MS });
+            //
+            // Luật này từng chạy IM LẶNG: người ra đề gõ đúng mà bot không phản hồi gì, hết giờ
+            // lại bảo "lần sau nhanh tay hơn" — người chơi tưởng bot hỏng (feedback 2026-10).
+            // Nay collector nhận cả tin của người ra đề để báo MỘT lần là không tính điểm.
+            // Báo cho MỌI tin đầu tiên của họ chứ không chỉ tin đúng: chỉ báo khi đúng thì
+            // chính câu báo thành tín hiệu xác nhận đáp án cho người khác chép.
+            const collector = channel.createMessageCollector({ filter: m => !m.author.bot, time: config.QUIZ.TIME_MS });
             let won = false;
+            let daBaoNguoiRaDe = false;
 
             collector.on('collect', async (m) => {
                 if (won) return; // đã có người thắng -> bỏ qua mọi tin nhắn sau
+                if (m.author.id === interaction.user.id) {
+                    if (daBaoNguoiRaDe) return;
+                    daBaoNguoiRaDe = true;
+                    await m.reply({ content: t(locale, 'commands.dovui.creator_excluded'), allowedMentions: { repliedUser: false } }).catch(() => {});
+                    return;
+                }
                 if (!accepted.includes(norm(m.content))) return;
                 won = true;
                 collector.stop('won');
