@@ -49,7 +49,6 @@ function isSoft17(cards) {
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('blackjack')
-        .setNameLocalizations({ vi: 'blackjack' })
         .setDescription('Play Blackjack (21) against dealer Waguri 🃏')
         .setDescriptionLocalizations({ vi: 'Chơi Blackjack (Xì Dách) với nhà cái Waguri 🃏' })
         .addStringOption(o => o.setName('bet').setNameLocalizations({ vi: 'cuoc' }).setDescription('Bet amount (e.g. 1000, 1k, all)').setDescriptionLocalizations({ vi: 'Số tiền cược (vd 1000, 1k, all)' }).setRequired(true)),

@@ -169,7 +169,7 @@
       "exp": "Khai trí — +{pct}% EXP từ `/work` và mọi lệnh cày cuốc.",
       "thief": "Ranh mãnh — +{pct}% tiền cướp được khi `/rob`, và giảm tiền phạt khi trượt.",
       "stamina": "Bền sức — giảm {pct}% năng lượng tiêu hao khi `/fish` `/mine` `/chop`.",
-      "harvest": "Bội thu — +{pct}% sản lượng cày, +{pct}% tiền `/sell`, +{pct}% cơ hội nâng mẻ cá."
+      "harvest": "Bội thu — +{pct}% sản lượng cày, +{pct}% tiền `/store sell`, +{pct}% cơ hội nâng mẻ cá."
     },
     "petRarity": {
       "common": "Thường",
@@ -433,7 +433,7 @@
     "like_limit": "Hôm nay cậu đã thả tim 3 lần rồi nha!",
     "like_success": "Đã thả tim tiệm bánh của {name} thành công! ❤️",
     "not_found": "Không tìm thấy tiệm bánh 🌸",
-    "not_found_desc": "Người chơi này chưa mở Tiệm bánh Gekka. Hãy dùng lệnh `/tiembanh mo` trên Discord để bắt đầu nha!"
+    "not_found_desc": "Người chơi này chưa mở Tiệm bánh Gekka. Hãy dùng lệnh `/bakery mo` trên Discord để bắt đầu nha!"
   },
   "faq": {
     "title": "Câu hỏi thường gặp",

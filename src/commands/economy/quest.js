@@ -45,7 +45,7 @@ async function buildStoryTab(user, locale) {
                 `💖 **${isEn ? 'Affection with Waguri:' : 'Độ thân mật với Waguri:'}** **${affection}** ${isEn ? 'points' : 'điểm'} (${affectionName})\n\n` +
                 `━━━━━━━━━━━━━━━━━━━━━━\n` +
                 `🌟 **${isEn ? 'INFINITE ENDGAME ADVENTURES:' : 'HÀNH TRÌNH VÔ TẬN TIẾP THEO:'}**\n` +
-                `> 🧁 **${isEn ? 'Gekka Bakery Master:' : 'Lò Nướng Gekka Đỉnh Cao:'}** ${isEn ? 'Upgrade oven to Level 5, hire 3 staff, craft strawberry cakes (`/tiembanh`)' : 'Nâng cấp lò nướng Cấp 5, thuê đủ 3 nhân viên và làm bánh kem dâu (`/tiembanh`)'}\n` +
+                `> 🧁 **${isEn ? 'Gekka Bakery Master:' : 'Lò Nướng Gekka Đỉnh Cao:'}** ${isEn ? 'Upgrade oven to Level 5, hire 3 staff, craft strawberry cakes (`/bakery`)' : 'Nâng cấp lò nướng Cấp 5, thuê đủ 3 nhân viên và làm bánh kem dâu (`/bakery`)'}\n` +
                 `> 📚 **${isEn ? 'Grand Scholar of Kikyo:' : 'Đại Học Sĩ Kikyo:'}** ${isEn ? 'Keep your daily Pomodoro focus streak and exchange Knowledge Points at `/study shop`' : 'Duy trì chuỗi Pomodoro chuyên cần `/study` và đổi bảo vật tại `/study shop`'}\n` +
                 `> 🐾 **${isEn ? 'Pet Companion Evolution:' : 'Tiến Hóa Thú Cưng:'}** ${isEn ? 'Train pet skills to max level and ascend their rarity (`/pet`)' : 'Nâng cấp kỹ năng thú cưng tối đa và thăng hoa độ hiếm (`/pet`)'}\n` +
                 `> 📈 **${isEn ? 'Crop Commodity Trading:' : 'Thương Hội Nông Sản:'}** ${isEn ? 'Track 4-hour market shifts at `/market prices` for maximum trading yield' : 'Canh biểu đồ biến động giá 4 giờ tại `/market prices` để tối ưu lợi nhuận'}\n` +

@@ -211,7 +211,7 @@
         },
         "3": {
           "name": "Step 3: Try Shopping",
-          "hint": "Buy any item at `/store` or `/buy` 🛒"
+          "hint": "Buy any item with `/store buy` 🛒"
         },
         "4": {
           "name": "Step 4: Get a Job",
@@ -219,14 +219,14 @@
         },
         "5": {
           "name": "Step 5: Test Your Luck",
-          "hint": "Play any minigame (e.g. `/taixiu`, `/blackjack`, `/xocdia`...) 🪙"
+          "hint": "Play any minigame (e.g. `/taixiu`, `/blackjack`, `/baucua`...) 🪙"
         }
       }
     },
     "status": {
       "title": "📊・Status of {user}",
       "fatigue_healthy": "healthy (100%)",
-      "fatigue_tired": "income reduced to {pct}% *(low energy/health — use `/nghingoi`, `/eat` or `/hospital` to restore)*",
+      "fatigue_tired": "income reduced to {pct}% *(low energy/health — use `/rest`, `/eat` or `/hospital` to restore)*",
       "buff_active": "+{pct}% — expires <t:{time}:R>",
       "premium_active": "active until <t:{time}:R> (+{pct}% income)",
       "premium_none": "none (/premium)",
@@ -254,9 +254,9 @@
       "cancelled_desc": "Great! Your data is safe with me~ 🌸",
       "success_title": "🗑️・Data Deleted",
       "success_desc": "I have deleted all your gameplay data. If you return in the future, you will start completely fresh~ Goodbye, hope to see you again! 🌸",
-      "blocked_loans_desc": "You still have **outstanding loans** (either borrowing or lending). Please use `/vay` to resolve all loans before deleting~ 🌸",
-      "blocked_clan_leader_desc": "You are **currently a clan leader**. Please transfer ownership or disband the clan (`/clan disband`) before deleting~ 🌸",
-      "blocked_active_auctions_desc": "You have an **auction that hasn't finished yet**. Please cancel it with `/market cancel-auction`, or wait for it to end, before deleting~ 🌸",
+      "blocked_loans_desc": "You still have **outstanding loans** (either borrowing or lending). Please pay them off with `/loan pay` before deleting~ 🌸",
+      "blocked_clan_leader_desc": "You are **currently a clan leader**. Clans have been retired, so open a `/ticket` and we will disband it for you before deleting~ 🌸",
+      "blocked_active_auctions_desc": "You have an **auction that hasn't finished yet**. Auctions have been retired, so open a `/ticket` and we will close it for you before deleting~ 🌸",
       "blocked_active_bids_desc": "You are the **highest bidder** on someone else's auction. Please wait for it to end before deleting — otherwise your bid would be stuck there~ 🌸",
       "error_desc": "Oops, an error occurred while deleting your data, please try again later~ 🌸"
     },
@@ -393,7 +393,7 @@
       "sell_wrong_stage": "Pig is not mature yet — please {hint} first~",
       "sell_cooldown": "Pig just matured~ wait **{time} minutes** before processing & selling.",
       "sell_failed": "Cannot sell at this time, please try again later~",
-      "sell_success": "You processed the **{type}** into pork and received a product! 🍖\nCheck your inventory and `/eat` to restore health **or** `/sell` to make money~",
+      "sell_success": "You processed the **{type}** into pork and received a product! 🍖\nCheck your inventory and `/eat` to restore health **or** `/store sell` to make money~",
       "bath_help_no_target": "Whose pig do you want to help bathe? Mention @user~",
       "bath_help_invalid_target": "Mention another player to help bathe their pig~",
       "bath_help_no_pig": "They are not raising any pigs~",
@@ -466,7 +466,7 @@
       "fert_insufficient": "Fertilizing costs **{cost}** {currency} (or 1 **Fertilizer** from pig raising)~",
       "fert_failed": "Cannot fertilize at this time~",
       "harvest_not_mature": "Plant is not mature yet — water it 3 times (once every 3 hours) first~",
-      "harvest_success": "You harvested **{type}** and some leaf leftovers as **Pig Feed** 🌽! 🧺\nGo to inventory and use `/eat` (if fruit) or `/sell` to sell for cash~",
+      "harvest_success": "You harvested **{type}** and some leaf leftovers as **Pig Feed** 🌽! 🧺\nGo to inventory and use `/eat` (if fruit) or `/store sell` to sell for cash~",
       "harvest_cooldown": "Plant just matured~ wait **{time} minutes** before harvesting.",
       "harvest_pest": "The plant was left for too long (over 4 hours) and was destroyed by pests 🐛 — plant a new one with `muagiong`~",
       "harvest_failed": "Cannot harvest at this time~",
@@ -634,9 +634,9 @@
     },
     "tiembanh": {
       "title": "🍰・Gekka Bakery",
-      "not_open": "You haven't opened a bakery yet~ You need **Level {level}** + **Gekka Baking Kit** (purchase in `/store`) and run `/tiembanh mo` ({cost} {currency})! 🌸",
-      "status_no_stock": "⚠️ Out of ingredients — use `/tiembanh nhapnl` to bake more!",
-      "status_capped": "📦 Cash register full — use `/tiembanh thu` to claim and continue baking!",
+      "not_open": "You haven't opened a bakery yet~ You need **Level {level}** + **Gekka Baking Kit** (purchase in `/store`) and run `/bakery mo` ({cost} {currency})! 🌸",
+      "status_no_stock": "⚠️ Out of ingredients — use `/bakery nhapnl` to bake more!",
+      "status_capped": "📦 Cash register full — use `/bakery thu` to claim and continue baking!",
       "status_baking": "The bakery is baking steadily~ 🧁",
       "no_staff": "*No staff hired*",
       "no_decor": "*No decorations*",
@@ -649,24 +649,24 @@
       "field_wage": "💸 Staff Wages Deduction",
       "field_wage_val": "Deducts **{pct}%** of total revenue upon harvesting.",
       "field_upgrade": "⬆️ Upgrade",
-      "field_upgrade_val": "Lv.{level}: **{cost}** {currency} + {mats} → `/tiembanh nangcap`",
+      "field_upgrade_val": "Lv.{level}: **{cost}** {currency} + {mats} → `/bakery nangcap`",
       "title_user": "🍰・{user}'s Gekka Bakery",
       "title_open": "🍰・Open Bakery",
       "open_low_level": "You need to reach **Level {level}** to open a bakery~ Grind with `/work`! 🌸",
-      "open_has": "You already own a bakery~ Run `/tiembanh xem`.",
+      "open_has": "You already own a bakery~ Run `/bakery xem`.",
       "open_no_tool": "You need a **Gekka Baking Kit** (buy in `/store` for 8,000) to open a bakery~ 🧰",
       "open_poor": "You need **{cost}** {currency} to open a bakery~ Make some cash with `/work`!",
       "open_success_title": "🍰・Grand Opening of Gekka Bakery!",
-      "open_success_desc": "Congratulations on opening your own bakery (−{cost} {currency})! 🎉🧁\nInput ingredients with `/tiembanh nhapnl` (using farmed fruits/flowers/meat/fish) and use `/tiembanh thu` to harvest your revenue~ 🌸",
+      "open_success_desc": "Congratulations on opening your own bakery (−{cost} {currency})! 🎉🧁\nInput ingredients with `/bakery nhapnl` (using farmed fruits/flowers/meat/fish) and use `/bakery thu` to harvest your revenue~ 🌸",
       "title_nhap": "🍰・Supply Ingredients",
-      "nhap_invalid": "Invalid ingredients~ Use farmed fruit/flower/meat or fresh/good/rare fish. E.g., `/tiembanh nhapnl ca_ngon 5`.",
+      "nhap_invalid": "Invalid ingredients~ Use farmed fruit/flower/meat or fresh/good/rare fish. E.g., `/bakery nhapnl ca_ngon 5`.",
       "nhap_qty_invalid": "Quantity must be greater than 0~",
-      "nhap_no_bakery": "You haven't opened a bakery yet~ Run `/tiembanh mo` first.",
+      "nhap_no_bakery": "You haven't opened a bakery yet~ Run `/bakery mo` first.",
       "nhap_no_item": "You don't have **{qty}× {name}** in your inventory~ Go fish or farm some more!",
       "nhap_success_title": "🍰・Ingredients Supplied",
-      "nhap_success_desc": "Put **{qty}× {name}** into the kitchen → +**{gain}** {currency} potential stock! 🧺\nThe bakery will bake gradually — run `/tiembanh thu` to harvest revenue~ 🌸",
+      "nhap_success_desc": "Put **{qty}× {name}** into the kitchen → +**{gain}** {currency} potential stock! 🧺\nThe bakery will bake gradually — run `/bakery thu` to harvest revenue~ 🌸",
       "thu_title": "🍰・Harvest Revenue",
-      "thu_empty_stock": "Nothing to harvest yet~ The bakery is out of ingredients — `/tiembanh nhapnl`! 🌸",
+      "thu_empty_stock": "Nothing to harvest yet~ The bakery is out of ingredients — `/bakery nhapnl`! 🌸",
       "thu_empty_wait": "Nothing to harvest yet~ Wait for the bakery to bake a bit more~ 🌸",
       "cake_msg": "\n{emoji} The bakery fresh-baked **{qty}× {name}**! (added to inventory — `/eat` for buffs or gift to someone 💕)",
       "wage_msg": "\n💸 Staff Wages paid: **-{amount}** {currency} *(deducted from revenue)*",
@@ -695,7 +695,7 @@
       "nangcap_no_mats": "You are missing materials: needs {mats} (craft at `/craft`)~",
       "nangcap_success_title": "🍰・Bakery Upgraded!",
       "nangcap_success_desc": "Bakery reached **Lv.{level}**! Now baking at **{rate}** {currency}/min · cap **{cap}** {currency}. Business is booming! 🎉🧁",
-      "err_sub": "Try `/tiembanh xem`, `mo`, `nhapnl`, `thu`, or `nangcap`~",
+      "err_sub": "Try `/bakery xem`, `mo`, `nhapnl`, `thu`, or `nangcap`~",
       "staff": {
         "rintaro": {
           "name": "Rintaro Tsumugi",
@@ -806,7 +806,7 @@
       }
     },
     "noitu": {
-      "already_started": "There is already a word chain game running in this channel~ Type `/noitu status` to see the current word.",
+      "already_started": "There is already a word chain game running in this channel~ Type `/wordchain status` to see the current word.",
       "start_title": "🔤 Word Chain Started!",
       "start_desc": "Starting word: **{phrase}**\nThe next player must respond with a **2-syllable Vietnamese phrase** starting with **\"{lastWord}\"**!\n\n*Rules: 2-syllable Vietnamese phrase · no repetition · no consecutive turns. Waguri will react with ✅/❌ to each turn.*",
       "stop_title": "🛑 Word Chain Ended!",
@@ -814,7 +814,7 @@
       "stop_no_game": "There is no running game in this channel~",
       "status_title": "🔤 Word Chain Status",
       "status_desc": "The next phrase must start with **\"{lastWord}\"** (completed **{count}** turns). Waiting for your word!",
-      "no_game": "No word chain game is running. Type `/noitu start` to begin!"
+      "no_game": "No word chain game is running. Type `/wordchain start` to begin!"
     },
     "lobby": {
       "empty": "*(nobody yet)*",
@@ -1501,7 +1501,7 @@
         "Your future is bright, but your present... better start grinding 😅",
         "Prophecy \"stable home, prosperous career\" — save money to buy items at `/store`.",
         "Sage says: do not seek luck in gambling, police are watching 👮",
-        "You are quite popular today, try `/ship` to see your match~",
+        "You are quite popular today, try `/dating` to see your match~",
         "Prophecy \"thrift and integrity\" — cut down on `/baucua` my friend.",
         "Sage sees good luck coming, go `/daily` check-in now before it's gone!",
         "Prophecy \"no pain, no gain\" — the eternal truth!"
@@ -1606,13 +1606,13 @@
     "setup": {
       "err_no_permission": "Requires **Manage Server** permission to use this command~ 🌸",
       "embed_title_setup": "⚙️ Game Channel Setup",
-      "err_missing_manage_channels": "I lack the **Manage Channels** permission to create a room 😟.\nGo to *Server Settings → Roles → Waguri* and enable it, or re-invite me using `/invite` (which includes this permission), then run `/setup` again~ 🌸",
+      "err_missing_manage_channels": "I lack the **Manage Channels** permission to create a room 😟.\nGo to *Server Settings → Roles → Waguri* and enable it, or re-invite me using `/bot invite` (which includes this permission), then run `/setup` again~ 🌸",
       "warn_save_failed": "\n\n⚠️ The channel was created, but I **couldn't save** it as the AI reply channel (connection hiccup). Please run `/config ai-channel` once to set it~ 🌸",
       "channel_topic": "Waguri's Playroom 🌸 — type /help to see commands",
       "channel_reason": "Waguri /setup",
       "err_create_channel_failed": "Oops, I couldn't create the channel (lacking permissions or invalid position). Grant **Manage Channels** and try again~ 🌸",
       "intro_title": "🌸 Hello everyone, I'm Waguri!",
-      "intro_desc": "This is my playroom~ 💕\n\n**Quick Start:**\n• `/daily` — daily check-in rewards\n• `/work` `/fish` `/mine` `/chop` — earn money (costs energy)\n• `/store` `/buy` — shopping · `/help` — see all commands\n• `/ask` or **@tag me** — let's chat 💬",
+      "intro_desc": "This is my playroom~ 💕\n\n**Quick Start:**\n• `/daily` — daily check-in rewards\n• `/work` `/fish` `/mine` `/chop` — earn money (costs energy)\n• `/store buy` — shopping · `/help` — see all commands\n• `/ask` or **@tag me** — let's chat 💬",
       "intro_footer": "Have fun everyone~",
       "success_title": "⚙️ Setup Successful!",
       "success_desc": "All set! My playroom is <#{channelId}>.\n\nI have set this as the **default AI chat channel** (if you want me to respond in all channels, run `/config ai-channel` and leave the channel empty)."
@@ -1677,7 +1677,7 @@
       "err_system": "Oops, an error occurred during crafting, please try again later~ 🌸",
       "err_poor_money": "You need **{cost}** {currency} for the crafting fee but you don't have enough~ 😟",
       "err_poor_mat": "You lack the material: **{mat}**~ Go `/mine` or `/chop` to get more! ⛏️🪓",
-      "success_desc": "🔨 Successfully crafted **{qty}× {name}**! Sell it via `/sell` for profit or use it for work~ 💰"
+      "success_desc": "🔨 Successfully crafted **{qty}× {name}**! Sell it via `/store sell` for profit or use it for work~ 💰"
     },
     "cuutro": {
       "embed_title": "🌸・Bankruptcy Relief",
@@ -1723,7 +1723,7 @@
     "leaderboard": {
       "scope_server": " (Server)",
       "scope_global": " (Global)",
-      "err_no_couples": "No couples registered yet~ Type `/marry` to start! 💕",
+      "err_no_couples": "No couples registered yet~ Type `/couple marry` to start! 💕",
       "title_love": "💞 Love Compatibility Leaderboard (Global)",
       "love_line": "{rank} <@{user}> 💞 <@{partner}> — **{love}** points",
       "err_empty_server": "Nobody in this server is on the leaderboard yet~ Play some games to register! 🌸",
@@ -2016,7 +2016,7 @@
     },
     "nghingoi": {
       "cooldown_title": "😴 Cozy Nap",
-      "err_save_failed": "Oh, I **couldn't restore your energy** because of a connection hiccup 🥺 Please check with `/status` — if it's still not full, just run `/nghingoi` again~ 🌸",
+      "err_save_failed": "Oh, I **couldn't restore your energy** because of a connection hiccup 🥺 Please check with `/status` — if it's still not full, just run `/rest` again~ 🌸",
       "cooldown_desc": "You just woke up~ 😴 You can sleep again <t:{time}:R>.",
       "success_title": "😴 Sweet Dreams",
       "success_desc": "You rested and restored full **{energy}** ⚡ energy, recovered **100 ❤️ health**, and cleared your fatigue! Ready to work with me again~ 🌸"
@@ -2821,7 +2821,7 @@
     "sell_wrong_stage": "Pig is not mature yet — please {hint} first~",
     "sell_cooldown": "Pig just matured~ wait **{time} minutes** before processing & selling.",
     "sell_failed": "Cannot sell at this time, please try again later~",
-    "sell_success": "You processed the **{type}** into pork and received a product! 🍖\nCheck your inventory and `/eat` to restore health **or** `/sell` to make money~",
+    "sell_success": "You processed the **{type}** into pork and received a product! 🍖\nCheck your inventory and `/eat` to restore health **or** `/store sell` to make money~",
     "bath_help_no_target": "Whose pig do you want to help bathe? Mention @user~",
     "bath_help_invalid_target": "Mention another player to help bathe their pig~",
     "bath_help_no_pig": "They are not raising any pigs~",
@@ -2894,7 +2894,7 @@
     "fert_insufficient": "Fertilizing costs **{cost}** {currency} (or 1 **Fertilizer** from pig raising)~",
     "fert_failed": "Cannot fertilize at this time~",
     "harvest_not_mature": "Plant is not mature yet — water it 3 times (once every 3 hours) first~",
-    "harvest_success": "You harvested **{type}** and some leaf leftovers as **Pig Feed** 🌽! 🧺\nGo to inventory and use `/eat` (if fruit) or `/sell` to sell for cash~",
+    "harvest_success": "You harvested **{type}** and some leaf leftovers as **Pig Feed** 🌽! 🧺\nGo to inventory and use `/eat` (if fruit) or `/store sell` to sell for cash~",
     "harvest_cooldown": "Plant just matured~ wait **{time} minutes** before harvesting.",
     "harvest_pest": "The plant was left for too long (over 4 hours) and was destroyed by pests 🐛 — plant a new one with `muagiong`~",
     "harvest_failed": "Cannot harvest at this time~",

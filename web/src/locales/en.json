@@ -169,7 +169,7 @@
       "exp": "Scholar — +{pct}% EXP from `/work` and all gathering.",
       "thief": "Trickster — +{pct}% coins stolen on `/rob`, and a smaller fine when caught.",
       "stamina": "Vigor — −{pct}% energy cost on `/fish` `/mine` `/chop`.",
-      "harvest": "Bounty — +{pct}% gathering yield, +{pct}% on `/sell`, +{pct}% rare-catch upgrade."
+      "harvest": "Bounty — +{pct}% gathering yield, +{pct}% on `/store sell`, +{pct}% rare-catch upgrade."
     },
     "petRarity": {
       "common": "Common",
@@ -433,7 +433,7 @@
     "like_limit": "You have reached your 3-like daily limit!",
     "like_success": "Successfully liked {name}'s bakery! ❤️",
     "not_found": "Bakery not found 🌸",
-    "not_found_desc": "This player has not opened a Gekka Bakery yet. Use `/tiembanh mo` on Discord to start!"
+    "not_found_desc": "This player has not opened a Gekka Bakery yet. Use `/bakery mo` on Discord to start!"
   },
   "faq": {
     "title": "Frequently Asked Questions",

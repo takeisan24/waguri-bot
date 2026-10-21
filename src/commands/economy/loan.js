@@ -16,9 +16,6 @@ const fmt = (n, locale) => Number(n || 0).toLocaleString(locale === 'en' ? 'en-U
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('loan')
-        .setNameLocalizations({
-            vi: 'vay'
-        })
         .setDescription('Quỹ tín dụng học đường Kikyo 🤝 — vay vốn & trả nợ hệ thống')
         .setDescriptionLocalizations({
             vi: 'Quỹ tín dụng học đường Kikyo 🤝 — vay vốn & trả nợ hệ thống',

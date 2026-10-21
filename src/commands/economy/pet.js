@@ -78,8 +78,8 @@ function describeBuff(pet, locale) {
                       : `🗝️ **Ranh mãnh** — +${pct(v)}% tiền cướp được, giảm ${pct(petThiefFineCut(pet))}% tiền phạt khi trượt`,
         stamina: isEn ? `⚡ **Vigor** — −${pct(v)}% energy on \`/fish\` \`/mine\` \`/chop\``
                       : `⚡ **Bền sức** — giảm ${pct(v)}% năng lượng khi \`/fish\` \`/mine\` \`/chop\``,
-        harvest: isEn ? `🌾 **Bounty** — +${pct(v)}% yield, +${pct(v)}% on \`/sell\`, +${pct(v)}% rare-catch upgrade`
-                      : `🌾 **Bội thu** — +${pct(v)}% sản lượng, +${pct(v)}% tiền \`/sell\`, +${pct(v)}% cơ hội nâng mẻ cá`,
+        harvest: isEn ? `🌾 **Bounty** — +${pct(v)}% yield, +${pct(v)}% on \`/store sell\`, +${pct(v)}% rare-catch upgrade`
+                      : `🌾 **Bội thu** — +${pct(v)}% sản lượng, +${pct(v)}% tiền \`/store sell\`, +${pct(v)}% cơ hội nâng mẻ cá`,
     };
     return lines[id] || '';
 }

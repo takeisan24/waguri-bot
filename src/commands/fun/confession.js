@@ -6,7 +6,6 @@ const { getInteractionLanguage, t } = require('../../lib/i18n');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('confession')
-        .setNameLocalizations({ vi: 'confession' })
         .setDescription('Send an anonymous confession or heart-to-heart whisper with Waguri 💌')
         .setDescriptionLocalizations({ vi: 'Gửi confession ẩn danh & nhận lời hồi đáp chữa lành từ Waguri 💌' })
         .addStringOption(o => o.setName('message').setNameLocalizations({ vi: 'noidung' }).setDescription('What you want to share').setDescriptionLocalizations({ vi: 'Điều cậu muốn gửi gắm' }).setRequired(true)),

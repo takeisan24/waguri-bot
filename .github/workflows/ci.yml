@@ -42,6 +42,9 @@ jobs:
       # đã trôi mất 11 lệnh (gồm /start, /study, /prestige) — /study và /ticket có 0 lượt
       # dùng trên prod vì người chơi không có đường nào khám phá ra chúng.
       - run: node scripts/check-help-sync.js
+      # Chữ hướng dẫn nhắc lệnh không tồn tại (`/tiembanh`, `/vay`, `/clan`…): sau đợt đổi
+      # tên sang tiếng Anh còn ~100 chỗ; người chơi mất 10 phút tìm ra lệnh thật là /bakery.
+      - run: node scripts/check-command-refs.js
       # "Viết migration" KHÁC "DB đã có" — đã xảy ra BA lần: 0096 (chợ bán mọi thứ 500 xu),
       # 0080 (ghi nhớ ngôn ngữ chết), 0091 (tuyên chiến clan mất cooldown). Cả ba đều do
       # TRÙNG SỐ HIỆU nên file không bao giờ được áp.

@@ -6,7 +6,6 @@ const { getInteractionLanguage, t } = require('../../lib/i18n');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('wordchain')
-        .setNameLocalizations({ vi: 'noitu' })
         .setDescription('Play the Vietnamese word chain game')
         .setDescriptionLocalizations({ vi: 'Chơi nối từ tiếng Việt' })
         .addSubcommand(s => s.setName('start').setDescription('Bắt đầu ván nối từ ở kênh này'))

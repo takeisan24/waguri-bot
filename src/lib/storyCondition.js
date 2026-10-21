@@ -171,7 +171,7 @@ async function checkStoryNodeCondition(userId, chapterId, nodeId, user, locale =
                     pass,
                     guideText: pass
                         ? (isEn ? '🥖 Ingredients stocked in the oven!' : '🥖 Nguyên liệu đã được nạp đầy vào lò nướng rồi!')
-                        : (isEn ? '🥖 Please restock the bakery with `/tiembanh nhapnl` (use surplus bread or crops).' : '🥖 Cậu hãy nạp nguyên liệu vào lò bánh bằng lệnh `/tiembanh nhapnl` (dùng bánh mì hoặc nông sản dư) để lò bắt đầu nướng nhé!')
+                        : (isEn ? '🥖 Please restock the bakery with `/bakery nhapnl` (use surplus bread or crops).' : '🥖 Cậu hãy nạp nguyên liệu vào lò bánh bằng lệnh `/bakery nhapnl` (dùng bánh mì hoặc nông sản dư) để lò bắt đầu nướng nhé!')
                 };
             }
 
@@ -182,7 +182,7 @@ async function checkStoryNodeCondition(userId, chapterId, nodeId, user, locale =
                     pass,
                     guideText: pass
                         ? (isEn ? '🥐 First batch of warm pastries collected!' : '🥐 Mùi thơm nức mũi của những mẻ bánh nướng đầu mùa!')
-                        : (isEn ? '🥐 Collect your baked goods using `/tiembanh thu`.' : '🥐 Cậu hãy gõ lệnh `/tiembanh thu` để thu hoạch những mẻ bánh nướng thơm ngon đầu tiên nhé!')
+                        : (isEn ? '🥐 Collect your baked goods using `/bakery thu`.' : '🥐 Cậu hãy gõ lệnh `/bakery thu` để thu hoạch những mẻ bánh nướng thơm ngon đầu tiên nhé!')
                 };
             }
         }

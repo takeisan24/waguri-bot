@@ -382,8 +382,8 @@ async function subDonhang(interaction, locale) {
         : '';
 
     const guideText = isEn 
-        ? `Deliver an order using \`/tiembanh giaodon stt:<1-3>\`.\nReputation: **${fmt(bk.reputation || 0, locale)}** pts.${rushNotice}`
-        : `Dùng lệnh \`/tiembanh giaodon stt:<1-3>\` để hoàn thành đơn hàng và nhận thưởng.\nDanh tiếng tiệm: **${fmt(bk.reputation || 0, locale)}** điểm.${rushNotice}`;
+        ? `Deliver an order using \`/bakery giaodon stt:<1-3>\`.\nReputation: **${fmt(bk.reputation || 0, locale)}** pts.${rushNotice}`
+        : `Dùng lệnh \`/bakery giaodon stt:<1-3>\` để hoàn thành đơn hàng và nhận thưởng.\nDanh tiếng tiệm: **${fmt(bk.reputation || 0, locale)}** điểm.${rushNotice}`;
 
     return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'info', {
         locale,
@@ -486,9 +486,6 @@ async function subGiaodon(interaction, locale) {
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('bakery')
-        .setNameLocalizations({
-            vi: 'tiembanh'
-        })
         .setDescription('Tiệm Bánh Gekka 🍰 — kinh doanh thụ động & đơn hàng VIP')
         .setDescriptionLocalizations({
             vi: 'Tiệm Bánh Gekka 🍰 — kinh doanh thụ động & đơn hàng VIP',

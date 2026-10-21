@@ -7,7 +7,6 @@ const { getInteractionLanguage, t } = require('../../lib/i18n');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('rest')
-        .setNameLocalizations({ vi: 'nghingoi' })
         .setDescription('Take a good nap to fully restore your energy 😴')
         .setDescriptionLocalizations({ vi: 'Đi ngủ một giấc để hồi đầy năng lượng 😴' }),
     async execute(interaction) {

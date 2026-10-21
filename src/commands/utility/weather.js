@@ -43,7 +43,6 @@ async function fetchJson(url) {
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('weather')
-        .setNameLocalizations({ vi: 'thoitiet' })
         .setDescription('Check the weather of a city (powered by Open-Meteo) 🌤️')
         .setDescriptionLocalizations({ vi: 'Xem thời tiết một thành phố (miễn phí qua Open-Meteo) 🌤️' })
         .addStringOption(o => o.setName('city').setNameLocalizations({ vi: 'thanh_pho' }).setDescription('City name (e.g. Hanoi, Tokyo)').setDescriptionLocalizations({ vi: 'Tên thành phố (vd: Hanoi, Da Nang)' }).setRequired(true)),

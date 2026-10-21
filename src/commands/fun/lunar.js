@@ -27,7 +27,6 @@ function parseDate(s) {
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('lunar')
-        .setNameLocalizations({ vi: 'amlich' })
         .setDescription('View lunar calendar, zodiac hours and daily fortune 🌙')
         .setDescriptionLocalizations({ vi: 'Xem âm lịch, can-chi & giờ hoàng đạo (kèm lời Waguri) 🌙' })
         .addStringOption(o => o.setName('date').setNameLocalizations({ vi: 'ngay' }).setDescription('Solar date (dd/mm/yyyy) — default: today').setDescriptionLocalizations({ vi: 'Ngày dương lịch (dd/mm/yyyy) — bỏ trống = hôm nay' }).setRequired(false)),

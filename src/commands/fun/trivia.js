@@ -16,7 +16,6 @@ module.exports = {
     _norm: norm,
     data: new SlashCommandBuilder()
         .setName('trivia')
-        .setNameLocalizations({ vi: 'dovui' })
         .setDescription('Trivia quiz 🧠 — answer quickly in chat to win rewards')
         .setDescriptionLocalizations({ vi: 'Đố vui 🧠 — trả lời nhanh & đúng nhất trong chat để thắng thưởng' }),
     async execute(interaction) {

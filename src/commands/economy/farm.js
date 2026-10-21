@@ -8,9 +8,6 @@ const { getInteractionLanguage, t } = require('../../lib/i18n');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('farm')
-        .setNameLocalizations({
-            vi: 'trongcay'
-        })
         .setDescription('Vườn nông sản Gekka 🌱 — mua giống, tưới nước, thu hoạch trái cây & lúa mì')
         .setDescriptionLocalizations({
             vi: 'Vườn nông sản Gekka 🌱 — mua giống, tưới nước, thu hoạch trái cây & lúa mì',

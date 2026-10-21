@@ -41,14 +41,14 @@ async function fishDrops({ userId, c, userPet, locale }) {
             daTrao = await traoCa(userId, 'ca_tuoi');
             const iName = t(locale, 'data.items.ca_tuoi.name') || 'Cá Tươi';
             if (daTrao) desc += en
-                ? `\n🐟 Your bucket has **1× ${iName}** *(ingredient for \`/tiembanh\`)*`
-                : `\n🐟 Giỏ cá có thêm **1× Cá Tươi** *(nguyên liệu \`/tiembanh\`)*`;
+                ? `\n🐟 Your bucket has **1× ${iName}** *(ingredient for \`/bakery\`)*`
+                : `\n🐟 Giỏ cá có thêm **1× Cá Tươi** *(nguyên liệu \`/bakery\`)*`;
         } else if (c.name === 'Cá rô phi' && rand < 0.45) {
             daTrao = await traoCa(userId, 'ca_tuoi');
             const iName = t(locale, 'data.items.ca_tuoi.name') || 'Cá Tươi';
             if (daTrao) desc += en
-                ? `\n🐟 Your bucket has **1× ${iName}** *(ingredient for \`/tiembanh\`)*`
-                : `\n🐟 Giỏ cá có thêm **1× Cá Tươi** *(nguyên liệu \`/tiembanh\`)*`;
+                ? `\n🐟 Your bucket has **1× ${iName}** *(ingredient for \`/bakery\`)*`
+                : `\n🐟 Giỏ cá có thêm **1× Cá Tươi** *(nguyên liệu \`/bakery\`)*`;
         } else if (c.name === 'Cá lóc bự') {
             if (rand < 0.30) {
                 daTrao = await traoCa(userId, 'ca_ngon');
@@ -60,8 +60,8 @@ async function fishDrops({ userId, c, userPet, locale }) {
                 daTrao = await traoCa(userId, 'ca_tuoi');
                 const iName = t(locale, 'data.items.ca_tuoi.name') || 'Cá Tươi';
                 if (daTrao) desc += en
-                    ? `\n🐟 Your bucket has **1× ${iName}** *(ingredient for \`/tiembanh\`)*`
-                    : `\n🐟 Giỏ cá có thêm **1× Cá Tươi** *(nguyên liệu \`/tiembanh\`)*`;
+                    ? `\n🐟 Your bucket has **1× ${iName}** *(ingredient for \`/bakery\`)*`
+                    : `\n🐟 Giỏ cá có thêm **1× Cá Tươi** *(nguyên liệu \`/bakery\`)*`;
             }
         } else if (c.name === 'Cá hiếm') {
             const petSkills = userPet?.skills || {};

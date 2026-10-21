@@ -11,7 +11,6 @@ const db = require('../../database');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('ticket')
-        .setNameLocalizations({ vi: 'ticket' })
         .setDescription('Open a feedback or support ticket with Waguri Team 🌸')
         .setDescriptionLocalizations({ vi: 'Hệ thống hỗ trợ riêng tư với Staff Waguri 🌸' })
         .addSubcommand(sub =>

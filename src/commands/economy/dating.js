@@ -95,7 +95,6 @@ const GIFTS_EN = {
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('dating')
-        .setNameLocalizations({ vi: 'henho' })
         .setDescription('Go on a date with Waguri to increase affection 💖')
         .setDescriptionLocalizations({ vi: 'Hẹn hò và dắt Waguri đi chơi để bồi đắp tình cảm 💖' })
         .addSubcommand(s => s.setName('view').setDescription('Xem trạng thái tình cảm của cậu với Waguri'))

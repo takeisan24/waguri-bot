@@ -873,6 +873,10 @@ function localizeCommandJSON(cmd) {
             "vi": cmd.description
         };
     }
+    // CHỦ Ý ghi đè: mọi ngôn ngữ thấy CÙNG một tên tiếng Anh, nên chữ hướng dẫn chỉ cần một
+    // tên. Hệ quả: `setNameLocalizations({ vi: ... })` trong builder KHÔNG tới được Discord —
+    // đừng khai lại ở đó. Tên tiếng Việt cũ sống tiếp dưới dạng gõ tắt `w!` (lib/prefixTen.js),
+    // và `scripts/check-command-refs.js` chặn chữ hướng dẫn nhắc tên không tồn tại.
     cmd.name_localizations = {
         "vi": cmd.name,
         "en-US": cmd.name,

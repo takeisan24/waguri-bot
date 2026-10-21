@@ -53,7 +53,7 @@ const THAYDO = [
     'Hậu vận của con xán lạn, nhưng tiền vận thì... ráng đi cày 😅',
     'Quẻ "an cư lạc nghiệp" — để dành tiền sắm đồ xịn ở `/store` đi con.',
     'Thầy phán: chớ ham trò may rủi, công an đang rình đó nha 👮',
-    'Số con đào hoa lắm, thử `/ship` xem hợp với ai nào~',
+    'Số con đào hoa lắm, thử `/dating` xem hợp với ai nào~',
     'Quẻ "cần kiệm liêm chính" — bớt `/baucua` lại con ơi.',
     'Thầy thấy con sắp gặp may, đi `/daily` điểm danh ngay kẻo lỡ!',
     'Quẻ "có làm thì mới có ăn" — chân lý ngàn đời đó con!',
@@ -70,7 +70,6 @@ const today = () => new Date().toISOString().slice(0, 10);
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('fortune')
-        .setNameLocalizations({ vi: 'boi' })
         .setDescription('Fortune telling and daily horoscope by Waguri 🔮')
         .setDescriptionLocalizations({ vi: 'Waguri xem bói cho cậu 🔮' })
         .addSubcommand(s => s.setName('daily').setNameLocalizations({ vi: 'hangngay' }).setDescription('Your fortune today').setDescriptionLocalizations({ vi: 'Vận mệnh hôm nay của cậu' }))
