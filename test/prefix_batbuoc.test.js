@@ -196,7 +196,7 @@ test('gate: /help hiện được tên gõ tắt (24 tên trước đây vô hì
     // Ba lệnh đại diện ba nguồn tên: handler riêng, alias {cmd,sub}, alias đổi tên.
     assert.ok(tenTatCua('heo').includes('muaheo'), 'mất tên gõ tắt của heo');
     assert.ok(tenTatCua('bank').includes('bal'), 'mất alias bank');
-    assert.ok(tenTatCua('nghingoi').includes('ngu'), 'mất alias đổi tên');
+    assert.ok(tenTatCua('rest').includes('ngu'), 'mất alias đổi tên');
     assert.deepStrictEqual(tenTatCua('work'), [], 'lệnh không có tên tắt thì phải trả rỗng, không bịa');
 
     const src = fs.readFileSync(path.join(__dirname, '..', 'src', 'commands', 'utility', 'help.js'), 'utf8');

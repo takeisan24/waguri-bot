@@ -57,18 +57,36 @@ const PREFIX_ALIASES = {
     support: { cmd: 'bot', sub: 'support' },
     invite: { cmd: 'bot', sub: 'invite' },
 
-    // Giữ nguyên các alias cũ khác
-    ngu: 'nghingoi',
-    trano: { cmd: 'vay', sub: 'tra' },
-    donno: { cmd: 'vay', sub: 'doi' },
-    no: { cmd: 'vay', sub: 'so' },
+    // 7. Tên tiếng Việt cũ của các lệnh đã đổi sang tiếng Anh.
+    //
+    // Bộ định tuyến prefix tra `client.commands` theo TÊN TIẾNG ANH, còn
+    // `setNameLocalizations({ vi: 'tiembanh' })` trong builder thì bị `commandLocalizer` ghi
+    // đè trước khi tới Discord — nên sau đợt đổi tên, `w!tiembanh`, `w!vay`, `w!ngu`,
+    // `w!trano`… đều IM LẶNG không chạy, dù tài liệu vẫn hứa "giữ alias gõ tắt"
+    // (phát hiện 2026-10-21 khi soi feedback "tìm 10 phút mới thấy /bakery").
+    tiembanh: 'bakery',
+    trongcay: 'farm',
+    vay: 'loan',
+    nghingoi: 'rest',
+    ngu: 'rest',
+    dovui: 'trivia',
+    noitu: 'wordchain',
+    thoitiet: 'weather',
+    henho: 'dating',
+    tangdo: 'gift',
+    cuutro: 'relief',
+    boi: 'fortune',
+    amlich: 'lunar',
+    trano: { cmd: 'loan', sub: 'pay' },
+    no: { cmd: 'loan', sub: 'status' },
+    // `w!donno` (đòi nợ P2P) đã bỏ: /loan chỉ vay quỹ hệ thống, không còn chủ nợ là người.
 };
 
 // Tên prefix-only do handler riêng phục vụ, KHÔNG đi qua prefixShim.
 // Khoá = tên lệnh slash tương ứng, để `/help <lệnh>` tra ra được.
 const TEN_RIENG = {
     heo: [...PIG_CMDS],
-    trongcay: [...PLANT_CMDS],
+    farm: [...PLANT_CMDS],
     loto: ['loto', 'so', 'ds', 'end'],
     bingo: ['bingo', 'mua', 'check', 'end'],
 };

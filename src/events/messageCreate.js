@@ -88,14 +88,19 @@ module.exports = {
             if (!rawCmd) return;
             const alias = PREFIX_ALIASES[rawCmd];
             let cmdName = rawCmd;
-            if (typeof alias === 'string') cmdName = alias;                        // đổi tên (w!ngu -> nghingoi)
-            else if (alias) { cmdName = alias.cmd; tokens.unshift(alias.sub); }     // gộp lệnh con (w!trano -> vay tra)
+            if (typeof alias === 'string') cmdName = alias;                        // đổi tên (w!ngu -> rest)
+            else if (alias) { cmdName = alias.cmd; tokens.unshift(alias.sub); }     // gộp lệnh con (w!trano -> loan pay)
 
-            // Tương thích prefix CŨ: trước đây w!vay @người 5000 vay trực tiếp (chưa có lệnh con).
-            // Sau khi gộp, nếu token đầu KHÔNG phải lệnh con hợp lệ -> mặc định về lệnh con phổ biến nhất.
-            const DEFAULT_SUB = { vay: { subs: ['muon', 'tra', 'doi', 'so'], def: 'muon' } };
-            const ds = DEFAULT_SUB[cmdName];
-            if (ds && !ds.subs.includes((tokens[0] || '').toLowerCase())) tokens.unshift(ds.def);
+            // Tương thích prefix CŨ của `w!vay`: lệnh con tiếng Việt (muon/tra/so) đổi sang tên
+            // mới, và `w!vay 5000` (không lệnh con) hiểu là vay. Gõ trống thì xem tình trạng —
+            // mặc định "vay" khi thiếu số tiền chỉ ra một câu báo thiếu tham số.
+            if (cmdName === 'loan') {
+                const SUB_CU = { muon: 'borrow', tra: 'pay', so: 'status' };
+                const dau = (tokens[0] || '').toLowerCase();
+                if (SUB_CU[dau]) tokens[0] = SUB_CU[dau];
+                else if (!dau) tokens.unshift('status');
+                else if (!['borrow', 'pay', 'status'].includes(dau)) tokens.unshift('borrow');
+            }
 
             // Chuyển hướng yêu cầu âm nhạc thư giãn sang Web Lo-Fi Study Room (0MB RAM VPS)
             if (cmdName === 'hvl' || cmdName === 'mck') {
