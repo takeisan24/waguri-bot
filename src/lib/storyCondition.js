@@ -276,15 +276,24 @@ async function checkStoryNodeCondition(userId, chapterId, nodeId, user, locale =
             }
 
             if (nd === 3) {
-                // Tiết 3: Mái nhà chung bang hội (/clan)
+                // Tiết 3: Mái nhà chung — đạt 4.000 EXP.
+                //
+                // Tiết này từng bắt "gia nhập Bang hội qua `/clan`", nhưng `/clan` đã cất vào
+                // `archive/` nên không ai còn cách có `clan_id`; đường qua DUY NHẤT là nhánh
+                // dự phòng EXP mà hướng dẫn lại giấu đi (feedback 2026-10). Nay điều kiện hiển
+                // thị và điều kiện thật là MỘT.
                 const exp = Number(user?.exp || 0);
-                const pass = Boolean(user?.clan_id) || exp >= 4000;
+                const MUC = 4000;
+                const pass = exp >= MUC;
+                const bar = createWaguriBar(exp, MUC, 8);
+                const progressPct = Math.min(100, Math.floor((exp / MUC) * 100));
 
                 return {
                     pass,
                     guideText: pass
-                        ? (isEn ? '🛡️ United under the Clan banner!' : '🛡️ Mái nhà chung gắn kết bạn bè hai trường đã được xây đắp!')
-                        : (isEn ? '🛡️ Join or create a clan with `/clan` to unite students from both schools.' : '🛡️ Hãy gia nhập hoặc lập một Bang hội qua lệnh `/clan` để cùng bạn bè hai trường gắn kết nhen!')
+                        ? (isEn ? '🏡 Your effort has earned a place under the shared roof!' : '🏡 Công sức của cậu đã góp thành mái nhà chung của hai trường rồi!')
+                        : (isEn ? '🏡 Reach 4,000 EXP — `/work`, `/study start` and bakery VIP orders (`/bakery donhang`) all help!' : '🏡 Hãy đạt 4.000 EXP nhé — `/work`, `/study start` hay giao đơn VIP tiệm bánh (`/bakery donhang`) đều giúp cậu tiến nhanh nhen!'),
+                    progressText: pass ? undefined : `📊 [${bar}] ${progressPct}% (${exp.toLocaleString(isEn ? 'en-US' : 'vi-VN')}/${MUC.toLocaleString(isEn ? 'en-US' : 'vi-VN')} EXP)`
                 };
             }
         }

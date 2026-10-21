@@ -49,7 +49,7 @@ async function buildStoryTab(user, locale) {
                 `> 📚 **${isEn ? 'Grand Scholar of Kikyo:' : 'Đại Học Sĩ Kikyo:'}** ${isEn ? 'Keep your daily Pomodoro focus streak and exchange Knowledge Points at `/study shop`' : 'Duy trì chuỗi Pomodoro chuyên cần `/study` và đổi bảo vật tại `/study shop`'}\n` +
                 `> 🐾 **${isEn ? 'Pet Companion Evolution:' : 'Tiến Hóa Thú Cưng:'}** ${isEn ? 'Train pet skills to max level and ascend their rarity (`/pet`)' : 'Nâng cấp kỹ năng thú cưng tối đa và thăng hoa độ hiếm (`/pet`)'}\n` +
                 `> 📈 **${isEn ? 'Crop Commodity Trading:' : 'Thương Hội Nông Sản:'}** ${isEn ? 'Track 4-hour market shifts at `/market prices` for maximum trading yield' : 'Canh biểu đồ biến động giá 4 giờ tại `/market prices` để tối ưu lợi nhuận'}\n` +
-                `> 🛡️ **${isEn ? 'Clan Shrine & Rebirth:' : 'Đền Thờ Bang & Chuyển Sinh:'}** ${isEn ? 'Build the Clan Shrine (`/clan`) and prepare for Rebirth (`/prestige`)' : 'Góp sức xây Đền Thờ Bang `/clan` và chuẩn bị Chuyển Sinh (`/prestige`)'}\n` +
+                `> 🔄 **${isEn ? 'Rebirth:' : 'Chuyển Sinh:'}** ${isEn ? 'Reach the peak and start anew with permanent bonuses (`/prestige`)' : 'Chạm đỉnh rồi bắt đầu lại với phần thưởng vĩnh viễn (`/prestige`)'}\n` +
                 `━━━━━━━━━━━━━━━━━━━━━━\n` +
                 `*${isEn ? 'May your days with Waguri always be sweet and warm 🌸' : 'Mỗi ngày trôi qua cùng Waguri sẽ luôn tràn ngập những điều ngọt ngào và ấm áp 🌸'}*`
             )

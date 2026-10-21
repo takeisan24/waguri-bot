@@ -88,7 +88,7 @@ const STORY_CHAPTERS = [
                 title: 'Tiết 3: Gieo Mầm Hy Vọng',
                 intro: 'Waguri dắt cậu đến cửa hàng nông nghiệp mua hạt giống đầu tiên để gieo xuống mảnh đất sau trường.',
                 dialogue: '"Tự tay gieo một hạt giống và nhìn nó nảy mầm là cảm giác kỳ diệu lắm đó! Chúng mình cùng trồng một luống hoa nhé cậu~"',
-                command: '/trongcay muagiong',
+                command: '/farm muagiong',
                 targetType: 'plant',
                 reward: { coins: 1500, exp: 80, item: null, affection: 5 },
                 rewardText: '1.500 xu + 80 EXP + 5 Hảo cảm 🌸'
@@ -116,7 +116,7 @@ const STORY_CHAPTERS = [
                 title: 'Tiết 1: Lời Đề Nghị Dưới Mái Hiên',
                 intro: 'Tiệm bánh Gekka của gia đình Tsumugi Rintaro đang gặp khó khăn: bánh mì làm ra bị tồn đọng và thiếu nhân lực phụ nướng. Waguri tin tưởng nhờ cậu cùng mở bếp lò phụ khi đạt Cấp 5.',
                 dialogue: '"Cậu đã đạt Cấp 5 rồi! Cậu có muốn cùng mình và Tsumugi-kun phụ trách một góc lò nướng tại tiệm Gekka không? Mình tin cậu sẽ làm ra những mẻ bánh tuyệt vời nhất!"',
-                command: '/tiembanh mo',
+                command: '/bakery mo',
                 targetType: 'bakery_open',
                 reward: { coins: 2000, exp: 100, item: 'bo_lam_banh', affection: 10 },
                 rewardText: 'Bộ Dụng Cụ Làm Bánh + 2.000 xu + 10 Hảo cảm 🌸'
@@ -126,7 +126,7 @@ const STORY_CHAPTERS = [
                 title: 'Tiết 2: Tái Sinh Bánh Mì Cũ',
                 intro: 'Đem những ổ bánh mì và nông sản tích trữ nạp vào lò bánh để chuẩn bị cho mẻ nướng mới.',
                 dialogue: '"Tuyệt vời quá! Thay vì để bánh mì bị khô, chúng mình có thể biến tấu chúng thành nhân bánh nướng bơ đường thơm lừng!"',
-                command: '/tiembanh nhapnl',
+                command: '/bakery nhapnl',
                 targetType: 'bakery_stock',
                 reward: { coins: 2500, exp: 120, item: null, affection: 5 },
                 rewardText: '2.500 xu + 120 EXP + 5 Hảo cảm 🌸'
@@ -136,7 +136,7 @@ const STORY_CHAPTERS = [
                 title: 'Tiết 3: Hương Vị Đầu Mùa',
                 intro: 'Canh lửa chuẩn xác và nướng mẻ bánh đầu tiên tại lò nướng Gekka.',
                 dialogue: '"Mùi thơm bơ sữa lan tỏa khắp con hẻm rồi kìa! Bánh sắp chín rồi, hồi hộp ghê~"',
-                command: '/tiembanh thu',
+                command: '/bakery thu',
                 targetType: 'bakery_bake',
                 reward: { coins: 3000, exp: 150, item: 'men_no_co_truyen', affection: 10 },
                 rewardText: 'Men Nở Cổ Truyền + 3.000 xu + 10 Hảo cảm 🌸'
@@ -230,12 +230,12 @@ const STORY_CHAPTERS = [
             {
                 id: 3,
                 title: 'Tiết 3: Mái Nhà Chung',
-                intro: 'Gia nhập hoặc thành lập một Bang hội để cùng bạn bè hai trường chung tay xây dựng Đền Thờ Bang.',
-                dialogue: '"Dù là học sinh Kikyo hay Chidori, khi cùng chung một Bang hội thì tất cả chúng ta đều là bạn bè tốt của nhau mà đúng không cậu?"',
-                command: '/clan',
-                targetType: 'clan',
+                intro: 'Mái nhà chung của hai trường không dựng bằng biển hiệu, mà bằng công sức góp mỗi ngày. Tích lũy đủ 4.000 EXP để mọi người công nhận cậu là gương mặt gắn kết Kikyo và Chidori.',
+                dialogue: '"Dù là học sinh Kikyo hay Chidori, cứ chăm chỉ cùng nhau mỗi ngày thì tất cả chúng ta đều là bạn bè tốt của nhau mà đúng không cậu?"',
+                command: '/work',
+                targetType: 'exp',
                 reward: { coins: 2500, exp: 120, item: null, affection: 5 },
-                rewardText: '100 Điểm Cống Hiến + 2.500 xu + 5 Hảo cảm 🌸'
+                rewardText: '2.500 xu + 120 EXP + 5 Hảo cảm 🌸'
             },
             {
                 id: 4,

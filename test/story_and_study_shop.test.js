@@ -180,12 +180,56 @@ test('ĐIỀU KIỆN CỐT TRUYỆN: checkStoryNodeCondition cho cả 5 Hồi', 
     const h4n3Fed = await checkStoryNodeCondition('user1', 4, 3, {});
     assert.strictEqual(h4n3Fed.pass, true, 'User mangoya.38_ với pet đã ăn phải pass');
 
-    // 6. Hồi 5: Thị trường & Bang hội
+    // 6. Hồi 5: Thị trường & Mái nhà chung
     const h5n1Pass = await checkStoryNodeCondition('user1', 5, 1, { exp: 3500 });
     assert.strictEqual(h5n1Pass.pass, true);
 
-    const h5n3Pass = await checkStoryNodeCondition('user1', 5, 3, { clan_id: 123 });
+    // Tiết 3 từng bắt `/clan` — lệnh đã cất vào archive. Điều kiện nay chỉ còn 4.000 EXP,
+    // và hướng dẫn phải nói đúng điều kiện đó, không nhắc lệnh không tồn tại.
+    const h5n3Thieu = await checkStoryNodeCondition('user1', 5, 3, { exp: 3999, clan_id: 123 });
+    assert.strictEqual(h5n3Thieu.pass, false, 'clan_id không còn là đường qua');
+    assert.doesNotMatch(h5n3Thieu.guideText, /\/clan/);
+    assert.match(h5n3Thieu.guideText, /4\.000 EXP/);
+    assert.match(h5n3Thieu.progressText, /3\.999\/4\.000 EXP/);
+
+    const h5n3Pass = await checkStoryNodeCondition('user1', 5, 3, { exp: 4000 });
     assert.strictEqual(h5n3Pass.pass, true);
+});
+
+// Lệnh trong cốt truyện phải là lệnh ĐANG đăng ký. Hồi 5 Tiết 3 từng dẫn người chơi tới
+// `/clan` sau khi lệnh đó đã bị cất vào `archive/` — không ai thấy cho tới khi người chơi
+// thật mắc kẹt và báo lại (feedback 2026-10).
+test('Cốt truyện — mọi `command` dẫn lối đều là lệnh đang tồn tại', () => {
+    const fs = require('fs');
+    const path = require('path');
+    const goc = path.join(__dirname, '..', 'src', 'commands');
+    // tên lệnh -> tập subcommand (rỗng nếu lệnh không có subcommand)
+    const tenLenh = new Map();
+    for (const nhom of fs.readdirSync(goc)) {
+        const thuMuc = path.join(goc, nhom);
+        if (!fs.statSync(thuMuc).isDirectory()) continue;
+        for (const tep of fs.readdirSync(thuMuc).filter(f => f.endsWith('.js'))) {
+            const lenh = require(path.join(thuMuc, tep));
+            if (!lenh.data) continue;
+            const json = lenh.data.toJSON();
+            tenLenh.set(json.name, new Set((json.options || []).filter(o => o.type === 1).map(o => o.name)));
+        }
+    }
+    const loi = [];
+    const STORY = require('../src/data/story_chapters');
+    const chuong = Array.isArray(STORY) ? STORY : (STORY.STORY_CHAPTERS || STORY.chapters || Object.values(STORY).find(Array.isArray));
+    assert.ok(Array.isArray(chuong) && chuong.length > 0, 'không đọc được danh sách Hồi');
+    for (const hoi of chuong) {
+        for (const tiet of hoi.nodes || []) {
+            if (!tiet.command) continue;
+            const [ten, sub] = tiet.command.replace(/^\//, '').split(/\s+/);
+            const subs = tenLenh.get(ten);
+            if (!subs) loi.push(`Hồi ${hoi.id} Tiết ${tiet.id}: \`${tiet.command}\` — lệnh /${ten} không tồn tại`);
+            // Chỉ kiểm sub khi lệnh CÓ subcommand: `/eat banh_kem_dau` thì phần sau là đối số.
+            else if (sub && subs.size > 0 && !subs.has(sub)) loi.push(`Hồi ${hoi.id} Tiết ${tiet.id}: \`${tiet.command}\` — /${ten} không có subcommand ${sub}`);
+        }
+    }
+    assert.deepStrictEqual(loi, []);
 });
 
 
