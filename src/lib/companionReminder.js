@@ -1,5 +1,6 @@
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
 const db = require('../database');
+const config = require('../config');
 const { chonKenhThongBao } = require('./kenhThongBao');
 const { t } = require('./i18n');
 
@@ -111,7 +112,7 @@ function buildReminderPayload(mood, style = 'warm', locale = 'vi') {
                     .setStyle(ButtonStyle.Success),
                 new ButtonBuilder()
                     .setStyle(ButtonStyle.Link)
-                    .setURL('https://waguri.org/study')
+                    .setURL(`${config.WEB_URL}/study`)
                     .setLabel(isEn ? '🎧 Lo-Fi Study Room' : '🎧 Phòng Học Lo-Fi Web')
             );
             break;
@@ -186,7 +187,7 @@ function buildReminderPayload(mood, style = 'warm', locale = 'vi') {
                     .setStyle(ButtonStyle.Success),
                 new ButtonBuilder()
                     .setCustomId('remind_btn_rest')
-                    .setLabel(isEn ? '💤 Rest /nghingoi' : '💤 Nghỉ Ngơi')
+                    .setLabel(isEn ? '💤 Rest /rest' : '💤 Nghỉ Ngơi')
                     .setStyle(ButtonStyle.Secondary)
             );
             break;

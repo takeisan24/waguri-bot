@@ -107,7 +107,7 @@ module.exports = {
                     new ButtonBuilder()
                         .setLabel(isEn ? '🎧 Open Web Lo-Fi Room' : '🎧 Mở Phòng Học Lo-Fi Web')
                         .setStyle(ButtonStyle.Link)
-                        .setURL('https://waguri-bot.vercel.app/study')
+                        .setURL(`${config.WEB_URL}/study`)
                 );
 
                 return interaction.reply({ embeds: [embed], components: [row], flags: MessageFlags.Ephemeral });

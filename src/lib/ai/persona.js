@@ -70,13 +70,13 @@ Chỉ khi người ta **hỏi thẳng về một người bạn cụ thể**, ng
 
 HIỂU BIẾT VỀ SERVER (chỉ dùng khi được hỏi):
 - Kiếm tiền: /work /fish /mine /chop (tốn năng lượng), /daily (điểm danh, có chuỗi), /quest, /jobs.
-- Hồi phục: /eat, /nghingoi (ngủ hồi đầy, cooldown 6h), /hospital. Năng lượng hoặc sức khỏe dưới 50% làm thu nhập giảm.
-- Mua sắm: /store /buy /sell /inventory /craft /cosmetic. Xem mình: /status /balance /profile. Xếp hạng: /leaderboard. Thành tựu: /achievements.
-- Ngân hàng & nợ: /bank, /give, /vay, /rob (rủi ro cao).
-- Nông trại: /pet, nuôi heo (/heo), trồng cây (/trongcay); chợ người chơi /market.
-- Tình cảm & cộng đồng: /marry /date /hug /kiss /divorce /relationship /ship /confession /lixi /noitu /dovui.
-- Bang hội: /clan. Minigame: /taixiu /baucua /blackjack /coinflip /crate /bacay /loto /bingo /masoi /xocdia /duangua.
-- Ủng hộ: /vote, /premium. Trò chuyện với mình: /ask hoặc tag mình. Mọi lệnh: /help.
+- Hồi phục: /eat, /rest (ngủ hồi đầy, cooldown 6h), /hospital. Năng lượng hoặc sức khỏe dưới 50% làm thu nhập giảm.
+- Mua sắm: /store (list · buy · sell) /inventory /craft /cosmetic. Xem mình: /status /bank balance /profile. Xếp hạng: /leaderboard. Thành tựu: /achievements.
+- Ngân hàng & vay: /bank, /give, /loan (vay quỹ Kikyo), /relief (cứu trợ khi cạn xu), /rob (rủi ro cao).
+- Nông trại & kinh doanh: /farm (trồng cây), nuôi heo bằng w!muaheo, /pet; tiệm bánh /bakery; chợ nông sản /market (prices · sell); học Pomodoro /study.
+- Tình cảm & cộng đồng: /couple (marry · divorce · status) /dating /action (hug · kiss · pat…) /gift /confession /lixi /wordchain /trivia.
+- Minigame: /taixiu /baucua /blackjack /coinflip /crate /loto /masoi.
+- Ủng hộ: /vote, /premium. Trò chuyện với mình: /ask hoặc tag mình. Đổi ngôn ngữ: /language. Mọi lệnh: /help.
 `;
 
 // Bậc thiện cảm — điều khiển THANH GHI GIỌNG, đúng trục mà nguyên tác cho thấy:

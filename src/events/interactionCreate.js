@@ -392,8 +392,8 @@ module.exports = {
                     tiembanh: {
                         title: isEn ? '🧁 Gekka Bakery' : '🧁 Tiệm Bánh Gekka',
                         desc: isEn
-                            ? 'Welcome to Gekka Bakery! You can explore with:\n• **/tiembanh xem**: View your bakery status & rush hours\n• **/tiembanh nuong**: Bake delicious pastries\n• **/tiembanh donhang**: Check VIP patron orders'
-                            : 'Chào mừng cậu đến với Tiệm Bánh Gekka! Cậu có thể bắt đầu bằng các lệnh:\n• **/tiembanh xem**: Xem tình trạng tiệm bánh & giờ cao điểm\n• **/tiembanh nuong**: Nướng bánh thơm ngon\n• **/tiembanh donhang**: Nhận đơn đặt hàng VIP từ khách quen'
+                            ? 'Welcome to Gekka Bakery! You can explore with:\n• **/bakery xem**: View your bakery status & rush hours\n• **/bakery nhapnl**: Stock ingredients — the oven bakes by itself, collect with **/bakery thu**\n• **/bakery donhang**: Check VIP patron orders'
+                            : 'Chào mừng cậu đến với Tiệm Bánh Gekka! Cậu có thể bắt đầu bằng các lệnh:\n• **/bakery xem**: Xem tình trạng tiệm bánh & giờ cao điểm\n• **/bakery nhapnl**: Nhập nguyên liệu — lò tự nướng, gom bánh bằng **/bakery thu**\n• **/bakery donhang**: Nhận đơn đặt hàng VIP từ khách quen'
                     },
                     market: {
                         title: isEn ? '🛒 Market Exchange' : '🛒 Chợ Nông Thủy Sản',
@@ -461,14 +461,14 @@ module.exports = {
                     tiembanh_orders: {
                         title: isEn ? '📋 Gekka Bakery VIP Orders' : '📋 Đơn Hàng VIP Tiệm Bánh Gekka',
                         desc: isEn
-                            ? 'Type **/tiembanh donhang** to inspect today\'s VIP orders from 8 lore characters!\nOnce ready, deliver with **/tiembanh giaodon [order_id]** for Coins, EXP, and Reputation 🌸'
-                            : 'Gõ **/tiembanh donhang** để kiểm tra các đơn hàng VIP từ 8 khách quen lore Waguri hôm nay!\nSau khi chuẩn bị đủ bánh, gõ **/tiembanh giaodon [mã_đơn]** để nhận Xu, EXP và Danh Tiếng nha 🌸'
+                            ? 'Type **/bakery donhang** to inspect today\'s VIP orders from 8 lore characters!\nOnce ready, deliver with **/bakery giaodon [1-3]** for Coins, EXP, and Reputation 🌸'
+                            : 'Gõ **/bakery donhang** để kiểm tra các đơn hàng VIP từ 8 khách quen lore Waguri hôm nay!\nSau khi chuẩn bị đủ bánh, gõ **/bakery giaodon [1-3]** để nhận Xu, EXP và Danh Tiếng nha 🌸'
                     },
                     tiembanh_bake: {
                         title: isEn ? '🧁 Bake Pastries' : '🧁 Nướng Bánh Thơm Ngon',
                         desc: isEn
-                            ? 'Type **/tiembanh nuong [item]** to start baking! Rush Hour provides +20% bonus baking speed 🥐'
-                            : 'Gõ **/tiembanh nuong [món]** để bắt đầu nướng bánh! Đang trong Giờ Cao Điểm tốc độ nướng được tăng thêm +20% đó nha 🥐'
+                            ? 'Type **/bakery nhapnl [ingredient] [qty]** to stock the oven, then **/bakery thu** to collect! Rush Hour bakes +20% faster 🥐'
+                            : 'Gõ **/bakery nhapnl [nguyên_liệu] [số_lượng]** để nạp lò, rồi **/bakery thu** để gom bánh! Giờ Cao Điểm lò nướng nhanh hơn +20% đó nha 🥐'
                     },
                     market: {
                         title: isEn ? '🛒 Market Exchange' : '🛒 Bảng Giá Chợ Nông Sản',
@@ -491,8 +491,8 @@ module.exports = {
                     rest: {
                         title: isEn ? '💤 Rest & Recover' : '💤 Nghỉ Ngơi Phục Hồi',
                         desc: isEn
-                            ? 'Type **/nghingoi** to rest and recharge energy! Wishing you a peaceful sleep and sweet dreams 🌙'
-                            : 'Gõ **/nghingoi** để nghỉ ngơi hồi phục thể lực và sạc lại năng lượng! Chúc cậu một giấc ngủ thật ngon lành và mơ những giấc mơ đẹp 🌙'
+                            ? 'Type **/rest** to rest and recharge energy! Wishing you a peaceful sleep and sweet dreams 🌙'
+                            : 'Gõ **/rest** để nghỉ ngơi hồi phục thể lực và sạc lại năng lượng! Chúc cậu một giấc ngủ thật ngon lành và mơ những giấc mơ đẹp 🌙'
                     }
                 };
 
@@ -570,7 +570,7 @@ module.exports = {
                     new ButtonBuilder()
                         .setLabel(locale === 'en' ? '🛟 Join Official Support Server' : '🛟 Tham Gia Support Server')
                         .setStyle(ButtonStyle.Link)
-                        .setURL(config.ROLE_REWARDS.SUPPORT_INVITE || 'https://discord.gg/waguri')
+                        .setURL(config.ROLE_REWARDS.SUPPORT_INVITE)
                 );
 
                 return interaction.editReply({ embeds: [thanksEmbed], components: [supportRow] });

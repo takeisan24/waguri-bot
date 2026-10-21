@@ -1745,7 +1745,7 @@
       "view_seller": " · by <@{user}>",
       "title_mine": "🛒 Items You Are Selling",
       "title_view": "🛒 Marketplace — Active Listings",
-      "paginated_footer": "Buy: /market buy <id>",
+      "paginated_footer": "Sell: /market sell",
       "err_system": "Oops, a market error occurred, please try again later~ 🌸",
       "title_list": "🛒 List Item on Market",
       "err_poor_item": "You don't have enough **{qty}× {name}** in your inventory to list~",

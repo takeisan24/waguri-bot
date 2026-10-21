@@ -29,6 +29,16 @@ const KHOA_CHI_ARCHIVE = {
     'commands.market.list_success_desc': 'chợ P2P đã gỡ khỏi /market ở v2.6.0',
 };
 
+// Chuỗi trông như `/lệnh` nhưng không phải lệnh. Thêm vào đây phải kèm lý do thật.
+const KHONG_PHAI_LENH = {
+    day:   '"**{n} messages**/day" — đơn vị "mỗi ngày", dấu `**` đóng in đậm đứng ngay trước',
+    slash: '"dùng được bằng /slash" — chỉ kiểu lệnh gạch chéo nói chung',
+};
+
+// Từ văn xuôi hay đứng sau tên lệnh ("giữ tiền trong /bank cho an toàn", "/config trong
+// Discord", "/bakery with friends") — không phải lệnh con, đừng kiểm.
+const TU_VAN_XUOI = new Set(['cho', 'trong', 'with', 'command', 'to', 'for', 'in', 'or', 'and', 'va', 'de', 'nhe']);
+
 function duyet(dir, out = []) {
     for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
         const p = path.join(dir, e.name);
@@ -55,21 +65,32 @@ function dungSoLenh() {
     return so;
 }
 
-function laChuThich(dong) {
-    const d = dong.trim();
-    return d.startsWith('//') || d.startsWith('*') || d.startsWith('/*');
-}
-
 function kiemChuoi(noiDung, viTri, so, loi) {
-    const re = /`\/([a-z][a-z0-9_-]*)(?: +([a-z][a-z0-9_-]*))?/g;
+    // Bắt `/lệnh` đứng sau backtick, `**` (in đậm), khoảng trắng hay ngoặc — không chỉ dạng
+    // backtick: hướng dẫn của nút nhắc nhở viết `**/tiembanh donhang**` đã lọt qua bản đầu.
+    // Trước `/` chỉ nhận đầu chuỗi, khoảng trắng, backtick, `*`, `(` — loại URL (`.app/study`),
+    // route (`'/api`), thẻ đóng HTML (`</div>`) và regex (`/x/g`). Sau tên phải là ranh giới
+    // (khoảng trắng, dấu câu, backtick, `*`) chứ không phải `/` của một đường dẫn tiếp theo.
+    // Không nhận `?` làm ranh giới sau tên: regex `/https?:\/\//` không phải lệnh.
+    const re = /(?<=^|[\s`*(])\/([a-z][a-z0-9_-]*)(?=$|[\s`*.,!:;)'"\]])(?: +([a-z][a-z0-9_-]*)(?=$|[\s`*.,!:;)'"\]]))?/g;
     let m;
     while ((m = re.exec(noiDung))) {
         const [, ten, sub] = m;
+        if (KHONG_PHAI_LENH[ten]) continue;
         const subs = so.get(ten);
         if (!subs) loi.push(`${viTri}  \`/${ten}\` — lệnh không tồn tại`);
         // Lệnh không có subcommand thì từ thứ hai là đối số (`/eat banh_kem_dau`), bỏ qua.
-        else if (sub && subs.size > 0 && !subs.has(sub)) loi.push(`${viTri}  \`/${ten} ${sub}\` — /${ten} không có subcommand "${sub}"`);
+        else if (sub && subs.size > 0 && !subs.has(sub) && !TU_VAN_XUOI.has(sub)) loi.push(`${viTri}  \`/${ten} ${sub}\` — /${ten} không có subcommand "${sub}"`);
     }
+}
+
+// Dòng JS người chơi không bao giờ đọc: chú thích, log. Chú thích CUỐI dòng (`code; // ...`)
+// cũng cắt bỏ — `//` đứng sau khoảng trắng, nên không đụng `https://` trong chuỗi.
+function phanNguoiDoc(dong) {
+    const d = dong.trim();
+    if (d.startsWith('//') || d.startsWith('*') || d.startsWith('/*')) return '';
+    if (/\bconsole\.(log|warn|error|info)\(/.test(d)) return '';
+    return dong.replace(/\s\/\/.*$/, '');
 }
 
 function quetJson(nut, khoa, viTriTep, so, loi) {
@@ -85,8 +106,7 @@ function quet(tep, so, loi) {
     const viTriTep = path.relative(ROOT, tep).replace(/\\/g, '/');
     if (tep.endsWith('.json')) return quetJson(JSON.parse(fs.readFileSync(tep, 'utf8')), '', viTriTep, so, loi);
     fs.readFileSync(tep, 'utf8').split(/\r?\n/).forEach((noiDung, i) => {
-        if (laChuThich(noiDung)) return;
-        kiemChuoi(noiDung, `${viTriTep}:${i + 1}`, so, loi);
+        kiemChuoi(phanNguoiDoc(noiDung), `${viTriTep}:${i + 1}`, so, loi);
     });
 }
 

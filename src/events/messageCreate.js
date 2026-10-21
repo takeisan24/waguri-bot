@@ -114,7 +114,7 @@ module.exports = {
                     new ButtonBuilder()
                         .setLabel(isEn ? '🎧 Waguri Lo-Fi Study Room' : '🎧 Phòng Học Lo-Fi Waguri')
                         .setStyle(ButtonStyle.Link)
-                        .setURL('https://waguri-bot.vercel.app/study')
+                        .setURL(`${config.WEB_URL}/study`)
                 );
                 const embed = buildWaguriEmbed(message, 'info', {
                     locale: hvlLocale,

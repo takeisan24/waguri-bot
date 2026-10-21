@@ -1745,7 +1745,7 @@
       "view_seller": " · <@{user}>",
       "title_mine": "🛒 Món cậu đang bán",
       "title_view": "🛒 Chợ — đang bán",
-      "paginated_footer": "Mua: /market buy <mã>",
+      "paginated_footer": "Bán: /market sell",
       "err_system": "Ơ, có lỗi xảy ra, thử lại sau nhé~ 🌸",
       "title_list": "🛒 Đăng bán vật phẩm",
       "err_poor_item": "Cậu không có đủ **{qty}× {name}** trong kho~",

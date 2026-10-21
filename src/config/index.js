@@ -615,8 +615,8 @@ module.exports = {
 
     // Hạng mục Thưởng Vai Trò theo cấp tại Server Support
     ROLE_REWARDS: {
-        SUPPORT_GUILD_ID: process.env.SUPPORT_GUILD_ID || '1517931376865710120',
-        SUPPORT_INVITE: process.env.SUPPORT_INVITE || 'https://discord.gg/waguri',
+        SUPPORT_GUILD_ID: process.env.SUPPORT_GUILD_ID || '1438048705046515798',
+        SUPPORT_INVITE: process.env.SUPPORT_INVITE || 'https://discord.gg/zbJ4SBaMhE',
         GIFT_COINS: 10000,
         MILESTONES: [
             { level: 5, roleId: process.env.ROLE_LV5 || '1517931405903204423', name_vi: 'Tập sự Gekka 🧁', name_en: 'Gekka Apprentice 🧁' },
