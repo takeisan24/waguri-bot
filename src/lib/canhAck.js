@@ -33,20 +33,39 @@ const daAck = (it) => Boolean(it && (it.replied || it.deferred));
 function theoDoiAck(interaction, nhan) {
     let ketThuc = false;
 
+    // MỐC ĐO LÀ LÚC DISCORD TẠO INTERACTION, không phải lúc hàm này được gọi.
+    //
+    // Bản cũ `setTimeout(..., 2500)` kể từ lời gọi — mà lời gọi nằm ở
+    // `interactionCreate.js:139`, SAU `await getInteractionLanguage` (dòng 97, trần 800ms).
+    // Nên khi nó nổ, thời gian thật đã trôi là 2500ms + phần trước đó ≈ 3,3s: ĐÃ QUÁ hạn 3
+    // giây của Discord. Nó không bao giờ cảnh báo kịp, và con số nó in ra thấp hơn thực tế.
+    // Đo trên log prod 2026-10-22: 149/318 tin thuộc nhóm ack/10062 mà không tin nào cho
+    // biết thời gian thật — nên không truy được chậm nằm ở đâu.
+    //
+    // Nay tính ngược: còn lại = NGUONG − đã_trôi. Vị trí bấm đồng hồ vì thế gần như không
+    // còn quan trọng, và log in ra CẢ hai số: tổng thời gian thật, và bao nhiêu đã trôi
+    // TRƯỚC khi đồng hồ được bấm — chính con số cần để biết chậm ở trước hay trong handler.
+    const moc = Number(interaction?.createdTimestamp) || Date.now();
+    const daTroiKhiBam = Math.max(0, Date.now() - moc);
+    const conLai = Math.max(0, NGUONG_ACK_MS - daTroiKhiBam);
+
     // Nhánh 1 — lệnh CHẠY QUÁ LÂU mà chưa ack. Người dùng đã thấy "did not respond"
     // trước khi execute() kịp xong, nên phải báo ngay tại mốc chứ không đợi.
     const hen = setTimeout(() => {
         if (ketThuc || daAck(interaction)) return;
+        const tong = Date.now() - moc;
         // Tên lệnh nằm trong TIÊU ĐỀ chứ không trong nội dung lỗi: logger gộp trùng theo
         // (tiêu đề + dòng đầu của lỗi), nên để chung tiêu đề thì mọi lệnh sẽ dồn vào MỘT
         // khoá và chỉ lệnh đầu tiên được báo.
-        logError(`Chưa ack sau ${NGUONG_ACK_MS}ms: ${nhan}`,
-            new Error('Người dùng đã thấy "The application did not respond".'), {
+        logError(`Chưa ack sau ${tong}ms: ${nhan}`,
+            new Error('Người dùng đã thấy "The application did not respond". '
+                + `Đã trôi ${daTroiKhiBam}ms TRƯỚC khi đồng hồ được bấm `
+                + `(tức chậm nằm ở phần ${daTroiKhiBam >= NGUONG_ACK_MS ? 'TRƯỚC' : 'SAU'} mốc đó).`), {
                 command: nhan,
                 user: interaction?.user ? `<@${interaction.user.id}>` : undefined,
                 guild: interaction?.guildId,
             });
-    }, NGUONG_ACK_MS);
+    }, conLai);
     if (typeof hen.unref === 'function') hen.unref();
 
     return {

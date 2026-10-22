@@ -171,6 +171,16 @@ module.exports = {
 
         // --- Component (button / select menu / modal) ---
         if (interaction.isButton()) {
+            // Canh ack cho NÚT. Trước đây chỉ lệnh slash được canh (dòng ~139), nên nhánh nút
+            // mù hoàn toàn — mà log prod 2026-10-22 cho thấy nút ĐỨNG ĐẦU bảng lỗi ack/10062:
+            // `work:again` 21 lần, `start:claim` 6 lần. Không có cảnh báo nào cho chúng.
+            //
+            // Cố ý KHÔNG giữ `xong()`: nhánh nút có hàng chục đường `return` sớm, gọi `xong()`
+            // ở mọi đường là phải tái cấu trúc cả khối — rủi ro cao hơn lợi ích. Bỏ `xong()`
+            // thì mất "Nhánh 2" (chạy xong mà quên ack), nhưng GIỮ được "Nhánh 1" (quá hạn mà
+            // chưa ack) — đúng nhóm lỗi đang cần truy. Đồng hồ tự im nếu nút đã ack kịp.
+            theoDoiAck(interaction, `nút ${interaction.customId}`);
+
             // Ngôn ngữ dùng chung cho MỌI handler nút (tránh ReferenceError ở các nhánh không tự khai báo).
             const locale = await getInteractionLanguage(interaction);
             // Nút "Tắt nhắc" trong DM nhắc vote -> tắt nhận nhắc cho user này.
@@ -179,8 +189,13 @@ module.exports = {
                     // Kiểm kết quả: bản cũ báo "đã tắt nhắc" vô điều kiện. Ghi hỏng thì người
                     // dùng vẫn nhận nhắc mỗi chu kỳ, mà họ tin là đã tắt rồi — nên lần sau
                     // thấy nhắc, họ kết luận nút không hoạt động chứ không bấm lại.
+                    // ACK TRƯỚC, GHI SAU. `setVoteReminder` là lời GHI nên KHÔNG được chặn
+                    // trần: chặn ở 800ms mà DB thành công ở 900ms thì ta lại nói sai với
+                    // người dùng — đúng lớp lỗi đang đi dọn. `deferUpdate()` ack tức thì và
+                    // mở ra 15 phút cho phần việc còn lại, nên hạn 3 giây không còn là rủi ro.
+                    await interaction.deferUpdate();
                     const daTat = await db.setVoteReminder(interaction.user.id, false);
-                    await interaction.update({
+                    await interaction.editReply({
                         content: daTat
                             ? t(locale, 'commands.vote.remind_off_success')
                             : t(locale, 'common.retry_later'),
@@ -262,20 +277,24 @@ module.exports = {
                     if (Date.now() - interaction.user.createdTimestamp < minAgeMs) {
                         return interaction.reply({ content: t(locale, 'common.welcome_age_error'), flags: MessageFlags.Ephemeral });
                     }
+                    // ACK TRƯỚC, GHI SAU. `claimWelcomeBonus` là lời ghi TIỀN nên không được
+                    // chặn trần (chặn rồi nói "thất bại" trong khi tiền đã vào là nói sai), và
+                    // cũng không được để nó chạy trước ack — log prod 2026-10-22 có 6 lượt
+                    // `start:claim` chết với 10062 vì đúng lý do đó.
+                    // Ephemeral (KHÔNG update) -> không sửa/xoá nút trên tin nhắn chung của
+                    // người khác. Mỗi người tự nhận quà của mình; RPC đã nguyên tử chống đúp.
+                    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
                     const bonus = await db.claimWelcomeBonus(interaction.user.id, config.WELCOME.BONUS);
                     if (bonus > 0) {
-                        // Reply ephemeral (KHÔNG update) -> không sửa/xóa nút trên tin nhắn chung của người khác.
-                        // Mỗi người tự nhận quà của mình; claimWelcomeBonus đã nguyên tử chống nhận đúp.
-                        await interaction.reply({
+                        await interaction.editReply({
                             embeds: [buildWaguriEmbed(interaction, 'success', {
                                 locale,
                                 title: t(locale, 'commands.start.claim_success_title'),
                                 description: t(locale, 'commands.start.claim_success_desc', { bonus: fmtLocal(bonus), currency: config.CURRENCY })
                             })],
-                            flags: MessageFlags.Ephemeral,
                         });
                     } else {
-                        await interaction.reply({ content: t(locale, 'commands.start.claim_already'), flags: MessageFlags.Ephemeral });
+                        await interaction.editReply({ content: t(locale, 'commands.start.claim_already') });
                     }
                 } catch (error) {
                     logError('start:claim', error);
