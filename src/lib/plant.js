@@ -200,14 +200,21 @@ async function plantBox(userId, target, locale) {
     else if (x < 0.88) reward = 600 + Math.floor(Math.random() * 400);   // 600-1000
     else if (x < 0.98) reward = 1500 + Math.floor(Math.random() * 700);  // 1500-2200
     else reward = 5000;                                                  // nổ hũ
-    if (reward > 0) await db.addMoney(receiver ? receiver.id : userId, reward, 'wallet');
+    // Khoe số tiền ở dưới -> phải kiểm. Thưởng 0 thì không gọi, nên coi như đã trả xong.
+    // KHÔNG gọi lại khi hụt: `null` có thể là timeout SAU khi DB đã ghi -> gọi lại là trả đúp.
+    let daTra = true;
+    if (reward > 0) {
+        daTra = (await db.addMoney(receiver ? receiver.id : userId, reward, 'wallet')) === true;
+        if (!daTra) console.error(`[PAYOUT FAIL] plant-box user=${receiver ? receiver.id : userId} reward=${reward}`);
+    }
 
     const who = receiver ? t(locale, 'plant.box_gift_msg', { user: receiver.id }) : '';
     if (reward === 0) return info(t(locale, 'plant.box_empty', { who }), locale);
     const big = reward >= 5000 ? t(locale, 'plant.box_jackpot_msg') : '';
     return res(
         reward >= 5000 ? 'jackpot' : 'success',
-        t(locale, 'plant.box_success', { who, reward: fmt(reward, locale), currency: C, big }),
+        t(locale, 'plant.box_success', { who, reward: fmt(reward, locale), currency: C, big })
+            + (daTra ? '' : t(locale, 'common.payout_unconfirmed')),
         locale
     );
 }

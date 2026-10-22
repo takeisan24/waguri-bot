@@ -32,7 +32,12 @@ function diseaseOutcome(user, roll, locale = 'vi') {
  *  Trả { incomeMult, note } để caller nhân vào payout & ghép mô tả. */
 async function applyDisease(db, userId, user, locale = 'vi') {
     const out = diseaseOutcome(user, Math.random(), locale);
-    if (out.healthLoss > 0) await db.addHealth(userId, -out.healthLoss);
+    // `disease.sick_active_note` nêu thẳng "mất {loss} máu", nên ghi hụt là câu đó sai.
+    // Chỉ ghi log chứ không đổi chữ: đây là HÌNH PHẠT hụt theo hướng có lợi cho người chơi,
+    // và `common.payout_unconfirmed` nói về "phần thưởng" nên dán vào đây sẽ gây hiểu sai hơn.
+    if (out.healthLoss > 0 && (await db.addHealth(userId, -out.healthLoss)) === null) {
+        console.error(`[DISEASE] ghi máu hụt user=${userId} loss=${out.healthLoss} — note đã khoe số này`);
+    }
     if (out.newlySick) await db.setSick(userId, true);
     return { incomeMult: out.incomeMult, note: out.note };
 }

@@ -369,8 +369,14 @@ async function handleBingoPrefix(message, cmd, args) {
                 const prize = rawPrize - houseCut;
                 const splitPrize = Math.floor(prize / winners.length);
 
+                // `win_desc_header` KHOE số tiền từng người thắng nhận, nên phải biết lần ghi
+                // nào hụt. KHÔNG trả lại lần nữa: `null` có thể là timeout sau khi DB đã ghi.
+                let traHut = false;
                 for (const wid of winners) {
-                    await db.addMoney(wid, splitPrize, 'wallet');
+                    if ((await db.addMoney(wid, splitPrize, 'wallet')) !== true) {
+                        traHut = true;
+                        console.error(`[PAYOUT FAIL] bingo user=${wid} prize=${splitPrize} session=${curGame.sessionId}`);
+                    }
                     db.questIncr(wid, 'gamble_win', 1);
                 }
                 await db.stakeSettle(curGame.sessionId); // cược đã thành pot & trả thưởng -> xoá dòng
@@ -385,7 +391,7 @@ async function handleBingoPrefix(message, cmd, args) {
                     pot: pot.toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN'),
                     cut: HOUSE_CUT * 100,
                     called: curGame.called.map(label).join(', ')
-                });
+                }) + (traHut ? t(locale, 'common.payout_unconfirmed') : '');
 
                 for (const wid of winners) {
                     const p = curGame.players.get(wid);

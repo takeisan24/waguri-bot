@@ -73,8 +73,12 @@ async function handleMessage(message) {
     message.react('✅').catch(() => {});
     // Thưởng nối đúng — chỉ khi qua cooldown + chưa chạm cap ngày (chống 2 acc luân phiên farm).
     if (canRewardNoitu(message.author.id)) {
-        db.addMoney(message.author.id, config.NOITU.COINS, 'wallet');
-        db.updateExp(message.author.id, config.NOITU.EXP);
+        // Thưởng ÂM THẦM: người chơi chỉ thấy phản ứng ✅, không có con số nào được khoe,
+        // nên hụt thì không câu nào thành sai — chỉ cần ghi log để còn truy được.
+        // Vẫn `await` để lỗi không rơi ra ngoài dưới dạng promise không ai bắt.
+        const daTra = (await db.addMoney(message.author.id, config.NOITU.COINS, 'wallet')) === true;
+        const daExp = (await db.updateExp(message.author.id, config.NOITU.EXP)) !== null;
+        if (!daTra || !daExp) console.error(`[PAYOUT FAIL] noitu user=${message.author.id} daTra=${daTra} daExp=${daExp}`);
     }
 }
 

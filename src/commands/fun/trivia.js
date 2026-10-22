@@ -84,8 +84,11 @@ module.exports = {
                 if (!accepted.includes(norm(m.content))) return;
                 won = true;
                 collector.stop('won');
-                await db.addMoney(m.author.id, config.QUIZ.REWARD, 'wallet');
-                await db.updateExp(m.author.id, config.QUIZ.EXP);
+                // Embed dưới KHOE cả xu lẫn EXP -> phải biết hai lần ghi có thành không.
+                // KHÔNG gọi lại khi hụt: `null` có thể là timeout sau khi DB đã ghi.
+                const daTra = (await db.addMoney(m.author.id, config.QUIZ.REWARD, 'wallet')) === true;
+                const daExp = (await db.updateExp(m.author.id, config.QUIZ.EXP)) !== null;
+                if (!daTra || !daExp) console.error(`[PAYOUT FAIL] trivia user=${m.author.id} coins=${config.QUIZ.REWARD} exp=${config.QUIZ.EXP} daTra=${daTra} daExp=${daExp}`);
                 const embedWon = buildWaguriEmbed(interaction, 'success', {
                     locale,
                     description: t(locale, 'commands.dovui.won_desc', { 
@@ -93,8 +96,8 @@ module.exports = {
                         answer: item.a[0], 
                         amount: fmt(config.QUIZ.REWARD, locale), 
                         currency: config.CURRENCY, 
-                        exp: config.QUIZ.EXP 
-                    })
+                        exp: config.QUIZ.EXP
+                    }) + (daTra && daExp ? '' : t(locale, 'common.payout_unconfirmed'))
                 });
                 await channel.send({ embeds: [embedWon] }).catch(() => {});
             });

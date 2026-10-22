@@ -222,13 +222,17 @@ async function pigBox(userId, target, locale) {
     else if (x < 0.80) reward = 1800 + Math.floor(Math.random() * 1000); // 1800-2800
     else if (x < 0.95) reward = 2800 + Math.floor(Math.random() * 1700); // 2800-4500
     else reward = 7000;                                                  // nổ hũ
-    await db.addMoney(receiver ? receiver.id : userId, reward, 'wallet');
+    // Dòng dưới KHOE đúng con số này, nên phải biết tiền có vào thật không.
+    // KHÔNG gọi lại khi hụt: `null` có thể là timeout SAU khi DB đã ghi -> gọi lại là trả đúp.
+    const daTra = (await db.addMoney(receiver ? receiver.id : userId, reward, 'wallet')) === true;
+    if (!daTra) console.error(`[PAYOUT FAIL] pig-box user=${receiver ? receiver.id : userId} reward=${reward}`);
 
     const who = receiver ? t(locale, 'pig.box_gift_msg', { user: receiver.id }) : '';
     const big = reward >= 7000 ? t(locale, 'pig.box_jackpot_msg') : '';
     return res(
         reward >= 7000 ? 'jackpot' : 'success',
-        t(locale, 'pig.box_success', { who, reward: fmt(reward, locale), currency: C, big }),
+        t(locale, 'pig.box_success', { who, reward: fmt(reward, locale), currency: C, big })
+            + (daTra ? '' : t(locale, 'common.payout_unconfirmed')),
         locale
     );
 }

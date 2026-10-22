@@ -107,7 +107,11 @@ module.exports = {
                     return collector.stop('done');
                 }
                 const r = await db.marryUsers(me.id, target.id);
-                if (r !== 'ok') await db.addMoney(me.id, config.MARRY.COST, 'wallet'); // hoàn phí nếu cưới hụt
+                // Cưới hụt -> hoàn phí. PHẢI kiểm kết quả: phí đã bị trừ TRƯỚC khi gọi
+                // marryUsers, nên hoàn hụt là người chơi mất tiền mà không cưới được — còn
+                // câu "có lỗi hệ thống" bên dưới thì không hề nhắc tới tiền.
+                let hoanHut = false;
+                if (r !== 'ok') hoanHut = (await db.addMoney(me.id, config.MARRY.COST, 'wallet')) !== true;
                 const done = r === 'ok'
                     ? buildWaguriEmbed(interaction, 'success', {
                         title: t(locale, 'commands.couple.marry_success_title'),
@@ -120,6 +124,7 @@ module.exports = {
                     })
                     : buildWaguriEmbed(interaction, 'error', {
                         description: t(locale, 'commands.couple.marry_err_system')
+                            + (hoanHut ? t(locale, 'common.payout_unconfirmed') : '')
                     });
                 await i.update({ embeds: [done], components: [] });
                 collector.stop('done');
@@ -160,9 +165,11 @@ module.exports = {
 
             const r = await db.divorceUser(interaction.user.id);
             if (r !== 'ok') {
-                await db.addMoney(interaction.user.id, fee, 'wallet'); // hoàn phí nếu không ly hôn được
+                // Hoàn phí ly hôn — kiểm kết quả, đừng để mất phí im lặng.
+                const hoanHut = (await db.addMoney(interaction.user.id, fee, 'wallet')) !== true;
                 const embed = buildWaguriEmbed(interaction, r === 'single' ? 'warning' : 'error', {
-                    description: r === 'single' ? t(locale, 'commands.couple.divorce_single') : t(locale, 'commands.couple.divorce_err_system')
+                    description: (r === 'single' ? t(locale, 'commands.couple.divorce_single') : t(locale, 'commands.couple.divorce_err_system'))
+                        + (hoanHut ? t(locale, 'common.payout_unconfirmed') : '')
                 });
                 return interaction.editReply({ embeds: [embed] });
             }

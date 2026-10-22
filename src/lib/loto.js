@@ -330,8 +330,14 @@ async function handleLotoPrefix(message, cmd, args) {
                 const prize = rawPrize - houseCut;
                 const splitPrize = Math.floor(prize / winners.length);
 
+                // Embed dưới KHOE số tiền từng người thắng nhận được, nên phải biết lần ghi
+                // nào hụt. KHÔNG trả lại lần nữa: `null` có thể là timeout sau khi DB đã ghi.
+                let traHut = false;
                 for (const wid of winners) {
-                    await db.addMoney(wid, splitPrize, 'wallet');
+                    if ((await db.addMoney(wid, splitPrize, 'wallet')) !== true) {
+                        traHut = true;
+                        console.error(`[PAYOUT FAIL] loto user=${wid} prize=${splitPrize} session=${curGame.sessionId}`);
+                    }
                     db.questIncr(wid, 'gamble_win', 1);
                 }
                 await db.stakeSettle(curGame.sessionId); // cược đã thành pot & trả thưởng -> xoá dòng
@@ -347,7 +353,7 @@ async function handleLotoPrefix(message, cmd, args) {
                         pot: pot.toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN'),
                         cut: HOUSE_CUT * 100,
                         called: curGame.called.join(', ')
-                    })
+                    }) + (traHut ? t(locale, 'common.payout_unconfirmed') : '')
                 });
 
                 return message.channel.send({ content: winnerMentions, embeds: [winEmbed] }).catch(() => {});
