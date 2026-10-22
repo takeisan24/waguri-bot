@@ -114,6 +114,7 @@
     "loan_collect(p_lender text, p_borrower text)",
     "loan_collect_all()",
     "loan_create(p_lender text, p_borrower text, p_principal bigint, p_interest numeric, p_days integer, p_fee_pct numeric)",
+    "loan_create_system(p_borrower text, p_principal bigint, p_interest numeric, p_days integer)",
     "loan_credit(p_user text)",
     "loan_repay(p_borrower text, p_lender text, p_amount bigint)",
     "log_item_change()",

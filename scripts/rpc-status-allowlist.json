@@ -4,11 +4,10 @@
     "src/commands/admin/antinuke.js::antinuke_whitelist_add": [
       "kind_invalid"
     ],
-    "src/commands/economy/loan.js::loan_create": [
-      "bad",
-      "bad_fee",
-      "co_no_qua_han",
-      "poor"
+    "src/commands/economy/loan.js::loan_create_system": [
+      "bad_amount",
+      "bad_days",
+      "bad_interest"
     ],
     "src/commands/economy/loan.js::loan_repay": [
       "none",

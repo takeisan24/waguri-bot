@@ -1804,6 +1804,39 @@ async function setCosmeticWithFee(userId, field, value, cost) {
 const { LOAN } = config;
 
 /** Tạo khoản vay (lender cho borrower vay). Trả {status,...} hoặc null. */
+/** Vay từ Quỹ Tín Dụng Kikyo (bên cho vay là HỆ THỐNG) — RPC `loan_create_system` (0157).
+ *
+ * KHÁC `loanCreate` ở chỗ không có bên cho vay để trừ ví và không có phí 5%. Dùng chung
+ * `loanCreate('SYSTEM', ...)` là thứ đã làm tính năng này chưa bao giờ chạy được: RPC đó
+ * trừ ví `p_lender` với chốt `wallet >= principal + fee`, mà không có dòng `users` nào
+ * mang `user_id = 'SYSTEM'` -> luôn trả `poor`.
+ *
+ * Lãi và kỳ hạn lấy TỪ CONFIG, không ghi cứng ở lệnh — luật §10 "MỘT con số = MỘT nguồn".
+ * @returns {object|null} jsonb của RPC (`status` là: ok · dang_no · co_no_qua_han
+ *   · bad_amount · bad_interest · bad_days), hoặc `null` khi DB lỗi.
+ */
+async function loanCreateSystem(borrowerId, principal) {
+    try {
+        const { data, error } = await supabase.rpc('loan_create_system', {
+            p_borrower: String(borrowerId),
+            p_principal: Number(principal),
+            p_interest: LOAN.INTEREST_PCT,
+            p_days: LOAN.DUE_DAYS,
+        });
+        if (error) throw error;
+        // Thiếu `status` nghĩa là hợp đồng RPC đã đổi mà JS chưa theo — trả null để nơi gọi
+        // đi nhánh lỗi, đừng để nó rơi xuống nhánh thành công.
+        if (!data || typeof data.status !== 'string') {
+            console.error('[DATABASE ERROR] loanCreateSystem(): RPC trả về không có status', data);
+            return null;
+        }
+        return data;
+    } catch (error) {
+        console.error('[DATABASE ERROR] loanCreateSystem():', error);
+        return null;
+    }
+}
+
 async function loanCreate(lenderId, borrowerId, principal) {
     try {
         const { data, error } = await supabase.rpc('loan_create', {
@@ -3007,6 +3040,7 @@ module.exports = {
     claimCollectionReward,
     // loans
     loanCreate,
+    loanCreateSystem,
     loanRepay,
     loanCollect,
     loanApplyLateFees,

@@ -77,7 +77,10 @@ module.exports = {
         // 1) status: Xem thông tin hạn mức và khoản nợ
         if (sub === 'status') {
             const loans = await db.loansOf(userId);
-            const activeLoan = loans?.vay?.find(l => l.status === 'active' || l.status === 'overdue');
+            // `loansOf` trả `{ owing, owed }` — KHÔNG phải `{ vay, choVay }`. Đọc `.vay` khiến
+            // `activeLoan` luôn `undefined`, nên `/loan status` không thấy nợ, `/loan pay`
+            // luôn báo "không có nợ", và chốt chống vay trùng ở `borrow` chưa bao giờ nổ.
+            const activeLoan = loans?.owing?.find(l => l.status === 'active' || l.status === 'overdue');
 
             const embed = buildWaguriEmbed(interaction, 'info', {
                 locale,
@@ -145,9 +148,16 @@ module.exports = {
                         return;
                     }
 
-                    const repayRes = await db.loanRepay(userId, activeLoan.id, remainingDebt);
-                    if (!repayRes || !repayRes.ok) {
-                        return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'error', { locale, description: t(locale, 'common.generic_error') })], components: [] });
+                    // Tham số thứ hai là NGƯỜI CHO VAY, không phải id khoản vay. Truyền
+                    // `activeLoan.id` làm RPC đi tìm `lender_id = '<số id>'` -> không bao giờ
+                    // khớp -> trả `none`. Và hợp đồng là `status`, không có trường `ok`.
+                    const repayRes = await db.loanRepay(userId, activeLoan.lender_id, remainingDebt);
+                    if (repayRes === null || repayRes.status !== 'ok') {
+                        const moTa = repayRes?.status === 'poor'
+                            ? (isEn ? 'Your wallet no longer covers that payment.' : 'Ví của cậu không còn đủ để trả khoản đó.')
+                            : t(locale, 'common.generic_error');
+                        if (repayRes && repayRes.status !== 'poor') console.error(`[LOAN] loan_repay status lạ: ${repayRes.status} user=${userId}`);
+                        return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'error', { locale, description: moTa })], components: [] });
                     }
 
                     const successEmbed = buildWaguriEmbed(interaction, 'success', {
@@ -190,14 +200,17 @@ module.exports = {
                         locale,
                         title: isEn ? '⚠️ Loan Denied' : '⚠️ Không Đủ Điều Kiện Vay',
                         description: isEn
-                            ? `Cậu cần đạt tối thiểu **Cấp 5** để mở khóa Quỹ Tín Dụng Học Đường nhen!`
+                            ? `You need to reach **Level 5** to unlock the Kikyo Student Credit Fund!`
                             : `Cậu cần đạt tối thiểu **Cấp 5** để mở khóa Quỹ Tín Dụng Học Đường nhen!`
                     })]
                 });
             }
 
             const loans = await db.loansOf(userId);
-            const activeLoan = loans?.vay?.find(l => l.status === 'active' || l.status === 'overdue');
+            // `loansOf` trả `{ owing, owed }` — KHÔNG phải `{ vay, choVay }`. Đọc `.vay` khiến
+            // `activeLoan` luôn `undefined`, nên `/loan status` không thấy nợ, `/loan pay`
+            // luôn báo "không có nợ", và chốt chống vay trùng ở `borrow` chưa bao giờ nổ.
+            const activeLoan = loans?.owing?.find(l => l.status === 'active' || l.status === 'overdue');
             if (activeLoan) {
                 return interaction.editReply({
                     embeds: [buildWaguriEmbed(interaction, 'warning', {
@@ -223,20 +236,60 @@ module.exports = {
                 });
             }
 
-            // Thực thi tạo khoản vay từ SYSTEM
-            // 7 ngày, lãi 2%/ngày = 14% tổng
-            const interest = Math.round(amount * 0.14);
-            const totalDue = amount + interest;
+            // Vay từ quỹ hệ thống qua RPC riêng (0157): ghi nợ và giải ngân trong CÙNG một
+            // giao dịch. Trước đây chỗ này gọi `loanCreate('SYSTEM', ...)` — RPC của đường
+            // P2P — rồi tự `addMoney` thêm một lần nữa. Ba thứ sai cùng lúc: RPC luôn trả
+            // `poor` vì không có ví 'SYSTEM' để trừ, lệnh lại kiểm `res.ok` trong khi RPC
+            // trả `status`, và nếu hai cái kia được sửa thì `addMoney` thành trả tiền đúp.
+            const res = await db.loanCreateSystem(userId, amount);
+            if (res === null) {
+                return interaction.editReply({
+                    embeds: [buildWaguriEmbed(interaction, 'error', { locale, description: t(locale, 'common.retry_later') })]
+                });
+            }
 
-            const res = await db.loanCreate('SYSTEM', userId, amount, 7, 0.02);
-            if (!res || !res.ok) {
+            if (res.status === 'co_no_qua_han') {
+                return interaction.editReply({
+                    embeds: [buildWaguriEmbed(interaction, 'warning', {
+                        locale,
+                        title: isEn ? '⚠️ Overdue Debt' : '⚠️ Cậu Đang Có Nợ Quá Hạn',
+                        description: isEn
+                            ? `You still owe **${fmt(res.no_qua_han, locale)}** ${config.CURRENCY} past its due date. Clear it with \`/loan pay\` before borrowing again!`
+                            : `Cậu còn **${fmt(res.no_qua_han, locale)}** ${config.CURRENCY} đã quá hạn. Hãy trả hết bằng \`/loan pay\` rồi mới vay tiếp nhen!`
+                    })]
+                });
+            }
+
+            if (res.status === 'dang_no') {
+                return interaction.editReply({
+                    embeds: [buildWaguriEmbed(interaction, 'warning', {
+                        locale,
+                        title: isEn ? '⚠️ Active Loan Exists' : '⚠️ Cậu Còn Khoản Nợ Chưa Trả',
+                        description: isEn
+                            ? `You already have an active loan from the fund. Use \`/loan pay\` to clear it first!`
+                            : `Cậu đang còn một khoản vay từ quỹ. Hãy dùng \`/loan pay\` để trả hết trước nhé!`
+                    })]
+                });
+            }
+
+            if (res.status !== 'ok') {
+                // `bad_amount` / `bad_interest` / `bad_days`: hằng số config hoặc tham số sai,
+                // KHÔNG phải lỗi của người chơi -> nói thật là chưa vay được, và ghi log để sửa.
+                console.error(`[LOAN] loan_create_system trả status lạ: ${res.status} (user=${userId}, amount=${amount})`);
                 return interaction.editReply({
                     embeds: [buildWaguriEmbed(interaction, 'error', { locale, description: t(locale, 'common.generic_error') })]
                 });
             }
 
-            // Giải ngân tiền vào ví cho người chơi
-            await db.addMoney(userId, amount, 'wallet');
+            // Số khoe ra LẤY TỪ RPC, không tính lại ở JS — luật §10 "MỘT con số = MỘT nguồn".
+            // Trước đây lệnh ghi cứng `amount * 0.14` trong khi config là 0.10, nên người chơi
+            // được báo nợ 14% mà sổ ghi 10%.
+            const interest = Number(res.interest) || 0;
+            const totalDue = Number(res.remaining) || amount + interest;
+            const dueTs = res.due_at ? Math.floor(new Date(res.due_at).getTime() / 1000) : null;
+            const dueText = dueTs
+                ? `<t:${dueTs}:R>`
+                : (isEn ? `in ${config.LOAN.DUE_DAYS} days` : `trong ${config.LOAN.DUE_DAYS} ngày`);
 
             return interaction.editReply({
                 embeds: [buildWaguriEmbed(interaction, 'success', {
@@ -245,13 +298,13 @@ module.exports = {
                     description: isEn
                         ? `The Kikyo Student Fund has disbursed **+${fmt(amount, locale)}** ${config.CURRENCY} directly into your wallet!\n\n` +
                           `💳 **Amount Borrowed:** **${fmt(amount, locale)}** ${config.CURRENCY}\n` +
-                          `📈 **Interest (7 days):** **+${fmt(interest, locale)}** ${config.CURRENCY}\n` +
-                          `⏳ **Total Due:** **${fmt(totalDue, locale)}** ${config.CURRENCY} *(Due in 7 days)*\n\n` +
+                          `📈 **Interest (${config.LOAN.DUE_DAYS} days):** **+${fmt(interest, locale)}** ${config.CURRENCY}\n` +
+                          `⏳ **Total Due:** **${fmt(totalDue, locale)}** ${config.CURRENCY} *(due ${dueText})*\n\n` +
                           `📌 *Tip: Use \`/loan pay\` to clear your debt anytime!*`
                         : `Quỹ Tín Dụng Học Đường Kikyo đã giải ngân **+${fmt(amount, locale)}** ${config.CURRENCY} vào ví của cậu!\n\n` +
                           `💳 **Số tiền vay:** **${fmt(amount, locale)}** ${config.CURRENCY}\n` +
-                          `📈 **Tiền lãi ước tính (7 ngày):** **+${fmt(interest, locale)}** ${config.CURRENCY}\n` +
-                          `⏳ **Tổng cần trả:** **${fmt(totalDue, locale)}** ${config.CURRENCY} *(Hạn trong 7 ngày)*\n\n` +
+                          `📈 **Tiền lãi (${config.LOAN.DUE_DAYS} ngày):** **+${fmt(interest, locale)}** ${config.CURRENCY}\n` +
+                          `⏳ **Tổng cần trả:** **${fmt(totalDue, locale)}** ${config.CURRENCY} *(hạn ${dueText})*\n\n` +
                           `📌 *Mẹo: Cậu có thể dùng \`/loan pay\` để trả nợ bất cứ lúc nào!*`
                 })]
             });
@@ -260,7 +313,10 @@ module.exports = {
         // 3) pay: Trả nợ
         if (sub === 'pay') {
             const loans = await db.loansOf(userId);
-            const activeLoan = loans?.vay?.find(l => l.status === 'active' || l.status === 'overdue');
+            // `loansOf` trả `{ owing, owed }` — KHÔNG phải `{ vay, choVay }`. Đọc `.vay` khiến
+            // `activeLoan` luôn `undefined`, nên `/loan status` không thấy nợ, `/loan pay`
+            // luôn báo "không có nợ", và chốt chống vay trùng ở `borrow` chưa bao giờ nổ.
+            const activeLoan = loans?.owing?.find(l => l.status === 'active' || l.status === 'overdue');
             if (!activeLoan) {
                 return interaction.editReply({
                     embeds: [buildWaguriEmbed(interaction, 'info', {
@@ -295,14 +351,20 @@ module.exports = {
                 });
             }
 
-            const repayRes = await db.loanRepay(userId, activeLoan.id, payAmount);
-            if (!repayRes || !repayRes.ok) {
+            const repayRes = await db.loanRepay(userId, activeLoan.lender_id, payAmount);
+            if (repayRes === null || repayRes.status !== 'ok') {
+                const moTa = repayRes?.status === 'poor'
+                    ? (isEn ? 'Your wallet no longer covers that payment.' : 'Ví của cậu không còn đủ để trả khoản đó.')
+                    : t(locale, 'common.generic_error');
+                if (repayRes && repayRes.status !== 'poor') console.error(`[LOAN] loan_repay status lạ: ${repayRes.status} user=${userId}`);
                 return interaction.editReply({
-                    embeds: [buildWaguriEmbed(interaction, 'error', { locale, description: t(locale, 'common.generic_error') })]
+                    embeds: [buildWaguriEmbed(interaction, 'error', { locale, description: moTa })]
                 });
             }
 
-            const isFullyPaid = repayRes.status === 'paid' || Number(repayRes.remaining || 0) <= 0;
+            // `loan_repay` trả `status:'ok'` kèm `remaining`; nó KHÔNG bao giờ trả `'paid'`.
+            // Trả hết hay chưa chỉ đọc được từ `remaining`.
+            const isFullyPaid = Number(repayRes.remaining || 0) <= 0;
 
             return interaction.editReply({
                 embeds: [buildWaguriEmbed(interaction, 'success', {
