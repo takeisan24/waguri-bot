@@ -237,7 +237,7 @@ async function subThu(interaction, locale) {
         locale,
         title: t(locale, 'commands.tiembanh.thu_success_title'),
         description: t(locale, 'commands.tiembanh.thu_success_desc', { revenue: fmt(r.revenue, locale), currency: C, wageMsg, cakeMsg, stockLeft: fmt(r.stock_left, locale), capped: cappedWarning })
-    })].setTimestamp() });
+    }).setTimestamp()] });
 }
 
 // --- thue ---
