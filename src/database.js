@@ -1803,7 +1803,6 @@ async function setCosmeticWithFee(userId, field, value, cost) {
 // ============================================================
 const { LOAN } = config;
 
-/** Tạo khoản vay (lender cho borrower vay). Trả {status,...} hoặc null. */
 /** Vay từ Quỹ Tín Dụng Kikyo (bên cho vay là HỆ THỐNG) — RPC `loan_create_system` (0157).
  *
  * KHÁC `loanCreate` ở chỗ không có bên cho vay để trừ ví và không có phí 5%. Dùng chung
@@ -1837,6 +1836,7 @@ async function loanCreateSystem(borrowerId, principal) {
     }
 }
 
+/** Tạo khoản vay P2P (lender cho borrower vay). Trả {status,...} hoặc null. */
 async function loanCreate(lenderId, borrowerId, principal) {
     try {
         const { data, error } = await supabase.rpc('loan_create', {
