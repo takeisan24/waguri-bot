@@ -16,7 +16,6 @@ module.exports = {
     nhat_ve_chai: {
         success: ['✅ You cleaned up the fallen cherry blossom petals around the prestigious Kikyo Academy, earning **{amount}**! 🌸'],
         fail: ['⚠️ You accidentally swept away a rare orchid pot of the Kikyo Academy Principal, fined **{amount}**... 😰'],
-        join_success: ['🤑 You found a lost wallet in the Kikyo lecture hall and returned it. The owner rewarded you **{amount}**! 💖'],
         jackpot: ['🤑 You found a lost wallet in the Kikyo lecture hall and returned it. The owner rewarded you **{amount}**! 💖'],
     },
     ban_tra_da: {
@@ -27,6 +26,7 @@ module.exports = {
     phu_ho: {
         success: ['✅ You mixed dough and helped Rintaro all day, receiving a well-deserved wage of **{amount}**! 🍞'],
         fail: ['⚠️ You accidentally put salt into the fresh cream instead of sugar, compensating **{amount}**... 🧂'],
+        jackpot: ['🤑 You kneaded a batch of dough so perfect that Rintaro used it for a VIP order, tipping you **{amount}**! 🎉🍞'],
     },
     shipper: {
         success: ['✅ You delivered a strawberry cake from Gekka Bakery on time for the Kikyo student class reunion, earning **{amount}**! 🛵'],
@@ -36,6 +36,7 @@ module.exports = {
     sinh_vien: {
         success: ['✅ You worked a few extra hours at Gekka Bakery after school at Chidori, receiving **{amount}**! 🎒'],
         fail: ['⚠️ Overtime makeup class caused you to arrive late, and the manager deducted **{amount}** from your pay... ⏰'],
+        jackpot: ['🤑 You juggled homework and shifts yet still topped the Kikyo exams — Gekka Bakery awarded you a scholarship of **{amount}**! 🎉🎓'],
     },
     xe_om: {
         success: ['✅ You rode a Honda Wave carrying Waguri around Hanoi Old Quarter to watch cherry blossoms. Waguri joyfully paid you **{amount}**! 🛵🌸'],
@@ -45,15 +46,12 @@ module.exports = {
     tho_sua_xe: {
         success: ['✅ You stood by the oven baking dozens of golden fruit tart pastries, Rintaro paid you **{amount}**! 🥧'],
         fail: ['⚠️ You forgot to set the oven timer, burning a batch of crepes, paying compensation **{amount}**... 🔥'],
+        jackpot: ['🤑 Your fruit tarts sold out within a single morning, so Rintaro shared the takings with you: **{amount}**! 🎉🥧'],
     },
     streamer: {
         success: ['✅ You worked with Subaru to patrol and maintain Kikyo Academy\'s strict discipline, rewarded **{amount}**! 🕵️‍♀️'],
         fail: ['⚠️ You accidentally lost the student discipline ledger, fined **{amount}**... 📋'],
         jackpot: ['🤑 You solved a case of students sneaking out to Gekka Bakery during class hours, receiving a reward of **{amount}**! 🏆'],
-    },
-    tiem_net: {
-        success: ['✅ You helped manage the internet cafe and assisted customers with Gekka Bakery online orders, earning **{amount}**! 🖥️'],
-        fail: ['⚠️ A customer spilled soda on a keyboard, and you failed to notice and catch them, paying **{amount}**... 🥤'],
     },
     moi_gioi: {
         success: ['✅ You perfectly organized the schedule and managed the staff of Gekka Bakery, boosting sales and earning a commission of **{amount}**! 📊'],

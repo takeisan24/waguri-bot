@@ -28,6 +28,7 @@ module.exports = {
     phu_ho: {
         success: ['✅ Cậu đánh bột, nhào bột và dọn khay bánh phụ Rintaro cả ngày, nhận tiền công xứng đáng **{amount}**! 🍞'],
         fail: ['⚠️ Cậu lỡ đổ nhầm muối vào kem tươi thay vì đường cát, phải đền nguyên liệu mất **{amount}**... 🧂'],
+        jackpot: ['🤑 Cậu nhào tay được mẻ bột hoàn hảo đến mức Rintaro đem ra làm bánh cho khách VIP, thưởng nóng cho cậu **{amount}**! 🎉🍞'],
     },
     shipper: {
         success: ['✅ Cậu giao giỏ bánh kem dâu tây của tiệm Gekka đến đúng giờ cho buổi họp lớp của học sinh Kikyo, nhận tiền công **{amount}**! 🛵'],
@@ -37,15 +38,22 @@ module.exports = {
     sinh_vien: {
         success: ['✅ Cậu tranh thủ làm thêm vài giờ ở tiệm Gekka sau giờ học tại trường Chidori, nhận lương **{amount}**! 🎒'],
         fail: ['⚠️ Học bù quá giờ nên cậu đi làm thêm trễ, bị quản lý tiệm trừ lương **{amount}**... ⏰'],
+        jackpot: ['🤑 Vừa trông tiệm vừa ôn bài mà cậu vẫn đứng đầu kỳ thi Kikyo, tiệm Gekka thưởng luôn học bổng **{amount}**! 🎉🎓'],
     },
     xe_om: {
         success: ['✅ Cậu chạy xe Honda Wave chở Waguri vi vu dạo phố cổ Hà Nội ngắm hoa đào, Waguri thích thú trả cậu **{amount}**! 🛵🌸'],
         fail: ['⚠️ Xe bị hỏng bugi giữa đường phố cổ đông đúc, cậu tốn tiền sửa xe và lỡ hẹn, mất **{amount}**... 🛠️'],
         jackpot: ['🤑 Gặp khách du lịch Nhật Bản muốn đi tham quan Hồ Gươm, cậu hướng dẫn tận tình và nhận tip khủng **{amount}**! 💴🎉'],
     },
+    nong_dan: {
+        success: ['✅ Cậu ra nông trại thu hoạch lúa mì và dâu tây chín mọng để kịp chuyển cho tiệm Gekka, nhận tiền công **{amount}**! 🌾'],
+        fail: ['⚠️ Một đàn sâu kéo đến gặm sạch luống dâu vừa ra trái, vụ này cậu lỗ mất **{amount}**... 🐛'],
+        jackpot: ['🤑 Vụ dâu tây của cậu được mùa chưa từng có, Rintaro thu mua trọn cả nông trại cho tiệm Gekka với giá **{amount}**! 🎉🍓'],
+    },
     tho_sua_xe: {
         success: ['✅ Cậu đứng bếp nướng hàng chục mẻ bánh tart trái cây vàng ươm thơm lừng, Rintaro trả lương **{amount}**! 🥧'],
         fail: ['⚠️ Cậu quên đặt chuông hẹn giờ nướng bánh làm cháy khét cả mẻ bánh crepe thơm ngon, đền bù **{amount}**... 🔥'],
+        jackpot: ['🤑 Khay bánh tart trái cây của cậu vừa ra lò đã bán hết trong một buổi sáng, Rintaro chia cho cậu **{amount}**! 🎉🥧'],
     },
     streamer: {
         success: ['✅ Cậu cùng Subaru đi tuần tra và giữ gìn kỷ cương học viện Kikyo nghiêm ngặt, được trưởng ban khen thưởng **{amount}**! 🕵️‍♀️'],

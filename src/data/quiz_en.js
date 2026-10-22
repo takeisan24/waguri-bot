@@ -22,6 +22,7 @@ module.exports = [
     { q: 'What is the largest land animal today?', a: ['elephant'] },
     { q: 'The Moon orbits around which planet?', a: ['earth'] },
     { q: 'How many points does the star on the Vietnamese flag have?', a: ['5', 'five'] },
+    { q: 'Who was the first king of Vietnam (according to legend)?', a: ['hung vuong', 'hung king', 'king hung'] },
     { q: 'What transportation flies in the sky to carry passengers?', a: ['airplane', 'plane'] },
     { q: 'At what temperature in Celsius does water boil under standard pressure?', a: ['100'] }
 ];
