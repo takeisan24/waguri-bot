@@ -174,6 +174,7 @@ module.exports = {
     once: true,
     execute(client) {
         console.log(`Ready! Logged in as ${client.user.tag}`);
+        console.log(require('../lib/demThanhVien').dongConsole(client));
         client.user.setStatus('online');
 
         // Đồng bộ thống kê lên DB ngay khi ready

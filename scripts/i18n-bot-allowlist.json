@@ -14,6 +14,7 @@
     "src/commands/economy/mine.js": "Như chop.js — khoá tra bảng, RESOURCE_NAMES phủ 7/7 món.",
     "src/commands/games/loto.js": "Như bingo.js — logic ở src/lib/loto.js (33 lời gọi i18n).",
     "src/events/channelDelete.js": "Một dòng console.log nội bộ, người dùng không đọc.",
+    "src/lib/demThanhVien.js": "Một dòng console.log cho CHỦ BOT đọc ở panel Wispbyte (số người thật/bot/shard lúc khởi động), không hiện ra Discord. Phần hiện cho người chơi là /serverinfo và nó đi qua commands.serverinfo.members_split ở cả vi.json lẫn en.json.",
     "src/lib/ai/dauVao.js": "Chuỗi là NHÃN GỬI CHO MODEL, không phải chữ người dùng đọc. Model nhận nhãn tiếng Việt rồi trả lời theo ngôn ngữ mà chỉ thị [Ngôn ngữ] trong systemPrompt ép — người dùng EN vẫn nhận câu trả lời tiếng Anh. Dịch nhãn sang EN chỉ tốn thêm token mà không đổi gì cho người đọc, vì persona vốn đã thuần tiếng Việt.",
     "src/lib/ai/gemini.js": "Log cảnh báo nội bộ (console.warn khi câu trả lời bị cắt).",
     "src/lib/ai/index.js": "Từ vựng ngữ cảnh cho AI + log nội bộ.",

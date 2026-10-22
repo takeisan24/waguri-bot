@@ -2,6 +2,7 @@ const { SlashCommandBuilder, PermissionFlagsBits, ChannelType, AttachmentBuilder
 const db = require('../../database.js');
 const { buildWaguriEmbed } = require('../../lib/embed');
 const { getInteractionLanguage, t } = require('../../lib/i18n');
+const { thamSoI18n } = require('../../lib/demThanhVien');
 
 // Map loại kênh -> nhãn dễ đọc cho báo cáo.
 const CH_ICON_VI = {
@@ -69,6 +70,7 @@ function buildReport(guild, me, settings, locale) {
     push(t(locale, 'commands.serverinfo.report_overview'));
     push(t(locale, 'commands.serverinfo.report_name', { name: guild.name, id: guild.id }));
     push(t(locale, 'commands.serverinfo.report_members', { count: guild.memberCount }));
+    push(t(locale, 'commands.serverinfo.report_split', thamSoI18n(guild)));
     push(t(locale, 'commands.serverinfo.report_owner', { ownerId: guild.ownerId }));
     push(t(locale, 'commands.serverinfo.report_created', { date: guild.createdAt.toISOString().slice(0, 10) }));
     
@@ -308,7 +310,13 @@ module.exports = {
         const embed = buildWaguriEmbed(interaction, 'success', {
             title: t(locale, 'commands.serverinfo.embed_title', { name: guild.name }),
             fields: [
-                { name: t(locale, 'commands.serverinfo.members_field'), value: `${guild.memberCount}`, inline: true },
+                {
+                    name: t(locale, 'commands.serverinfo.members_field'),
+                    // Tách người/bot bằng role quản lý -> 0 lượt fetch. Xem lib/demThanhVien.js.
+                    value: `${guild.memberCount}
+${t(locale, 'commands.serverinfo.members_split', thamSoI18n(guild))}`,
+                    inline: true,
+                },
                 { name: t(locale, 'commands.serverinfo.roles_field'), value: `${guild.roles.cache.size - 1}`, inline: true },
                 { name: t(locale, 'commands.serverinfo.boost_field'), value: `${isEn ? 'Tier' : 'Cấp'} ${guild.premiumTier} (${guild.premiumSubscriptionCount || 0})`, inline: true },
                 { name: t(locale, 'commands.serverinfo.channels_field'), value: chanLine, inline: false },
