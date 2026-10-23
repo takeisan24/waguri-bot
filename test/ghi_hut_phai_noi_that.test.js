@@ -30,7 +30,12 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.join(__dirname, '..');
-const boCmt = (s) => s.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:])\/\/.*$/gm, '$1');
+// Chú thích khối phải được thay bằng ĐÚNG số dòng trống của nó, không nén thành một dấu
+// cách: nén làm lệch mọi số dòng cổng in ra, và 23/10 nó bắt đúng một lỗi tiền thật nhưng
+// báo "database.js:938" — một dòng không hề liên quan — nên mất một lượt đi tìm.
+const boCmt = (s) => s
+    .replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, ' '))
+    .replace(/(^|[^:])\/\/.*$/gm, '$1');
 const doc = (...p) => fs.readFileSync(path.join(ROOT, ...p), 'utf8');
 const docSach = (...p) => boCmt(doc(...p));
 
@@ -54,6 +59,14 @@ const HAM_CO_GIA_TRI = [
     'setWallet', 'transferMoney', 'addSkillPoints', 'spendEnergy', 'updateExp', 'addHealth',
 ];
 
+// Ghi CẤU HÌNH — không phải "giá trị" của người chơi, nhưng y hệt một lớp lỗi: `/config` nói
+// "đã lưu" khi chưa lưu (`e138e6b`), `/announcement` nói "đã gửi xong" khi bản tin không vào
+// DB (`7ae95a6`). Thêm vào đây 23/10 vì `nextConfessionNumber` bỏ trôi đúng lời này — số thứ
+// tự được CẤP mà không được LƯU, nên bài sau lấy lại đúng số đó.
+const HAM_CAU_HINH = ['setGuildSetting'];
+
+const HAM_GAC = [...HAM_CO_GIA_TRI, ...HAM_CAU_HINH];
+
 // Chỗ CỐ Ý bỏ trôi, kèm lý do đã kiểm. Thêm vào đây phải nêu được vì sao ghi hụt KHÔNG làm
 // lời nào thành sai — không phải "chắc không sao".
 const MIEN = {
@@ -65,17 +78,43 @@ const MIEN = {
         // Lý do chỉ đứng được nếu `setEnergy` vẫn được kiểm và chữ thông báo vẫn không nêu máu.
         conDung: (s) => /const daHoi = await db\.setEnergy\(/.test(s) && /if \(daHoi !== true\)/.test(s),
     },
+    'src/events/ready.js': {
+        ham: 'setGuildSetting',
+        lyDo: 'việc NỀN, không ai được hứa gì: `syncBotStatsToDb` đẩy số server/thành viên lên '
+            + '`guild_settings[\'global\']` cho trang web, chạy lại mỗi 30 phút. Ghi hụt nghĩa là '
+            + 'web hiện số hơi cũ trong tối đa nửa tiếng rồi tự đúng lại — không có người dùng '
+            + 'nào đang đọc một câu "đã xong", và không có gì bị tiêu để đổi lấy nó.',
+        // Lý do đứng được nhờ HAI điều: nó vẫn chạy lặp (tự chữa), và vẫn không có đường
+        // nào báo kết quả cho người dùng. Mất một trong hai thì phải kiểm kết quả như chỗ khác.
+        conDung: (s) => /setInterval\(post, 30 \* 60 \* 1000\)/.test(s)
+            && /async function syncBotStatsToDb\(client\) \{/.test(s),
+    },
 };
 
+// Ba điều phép đo này phải làm được, và BẢN ĐẦU CỦA NÓ KHÔNG LÀM ĐƯỢC CẢ BA — chính vì vậy
+// nó bỏ sót `nextConfessionNumber` suốt lượt quét 23/10:
+//   · `db.` phải là TUỲ CHỌN. Helper trong `src/database.js` gọi nhau trực tiếp
+//     (`await setGuildSetting(...)`, không có tiền tố), nên neo cứng `db\.` làm cả tệp
+//     database.js — nơi mọi lời ghi thật sự nằm — vô hình với cổng.
+//   · Phải thấy lời gọi NHIỀU DÒNG. Bản đầu đòi `);` cuối cùng một dòng, nên
+//     `await db.setGuildSetting('global', 'bot_stats', {` xuống dòng là thoát.
+//   · Nhưng `^\s*await` cũng khớp phần TIẾP của một câu đã gán (`const x =` rồi xuống dòng
+//     `await ...`). Chỗ đó kết quả KHÔNG bị bỏ trôi, nên phải loại ra bằng cách soi dòng
+//     trước: nếu nó kết thúc bằng một toán tử đang chờ toán hạng thì đây là câu tiếp.
+const DONG_TRUOC_CON_CHO = /[=([,&|?:+]\s*$/;
+
 test('toàn repo: không chỗ nào ghi thứ có giá trị rồi bỏ trôi kết quả', () => {
-    const re = new RegExp(`^\\s*await\\s+db\\.(${HAM_CO_GIA_TRI.join('|')})\\([^;]*\\);\\s*$`);
+    const re = new RegExp(`^[ \\t]*await\\s+(?:db\\.)?(${HAM_GAC.join('|')})\\(`);
     const viPham = [];
     for (const f of duyet(path.join(ROOT, 'src'))) {
         const rel = path.relative(ROOT, f).replace(/\\/g, '/');
         const s = boCmt(fs.readFileSync(f, 'utf8'));
-        s.split(/\r?\n/).forEach((l, i) => {
+        const dong = s.split(/\r?\n/);
+        dong.forEach((l, i) => {
             const m = re.exec(l);
             if (!m) return;
+            const truoc = dong.slice(0, i).reverse().find((x) => x.trim() !== '') || '';
+            if (DONG_TRUOC_CON_CHO.test(truoc)) return;
             if (MIEN[rel] && MIEN[rel].ham === m[1]) return;
             viPham.push(`${rel}:${i + 1}  ${m[1]}()  ->  ${l.trim()}`);
         });
@@ -196,4 +235,94 @@ test('announcement send: lưu hụt thì vẫn phát tin, nhưng phải nói ra'
     assert.doesNotMatch(s, /if \(!daLuu\) return/,
         'Lưu hụt KHÔNG được chặn việc phát tin: tin đã soạn xong rồi, chặn là mất công soạn\n'
         + 'mà chẳng cứu được gì.');
+});
+
+// =====================================================================
+// (4) /sell — thưởng buff `harvest` của thú cưng
+//
+// Chỗ này do phép quét NỚI RỘNG ngày 23/10 bắt được, và cổng bản trước mù hoàn toàn với nó
+// vì nó nằm TRONG `src/database.js` nên lời gọi không có tiền tố `db.`.
+// =====================================================================
+
+test('sellItem: chỉ phồng gain khi tiền ĐÃ vào ví', () => {
+    const s = docSach('src', 'database.js');
+
+    // `/sell` in "Thu về" từ `r.gain` VÀ "Số dư mới" đọc tươi từ DB. Cộng vô điều kiện thì
+    // ghi hụt làm hai con số lệch nhau, mà con số sai mới là con số người chơi tin.
+    assert.match(s, /if \(\(await addMoney\(userId, bonus, 'wallet'\)\) !== false\) \{\s*data\.gain = Number\(data\.gain\) \+ bonus;/,
+        'Phép cộng `data.gain` phải nằm TRONG nhánh thành công của `addMoney`.');
+
+    // `!== false` chứ không phải `=== true`: addMoney trả `data !== null`, tức boolean thật,
+    // nhưng viết `!== false` thì một ngày helper trả giá trị khác cũng không biến thành "hụt".
+    assert.match(s, /\[PAYOUT FAIL\] sell-harvest-bonus user=\$\{userId\} bonus=\$\{bonus\}/,
+        'Thiếu log để truy vụ hụt thưởng buff harvest.');
+
+    // Không được cộng bù: `false` có thể là timeout SAU khi DB đã cộng -> cộng hai lần.
+    assert.doesNotMatch(s, /\[PAYOUT FAIL\] sell-harvest-bonus[\s\S]{0,200}?await addMoney\(/,
+        'Đang cộng lại sau khi hụt -> nguy cơ cộng hai lần.');
+});
+
+// =====================================================================
+// (5) /confession — số thứ tự phải do DB cấp, và hụt thì DỪNG
+// =====================================================================
+
+test('nextConfessionNumber: nguyên tử trong DB, không đọc-sửa-ghi trong JS', () => {
+    const s = docSach('src', 'database.js');
+    const than = s.slice(s.indexOf('async function nextConfessionNumber'));
+    // `\r?\n` chứ không phải `\n`: `src/database.js` là CRLF, nên neo `'\n}\n'` khớp 0 lần và
+    // khối trích ra rỗng — cổng đỏ oan. Bẫy này đã cắn nhiều lần, kể cả trong chính test.
+    const het = /\r?\n\}\r?\n/.exec(than);
+    const khoi = than.slice(0, het ? het.index + het[0].length : than.length);
+
+    assert.match(khoi, /supabase\.rpc\('next_confession_number', \{ p_guild: guildId \}\)/,
+        'Phải gọi RPC nguyên tử `next_confession_number` (migration 0159).');
+
+    // Ba lỗi của bản cũ, mỗi lỗi một phép chặn:
+    //  (A) đua tranh — hai bài cùng lúc trùng số;
+    //  (B) `getGuildSettings` trả `{}` khi đọc hỏng -> số tụt về 1 VÀ counter bị ghi đè về 1,
+    //      tức mất cả dãy số của server chỉ vì một lượt đọc chập;
+    //  (C) kết quả `setGuildSetting` bị bỏ trôi -> bài sau lấy lại đúng số đó.
+    assert.doesNotMatch(khoi, /getGuildSettings\(/,
+        'Đọc rồi tự cộng trong JS là đúng lỗi cũ: `getGuildSettings` trả `{}` khi lỗi nên số\n'
+        + 'tụt về 1 và ghi đè counter về 1 — mất cả dãy số của server.');
+    assert.doesNotMatch(khoi, /setGuildSetting\(/,
+        'Không được quay lại đường `setGuildSetting`: nó tách CẤP số khỏi LƯU số, nên ghi hụt\n'
+        + 'là bài sau trùng số.');
+
+    assert.match(khoi, /return Number\.isInteger\(n\) && n > 0 \? n : null;/,
+        'Phải trả `null` khi không cấp được số — nơi gọi cần phân biệt được để mà dừng.');
+    assert.match(khoi, /return null;/, 'Nhánh catch phải trả `null`, không phải một con số đoán.');
+});
+
+test('confession: không cấp được số thì DỪNG, và nói rõ bài chưa đăng', () => {
+    const s = docSach('src', 'commands', 'fun', 'confession.js');
+
+    const iSo = s.indexOf('const num = await db.nextConfessionNumber(gid);');
+    const iLog = s.indexOf('db.logConfession(');
+    const iGui = s.indexOf('await channel.send(');
+    assert.ok(iSo > -1 && iLog > -1 && iGui > -1, 'thiếu một trong các mốc.');
+
+    // Nhánh dừng phải nằm GIỮA lúc lấy số và lúc dùng số. Ngưỡng 1400 vì hai câu nói-thật
+    // viết thẳng hai ngôn ngữ tại chỗ nên dài sẵn — đặt chật là cổng đỏ oan khi sửa câu chữ.
+    const sauSo = s.slice(iSo);
+    assert.match(sauSo.slice(0, 1400), /if \(num === null\) \{[\s\S]*?return interaction\.editReply/,
+        'Phải DỪNG khi `num === null`. Đăng bài với số đoán thì bài sau sẽ trùng số, mà\n'
+        + 'confession KHÔNG có dòng số dư nào để người ta đối chiếu ra sự thật.');
+    assert.ok(s.indexOf('if (num === null)') < iLog && s.indexOf('if (num === null)') < iGui,
+        'Nhánh dừng phải nằm TRƯỚC lúc ghi log và lúc gửi bài.');
+
+    assert.match(s, /\[CONFESSION FAIL\] khong cap duoc so thu tu guild=\$\{gid\}/,
+        'Thiếu log để truy vụ không cấp được số.');
+
+    // `err_send_failed` nêu đích danh "quyền ở kênh vừa bị đổi" — dán vào lỗi DB là nói sai
+    // lần nữa. Nên hai câu này viết thẳng tại chỗ, và phải có ĐỦ hai ngôn ngữ.
+    for (const [nn, dau] of [['en', 'could not reserve a number'], ['vi', 'chưa lấy được số thứ tự']]) {
+        assert.ok(s.includes(dau),
+            `Thiếu câu nói thật bản ${nn}. Viết thẳng tại chỗ (vì \`err_send_failed\` nêu sai\n`
+            + 'nguyên nhân), nên thiếu một bản là người dùng ngôn ngữ đó không được báo gì.');
+    }
+    // Phải nói rõ là CHƯA đăng — người gửi confession không có cách nào tự kiểm.
+    for (const dau of ['did **not** post', 'chưa đăng gì cả']) {
+        assert.ok(s.includes(dau), `Câu nói thật phải khẳng định bài CHƯA đăng: thiếu "${dau}"`);
+    }
 });

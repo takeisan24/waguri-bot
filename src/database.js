@@ -1037,8 +1037,16 @@ async function sellItem(userId, itemId, quantity = 1) {
             if (harvestBonus > 0) {
                 const bonus = Math.round(Number(data.gain) * harvestBonus);
                 if (bonus > 0) {
-                    await addMoney(userId, bonus, 'wallet');
-                    data.gain = Number(data.gain) + bonus;
+                    // CHỈ phồng `data.gain` khi tiền ĐÃ vào ví thật. Nơi gọi (/sell) in cả
+                    // "Thu về" lấy từ con số này VÀ "Số dư mới" đọc tươi từ DB — cộng vô điều
+                    // kiện thì ghi hụt làm hai con số tự tố nhau, mà con số sai lại là con số
+                    // người chơi tin. KHÔNG ghi lại khi hụt: `false` có thể là timeout SAU
+                    // khi DB đã cộng.
+                    if ((await addMoney(userId, bonus, 'wallet')) !== false) {
+                        data.gain = Number(data.gain) + bonus;
+                    } else {
+                        console.error(`[PAYOUT FAIL] sell-harvest-bonus user=${userId} bonus=${bonus}`);
+                    }
                 }
             }
         }
@@ -1357,12 +1365,29 @@ async function setGuildSetting(guildId, key, value) {
     }
 }
 
-/** Tăng & trả số thứ tự confession kế tiếp của guild. */
+/**
+ * Cấp số thứ tự confession kế tiếp của guild — tăng VÀ đọc trong MỘT câu nguyên tử (0159).
+ * Trả số nguyên >= 1, hoặc `null` khi KHÔNG cấp được số nào.
+ *
+ * Bản cũ đọc-tính-trong-JS-rồi-ghi-đè (vi phạm Luật 1) và chứa BA lỗi:
+ *   · hai confession cùng lúc đọc cùng giá trị rồi cùng ghi -> trùng số;
+ *   · `getGuildSettings` trả `{}` khi đọc hỏng -> số tụt về 1 VÀ counter bị ghi đè về 1,
+ *     tức một lượt đọc chập là mất cả dãy số của server;
+ *   · kết quả `setGuildSetting` bị bỏ trôi -> ghi hụt thì bài sau lấy lại đúng số đó.
+ *
+ * `null` nghĩa là chưa có số nào được cấp, nên nơi gọi phải DỪNG — đừng đăng bài với số
+ * đoán, vì số đó sẽ trùng với bài kế tiếp.
+ */
 async function nextConfessionNumber(guildId) {
-    const s = await getGuildSettings(guildId);
-    const n = Number(s.confession_count || 0) + 1;
-    await setGuildSetting(guildId, 'confession_count', n);
-    return n;
+    try {
+        const { data, error } = await supabase.rpc('next_confession_number', { p_guild: guildId });
+        if (error) throw error;
+        const n = Number(data);
+        return Number.isInteger(n) && n > 0 ? n : null;
+    } catch (error) {
+        logDbError('[DATABASE ERROR] nextConfessionNumber():', error);
+        return null;
+    }
 }
 
 /** Lưu vết confession ẩn danh cho admin kiểm tra. */

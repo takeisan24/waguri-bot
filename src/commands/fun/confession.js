@@ -83,7 +83,26 @@ module.exports = {
             return interaction.editReply({ embeds: [embed] });
         }
 
+        // Số thứ tự do DB cấp nguyên tử (0159). `null` = KHÔNG có số nào được cấp, nên dừng
+        // hẳn: đăng bài với số đoán thì bài sau sẽ trùng số, mà confession thì không có dòng
+        // số dư nào để người ta đối chiếu ra sự thật. Chuỗi viết thẳng ở đây vì
+        // `err_send_failed` nêu đích danh nguyên nhân "quyền ở kênh vừa bị đổi" — dùng cho
+        // lỗi DB là nói sai lần nữa.
         const num = await db.nextConfessionNumber(gid);
+        if (num === null) {
+            console.error(`[CONFESSION FAIL] khong cap duoc so thu tu guild=${gid}`);
+            const embedHong = buildWaguriEmbed(interaction, 'error', {
+                locale,
+                description: locale.startsWith('en')
+                    ? 'I could not reserve a number for your confession, so I did **not** post it 🥺 '
+                      + 'Nothing was shared, and nobody saw it. Sorry — the cooldown has already started, '
+                      + 'so please send it again once that passes.'
+                    : 'Tớ chưa lấy được số thứ tự cho bài của cậu nên **chưa đăng gì cả** 🥺 '
+                      + 'Nội dung vẫn kín, không ai thấy đâu. Chỉ tiếc là cooldown đã tính rồi, '
+                      + 'cậu gửi lại giúp tớ sau khi hết nhé.',
+            });
+            return interaction.editReply({ embeds: [embedHong] });
+        }
 
         // 3. Ghi log lưu vết confession ẩn danh cho admin
         await db.logConfession(gid, userId, num, content);
