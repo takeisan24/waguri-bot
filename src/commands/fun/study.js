@@ -59,28 +59,47 @@ module.exports = {
             const duration = interaction.options.getInteger('duration') || 25;
             const title = interaction.options.getString('title') || 'Pomodoro Study';
 
-            const result = await studyLib.startStudySession(userId, guildId, title, duration, interaction);
-            if (!result.success && result.reason === 'ALREADY_ACTIVE') {
+            // Trường hợp hiển nhiên nhất — vừa mở phiên xong lại gõ nữa — chốt được NGAY trong
+            // RAM, không tốn vòng DB nào. Trả lời ẩn ở đây để không làm ồn kênh chat, vì sau
+            // khi defer công khai thì không ẩn lại được nữa.
+            if (studyLib.activeSessions.has(userId)) {
                 return interaction.reply({
                     content: t(locale, 'commands.study.err_already_running'),
                     flags: MessageFlags.Ephemeral
                 });
             }
+
+            // ACK TRƯỚC, GHI SAU. `startStudySession` là lời GHI DB, và nó từng đứng TRƯỚC mọi
+            // lời ack: DB chậm hơn hạn 3 giây của Discord thì interaction chết, người chơi đọc
+            // "The application did not respond" TRONG KHI phiên học đã được tạo — rồi `/study
+            // status` lại báo đang có phiên, nghe như bot nói dối.
+            //
+            // KHÔNG bọc `withTimeout` quanh lời ghi này: chặn ở 800ms mà DB thành công ở 900ms
+            // là nói sai lần nữa. Ack mở cửa sổ 15 phút, ghi xong mới trả lời.
+            //
+            // Defer CÔNG KHAI, không ẩn: tin nhắn này là đồng hồ đếm ngược, `studyLib` sửa embed
+            // của nó suốt 25 phút — dài hơn cửa sổ 15 phút của token, nên phải là Message thật.
+            await interaction.deferReply();
+
+            const result = await studyLib.startStudySession(userId, guildId, title, duration, interaction);
+            // Nhánh này nay chỉ còn ứng với xung đột mà RAM không biết: phiên mở bên WEB, hay
+            // phiên còn trong DB sau một lần bot restart. Hiếm, nên công khai là chấp nhận được.
+            if (!result.success && result.reason === 'ALREADY_ACTIVE') {
+                return interaction.editReply({ content: t(locale, 'commands.study.err_already_running') });
+            }
             // DB hỏng KHÔNG được nói thành "đang có phiên khác" — hai chuyện khác hẳn nhau và
             // người dùng sẽ đi tìm phiên không tồn tại (đúng lớp lỗi của 45d7c92).
             if (!result.success) {
-                return interaction.reply({
-                    content: t(locale, 'common.retry_later'),
-                    flags: MessageFlags.Ephemeral
-                });
+                return interaction.editReply({ content: t(locale, 'common.retry_later') });
             }
 
             const session = result.session;
             const embed = studyLib.buildStudyEmbed(session, session.remainingMs);
             const row = studyLib.buildControlRow(session.isPaused, locale);
 
-            const msg = await interaction.reply({ embeds: [embed], components: [row], fetchReply: true });
-            session.message = msg;
+            // `editReply` trả về chính Message, nên không cần `fetchReply` — bộ đếm giờ của
+            // phiên học bám vào đối tượng này để tự cập nhật embed.
+            session.message = await interaction.editReply({ embeds: [embed], components: [row] });
             return;
         }
 
