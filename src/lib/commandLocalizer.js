@@ -11,10 +11,6 @@ const COMMAND_DESCRIPTIONS = {
         vi: "Bảng xếp hạng 🏆",
         en: "Leaderboard 🏆"
     },
-    "clan": {
-        vi: "Bang hội 🏰 — lập bang, gia nhập, quỹ chung",
-        en: "Guild 🏰 — create, join, shared treasury"
-    },
     "claim-support": {
         vi: "Nhận phần quà 10.000 xu độc quyền khi gia nhập Server Support 🎁",
         en: "Claim an exclusive 10,000-coin gift for joining the Support Server 🎁"
@@ -64,10 +60,6 @@ const COMMAND_DESCRIPTIONS = {
         vi: "Thú cưng: nhận nuôi, cho ăn, chăm sóc 🐾",
         en: "Pets: adopt, feed, care 🐾"
     },
-    "cuutro": {
-        vi: "Nhận trợ cấp cứu trợ khi tài khoản cạn sạch tiền 💸",
-        en: "Claim bailout grant when completely broke 💸"
-    },
 
     // Cửa hàng & Kho
     "store": {
@@ -93,10 +85,6 @@ const COMMAND_DESCRIPTIONS = {
     "eat": {
         vi: "Dùng đồ ăn để hồi năng lượng hoặc nhận buff 🍞",
         en: "Eat food to restore energy or get buffs 🍞"
-    },
-    "nghingoi": {
-        vi: "Đi ngủ hồi đầy năng lượng 😴",
-        en: "Go to sleep to fully restore energy 😴"
     },
     "cosmetic": {
         vi: "Trang trí hồ sơ: danh hiệu & màu sắc 🎨",
@@ -128,28 +116,8 @@ const COMMAND_DESCRIPTIONS = {
         vi: "Cướp tiền người chơi khác (rủi ro cao!) 🚨",
         en: "Rob another player (high risk!) 🚨"
     },
-    "vay": {
-        vi: "Hệ thống vay và trả nợ 🤝",
-        en: "Borrow and repay loans system 🤝"
-    },
-    "tangdo": {
-        vi: "Tặng vật phẩm trong kho cho người khác 🎁",
-        en: "Gift inventory items to another player 🎁"
-    },
 
     // Minigames & Nuôi trồng
-    "heo": {
-        vi: "Nuôi heo đất 🐷 (mua/chăm/bán/trộm)",
-        en: "Raise piggy bank 🐷 (buy/care/sell/steal)"
-    },
-    "trongcay": {
-        vi: "Trồng cây 🌱 (giống/tưới/thu hoạch/trộm)",
-        en: "Plant crops 🌱 (seed/water/harvest/steal)"
-    },
-    "tiembanh": {
-        vi: "Tiệm bánh Gekka 🍰 (kinh doanh thụ động)",
-        en: "Gekka Bakery 🍰 (passive income business)"
-    },
     "coinflip": {
         vi: "Tung đồng xu cược tiền (ngửa/sấp) 🪙",
         en: "Flip a coin to gamble money (heads/tails) 🪙"
@@ -162,10 +130,6 @@ const COMMAND_DESCRIPTIONS = {
         vi: "Bầu Cua Tôm Cá: đặt cửa các linh vật 🦀",
         en: "Bau Cua Tom Ca: Vietnamese mascot betting game 🦀"
     },
-    "bacay": {
-        vi: "Ba Cây 🃏 — nhiều người, góp cửa bằng nhau, điểm cao ăn cả",
-        en: "Three Cards 🃏 — multiplayer, equal bets, highest points take all"
-    },
     "blackjack": {
         vi: "Chơi Blackjack (Xì Dách) với nhà cái Waguri 🃏",
         en: "Play Blackjack (Xi Dach) with dealer Waguri 🃏"
@@ -173,10 +137,6 @@ const COMMAND_DESCRIPTIONS = {
     "crate": {
         vi: "Mở rương bí ẩn nhận vật phẩm ngẫu nhiên 🎁",
         en: "Open a mysterious crate to receive random items 🎁"
-    },
-    "bingo": {
-        vi: "Trò chơi Bingo 🎱",
-        en: "Bingo game 🎱"
     },
     "loto": {
         vi: "Trò chơi Loto 🎟️",
@@ -186,32 +146,8 @@ const COMMAND_DESCRIPTIONS = {
         vi: "Ma Sói 🐺 — trò chơi suy luận nhiều người (4-15 người)",
         en: "Werewolf 🐺 — multiplayer social deduction game (4-15 players)"
     },
-    "xocdia": {
-        vi: "Xóc Đĩa 🥢 — đặt cửa Chẵn/Lẻ",
-        en: "Xoc Dia 🥢 — bet on Even/Odd plate shake"
-    },
-    "duangua": {
-        vi: "Đua ngựa 🐎 — đặt cửa 1 chú ngựa tốc độ",
-        en: "Horse Racing 🐎 — bet on a fast horse"
-    },
-    "dovui": {
-        vi: "Đố vui 🧠 — trả lời câu hỏi nhanh để nhận thưởng",
-        en: "Trivia Quiz 🧠 — answer fast to win rewards"
-    },
 
     // Vui & Cộng đồng
-    "ship": {
-        vi: "Đo độ hợp nhau giữa hai người 🚢",
-        en: "Measure compatibility between two people 🚢"
-    },
-    "boi": {
-        vi: "Xem bói tình duyên, vận mệnh 🔮",
-        en: "Fortune telling: love, career 🔮"
-    },
-    "amlich": {
-        vi: "Tra cứu âm lịch, can chi, giờ hoàng đạo 🌙",
-        en: "Look up lunar calendar, zodiacs, auspicious hours 🌙"
-    },
     "lixi": {
         vi: "Phát lì xì cho cả kênh 🧧",
         en: "Distribute lucky money to the channel 🧧"
@@ -224,27 +160,15 @@ const COMMAND_DESCRIPTIONS = {
         vi: "Tương tác: ôm, hôn, xoa đầu, chọc, tát... 🌸",
         en: "Interactions: hug, kiss, pat, poke, slap... 🌸"
     },
-    "date": {
-        vi: "Rủ người thương đi hẹn hò 💑",
-        en: "Invite your partner on a date 💑"
-    },
     "confession": {
         vi: "Gửi confession ẩn danh lên kênh chỉ định 🤫",
         en: "Send anonymous confessions to a designated channel 🤫"
-    },
-    "noitu": {
-        vi: "Chơi nối từ tiếng Việt 🔤",
-        en: "Play Vietnamese word chain game 🔤"
     },
 
     // Ảnh & Tiện ích
     "image": {
         vi: "Xem ảnh mèo, chó hoặc waifu dễ thương 🖼️",
         en: "View cute images of cats, dogs, or waifus 🖼️"
-    },
-    "thoitiet": {
-        vi: "Xem thời tiết một thành phố 🌦️",
-        en: "View weather conditions of a city 🌦️"
     },
     "announcement": {
         vi: "Xem hoặc gửi thông báo cập nhật bot 📢",
@@ -264,17 +188,9 @@ const COMMAND_DESCRIPTIONS = {
         vi: "Nâng cấp và quản lý gói Premium 💎",
         en: "Upgrade and manage Premium packages 💎"
     },
-    "henho": {
-        vi: "Hẹn hò và tặng quà cho Waguri để bồi đắp tình cảm 💖",
-        en: "Date and gift Waguri to build affection 💖"
-    },
     "prestige": {
         vi: "Chuyển sinh — Khởi đầu mới với đặc quyền tối thượng 🌟",
         en: "Prestige — A new beginning with ultimate perks 🌟"
-    },
-    "worldevent": {
-        vi: "Sự kiện cộng đồng toàn server 🌍",
-        en: "Server-wide co-op community event 🌍"
     },
 
     // Cấu hình & Admin
@@ -322,10 +238,6 @@ const COMMAND_DESCRIPTIONS = {
     "help": {
         vi: "Xem danh sách và hướng dẫn sử dụng các lệnh 📜",
         en: "View bot commands list and help guide 📜"
-    },
-    "profile-ctx": {
-        vi: "Xem nhanh hồ sơ qua context menu",
-        en: "Quickly view user profile via context menu"
     },
     "server": {
         vi: "Xem trạng thái kết nối & độ trễ của hệ thống 🛰️",
@@ -439,9 +351,6 @@ const SUBCOMMAND_DESCRIPTIONS = {
     "fortune.daily": { vi: "Vận mệnh hôm nay của cậu", en: "Your fortune today" },
     "fortune.zodiac": { vi: "Tử vi theo cung hoàng đạo", en: "Horoscope by zodiac sign" },
     "fortune.oracle": { vi: "Thầy đồ phán một quẻ (mỗi lần một khác)", en: "A fun fortune telling reading" },
-    "fortune.hangngay": { vi: "Vận mệnh hôm nay của cậu", en: "Your fortune today" },
-    "fortune.cunghoangdao": { vi: "Tử vi theo cung hoàng đạo", en: "Horoscope by zodiac sign" },
-    "fortune.thaydo": { vi: "Thầy đồ phán một quẻ (mỗi lần một khác)", en: "A fun fortune telling reading" },
 
     // wordchain
     "wordchain.start": { vi: "Bắt đầu ván nối từ ở kênh này", en: "Start a word chain game in this channel" },
@@ -465,30 +374,8 @@ const SUBCOMMAND_DESCRIPTIONS = {
     "antinuke.logchannel": { vi: "Kênh nhận báo động (bỏ trống để gỡ)", en: "Alert channel (leave empty to clear)" },
     "antinuke.lockdown": { vi: "Khoá/mở khoá server thủ công", en: "Lock or unlock the server manually" },
     "antinuke.incidents": { vi: "Nhật ký sự cố gần đây", en: "Recent incident log" },
-    "market.view": { vi: "Xem các món đang bán", en: "Browse items on sale" },
     "market.prices": { vi: "Xem biến động giá chợ hiện tại & thời gian biến động tiếp theo 📊", en: "View live market prices & next shift countdown 📊" },
-    "market.mine": { vi: "Xem các món cậu đang bán", en: "View the items you're selling" },
     "market.sell": { vi: "Bán nông/thủy/khoáng sản cho hệ thống theo giá chợ biến động 💸", en: "Sell commodities to the system at live market prices 💸" },
-    "market.list": { vi: "Đăng bán một món trong kho cho người chơi khác", en: "List an item from your inventory for other players" },
-    "market.buy": { vi: "Mua một món theo mã", en: "Buy an item by its ID" },
-    "market.cancel": { vi: "Gỡ món cậu đang bán (trả về kho)", en: "Remove your listing (returns it to inventory)" },
-    "market.auctions": { vi: "Xem các phiên đấu giá đang hoạt động 🔨", en: "View active auctions 🔨" },
-    "market.auction": { vi: "Tạo một phiên đấu giá vật phẩm 🔨", en: "Start an item auction 🔨" },
-    "market.bid": { vi: "Đặt giá cho một phiên đấu giá 💰", en: "Place a bid on an auction 💰" },
-    "market.cancel-auction": { vi: "Hủy phiên đấu giá của cậu (khi chưa có ai bid) 🔨", en: "Cancel your auction (only if no bids yet) 🔨" },
-    "tiembanh.xem": { vi: "Xem tình trạng tiệm bánh của cậu", en: "Check your bakery's status" },
-    "tiembanh.mo": { vi: "Mở tiệm bánh (cần Lv.15 + Bộ Dụng Cụ Làm Bánh)", en: "Open a bakery (requires Lv.15 + Baking Tool Kit)" },
-    "tiembanh.nhapnl": { vi: "Nhập nguyên liệu (trái/hoa/thịt/cá đã farm) vào tiệm", en: "Stock ingredients (farmed fruit/flowers/meat/fish) into the shop" },
-    "tiembanh.thu": { vi: "Thu doanh thu tiệm về ví (có thể ra bánh!)", en: "Collect the shop's revenue to your wallet (may yield cakes!)" },
-    "tiembanh.thue": { vi: "Thuê nhân viên NPC phụ tiệm", en: "Hire an NPC staff member to help at the shop" },
-    "tiembanh.sathai": { vi: "Sa thái nhân viên NPC", en: "Fire an NPC staff member" },
-    "tiembanh.trangtri": { vi: "Trang trí tiệm bánh bằng nội thất gỗ / trang sức", en: "Decorate the bakery with wooden furniture / jewelry" },
-    "tiembanh.nangcap": { vi: "Nâng cấp tiệm (tăng tốc nướng & trần doanh thu)", en: "Upgrade the shop (faster baking & higher revenue cap)" },
-    "tiembanh.donhang": { vi: "Xem danh sách đơn hàng VIP đặc biệt hôm nay 📋", en: "View special VIP catering orders today 📋" },
-    "tiembanh.giaodon": { vi: "Giao đơn hàng VIP nhận Xu, EXP, Danh Tiếng 🎁", en: "Deliver a VIP order to earn Coins, EXP, Reputation 🎁" },
-    "noitu.start": { vi: "Bắt đầu ván nối từ ở kênh này", en: "Start a word-chain game in this channel" },
-    "noitu.stop": { vi: "Kết thúc ván nối từ", en: "End the word-chain game" },
-    "noitu.status": { vi: "Xem từ hiện cần nối", en: "See the current word to chain from" },
     "bot.ping": { vi: "Kiểm tra độ trễ & trạng thái của bot", en: "Check the bot's latency & status" },
     "bot.about": { vi: "Giới thiệu Waguri & thông tin nhà phát triển 🌸", en: "About Waguri & developer info 🌸" },
     "bot.support": { vi: "Nhận trợ giúp & vào server hỗ trợ Waguri 🛟", en: "Get help & join the Waguri support server 🛟" },
@@ -514,9 +401,6 @@ const SUBCOMMAND_DESCRIPTIONS = {
     "config.view": { vi: "Xem cấu hình hiện tại của máy chủ", en: "View current server configuration" },
 
     // boi
-    "boi.hangngay": { vi: "Vận mệnh hôm nay của cậu", en: "Your fortune for today" },
-    "boi.cunghoangdao": { vi: "Tử vi theo cung hoàng đạo", en: "Horoscope by zodiac sign" },
-    "boi.thaydo": { vi: "Thầy đồ phán một quẻ (mỗi lần một khác)", en: "Get a random prophecy from the teacher" },
 
     // couple
     "couple.status": { vi: "Xem trạng thái tình cảm hiện tại", en: "View current marriage status" },
@@ -524,16 +408,8 @@ const SUBCOMMAND_DESCRIPTIONS = {
     "couple.divorce": { vi: "Ly hôn", en: "Divorce your partner" },
 
     // action
-    "action.hug": { vi: "Ôm một ai đó", en: "Hug someone" },
-    "action.kiss": { vi: "Hôn một ai đó", en: "Kiss someone" },
-    "action.pat": { vi: "Xoa đầu một ai đó", en: "Pat someone on the head" },
-    "action.poke": { vi: "Chọc ghẹo một ai đó", en: "Poke someone" },
-    "action.slap": { vi: "Tát một ai đó", en: "Slap someone" },
 
     // image
-    "image.cat": { vi: "Xem ảnh mèo dễ thương", en: "View cute cat pictures" },
-    "image.dog": { vi: "Xem ảnh chó dễ thương", en: "View cute dog pictures" },
-    "image.waifu": { vi: "Xem ảnh anime waifu dễ thương", en: "View cute anime waifu pictures" },
 
     // store
     "store.list": { vi: "Xem cửa hàng vật phẩm", en: "View item store" },
@@ -545,34 +421,9 @@ const SUBCOMMAND_DESCRIPTIONS = {
     "pass.buy": { vi: "Mua Sổ Sứ Mệnh Premium", en: "Buy Premium Battle Pass" },
 
     // tiembanh
-    "tiembanh.view": { vi: "Xem tình trạng tiệm bánh của cậu", en: "View Gekka Bakery status" },
-    "tiembanh.open": { vi: "Mở tiệm bánh mới", en: "Open a new Gekka Bakery" },
-    "tiembanh.bake": { vi: "Thu hoạch tiền bánh nướng", en: "Collect baked cake revenues" },
-    "tiembanh.stock": { vi: "Nhập thêm nguyên liệu làm bánh", en: "Fill cake ingredients stock" },
-    "tiembanh.upgrade": { vi: "Nâng cấp tiệm bánh", en: "Upgrade Gekka Bakery level" },
-    "tiembanh.hired": { vi: "Thuê nhân viên mới", en: "Hire a new staff member" },
-    "tiembanh.fired": { vi: "Sa thải nhân viên", en: "Fire a staff member" },
 
     // heo
-    "heo.info": { vi: "Xem tình trạng heo của cậu", en: "View your piggy bank status" },
-    "heo.mua": { vi: "Mua một chú heo con", en: "Buy a new baby pig" },
-    "heo.an": { vi: "Cho heo ăn", en: "Feed your pig" },
-    "heo.tam": { vi: "Tắm cho heo", en: "Bathe your pig" },
-    "heo.ngu": { vi: "Cho heo ngủ", en: "Put your pig to sleep" },
-    "heo.ban": { vi: "Chế biến & bán heo trưởng thành", en: "Process & sell adult pig" },
-    "heo.chuabenh": { vi: "Chữa bệnh cho heo", en: "Heal your sick pig" },
-    "heo.trom": { vi: "Trộm heo trưởng thành của người khác", en: "Steal adult pig from another player" },
-    "heo.box": { vi: "Mở Pigbox may mắn", en: "Open a lucky Pigbox" },
 
-    "trongcay.info": { vi: "Xem tình trạng cây của cậu", en: "View your crop status" },
-    "trongcay.muagiong": { vi: "Mua giống & trồng cây", en: "Buy seed & plant crop" },
-    "trongcay.tuoi": { vi: "Tưới nước cho cây", en: "Water crop" },
-    "trongcay.bonphan": { vi: "Bón phân cho cây nhanh lớn", en: "Fertilize crop to grow instantly" },
-    "trongcay.thuhoach": { vi: "Thu hoạch cây trưởng thành", en: "Harvest crop products" },
-    "trongcay.hoisinh": { vi: "Hồi sinh cây đã chết", en: "Revive dead crop" },
-    "trongcay.phacay": { vi: "Phá cây hiện tại để trồng cây mới", en: "Destroy current crop to replant" },
-    "trongcay.trom": { vi: "Trộm cây trưởng thành của người khác", en: "Steal crop from another player" },
-    "trongcay.box": { vi: "Mở Plantbox may mắn", en: "Open a lucky Plantbox" },
 
     // loto
     "loto.open": { vi: "Mở phòng chơi Loto", en: "Open a Loto lobby" },
@@ -582,26 +433,14 @@ const SUBCOMMAND_DESCRIPTIONS = {
     "loto.end": { vi: "Kết thúc/hủy phòng game Loto", en: "Cancel Loto lobby" },
 
     // bingo
-    "bingo.open": { vi: "Mở phòng chơi Bingo", en: "Open a Bingo lobby" },
-    "bingo.buy": { vi: "Mua vé Bingo", en: "Buy a Bingo ticket" },
-    "bingo.check": { vi: "Kiểm tra vé Bingo của cậu", en: "Check your Bingo ticket" },
-    "bingo.start": { vi: "Bắt đầu game Bingo", en: "Start Bingo game" },
-    "bingo.end": { vi: "Kết thúc/hủy phòng game Bingo", en: "Cancel Bingo lobby" },
 
     // vay
-    "vay.muon": { vi: "Vay tiền từ ngân hàng", en: "Borrow money from bank" },
-    "vay.tra": { vi: "Trả nợ ngân hàng", en: "Repay bank loan" },
-    "vay.doi": { vi: "Thay đổi kỳ hạn", en: "Change loan terms" },
-    "vay.so": { vi: "Xem sổ nợ hiện tại", en: "View current debt log" },
 
     // announcements
     "announcement.view": { vi: "Xem thông báo mới nhất", en: "View latest announcements" },
     "announcement.send": { vi: "Gửi thông báo mới qua Form Modal (chỉ owner)", en: "Send a new announcement via Form Modal (owner only)" },
 
     // worldevent
-    "worldevent.view": { vi: "Xem tiến trình sự kiện co-op hôm nay", en: "View today's co-op event progress" },
-    "worldevent.contribute": { vi: "Đóng góp tài nguyên vào sự kiện chung", en: "Contribute resources to the co-op event" },
-    "worldevent.claim": { vi: "Nhận phần thưởng co-op của ngày", en: "Claim today's co-op reward" },
 
     // cosmetic
     "cosmetic.title": { vi: "Đặt danh hiệu (20.000 VNĐ)", en: "Set profile title (20,000 coins)" },
@@ -620,18 +459,6 @@ const SUBCOMMAND_DESCRIPTIONS = {
     "pet.hatch": { vi: "Ấp trứng nhặt được khi cày để đánh thức loài hiếm 🥚", en: "Hatch an egg found while gathering to awaken a rare species 🥚" },
 
     // clan
-    "clan.create": { vi: "Lập bang mới (tốn 50,000 VNĐ)", en: "Create a new clan (costs 50,000 coins)" },
-    "clan.join": { vi: "Gia nhập một bang", en: "Join an existing clan" },
-    "clan.leave": { vi: "Rời bang", en: "Leave your current clan" },
-    "clan.info": { vi: "Xem thông tin bang", en: "View clan details" },
-    "clan.list": { vi: "Bảng xếp hạng bang (theo quỹ)", en: "Clan leaderboard (by treasury)" },
-    "clan.deposit": { vi: "Góp tiền hoặc tài nguyên vào quỹ bang", en: "Deposit money or resources to clan treasury" },
-    "clan.withdraw": { vi: "Rút quỹ bang (chỉ trưởng bang)", en: "Withdraw from clan treasury (leader only)" },
-    "clan.kick": { vi: "Đuổi thành viên (chỉ trưởng bang)", en: "Kick a member from clan (leader only)" },
-    "clan.invite": { vi: "Bảo lãnh người vào bang — họ nhận cổ tức ngay (chỉ trưởng bang)", en: "Vouch someone into the clan — dividends start immediately (leader only)" },
-    "clan.disband": { vi: "Giải tán bang (chỉ trưởng bang)", en: "Disband the clan (leader only)" },
-    "clan.war": { vi: "Khai chiến với bang khác (chỉ trưởng bang)", en: "Declare war on another clan (leader only)" },
-    "clan.shrine": { vi: "Xây dựng và nâng cấp Đền thờ bang hội để nhận buff EXP 🏛️", en: "Build and upgrade Clan Shrine for EXP buffs 🏛️" },
 
     // bank
     "bank.balance": { vi: "Xem số dư ví, ngân hàng và cấp độ", en: "View wallet, bank balance, and level" },
@@ -639,15 +466,11 @@ const SUBCOMMAND_DESCRIPTIONS = {
     "bank.rut": { vi: "Rút tiền từ ngân hàng về ví", en: "Withdraw money from bank to wallet" },
 
     // henho
-    "henho.view": { vi: "Xem trạng thái tình cảm của cậu với Waguri", en: "View affection status with Waguri" },
-    "henho.di-choi": { vi: "Dắt Waguri đi dạo ngắm cảnh Kikyo (Tốn 20 năng lượng)", en: "Take Waguri out for a walk in Kikyo (Costs 20 energy)" },
-    "henho.tang-qua": { vi: "Tặng quà trong túi đồ để tăng độ thiện cảm", en: "Gift items from inventory to increase affection" },
 
     // jobs
     "jobs.list": { vi: "Xem tất cả các nghề nghiệp", en: "List all available jobs" },
     "jobs.info": { vi: "Xem chi tiết một nghề nghiệp", en: "View detailed information about a job" },
     "jobs.apply": { vi: "Nộp đơn xin việc", en: "Apply for a job" },
-    "jobs.quit": { vi: "Xin nghỉ việc hiện tại", en: "Resign from current job" },
 
     // craft
     "craft.list": { vi: "Xem công thức chế tạo", en: "View crafting recipes" },
@@ -706,27 +529,16 @@ const OPTION_DESCRIPTIONS = {
     "antinuke.whitelist-remove.role": { vi: "Role cần gỡ", en: "Role to remove" },
     "study.start.duration": { vi: "Thời gian học (phút), mặc định 25m ⏱️", en: "Study duration (minutes), default 25m ⏱️" },
     "study.start.title": { vi: "Tên mục tiêu học bài 📖", en: "Study goal title 📖" },
-    "clan.war.clan": { vi: "Tên bang đối thủ", en: "Rival clan's name" },
     "cosmetic.badge-buy.badge": { vi: "Chọn huy hiệu", en: "Choose a badge" },
     "cosmetic.badge-equip.badge": { vi: "Chọn huy hiệu", en: "Choose a badge" },
     "cosmetic.badge-equip.slot": { vi: "Vị trí trưng bày (1..6)", en: "Display slot (1..6)" },
     "craft.make.recipe": { vi: "Món muốn chế", en: "Item to craft" },
     "leaderboard.phamvi": { vi: "Trong server này hay toàn cầu", en: "This server or global" },
     "eco-admin.trace.limit": { vi: "Số dòng (mặc định 20, tối đa 50)", en: "Number of entries (default 20, max 50)" },
-    "market.list.price": { vi: "Giá bán (cả lô)", en: "Sale price (whole lot)" },
-    "market.auction.starting_bid": { vi: "Giá khởi điểm", en: "Starting bid" },
-    "market.auction.min_increment": { vi: "Bước giá tối thiểu", en: "Minimum bid increment" },
-    "market.auction.hours": { vi: "Thời gian đấu giá (giờ)", en: "Auction duration (hours)" },
     "pet.feed.food": { vi: "Chọn loại thức ăn cho bé", en: "Choose food for your pet" },
     "pet.skill-up.skill": { vi: "Chọn kỹ năng", en: "Choose a skill" },
     "pet.hatch.egg": { vi: "Chọn quả trứng", en: "Choose an egg" },
     "repair.tool": { vi: "Chọn công cụ muốn sửa", en: "Choose the tool to repair" },
-    "tiembanh.nhapnl.loai": { vi: "ID nguyên liệu, vd trai_2000 / thit_heo_2500 / ca_tuoi", en: "Ingredient ID, e.g. trai_2000 / thit_heo_2500 / ca_tuoi" },
-    "tiembanh.nhapnl.sl": { vi: "Số lượng", en: "Quantity" },
-    "tiembanh.thue.nhan_vien": { vi: "Nhân vật muốn thuê", en: "Character to hire" },
-    "tiembanh.sathai.nhan_vien": { vi: "Nhân vật muốn sa thải", en: "Character to fire" },
-    "tiembanh.trangtri.vat_pham": { vi: "Nội thất trang trí", en: "Decoration furnishing" },
-    "tiembanh.giaodon.stt": { vi: "Số thứ tự đơn hàng (1, 2 hoặc 3)", en: "Order slot number (1, 2 or 3)" },
     "bakery.nhapnl.loai": { vi: "ID nguyên liệu, vd trai_2000 / thit_heo_2500 / ca_tuoi", en: "Ingredient ID, e.g. trai_2000 / thit_heo_2500 / ca_tuoi" },
     "bakery.nhapnl.sl": { vi: "Số lượng", en: "Quantity" },
     "bakery.thue.nhan_vien": { vi: "Nhân vật muốn thuê", en: "Character to hire" },
@@ -736,10 +548,6 @@ const OPTION_DESCRIPTIONS = {
     "fortune.zodiac.sign": { vi: "Cung của cậu", en: "Your zodiac sign" },
     "lunar.date": { vi: "Ngày dương lịch (dd/mm/yyyy) — bỏ trống = hôm nay", en: "Solar date (dd/mm/yyyy) — leave blank = today" },
     "weather.city": { vi: "Tên thành phố (vd: Hanoi, Da Nang)", en: "City name (e.g. Hanoi, Tokyo)" },
-    "vay.muon.lender": { vi: "Người cậu muốn vay", en: "The person you want to borrow from" },
-    "vay.tra.lender": { vi: "Chủ nợ", en: "Creditor" },
-    "vay.doi.borrower": { vi: "Con nợ", en: "Debtor" },
-    "amlich.ngay": { vi: "Ngày dương lịch (dd/mm/yyyy) — bỏ trống = hôm nay", en: "Solar date (dd/mm/yyyy) — leave blank = today" },
     "lixi.parts": { vi: "Số bao lì xì (mặc định 5)", en: "Number of lucky-money envelopes (default 5)" },
     "loto.join.numbers": { vi: "5 số từ 01-90 (ví dụ: 01 15 27 42 89)", en: "5 numbers from 01-90 (e.g. 01 15 27 42 89)" },
     "event.start.multiplier": { vi: "Hệ số nhân (vd 2)", en: "Multiplier (e.g. 2)" },
@@ -754,32 +562,23 @@ const OPTION_DESCRIPTIONS = {
     "quantity": { vi: "Số lượng vật phẩm/lì xì", en: "Quantity of items" },
     "item": { vi: "Vật phẩm tương tác", en: "Target item" },
     "name": { vi: "Tên cần nhập", en: "Name to input" },
-    "thanh_pho": { vi: "Tên thành phố (vd: Hanoi, Tokyo)", en: "City name (e.g. Hanoi, Tokyo)" },
-    "cung": { vi: "Cung hoàng đạo của cậu", en: "Your zodiac sign" },
     "enabled": { vi: "Trạng thái kích hoạt (Bật/Tắt)", en: "Enabled state (True/False)" },
     "role": { vi: "Role gán tự động", en: "Auto-assigned role" },
     "lang": { vi: "Ngôn ngữ hiển thị (vi/en)", en: "Display language (vi/en)" },
-    "user1": { vi: "Người thứ nhất", en: "First user" },
-    "user2": { vi: "Người thứ hai (bỏ trống = chính cậu)", en: "Second user (empty = yourself)" },
     "type": { vi: "Loại hành động", en: "Type of action" },
     "category": { vi: "Danh mục ảnh", en: "Image category" },
     "message": { vi: "Nội dung tin nhắn/confession", en: "Message/confession content" },
     "channel": { vi: "Kênh văn bản chỉ định", en: "Designated text channel" },
     "hex": { vi: "Mã màu Hex (vd: F1C40F)", en: "Hex color code (e.g. F1C40F)" },
     "text": { vi: "Nội dung văn bản/danh hiệu", en: "Text content/title" },
-    "id": { vi: "ID hoặc mã định danh", en: "ID or unique identifier" },
     "species": { vi: "Loài thú cưng", en: "Pet species" },
-    "resource": { vi: "Tên tài nguyên", en: "Resource name" },
 
     // Specific option translations using parentName.optionName
     "bank.balance.target": { vi: "Người muốn xem (mặc định: bạn)", en: "Player to view (default: yourself)" },
     "bank.gui.amount": { vi: "Số tiền hoặc \"all\"", en: "Amount of money or \"all\"" },
     "bank.rut.amount": { vi: "Số tiền hoặc \"all\"", en: "Amount of money or \"all\"" },
-    "henho.tang-qua.item": { vi: "Chọn quà muốn tặng", en: "Choose gift item" },
     "jobs.info.job": { vi: "Mã nghề cần xem", en: "Job ID to view" },
     "jobs.apply.job": { vi: "Mã nghề muốn ứng tuyển", en: "Job ID to apply" },
-    "craft.make.item": { vi: "Vật phẩm muốn chế tạo", en: "Item ID to craft" },
-    "craft.make.qty": { vi: "Số lượng chế tạo", en: "Quantity to craft" },
     "premium-admin.duyet.ma": { vi: "Mã đơn (nội dung CK, vd WAGURI...)", en: "Order code (e.g. WAGURI...)" },
     "getinvite.server": { vi: "Server cần lấy link mời (bỏ trống = hiện tại)", en: "Server to invite (empty = current server)" },
     "eco-admin.addmoney.field": { vi: "Ví hay ngân hàng", en: "Wallet or bank" },
