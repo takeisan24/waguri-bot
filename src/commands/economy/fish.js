@@ -1,5 +1,4 @@
 const { SlashCommandBuilder } = require('discord.js');
-const db = require('../../database.js');
 const config = require('../../config');
 const FISH = require('../../data/fish');
 const { t } = require('../../lib/i18n');
@@ -15,49 +14,39 @@ const FISH_NAMES = {
     'Rương kho báu': { en: 'Treasure Chest', vi: 'Rương kho báu' }
 };
 
-// Cấp vật phẩm rồi CHỈ khoe khi cấp được THẬT.
-//
-// `giveItemAdmin` trả `false`/`null` khi DB lỗi. Bản cũ bỏ hẳn giá trị đó, nên lúc Supabase
-// chập chờn người chơi được báo "Giỏ cá có thêm 1× Cá Rồng Kim Long 👑 (vật phẩm Sử Thi siêu
-// hiếm!)" mà giỏ trống. Nặng hơn một lời báo lỗi sai: LƯỢT CÂU ĐÃ BỊ TIÊU, nên cú may hiếm
-// đó mất luôn chứ không phải chỉ bối rối rồi thử lại.
-//
-// `discoverItem` chỉ đánh dấu đã khám phá (bộ sưu tập) — hỏng thì không mất gì, nên không chặn.
-async function traoCa(userId, itemId) {
-    const ok = await db.giveItemAdmin(userId, itemId, 1);
-    if (!ok) return false;
-    await db.discoverItem(userId, itemId);
-    return true;
-}
+// Cấp vật phẩm rồi CHỈ khoe khi cấp được THẬT — nay đi qua `moSoTrao` ở lib/gather.js, một
+// cửa dùng chung với /mine và /chop. Bản `traoCa` cục bộ trước đây CÓ kiểm kết quả (nên
+// /fish không nói sai), nhưng không ghi log và không nói gì với người chơi: mẻ Cá Rồng Kim
+// Long 0,1% hụt thì biến mất không dấu vết, trong khi LƯỢT CÂU ĐÃ BỊ TIÊU.
 
 // Drop nguyên liệu Tiệm Bánh Gekka theo loại cá — copy nguyên văn từ fish.js cũ.
-async function fishDrops({ userId, c, userPet, locale }) {
+async function fishDrops({ userId, c, userPet, locale, so }) {
     const en = !!locale?.startsWith('en');
     let desc = '';
     let daTrao = false;   // cấp được món vừa rồi hay không
     if (c.max > 0) {
         const rand = Math.random();
         if (c.name === 'Cá lòng tong' && rand < 0.35) {
-            daTrao = await traoCa(userId, 'ca_tuoi');
+            daTrao = await so.trao(userId, 'ca_tuoi', 1, 'fish');
             const iName = t(locale, 'data.items.ca_tuoi.name') || 'Cá Tươi';
             if (daTrao) desc += en
                 ? `\n🐟 Your bucket has **1× ${iName}** *(ingredient for \`/bakery\`)*`
                 : `\n🐟 Giỏ cá có thêm **1× Cá Tươi** *(nguyên liệu \`/bakery\`)*`;
         } else if (c.name === 'Cá rô phi' && rand < 0.45) {
-            daTrao = await traoCa(userId, 'ca_tuoi');
+            daTrao = await so.trao(userId, 'ca_tuoi', 1, 'fish');
             const iName = t(locale, 'data.items.ca_tuoi.name') || 'Cá Tươi';
             if (daTrao) desc += en
                 ? `\n🐟 Your bucket has **1× ${iName}** *(ingredient for \`/bakery\`)*`
                 : `\n🐟 Giỏ cá có thêm **1× Cá Tươi** *(nguyên liệu \`/bakery\`)*`;
         } else if (c.name === 'Cá lóc bự') {
             if (rand < 0.30) {
-                daTrao = await traoCa(userId, 'ca_ngon');
+                daTrao = await so.trao(userId, 'ca_ngon', 1, 'fish');
                 const iName = t(locale, 'data.items.ca_ngon.name') || 'Cá Ngon';
                 if (daTrao) desc += en
                     ? `\n✨ Your bucket has **1× ${iName}** *(special bakery ingredient!)*`
                     : `\n✨ Giỏ cá có thêm **1× Cá Ngon** *(nguyên liệu làm bánh đặc biệt!)*`;
             } else if (rand < 0.70) {
-                daTrao = await traoCa(userId, 'ca_tuoi');
+                daTrao = await so.trao(userId, 'ca_tuoi', 1, 'fish');
                 const iName = t(locale, 'data.items.ca_tuoi.name') || 'Cá Tươi';
                 if (daTrao) desc += en
                     ? `\n🐟 Your bucket has **1× ${iName}** *(ingredient for \`/bakery\`)*`
@@ -73,19 +62,19 @@ async function fishDrops({ userId, c, userPet, locale }) {
 
             const dropRates = config.COLLECTIONS?.DROP_RATES || { FISH_CA_RONG_VANG: 0.10 };
             if (rand < (dropRates.FISH_CA_RONG_VANG + fishingLuckBuff)) {
-                daTrao = await traoCa(userId, 'ca_rong_vang');
+                daTrao = await so.trao(userId, 'ca_rong_vang', 1, 'fish');
                 const iName = t(locale, 'data.items.ca_rong_vang.name') || 'Cá Rồng Kim Long';
                 if (daTrao) desc += en
                     ? `\n🏮 Your bucket has **1× ${iName}** 👑 *(super rare Epic item!)*`
                     : `\n🏮 Giỏ cá có thêm **1× Cá Rồng Kim Long** 👑 *(vật phẩm Sử Thi siêu hiếm!)*`;
             } else if (rand < 0.40) {
-                daTrao = await traoCa(userId, 'ca_hiem');
+                daTrao = await so.trao(userId, 'ca_hiem', 1, 'fish');
                 const iName = t(locale, 'data.items.ca_hiem.name') || 'Cá Hiếm';
                 if (daTrao) desc += en
                     ? `\n🌟 Your bucket has **1× ${iName}** *(rare ingredient for bakery!)*`
                     : `\n🌟 Giỏ cá có thêm **1× Cá Hiếm** *(nguyên liệu siêu hiếm cho tiệm!)*`;
             } else {
-                daTrao = await traoCa(userId, 'ca_ngon');
+                daTrao = await so.trao(userId, 'ca_ngon', 1, 'fish');
                 const iName = t(locale, 'data.items.ca_ngon.name') || 'Cá Ngon';
                 if (daTrao) desc += en
                     ? `\n✨ Your bucket has **1× ${iName}** *(special bakery ingredient!)*`
@@ -101,7 +90,7 @@ async function fishDrops({ userId, c, userPet, locale }) {
 
             const dropRates = config.COLLECTIONS?.DROP_RATES || { FISH_CA_KOI_NHAT: 0.10 };
             if (rand < (dropRates.FISH_CA_KOI_NHAT + fishingLuckBuff)) {
-                daTrao = await traoCa(userId, 'ca_koi_nhat');
+                daTrao = await so.trao(userId, 'ca_koi_nhat', 1, 'fish');
                 const iName = t(locale, 'data.items.ca_koi_nhat.name') || 'Cá Koi Hoàng Gia';
                 if (daTrao) desc += en
                     ? `\n👑 Your bucket has **1× ${iName}** ⭐ *(super rare LEGENDARY item!)*`

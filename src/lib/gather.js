@@ -10,6 +10,49 @@ const { getInteractionLanguage, t } = require('./i18n');
 const { petBuffValue, petRarity, findSpecies, EGGS } = require('../data/pets');
 
 /**
+ * MỘT CỬA trao vật phẩm cho cả ba hoạt động cày cuốc, và là chỗ duy nhất biết "trao hụt".
+ *
+ * VÌ SAO CÓ: `giveItemAdmin` trả `false`/`null` khi DB lỗi. Bốn chỗ trong tệp này từng bỏ
+ * trôi giá trị đó rồi KHOE THẲNG tên món trong chữ trả về — kho trống mà người chơi đọc
+ * "Đất đá sụt lở để lộ ra: 1× Vàng Đông Triều". Nặng hơn một lời báo sai: NĂNG LƯỢNG VÀ ĐỘ
+ * BỀN CÔNG CỤ ĐÃ BỊ TIÊU, và với hai món 1% / 0,5% thì cú may hàng tuần mất luôn.
+ *
+ * Một lượt cày có thể trao tới ba món (nguyên liệu + quặng hiếm + trứng thú cưng), nên sổ
+ * GOM các món hụt rồi `canhBao()` nói ĐÚNG MỘT LẦN ở cuối — ba dòng cảnh báo giống nhau
+ * còn khó hiểu hơn là không nói.
+ *
+ * KHÔNG BAO GIỜ trao lại: `false` có thể là timeout SAU khi DB đã ghi xong, trao lại là
+ * nhân đôi. Chỉ báo cho người chơi đi đối chiếu `/inventory`.
+ */
+function moSoTrao(locale) {
+    const hut = [];
+    return {
+        /** @returns {Promise<boolean>} true = kho đã nhận THẬT, chỉ khi đó mới được khoe. */
+        async trao(userId, itemId, qty = 1, nhan = '') {
+            if ((await db.giveItemAdmin(userId, itemId, qty)) === true) {
+                // `discoverItem` chỉ đánh dấu bộ sưu tập — hỏng thì không mất gì, không chặn.
+                await db.discoverItem(userId, itemId);
+                return true;
+            }
+            // Tra tên CHỈ ở đường hỏng: đường thành công không tốn thêm lượt đọc DB nào.
+            const it = await db.getItem(itemId);
+            const ten = t(locale, `data.items.${itemId}.name`) || it?.name || itemId;
+            hut.push(qty > 1 ? `${qty}× ${ten}` : ten);
+            console.error(`[PAYOUT FAIL] gather${nhan ? `-${nhan}` : ''} user=${userId} item=${itemId} qty=${qty}`);
+            return false;
+        },
+        /** Chữ cảnh báo cho cả lượt, hoặc '' nếu không hụt món nào. */
+        canhBao() {
+            if (!hut.length) return '';
+            // Kèm TÊN món: câu `common.item_unconfirmed` chỉ nói "có món chưa ghi nhận xong",
+            // không nói món nào — mà đúng cái tên mới là thứ người chơi cần để đối chiếu.
+            return `${t(locale, 'common.item_unconfirmed')}\n> ${hut.join(' · ')}`;
+        },
+        get hut() { return hut; },
+    };
+}
+
+/**
  * Trứng thú cưng — rơi ở CẢ `/fish` `/mine` `/chop`. Đặt ở đây (một chỗ) thay vì nhân bản
  * vào ba `onDrops`, để ba hoạt động không bao giờ lệch tỉ lệ nhau.
  *
@@ -20,12 +63,12 @@ const { petBuffValue, petRarity, findSpecies, EGGS } = require('../data/pets');
  * Tỉ lệ neo vào thang rơi sẵn có (Vàng Đông Triều 1,0% · Kỳ Nam 0,5% · Cá Koi thực tế 0,1%)
  * — xem chú thích EGGS trong src/data/pets.js.
  */
-async function rollPetEgg(userId, locale, en) {
+async function rollPetEgg(userId, locale, en, so) {
     for (const id of ['trung_than_thoai', 'trung_huyen_thoai', 'trung_su_thi']) {
         const egg = EGGS[id];
         if (Math.random() >= egg.rate) continue;
-        await db.giveItemAdmin(userId, id, 1);
-        await db.discoverItem(userId, id);
+        // Trao hụt thì KHÔNG khoe quả trứng; `so.canhBao()` nói ở cuối lượt kèm tên.
+        if (!await so.trao(userId, id, 1, 'pet-egg')) return '';
         // `|| it?.name` là bắt buộc: vi.json cố tình không dịch `data.items.*`, tên tiếng
         // Việt nằm ở cột `items.name`. Thiếu nhánh này là in ra mã máy `trung_than_thoai`.
         const it = await db.getItem(id);
@@ -81,6 +124,7 @@ async function runGather(interaction, opts) {
     const userId = interaction.user.id;
     const locale = await getInteractionLanguage(interaction);
     const en = !!locale?.startsWith('en');
+    const so = moSoTrao(locale);
     const toolNameTrans = en ? tool.nameEn : tool.name;
     const headerTitle = title(en);                       // tiêu đề embed KẾT QUẢ
     const errTitle = (errorTitle || title)(en);          // tiêu đề các embed LỖI (mặc định = title)
@@ -192,10 +236,10 @@ async function runGather(interaction, opts) {
     if (dz.note) desc += `\n${dz.note}`;
 
     // Drop đặc thù theo hoạt động (copy nguyên văn từ lệnh gốc)
-    desc += await onDrops({ userId, c, userPet, locale, payout });
+    desc += await onDrops({ userId, c, userPet, locale, payout, so });
 
     // Trứng thú cưng: chung cho cả ba hoạt động cày cuốc.
-    desc += await rollPetEgg(userId, locale, en);
+    desc += await rollPetEgg(userId, locale, en, so);
 
     // Dòng độ bền công cụ
     desc += toolLine(toolNameTrans, tool, toolResult, en);
@@ -237,6 +281,10 @@ async function runGather(interaction, opts) {
             desc += t(locale, 'commands.daily.bp_levelup', { level: bpRes.newLevel });
         }
     }
+
+    // Món trao hụt: nói MỘT lần, ở CUỐI, sau mọi dòng drop — chen vào giữa thì người chơi
+    // không biết cảnh báo đang nói về dòng nào.
+    desc += so.canhBao();
 
     const fieldWalletName = en ? '💵 Wallet Balance' : '💵 Số dư ví';
     const fieldXpName = en ? 'Experience' : 'Kinh nghiệm';
@@ -333,7 +381,7 @@ function runResourceGather(interaction, { key, title, table }) {
                 ? `\n${toolNameTrans} durability: **${toolResult.durability}/100** ${tl.emoji}${brokenStr}`
                 : `\nĐộ bền ${toolNameTrans}: **${toolResult.durability}/100** ${tl.emoji}${brokenStr}`;
         },
-        onDrops: async ({ userId, c, userPet, locale }) => {
+        onDrops: async ({ userId, c, userPet, locale, so }) => {
             const en = !!locale?.startsWith('en');
             let out = '';
             const DROPS = { mine: ['quang_sat', 'da'], chop: ['go'] };
@@ -349,15 +397,15 @@ function runResourceGather(interaction, { key, title, table }) {
                         const doubleChance = doubleGemLvl === 1 ? 0.15 : 0.35;
                         if (Math.random() < doubleChance) { qty = 2; doubleGemSuccess = true; }
                     }
-                    await db.giveItemAdmin(userId, matId, qty);
-                    await db.discoverItem(userId, matId);
+                    const daTrao = await so.trao(userId, matId, qty, 'material');
                     const it = await db.getItem(matId);
                     const itNameTrans = t(locale, `data.items.${matId}.name`) || it?.name || matId;
-                    if (doubleGemSuccess) {
+                    // Chỉ KHOE khi kho đã nhận THẬT (xem moSoTrao ở đầu tệp).
+                    if (daTrao && doubleGemSuccess) {
                         out += en
                             ? `\n🎒 Picked up: **${qty}× ${itNameTrans}** *(for \`/craft\` - ⛏️ Pet Double Ores!)*`
                             : `\n🎒 Nhặt thêm: **${qty}× ${itNameTrans}** *(để \`/craft\` - ⛏️ Pet Nhân đôi Quặng!)*`;
-                    } else {
+                    } else if (daTrao) {
                         out += en
                             ? `\n🎒 Picked up: **${qty}× ${itNameTrans}** *(for \`/craft\`)*`
                             : `\n🎒 Nhặt thêm: **${qty}× ${itNameTrans}** *(để \`/craft\`)*`;
@@ -370,19 +418,15 @@ function runResourceGather(interaction, { key, title, table }) {
                 let rareChanceMult = 1;
                 if (key === 'mine' && doubleGemLvl > 0) rareChanceMult += doubleGemLvl * 0.10;
                 if (key === 'mine' && Math.random() < (dropRates.MINE_VANG_DONG_TRIEU * rareChanceMult)) {
-                    await db.giveItemAdmin(userId, 'vang_dong_tren', 1);
-                    await db.discoverItem(userId, 'vang_dong_tren');
                     const iName = t(locale, 'data.items.vang_dong_tren.name') || 'Vàng Đông Triều';
-                    out += en
+                    if (await so.trao(userId, 'vang_dong_tren', 1, 'rare-ore')) out += en
                         ? `\n✨ The rubble collapsed to reveal: **1× ${iName}** 🟡 *(Rare Ore!)*`
-                        : `\n✨ Đất đá sụt lở để lộ ra: **1× Vàng Đông Triều** 🟡 *(Quặng hiếm!)*`;
+                        : `\n✨ Đất đá sụt lở để lộ ra: **1× ${iName}** 🟡 *(Quặng hiếm!)*`;
                 } else if (key === 'chop' && Math.random() < dropRates.CHOP_KY_NAM) {
-                    await db.giveItemAdmin(userId, 'ky_nam', 1);
-                    await db.discoverItem(userId, 'ky_nam');
                     const iName = t(locale, 'data.items.ky_nam.name') || 'Kỳ Nam';
-                    out += en
+                    if (await so.trao(userId, 'ky_nam', 1, 'rare-wood')) out += en
                         ? `\n🌲 Tree sap condensed into: **1× ${iName}** 🌟 *(Epic Wood!)*`
-                        : `\n🌲 Nhựa cây tụ lại thành khối: **1× Kỳ Nam** 🌟 *(Gỗ Sử Thi cực hiếm!)*`;
+                        : `\n🌲 Nhựa cây tụ lại thành khối: **1× ${iName}** 🌟 *(Gỗ Sử Thi cực hiếm!)*`;
                 }
             }
             return out;
@@ -390,4 +434,4 @@ function runResourceGather(interaction, { key, title, table }) {
     });
 }
 
-module.exports = { runGather, runResourceGather, fmt };
+module.exports = { runGather, runResourceGather, fmt, moSoTrao };

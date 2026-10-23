@@ -99,8 +99,12 @@ async function sleepPig(userId, locale) {
     }
     if (!timeReady(pig)) return warn(t(locale, 'pig.sleep_cooldown', { time: waitMins(pig) }), locale);
     if (await db.pigSetStage(userId, 'bathed', 'slept')) {
-        await db.giveItemAdmin(userId, 'phan_bon', 1); // phụ phẩm: nhặt được phân để bón cây
-        return ok(t(locale, 'pig.sleep_success'), locale);
+        // Phụ phẩm: nhặt được phân để bón cây. Giai đoạn ĐÃ chuyển sang 'slept' và không lùi
+        // lại được, nên trao hụt là mất hẳn phần phân — phải NÓI ra, và không trao lại.
+        const daTrao = (await db.giveItemAdmin(userId, 'phan_bon', 1)) === true;
+        if (!daTrao) console.error(`[PAYOUT FAIL] pig-sleep user=${userId} item=phan_bon`);
+        return ok(t(locale, 'pig.sleep_success')
+            + (daTrao ? '' : t(locale, 'common.item_unconfirmed')), locale);
     }
     return warn(t(locale, 'pig.sleep_failed'), locale);
 }
@@ -174,8 +178,18 @@ async function stealPig(thiefId, target, guildId, locale) {
     if (Math.random() < STEAL.SUCCESS) {
         const claim = await db.pigClaimSale(target.id, Math.floor(TIMINGS.STEAL_AGE_MS / 1000));
         if (claim.result === 'ok') {
-            await db.giveItemAdmin(thiefId, MEAT[claim.tier], 1);
-            return ok(t(locale, 'pig.steal_success', { user: target.id }), locale);
+            // `pigClaimSale` ĐÃ XOÁ con heo CỦA NGƯỜI KHÁC. Trao hụt ở đây là phá tài sản của
+            // họ mà kẻ trộm cũng không được gì — ca nặng nhất của lớp lỗi này trong repo, vì
+            // nó mất mát CHÉO giữa hai người chơi. Không trao lại: `false` có thể là timeout
+            // sau khi DB đã ghi.
+            const meatId = MEAT[claim.tier];
+            const daTrao = (await db.giveItemAdmin(thiefId, meatId, 1)) === true;
+            if (!daTrao) {
+                console.error(`[PAYOUT FAIL] pig-steal thief=${thiefId} victim=${target.id} `
+                    + `item=${meatId} tier=${claim.tier} (heo của nạn nhân ĐÃ bị xoá)`);
+            }
+            return ok(t(locale, 'pig.steal_success', { user: target.id })
+                + (daTrao ? '' : t(locale, 'common.item_unconfirmed')), locale);
         }
         return warn(t(locale, 'pig.steal_failed_already_sold'), locale);
     }

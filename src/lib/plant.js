@@ -158,8 +158,16 @@ async function stealPlant(thiefId, target, guildId, locale) {
     if (Math.random() < STEAL.SUCCESS) {
         const claim = await db.plantClaim(target.id, secs(TIMINGS.STEAL_MIN_MS), secs(TIMINGS.PEST_MAX_MS));
         if (claim.result === 'ok') {
-            await db.giveItemAdmin(thiefId, produceId(claim.tier, claim.is_flower), 1);
-            return ok(t(locale, 'plant.steal_success', { user: target.id }), locale);
+            // `plantClaim` ĐÃ TIÊU cái cây CỦA NGƯỜI KHÁC. Xem chú thích ở stealPig: mất mát
+            // chéo giữa hai người chơi, nên phải nói ra và tuyệt đối không trao lại.
+            const nongSan = produceId(claim.tier, claim.is_flower);
+            const daTrao = (await db.giveItemAdmin(thiefId, nongSan, 1)) === true;
+            if (!daTrao) {
+                console.error(`[PAYOUT FAIL] plant-steal thief=${thiefId} victim=${target.id} `
+                    + `item=${nongSan} tier=${claim.tier} (cây của nạn nhân ĐÃ bị tiêu)`);
+            }
+            return ok(t(locale, 'plant.steal_success', { user: target.id })
+                + (daTrao ? '' : t(locale, 'common.item_unconfirmed')), locale);
         }
         if (claim.result === 'pest') return warn(t(locale, 'plant.steal_failed_pest'), locale);
         return warn(t(locale, 'plant.steal_failed_already_harvested'), locale);
