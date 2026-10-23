@@ -1160,7 +1160,7 @@
       "title": "🌸・Chào mừng cậu đến với Waguri!",
       "desc": "Rất vui được làm quen với cậu~ Mình sẽ dắt cậu vài bước đầu nha:\n\n**1.** 🎁 `/daily` — điểm danh nhận thưởng mỗi ngày (có chuỗi streak!)\n**2.** 💼 `/work` — đi làm kiếm tiền, rồi `/jobs` xin nghề xịn hơn\n**3.** 📖 `/help` — xem mọi thứ mình có thể giúp cậu\n\n{bonus}",
       "onboarded_msg": "*(Cậu đã nhận quà chào mừng rồi nha~ Cứ thoải mái khám phá nhé! 💕)*",
-      "claim_prompt": "Bấm nút bên dưới để nhận **{bonus} {currency} quà chào mừng** từ mình nè! 💝",
+      "claim_prompt": "Bấm nút bên dưới để nhận **{bonus} {currency} quà chào mừng** từ mình nè! 💝\n-# 🛡️ Quà chào mừng cần tài khoản Discord được tạo từ ít nhất **7 ngày** trước (chống clone).",
       "btn_label": "🎁 Nhận quà chào mừng",
       "claim_success_title": "💝・Nhận quà thành công!",
       "claim_success_desc": "Waguri tặng cậu **{bonus}** {currency} làm vốn nha~ Chúc cậu có những giây phút thật vui vẻ cùng mình! 💕",

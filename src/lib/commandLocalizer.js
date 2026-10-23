@@ -95,12 +95,12 @@ const COMMAND_DESCRIPTIONS = {
         en: "Craft tools and items from wood/ore/stone 🔨"
     },
     "repair": {
-        vi: "Sửa công cụ khai thác bị hỏng 🔧",
-        en: "Repair broken harvesting tools 🔧"
+        vi: "Sửa công cụ khai thác bị hỏng 🔧 (chi phí 15% giá mua)",
+        en: "Repair broken harvesting tools 🔧 (costs 15% of shop price)"
     },
     "hospital": {
-        vi: "Nhập viện hồi phục sức khỏe 🏥",
-        en: "Go to hospital to recover health 🏥"
+        vi: "Nhập viện hồi phục sức khỏe 🏥 (viện phí cố định 3.000 xu, trừ ví trước rồi tới ngân hàng)",
+        en: "Hospital treatment 🏥 (flat 3,000 coin fee, taken from wallet first then bank)"
     },
 
     // Giao dịch & Ngân hàng
@@ -203,8 +203,8 @@ const COMMAND_DESCRIPTIONS = {
         en: "Economy administration commands (Owner only) ⚙️"
     },
     "getinvite": {
-        vi: "Lấy link mời Waguri tham gia máy chủ của cậu 🔗",
-        en: "Get invite link for Waguri to join your server 🔗"
+        vi: "Bot tạo link mời một server rồi DM cho owner 🔗 (chỉ cho Owner bot)",
+        en: "Bot creates a server invite and DMs it to the owner 🔗 (bot Owner only)"
     },
     "premium-admin": {
         vi: "Quản trị cấp phát gói Premium (chỉ cho Owner bot) ⚙️",
@@ -228,12 +228,12 @@ const COMMAND_DESCRIPTIONS = {
         en: "View bot system details and configurations 🤖"
     },
     "deletedata": {
-        vi: "Xóa toàn bộ dữ liệu chơi game của cậu (tuân thủ GDPR) ❌",
-        en: "Delete all your game data (GDPR compliant) ❌"
+        vi: "Xóa toàn bộ dữ liệu chơi game của cậu — KHÔNG HOÀN TÁC được (tuân thủ GDPR) ❌",
+        en: "Delete all your game data — CANNOT BE UNDONE (GDPR compliant) ❌"
     },
     "event": {
-        vi: "Xem sự kiện nạp tiền/kinh tế đang diễn ra 🎉",
-        en: "View active top-up/economy events 🎉"
+        vi: "Xem sự kiện nhân thu nhập/EXP đang diễn ra 🎉 (bật/tắt chỉ cho Owner bot)",
+        en: "View active income/EXP multiplier events 🎉 (toggling is bot Owner only)"
     },
     "help": {
         vi: "Xem danh sách và hướng dẫn sử dụng các lệnh 📜",
@@ -244,8 +244,8 @@ const COMMAND_DESCRIPTIONS = {
         en: "View connection status & latency 🛰️"
     },
     "start": {
-        vi: "Nhận quà chào mừng và bắt đầu hành trình cùng Waguri 🎁",
-        en: "Claim your welcome gift and start your journey 🎁"
+        vi: "Nhận quà chào mừng và bắt đầu hành trình cùng Waguri 🎁 (quà cần tài khoản ≥ 7 ngày tuổi)",
+        en: "Claim your welcome gift and start your journey 🎁 (gift needs an account 7+ days old)"
     },
     "ticket": {
         vi: "Hệ thống hỗ trợ riêng tư với Staff Waguri 🌸",
@@ -316,7 +316,7 @@ const COMMAND_DESCRIPTIONS = {
 const SUBCOMMAND_DESCRIPTIONS = {
     // bakery
     "bakery.xem": { vi: "Xem tình trạng tiệm bánh của cậu", en: "Check your bakery's status" },
-    "bakery.mo": { vi: "Mở tiệm bánh Gekka (Cấp 3 + 3.000 xu)", en: "Open a Gekka bakery (requires Lv.3 + 3,000 coins)" },
+    "bakery.mo": { vi: "Mở tiệm bánh Gekka (Cấp 3 + 3.000 xu + Bộ Dụng Cụ Làm Bánh)", en: "Open a Gekka bakery (Lv.3 + 3,000 coins + a Baking Tool Set)" },
     "bakery.nhapnl": { vi: "Nhập nguyên liệu (lúa mì, dâu tây, bột) vào tiệm", en: "Stock ingredients (wheat, strawberries, flour) into the shop" },
     "bakery.thu": { vi: "Thu doanh thu tiệm về ví (có thể ra bánh!)", en: "Collect the shop's revenue to your wallet (may yield cakes!)" },
     "bakery.thue": { vi: "Thuê nhân viên NPC phụ tiệm", en: "Hire an NPC staff member to help at the shop" },
@@ -333,14 +333,14 @@ const SUBCOMMAND_DESCRIPTIONS = {
 
     // farm
     "farm.info": { vi: "Xem tình trạng cây nông sản của cậu", en: "View your crop status" },
-    "farm.muagiong": { vi: "Mua giống & gieo hạt nông sản", en: "Buy seed & plant crop" },
+    "farm.muagiong": { vi: "Mua giống & gieo hạt nông sản (500 xu)", en: "Buy seed & plant crop (500 coins)" },
     "farm.tuoi": { vi: "Tưới nước cho cây", en: "Water crop" },
-    "farm.bonphan": { vi: "Bón phân cho cây nhanh lớn", en: "Fertilize crop to grow instantly" },
+    "farm.bonphan": { vi: "Bón phân cho cây nhanh lớn (200 xu, miễn phí nếu có sẵn phân)", en: "Fertilize crop to grow instantly (200 coins, free if you own fertilizer)" },
     "farm.thuhoach": { vi: "Thu hoạch nông sản làm bánh", en: "Harvest crop products for baking" },
-    "farm.hoisinh": { vi: "Hồi sinh cây đã héo", en: "Revive withered crop" },
+    "farm.hoisinh": { vi: "Hồi sinh cây đã héo (1.000 xu)", en: "Revive withered crop (1,000 coins)" },
     "farm.phacay": { vi: "Phá cây hiện tại để trồng cây mới", en: "Destroy current crop to replant" },
     "farm.trom": { vi: "Trộm cây trưởng thành của người khác", en: "Steal crop from another player" },
-    "farm.box": { vi: "Mở Plantbox may mắn", en: "Open a lucky Plantbox" },
+    "farm.box": { vi: "Mở Plantbox may mắn (600 xu)", en: "Open a lucky Plantbox (600 coins)" },
 
     // loan
     "loan.borrow": { vi: "Vay vốn từ Quỹ Tín Dụng Học Đường Kikyo (hạn mức theo Cấp)", en: "Borrow coins from Kikyo Student Credit Fund (limit based on Level)" },
@@ -414,7 +414,7 @@ const SUBCOMMAND_DESCRIPTIONS = {
     // store
     "store.list": { vi: "Xem cửa hàng vật phẩm", en: "View item store" },
     "store.buy": { vi: "Mua vật phẩm từ cửa hàng", en: "Buy items from the store" },
-    "store.sell": { vi: "Bán vật phẩm trong kho đồ", en: "Sell items from your inventory" },
+    "store.sell": { vi: "Bán vật phẩm trong kho đồ theo giá chợ (quanh 50% giá mua, biến động 4 tiếng/lần)", en: "Sell inventory items at market price (around 50% of shop price, shifts every 4h)" },
 
     // pass
     "pass.view": { vi: "Xem tiến trình Sổ Sứ Mệnh hiện tại", en: "View current Battle Pass progress" },
@@ -503,7 +503,7 @@ const SUBCOMMAND_DESCRIPTIONS = {
     "study.shop": { vi: "Tiệm Tri Thức — Đổi Điểm Tri Thức lấy vật phẩm & danh hiệu 🛒", en: "Knowledge Shop — Exchange Study Points for items & titles 🛒" },
 
     // announcement
-    "announcement.clear": { vi: "Xóa bản tin thông báo hiện tại 🗑️", en: "Clear current announcement 🗑️" }
+    "announcement.clear": { vi: "Xóa bản tin thông báo hiện tại 🗑️ (chỉ cho Owner bot)", en: "Clear current announcement 🗑️ (bot Owner only)" }
 };
 
 const OPTION_DESCRIPTIONS = {

@@ -1160,7 +1160,7 @@
       "title": "🌸・Welcome to Waguri!",
       "desc": "Nice to meet you~ Let me guide you through the first few steps:\n\n**1.** 🎁 `/daily` — check-in for daily rewards (with a streak bonus!)\n**2.** 💼 `/work` — go to work to earn money, then check `/jobs` to get a better job\n**3.** 📖 `/help` — view all the commands I support\n\n{bonus}",
       "onboarded_msg": "*(You have already claimed your welcome gift~ Feel free to explore! 💕)*",
-      "claim_prompt": "Click the button below to claim a **{bonus} {currency} welcome gift** from me! 💝",
+      "claim_prompt": "Click the button below to claim a **{bonus} {currency} welcome gift** from me! 💝\n-# 🛡️ The welcome gift requires a Discord account created at least **7 days** ago (anti-clone).",
       "btn_label": "🎁 Claim welcome gift",
       "claim_success_title": "💝・Welcome Gift Claimed!",
       "claim_success_desc": "Waguri presents you **{bonus}** {currency} as starting capital~ Have a wonderful time with me! 💕",
