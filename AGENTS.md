@@ -77,9 +77,16 @@ Waguri là **Discord economy/RPG bot bản địa hóa văn hóa Việt**. Bot N
 
 ---
 
-## 4. TRẠNG THÁI HIỆN TẠI (cập nhật 2026-09-25 — sửa khi đổi lớn)
+## 4. TRẠNG THÁI HIỆN TẠI (cập nhật 2026-10-23 — sửa khi đổi lớn)
 
 - **Release:** GitHub tag mới nhất `v2.6.0` ("Architectural Restructure: Standardize 72 Commands, Prune Dead Minigames, Kikyo Credit Fund & Gekka Bakery Flow"). `package.json` = `2.6.0`.
+- **🧹 Dọn dẹp mô tả lệnh & khoá localizer chết — XONG 5/5 đợt của `docs/spec-don-dep-2026-08-29.md` (2026-10-23, `origin/master` = `ba3a41b`):**
+  - ⚠️ **CẦN ĐĂNG KÝ LẠI LỆNH một lần** (restart với `SKIP_DEPLOY` ≠ `1`). Đợt này đổi mô tả lệnh; không đăng ký lại thì Discord giữ mô tả CŨ và mọi thay đổi vô hình.
+  - **GỐC RỄ CHUNG, đính chính mục "Chuẩn hoá 72 lệnh" bên dưới:** lần đó đổi tên **LỆNH** sang tiếng Anh nhưng **KHÔNG đổi tên SUBCOMMAND**. Sub vẫn là tiếng Việt (`/bakery xem · mo · nhapnl · thu`, `/farm muagiong · tuoi · bonphan · thuhoach`). Mục đó ghi "ĐÃ HOÀN THÀNH 100%" — đúng ở tầng lệnh, **sai ở tầng subcommand**. Đổi tên sub là việc KHÁC, chưa làm (nó đổi thứ người chơi gõ).
+  - Hậu quả đã vá: `/help` từng dạy **15 tên sub không tồn tại**; **135/435 khoá `commandLocalizer` là khoá chết** (32%, đã xoá, chứng minh đầu ra giống nhau từng byte); nhãn dropdown `/help` **trượt nhóm** (bấm "Quản trị" lại mở "Khác") vì mảng i18n có 11 mục cho 9 nhóm; `/work` đọc kịch bản tiệm bánh cho nhầm nghề; localizer nuốt giá (giống 500, viện phí 3.000, sửa 15%) và cảnh báo **"không hoàn tác"** của `/deletedata`.
+  - Mới: `src/lib/demThanhVien.js` tách **người thật / bot** bằng role `tags.botId` (0 lượt fetch, đã nghiệm thu lệch 2,2%) → một dòng console lúc khởi động + `/serverinfo`. Cẩm nang web 766 dòng lần đầu có đường tới được từ bot (nút ở `/help` và `/start`).
+  - **4 cổng mới, 33/33 phép bẻ ngược đều làm cổng đỏ:** `work_noi_dung_du_nghe` · `localizer_khong_khoa_chet` · `mo_ta_khong_bi_nuot` · `help_nhan_nhom_khop_chi_so`. 669/669 test xanh.
+  - **Bẫy quan trọng cho lần sau:** `t()` **rơi về bản Việt** khi thiếu khoá tiếng Anh → mọi phép kiểm "có ở cả vi và en" viết qua `t()` đều **xanh giả** trong khi người dùng EN đọc tiếng Việt. Phải đọc thẳng tệp JSON. Ngược lại, `t()` trả `undefined` cho `data.items.*` ở bản Việt, nên `t(...) || 'Cá Tươi'` ở `fish.js` là mã **SỐNG** — đừng dọn.
 - **🛡️ Khóa Tính Năng (Feature Freeze), Đo Lường Lệnh Bền Vững (Telemetry) & Checklist Vận Hành 5 Cổng — ĐÃ HOÀN THÀNH 100% (2026-09-25):**
   - **Giải phóng 100% Voice Stack & Hạ tầng VPS 384MB:** Gỡ bỏ hoàn toàn `@discordjs/voice`, `ffmpeg-static` (~70MB binary), `libsodium-wrappers`, `opusscript` khỏi `package.json`; di dời `hvlPlayer.js` vào `archive/voice/`. Triệt tiêu hoàn toàn nguy cơ OOM V8 heap trên VPS Wispbyte. Phân định rạch ròi: Bot tập trung Text/RPG Game, Web gánh Lo-Fi Study Room (`/study`, HTML5 Web Audio 0MB load).
   - **Cởi trói Voice cho Lô Tô (`/loto`):** Bỏ kiểm tra voice channel bắt buộc, cho phép 100% người dùng mobile/text mở phòng chơi Lô tô; giữ nguyên phí bàn 5% (House edge) đóng vai trò Currency Sink hút xu thừa.
