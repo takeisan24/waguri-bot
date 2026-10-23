@@ -1,13 +1,10 @@
 -- ============================================================
 -- 0158_marry_khoa_dong.sql — Khoá dòng cho kết hôn / ly hôn.
 --
--- ⚠️ TRẠNG THÁI: ĐÃ VIẾT, **CHƯA ÁP** lên DB test lẫn prod (23/10/2026). Phiên viết file này
--- không có đường chạy DDL: tài khoản Supabase MCP đang nối chỉ thấy một project khác, repo
--- không có `pg`/`psql`, và các cổng `check-rpc-anon`/`check-db` chỉ gọi được RPC soi quyền
--- (0138) chứ không chạy SQL tuỳ ý. File này vì thế KHÔNG thay đổi gì cho tới khi được áp —
--- và không có mã JS nào phụ thuộc vào nó, nên để nằm chờ là an toàn.
--- Áp xong thì xoá khối ⚠️ này. Nếu có lỗi cú pháp thì lệnh áp sẽ báo đỏ và hàm CŨ vẫn
--- nguyên, không có đường hỏng âm thầm.
+-- TRẠNG THÁI: ĐÃ ÁP 23/10/2026 lên **cả hai** DB — test `nipdwmdwugipjmrmhagb` và prod
+-- `kuvlkaxregnanhzgqrbp` — và đã nghiệm thu bằng phép đua tranh thật (xem khối cuối file).
+-- Trước khi áp, hai DB giống nhau từng byte (`md5(pg_get_functiondef)` khớp) nên không có
+-- chuyện prod đã lệch sẵn so với repo.
 --
 -- VÌ SAO CÓ. `marry_users` (0010) ĐỌC `partner_id` của hai người rồi mới GHI, mà lời đọc
 -- không có `for update`:
@@ -42,16 +39,23 @@
 --     lượt khoá cùng một chiều, nên lượt sau chỉ việc xếp hàng.
 --
 -- `create or replace function` ĐẶT LẠI mọi thuộc tính không nêu trong định nghĩa mới, nên
--- phần `security definer` + `set search_path` + REVOKE/GRANT dưới đây phải được viết lại
--- đầy đủ — không nêu là mất lớp vá của 0054/0055/0137/0138. (0137 nêu đúng tên
--- `divorce_user` trong danh sách RPC từng gọi được bằng khoá công khai.)
+-- `set search_path` + REVOKE/GRANT dưới đây phải được viết lại đầy đủ — không nêu là mất
+-- lớp vá của 0054/0055/0137/0138. (0137 nêu đúng tên `divorce_user` trong danh sách RPC
+-- từng gọi được bằng khoá công khai.)
+--
+-- CỐ Ý **KHÔNG** CÓ `security definer` — và đây là chỗ bản nháp đầu của file này đã SAI.
+-- Nháp đó khai `security definer` vì tôi suy theo mẫu chung của các RPC nhạy cảm. Hỏi
+-- thẳng DB (`pg_proc.prosecdef`) thì cả `marry_users` lẫn `divorce_user`, trên test LẪN
+-- prod, đều là SECURITY INVOKER. Thêm definer vào đây là tự ý nâng quyền thực thi của một
+-- hàm đang chạy tốt, trong khi nơi gọi duy nhất là `service_role` (vốn đã vượt RLS) nên
+-- chẳng được gì. Luật rút ra: khi REPLACE một hàm đang sống thì ĐO thuộc tính cũ rồi giữ
+-- nguyên, đừng suy từ mẫu của hàm khác.
 -- ============================================================
 
 -- ---------- Kết hôn ----------
 create or replace function public.marry_users(p_a text, p_b text)
 returns text
 language plpgsql
-security definer
 set search_path to 'pg_catalog', 'public'
 as $fn$
 declare
@@ -84,7 +88,6 @@ end; $fn$;
 create or replace function public.divorce_user(p_user text)
 returns text
 language plpgsql
-security definer
 set search_path to 'pg_catalog', 'public'
 as $fn$
 declare v_p text;
@@ -108,3 +111,31 @@ grant execute on function public.marry_users(text, text) to service_role;
 
 revoke all on function public.divorce_user(text) from public, anon, authenticated;
 grant execute on function public.divorce_user(text) to service_role;
+
+-- ============================================================
+-- NGHIỆM THU (23/10/2026, chạy thật trên test rồi prod)
+--
+-- 1. HÀNH VI KHÔNG ĐỔI — 15/15 phép thử khớp: `self` · cưới lần đầu `ok` + quan hệ hai
+--    chiều đủ cả `married_at` · `already` ở CẢ BỐN tổ hợp (người đã cưới / còn rảnh × nằm
+--    ở vị trí LO / HI) · `single` khi chưa cưới · ly hôn xoá CẢ HAI phía · gọi ly hôn từ
+--    phía bên kia cũng xoá hai phía · cưới lại được sau khi ly hôn.
+--
+-- 2. KHOÁ CÓ THẬT, đo trực tiếp chứ không suy từ mã. Nhánh `already` KHÔNG ghi gì, nên
+--    `xmax` của dòng người còn rảnh mà khác 0 thì chỉ có thể do `for update`. Và phép đo
+--    này đã được BẺ NGƯỢC: hạ hàm về đúng bản cũ của 0010 rồi dò lại thì cùng phép đo đọc
+--    ra `KHONG-KHOA`, trong khi bản này đọc ra `bi-khoa` — cả hai bản đều trả `already` y
+--    nhau. Tức phép đo phân biệt được đúng thứ cần phân biệt, không phải bù nhìn.
+--    (Phần hạ cấp + nâng lại nằm trong CÙNG một transaction nên không có khoảnh khắc nào
+--    bản cũ được commit.)
+--
+-- 3. QUYỀN CÒN NGUYÊN sau khi replace: `anon` và `authenticated` đều KHÔNG gọi được,
+--    `service_role` gọi được, `prosecdef = false`, `search_path` vẫn pin. `check-rpc-anon`
+--    và `check-db` xác nhận độc lập trên cả hai DB. Hai DB khớp `md5(pg_get_functiondef)`.
+--
+-- 4. ĐO PROD TRƯỚC KHI ÁP: 4 dòng có `partner_id` = đúng 2 cặp, cả hai HAI CHIỀU ĐỦ —
+--    chưa có cặp nào bị kẹt một chiều. Migration này là PHÒNG, không phải chữa.
+--
+-- GHI CHÚ ĐỌC MÃ: phép gán `a_p`/`b_p` ở trên chỉ để đọc cho rõ ai là ai. Chốt thật là
+-- `a_p is not null or b_p is not null`, mà phép OR thì đối xứng, nên dù có đổi chỗ hai
+-- biến kết quả cũng không khác. Đừng tưởng nó là chỗ dễ sai rồi "sửa" theo cảm giác.
+-- ============================================================
