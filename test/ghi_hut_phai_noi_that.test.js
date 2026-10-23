@@ -13,6 +13,16 @@
 // PHÉP ĐO PHẢI TỔNG QUÁT, KHÔNG SOI THEO TỆP ĐÃ NGHI: lượt quét trước chỉ nhìn 6 tệp tôi
 // đang nghi, nên bỏ sót 4 chỗ — trong đó có trộm heo/trộm cây, ca mất mát CHÉO giữa hai
 // người chơi. Nới phép quét ra toàn `src/` thì chúng hiện ra ngay.
+//
+// ⚠️ GIỚI HẠN ĐÃ BIẾT CỦA CỔNG NÀY — đừng tin nó rộng hơn thực tế. Nó chỉ thấy được những
+// lời ghi CÓ GIÁ TRỊ TRẢ VỀ ĐỂ MÀ BỎ TRÔI. Một nhóm helper trong `src/database.js` nuốt lỗi
+// rồi trả `undefined` cho MỌI kết quả — `deletePlant`, `pigSetType`, `pigSetSick`,
+// `plantSetDead`... (dạng `try { await supabase...; } catch { log; }`, không có `return`).
+// Nơi gọi chúng KHÔNG THỂ kiểm, nên `destroyPlant` vẫn nói "đã phá cây thành công" khi lệnh
+// xoá hỏng, và `/pig feed` vẫn khoe giống heo khi `pigSetType` hỏng. Hai ca đó CỐ Ý chưa vá
+// ở đây: phải đổi hợp đồng helper trong database.js trước, và đó là sổ nợ "`false` lẫn
+// nghĩa" (~44 hàm) chứ không phải việc chen vào một lượt vá. Hậu quả của chúng là nhầm lẫn
+// chứ không phải mất mát: người chơi phá cây rồi gõ lại được, giống heo chỉ là chữ hiển thị.
 // ============================================================
 const test = require('node:test');
 const assert = require('node:assert');
