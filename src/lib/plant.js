@@ -98,10 +98,22 @@ async function harvest(userId, locale) {
     }
     const r = await db.plantClaim(userId, secs(TIMINGS.HARVEST_MIN_MS), secs(TIMINGS.PEST_MAX_MS));
     if (r.result === 'ok') {
-        await db.giveItemAdmin(userId, produceId(r.tier, r.is_flower), 1);
-        await db.giveItemAdmin(userId, 'cam_heo', 1); // rau/lá thừa làm cám cho heo
+        // `plantClaim` ở trên đã TIÊU cái cây. Hai lời trao dưới đây mà hụt thì người chơi mất
+        // cây, không nhận gì, mà vẫn đọc "thu hoạch thành công".
+        // KHÔNG trao lại khi hụt: `false` có thể là timeout SAU khi DB đã ghi -> trao lại là hai lần.
+        const nongSan = produceId(r.tier, r.is_flower);
+        const daTraoChinh = (await db.giveItemAdmin(userId, nongSan, 1)) === true;
+        // `cam_heo` là phần thừa kèm theo, hụt nó KHÔNG đáng báo động cho người chơi — nhưng
+        // vẫn ghi log, vì hụt cả hai cùng lúc là dấu hiệu DB đang có vấn đề thật.
+        const daTraoCam = (await db.giveItemAdmin(userId, 'cam_heo', 1)) === true;
+        if (!daTraoChinh || !daTraoCam) {
+            console.error(`[PAYOUT FAIL] plant-harvest user=${userId} `
+                + `nongSan=${nongSan}:${daTraoChinh ? 'ok' : 'HỤT'} cam_heo=${daTraoCam ? 'ok' : 'HỤT'} `
+                + '(cây ĐÃ bị tiêu)');
+        }
         const typeLabel = t(locale, `data.plants.${plant.type}.name`) || plant.type || (r.is_flower ? 'flower' : 'fruit');
-        return ok(t(locale, 'plant.harvest_success', { type: typeLabel }), locale);
+        return ok(t(locale, 'plant.harvest_success', { type: typeLabel })
+            + (daTraoChinh ? '' : t(locale, 'common.item_unconfirmed')), locale);
     }
     if (r.result === 'too_soon') return warn(t(locale, 'plant.harvest_cooldown', { time: Math.ceil(r.wait / 60) }), locale);
     if (r.result === 'pest') return errR(t(locale, 'plant.harvest_pest'), locale);

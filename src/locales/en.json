@@ -57,6 +57,7 @@
     },
     "rate_limited": "You are doing that too fast~ please wait a few seconds! 🌸",
     "retry_later": "Oops, an error occurred, please try again later~ 🌸",
+    "item_unconfirmed": "\n\n⚠️ But **the item did not finish saving** because of a connection hiccup. Please check `/inventory` — if it is really missing, ping an admin; I will not re-grant it in case that hands you two~",
     "payout_unconfirmed": "\n\n⚠️ But **the reward didn't finish saving** because of a connection hiccup. The balance below is the real number — if it's short, please ping an admin~",
     "success_title": "✅ Success",
     "warning_title": "⚠️ Warning",

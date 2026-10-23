@@ -128,9 +128,14 @@ async function sellPig(userId, locale) {
     const claim = await db.pigClaimSale(userId, Math.floor(TIMINGS.STEAL_AGE_MS / 1000));
     if (claim.result !== 'ok') return warn(t(locale, 'pig.sell_failed'), locale);
     const meatId = MEAT[claim.tier];
-    await db.giveItemAdmin(userId, meatId, 1);
+    // `pigClaimSale` ở trên đã XOÁ con heo. Nếu lời trao thịt hụt mà ta vẫn báo "bán thành
+    // công" thì người chơi mất heo, không nhận gì, và không có cách nào biết.
+    // KHÔNG trao lại khi hụt: `false` có thể là timeout SAU khi DB đã ghi -> trao lại là hai lần.
+    const daTrao = (await db.giveItemAdmin(userId, meatId, 1)) === true;
+    if (!daTrao) console.error(`[PAYOUT FAIL] pig-sell user=${userId} item=${meatId} (heo ĐÃ bị xoá)`);
     const localizedType = t(locale, `data.pigs.${pig.type}.name`) || pig.type || 'pig';
-    return ok(t(locale, 'pig.sell_success', { type: localizedType }), locale);
+    return ok(t(locale, 'pig.sell_success', { type: localizedType })
+        + (daTrao ? '' : t(locale, 'common.item_unconfirmed')), locale);
 }
 
 async function bathHelp(helperId, target, locale) {
