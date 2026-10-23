@@ -33,9 +33,25 @@ module.exports = {
             if (!await isOwner(interaction.client, interaction.user.id)) {
                 return interaction.editReply({ content: t(locale, 'commands.announcement.err_owner') });
             }
-            await db.setGuildSetting('global', 'latest_announcement', '');
-            await db.setGuildSetting('global', 'latest_announcement_title', '');
-            await db.setGuildSetting('global', 'latest_announcement_commit', '');
+            // Ba lời xoá: nếu lời nào hụt thì bản tin VẪN còn trên web và ở `/announcement
+            // view`. Nói "đã xoá" lúc đó là chủ bot tưởng xong rồi mà tin vẫn đang treo.
+            const daXoa = (await Promise.all([
+                db.setGuildSetting('global', 'latest_announcement', ''),
+                db.setGuildSetting('global', 'latest_announcement_title', ''),
+                db.setGuildSetting('global', 'latest_announcement_commit', ''),
+            ])).every((x) => x !== false);
+            if (!daXoa) {
+                console.error('[CONFIG FAIL] announcement-clear — ít nhất một khoá không xoá được');
+                // KHÔNG dùng `common.db_error`: câu đó nói "chưa lấy được dữ liệu", tức một lời
+                // ĐỌC hụt. Ở đây là lời GHI hụt, và điều chủ bot cần biết là tin VẪN đang treo.
+                const loi = buildWaguriEmbed(interaction, 'error', {
+                    locale,
+                    description: locale.startsWith('en')
+                        ? '⚠️ **The announcement was not cleared.** The database rejected the write, so the website and `/announcement view` still show it. Please run `/announcement clear` again.'
+                        : '⚠️ **Chưa xoá được thông báo.** Lời ghi bị DB từ chối, nên web và `/announcement view` vẫn đang hiện tin đó. Cậu chạy lại `/announcement clear` nhé.',
+                });
+                return interaction.editReply({ embeds: [loi] });
+            }
             const embed = buildWaguriEmbed(interaction, 'success', {
                 locale,
                 title: t(locale, 'commands.announcement.clear_success_title'),
@@ -186,8 +202,14 @@ function resolveAnnouncementBanner(raw) {
             if (content.length > 4000) content = content.slice(0, 4000) + '…';
 
             // 1. Lưu thông báo vào cấu hình global
-            await db.setGuildSetting('global', 'latest_announcement', content);
-            await db.setGuildSetting('global', 'latest_announcement_title', title);
+            // Bản lưu này là thứ `/announcement view` và TRANG WEB đọc. Vẫn phát tin cho 49
+            // server dù lưu hụt (tin đã soạn, không nên bỏ), nhưng phải NÓI cho chủ bot biết
+            // rằng web và `/announcement view` còn hiện bản cũ.
+            const daLuu = (await Promise.all([
+                db.setGuildSetting('global', 'latest_announcement', content),
+                db.setGuildSetting('global', 'latest_announcement_title', title),
+            ])).every((x) => x !== false);
+            if (!daLuu) console.error('[CONFIG FAIL] announcement-send — không lưu được bản tin vào guild_settings.global');
 
             const embed = buildWaguriEmbed(submitted, 'jackpot', {
                 locale,
@@ -301,6 +323,9 @@ function resolveAnnouncementBanner(raw) {
                 locale,
                 title: t(locale, 'commands.announcement.success_title'),
                 description: t(locale, 'commands.announcement.success_desc', { sent: sentCount, fail: failCount })
+                    + (daLuu ? '' : (isEn
+                        ? '\n\n⚠️ The announcement went out, but **saving it failed** — the website and `/announcement view` still show the previous one. Run `/announcement send` again to retry the save.'
+                        : '\n\n⚠️ Tin đã phát đi, nhưng **lưu lại thất bại** — web và `/announcement view` vẫn hiện bản trước. Chạy lại `/announcement send` để lưu lần nữa.'))
             });
             await submitted.editReply({ embeds: [resEmbed] });
         }

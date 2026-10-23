@@ -354,10 +354,19 @@ module.exports = {
                     const newPoints = Math.floor(newLvl / 5);
                     const pointsGained = newPoints - oldPoints;
                     if (pointsGained > 0) {
-                        await db.addPetSkillPoints(userId, pointsGained);
-                        desc += `\n` + (locale.startsWith('en') 
-                            ? `✨ Your pet earned **+${pointsGained} Skill Points**!` 
-                            : `✨ Thú cưng nhận thêm **+${pointsGained} Điểm kỹ năng**!`);
+                        // Điểm kỹ năng SUY RA từ cấp: lần cho ăn sau tính `oldPoints` theo cấp mới, nên
+                        // ghi hụt ở đây là mất điểm VĨNH VIỄN — không bao giờ có lần bù.
+                        // Hàm trả SỐ điểm mới (int) hoặc `null` khi lỗi, KHÔNG phải boolean.
+                        const spMoi = await db.addPetSkillPoints(userId, pointsGained);
+                        const daCong = typeof spMoi === 'number';
+                        if (!daCong) console.error(`[PAYOUT FAIL] pet-skillpoint user=${userId} points=${pointsGained}`);
+                        desc += `\n` + (locale.startsWith('en')
+                            ? (daCong
+                                ? `✨ Your pet earned **+${pointsGained} Skill Points**!`
+                                : `⚠️ Your pet should have earned **+${pointsGained} Skill Points**, but they did not finish saving. Check \`/pet\` — if they are missing, ping an admin; I will not add them again in case that doubles up.`)
+                            : (daCong
+                                ? `✨ Thú cưng nhận thêm **+${pointsGained} Điểm kỹ năng**!`
+                                : `⚠️ Thú cưng đáng ra nhận **+${pointsGained} Điểm kỹ năng**, nhưng **chưa ghi nhận xong**. Cậu xem \`/pet\` giúp tớ nhé — nếu thiếu thật thì nhắn admin, tớ không dám cộng lại vì sợ thành hai lần~`));
                     }
                 }
 
@@ -423,10 +432,19 @@ module.exports = {
                     const newPoints = Math.floor(newLvl / 5);
                     const pointsGained = newPoints - oldPoints;
                     if (pointsGained > 0) {
-                        await db.addPetSkillPoints(userId, pointsGained);
-                        desc += `\n` + (locale.startsWith('en') 
-                            ? `✨ Your pet earned **+${pointsGained} Skill Points**!` 
-                            : `✨ Thú cưng nhận thêm **+${pointsGained} Điểm kỹ năng**!`);
+                        // Điểm kỹ năng SUY RA từ cấp: lần cho ăn sau tính `oldPoints` theo cấp mới, nên
+                        // ghi hụt ở đây là mất điểm VĨNH VIỄN — không bao giờ có lần bù.
+                        // Hàm trả SỐ điểm mới (int) hoặc `null` khi lỗi, KHÔNG phải boolean.
+                        const spMoi = await db.addPetSkillPoints(userId, pointsGained);
+                        const daCong = typeof spMoi === 'number';
+                        if (!daCong) console.error(`[PAYOUT FAIL] pet-skillpoint user=${userId} points=${pointsGained}`);
+                        desc += `\n` + (locale.startsWith('en')
+                            ? (daCong
+                                ? `✨ Your pet earned **+${pointsGained} Skill Points**!`
+                                : `⚠️ Your pet should have earned **+${pointsGained} Skill Points**, but they did not finish saving. Check \`/pet\` — if they are missing, ping an admin; I will not add them again in case that doubles up.`)
+                            : (daCong
+                                ? `✨ Thú cưng nhận thêm **+${pointsGained} Điểm kỹ năng**!`
+                                : `⚠️ Thú cưng đáng ra nhận **+${pointsGained} Điểm kỹ năng**, nhưng **chưa ghi nhận xong**. Cậu xem \`/pet\` giúp tớ nhé — nếu thiếu thật thì nhắn admin, tớ không dám cộng lại vì sợ thành hai lần~`));
                     }
                 }
 
