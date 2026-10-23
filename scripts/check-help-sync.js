@@ -30,7 +30,8 @@ const AN_CO_LY_DO = {
     'eco-admin':       'owner-only (có kiểm isOwner) — cấp/trừ tiền, không phải lệnh người chơi',
     'getinvite':       'owner-only (có kiểm isOwner) — công cụ vận hành',
     'premium-admin':   'owner-only (có kiểm isOwner) — duyệt đơn Premium',
-    'Xem hồ sơ Waguri': 'context menu (chuột phải), không phải lệnh gạch chéo nên /help không liệt kê',
+    // Đổi tên 2026-10-23: đăng ký tiếng Anh, chữ trong menu dịch qua `CONTEXT_MENU_NAMES`.
+    'View Waguri Profile': 'context menu (chuột phải), không phải lệnh gạch chéo nên /help không liệt kê',
 };
 
 function duyet(dir, out = []) {

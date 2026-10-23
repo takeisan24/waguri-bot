@@ -33,21 +33,21 @@
   "achievements": [],
   "album": [],
   "bakery": [
-    "donhang",
-    "giaodon",
-    "mo",
-    "nangcap",
-    "nhapnl",
-    "sathai",
-    "thu",
-    "thue",
-    "trangtri",
-    "xem"
+    "collect",
+    "decor",
+    "deliver",
+    "fire",
+    "hire",
+    "open",
+    "orders",
+    "stock",
+    "upgrade",
+    "view"
   ],
   "bank": [
     "balance",
-    "gui",
-    "rut"
+    "deposit",
+    "withdraw"
   ],
   "chop": [],
   "cosmetic": [
@@ -63,21 +63,21 @@
   ],
   "daily": [],
   "dating": [
-    "di-choi",
-    "tang-qua",
+    "gift",
+    "outing",
     "view"
   ],
   "eat": [],
   "farm": [
-    "bonphan",
     "box",
-    "hoisinh",
+    "clear",
+    "fertilize",
+    "harvest",
     "info",
-    "muagiong",
-    "phacay",
-    "thuhoach",
-    "trom",
-    "tuoi"
+    "plant",
+    "revive",
+    "steal",
+    "water"
   ],
   "fish": [],
   "gift": [],
@@ -188,8 +188,8 @@
   ],
   "getinvite": [],
   "premium-admin": [
-    "cho",
-    "duyet"
+    "approve",
+    "pending"
   ],
   "announcement": [
     "clear",
@@ -213,7 +213,7 @@
   "help": [],
   "language": [],
   "premium": [],
-  "Xem hồ sơ Waguri": [],
+  "View Waguri Profile": [],
   "server": [],
   "start": [],
   "status": [],

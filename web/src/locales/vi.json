@@ -321,7 +321,7 @@
     "farm_pets_title": "🌾 Nông trại & Tiệm bánh",
     "bakery_label": "🍰 Tiệm Bánh Gekka",
     "bakery_status": "Cấp {level} · {likes} ❤️",
-    "bakery_none": "Chưa mở tiệm (/bakery mo)",
+    "bakery_none": "Chưa mở tiệm (/bakery open)",
     "pig_label": "🐷 Heo",
     "pig_sick": "Đang bệnh 🤒",
     "pig_stage": "Giai đoạn: {stage}",
@@ -433,7 +433,7 @@
     "like_limit": "Hôm nay cậu đã thả tim 3 lần rồi nha!",
     "like_success": "Đã thả tim tiệm bánh của {name} thành công! ❤️",
     "not_found": "Không tìm thấy tiệm bánh 🌸",
-    "not_found_desc": "Người chơi này chưa mở Tiệm bánh Gekka. Hãy dùng lệnh `/bakery mo` trên Discord để bắt đầu nha!"
+    "not_found_desc": "Người chơi này chưa mở Tiệm bánh Gekka. Hãy dùng lệnh `/bakery open` trên Discord để bắt đầu nha!"
   },
   "faq": {
     "title": "Câu hỏi thường gặp",

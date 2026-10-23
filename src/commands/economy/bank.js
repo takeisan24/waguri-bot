@@ -41,16 +41,16 @@ module.exports = {
         .setDescription('Ngân hàng 🏦 — quản lý tài chính, gửi / rút tiền')
         .addSubcommand(s => s.setName('balance').setDescription('Xem ví, ngân hàng và cấp độ')
             .addUserOption(o => o.setName('target').setDescription('Người muốn xem (mặc định: bạn)').setRequired(false)))
-        .addSubcommand(s => s.setName('gui').setDescription('Gửi tiền từ ví vào ngân hàng')
+        .addSubcommand(s => s.setName('deposit').setDescription('Gửi tiền từ ví vào ngân hàng')
             .addStringOption(o => o.setName('amount').setDescription('Số tiền hoặc "all"').setRequired(true)))
-        .addSubcommand(s => s.setName('rut').setDescription('Rút tiền từ ngân hàng về ví')
+        .addSubcommand(s => s.setName('withdraw').setDescription('Rút tiền từ ngân hàng về ví')
             .addStringOption(o => o.setName('amount').setDescription('Số tiền hoặc "all"').setRequired(true))),
     async execute(interaction) {
         await interaction.deferReply();
         const locale = await getInteractionLanguage(interaction);
         const sub = interaction.options.getSubcommand();
-        if (sub === 'gui') return move(interaction, true);
-        if (sub === 'rut') return move(interaction, false);
+        if (sub === 'deposit') return move(interaction, true);
+        if (sub === 'withdraw') return move(interaction, false);
 
         if (sub === 'balance') {
             const target = interaction.options.getUser('target') || interaction.user;

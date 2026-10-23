@@ -11,14 +11,14 @@ module.exports = {
         .setName('ask')
         .setDescription('Trò chuyện với Waguri 🌸')
         .addStringOption(o => o.setName('message').setDescription('Cậu muốn nói gì với Waguri?').setRequired(true))
-        .addAttachmentOption(o => o.setName('anh').setDescription('Gửi kèm một tấm ảnh cho Waguri xem (tuỳ chọn)')),
+        .addAttachmentOption(o => o.setName('image').setDescription('Gửi kèm một tấm ảnh cho Waguri xem (tuỳ chọn)')),
     async execute(interaction) {
         await interaction.deferReply();
         const goc = interaction.options.getString('message');
         const locale = await getInteractionLanguage(interaction);
 
         // Dựng đầu vào qua CÙNG một đường với @mention, để hai lối gọi không lệch nhau.
-        const dinhKem = interaction.options.getAttachment?.('anh');
+        const dinhKem = interaction.options.getAttachment?.('image');
         const dv = dungDauVao({
             content: goc,
             attachments: dinhKem ? new Map([['0', dinhKem]]) : new Map(),

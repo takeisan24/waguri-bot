@@ -98,8 +98,8 @@ module.exports = {
         .setDescription('Go on a date with Waguri to increase affection 💖')
         .setDescriptionLocalizations({ vi: 'Hẹn hò và dắt Waguri đi chơi để bồi đắp tình cảm 💖' })
         .addSubcommand(s => s.setName('view').setDescription('Xem trạng thái tình cảm của cậu với Waguri'))
-        .addSubcommand(s => s.setName('di-choi').setDescription('Dắt Waguri đi dạo ngắm cảnh Kikyo (Tốn 20 năng lượng)'))
-        .addSubcommand(s => s.setName('tang-qua').setDescription('Tặng quà trong túi đồ để tăng độ thiện cảm')
+        .addSubcommand(s => s.setName('outing').setDescription('Dắt Waguri đi dạo ngắm cảnh Kikyo (Tốn 20 năng lượng)'))
+        .addSubcommand(s => s.setName('gift').setDescription('Tặng quà trong túi đồ để tăng độ thiện cảm')
             .addStringOption(o => o.setName('item').setDescription('Chọn quà tặng').setRequired(true)
                 .addChoices(
                     { name: '💐 Bó Hoa Hồng Gekka (+15 💖)', value: 'bo_hoa' },
@@ -155,7 +155,7 @@ module.exports = {
         }
 
         // 2. Lệnh dắt đi chơi
-        if (sub === 'di-choi') {
+        if (sub === 'outing') {
             const user = await db.getUser(userId);
             if (!user) {
                 return interaction.editReply({ content: t(locale, 'common.db_error') });
@@ -209,7 +209,7 @@ module.exports = {
         }
 
         // 3. Lệnh tặng quà
-        if (sub === 'tang-qua') {
+        if (sub === 'gift') {
             const itemId = interaction.options.getString('item');
             const gifts = locale.startsWith('en') ? GIFTS_EN : GIFTS_VI;
             const gift = gifts[itemId];

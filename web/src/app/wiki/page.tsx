@@ -337,9 +337,9 @@ export default async function Wiki() {
               items={[
                 { c: "/farm info · w!farm xem", d: "check your farm plots & crop status" },
                 { c: "/farm plant · w!farm gieo", d: "plant seeds (wheat, strawberry, potato...)" },
-                { c: "/farm water · w!farm tuoi", d: "water your crops to accelerate growth" },
+                { c: "/farm water · w!farm water", d: "water your crops to accelerate growth" },
                 { c: "/farm harvest · w!farm thu", d: "harvest mature crops into your inventory" },
-                { c: "/farm steal · w!farm trom", d: "sneak into neighboring farms to steal unharvested crops" },
+                { c: "/farm steal · w!farm steal", d: "sneak into neighboring farms to steal unharvested crops" },
               ]}
             />
           </Card>
@@ -620,9 +620,9 @@ export default async function Wiki() {
               items={[
                 { c: "/farm info · w!farm xem", d: "kiểm tra thửa ruộng & tình trạng cây trồng" },
                 { c: "/farm plant · w!farm gieo", d: "gieo hạt giống (lúa mì, dâu tây, khoai tây...)" },
-                { c: "/farm water · w!farm tuoi", d: "tưới nước để cây phát triển nhanh hơn" },
+                { c: "/farm water · w!farm water", d: "tưới nước để cây phát triển nhanh hơn" },
                 { c: "/farm harvest · w!farm thu", d: "thu hoạch nông sản chín về kho đồ" },
-                { c: "/farm steal · w!farm trom", d: "rình trộm nông sản chưa thu hoạch của hàng xóm" },
+                { c: "/farm steal · w!farm steal", d: "rình trộm nông sản chưa thu hoạch của hàng xóm" },
               ]}
             />
           </Card>

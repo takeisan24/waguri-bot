@@ -48,8 +48,8 @@ const PREFIX_ALIASES = {
     // 5. Tài chính & Ngân hàng
     balance: { cmd: 'bank', sub: 'balance' },
     bal: { cmd: 'bank', sub: 'balance' },
-    deposit: { cmd: 'bank', sub: 'gui' },
-    withdraw: { cmd: 'bank', sub: 'rut' },
+    deposit: { cmd: 'bank', sub: 'deposit' },
+    withdraw: { cmd: 'bank', sub: 'withdraw' },
 
     // 6. Bot
     ping: { cmd: 'bot', sub: 'ping' },
@@ -81,6 +81,34 @@ const PREFIX_ALIASES = {
     trano: { cmd: 'loan', sub: 'pay' },
     no: { cmd: 'loan', sub: 'status' },
     // `w!donno` (đòi nợ P2P) đã bỏ: /loan chỉ vay quỹ hệ thống, không còn chủ nợ là người.
+};
+
+// ---------------------------------------------------------
+// Tên SUBCOMMAND tiếng Việt cũ -> tên tiếng Anh mới (đợt đổi tên 2026-10-23).
+//
+// VÌ SAO CẦN: đợt chuẩn hoá 72 lệnh (v2.6.0) đổi tên LỆNH sang tiếng Anh nhưng để nguyên
+// tên SUBCOMMAND tiếng Việt. Nay đổi nốt — nhưng `w!tiembanh xem`, `w!trongcay thuhoach`
+// là thứ người quen tay gõ hằng ngày, và đường prefix khớp token đầu với TÊN THẬT trong
+// builder. Không có bảng này thì sau khi đổi tên, mọi lệnh gõ tắt kèm subcommand đều IM
+// LẶNG không chạy — đúng sự cố đã xảy ra ở mục 7 phía trên, đừng lặp lại.
+//
+// CHỈ dùng cho đường prefix. Discord chỉ biết tên MỚI; đây không phải name_localizations.
+// Khoá chung cho mọi lệnh (không có lệnh nào trùng tên sub cũ giữa hai lệnh khác nhau —
+// `test/doi_ten_sub_tieng_anh.test.js` khoá điều đó).
+// ---------------------------------------------------------
+const SUB_ALIASES = {
+    // bakery
+    xem: 'view', mo: 'open', nhapnl: 'stock', thu: 'collect', thue: 'hire',
+    sathai: 'fire', trangtri: 'decor', nangcap: 'upgrade', donhang: 'orders', giaodon: 'deliver',
+    // bank
+    gui: 'deposit', rut: 'withdraw',
+    // dating
+    'di-choi': 'outing', 'tang-qua': 'gift',
+    // farm
+    muagiong: 'plant', tuoi: 'water', bonphan: 'fertilize', thuhoach: 'harvest',
+    hoisinh: 'revive', phacay: 'clear', trom: 'steal',
+    // premium-admin
+    cho: 'pending', duyet: 'approve',
 };
 
 // Tên prefix-only do handler riêng phục vụ, KHÔNG đi qua prefixShim.
@@ -116,4 +144,4 @@ function coHandlerRieng(tenLenh) {
     return Object.prototype.hasOwnProperty.call(TEN_RIENG, tenLenh);
 }
 
-module.exports = { PREFIX_ALIASES, TEN_RIENG, tenTatCua, coHandlerRieng };
+module.exports = { PREFIX_ALIASES, SUB_ALIASES, TEN_RIENG, tenTatCua, coHandlerRieng };

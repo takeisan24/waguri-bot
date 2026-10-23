@@ -89,7 +89,7 @@ export default async function PremiumAdmin() {
 
         <p className="text-[11px] text-slate-500">
           💡 Duyệt ở đây kích hoạt Premium ngay (trang của buyer tự nhảy &quot;thành công&quot;). Muốn bot DM cảm ơn
-          buyer thì duyệt bằng lệnh <code>/premium-admin duyet</code> trong Discord.
+          buyer thì duyệt bằng lệnh <code>/premium-admin approve</code> trong Discord.
         </p>
       </main>
     </div>

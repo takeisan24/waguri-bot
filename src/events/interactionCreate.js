@@ -411,8 +411,8 @@ module.exports = {
                     tiembanh: {
                         title: isEn ? '🧁 Gekka Bakery' : '🧁 Tiệm Bánh Gekka',
                         desc: isEn
-                            ? 'Welcome to Gekka Bakery! You can explore with:\n• **/bakery xem**: View your bakery status & rush hours\n• **/bakery nhapnl**: Stock ingredients — the oven bakes by itself, collect with **/bakery thu**\n• **/bakery donhang**: Check VIP patron orders'
-                            : 'Chào mừng cậu đến với Tiệm Bánh Gekka! Cậu có thể bắt đầu bằng các lệnh:\n• **/bakery xem**: Xem tình trạng tiệm bánh & giờ cao điểm\n• **/bakery nhapnl**: Nhập nguyên liệu — lò tự nướng, gom bánh bằng **/bakery thu**\n• **/bakery donhang**: Nhận đơn đặt hàng VIP từ khách quen'
+                            ? 'Welcome to Gekka Bakery! You can explore with:\n• **/bakery view**: View your bakery status & rush hours\n• **/bakery stock**: Stock ingredients — the oven bakes by itself, collect with **/bakery collect**\n• **/bakery orders**: Check VIP patron orders'
+                            : 'Chào mừng cậu đến với Tiệm Bánh Gekka! Cậu có thể bắt đầu bằng các lệnh:\n• **/bakery view**: Xem tình trạng tiệm bánh & giờ cao điểm\n• **/bakery stock**: Nhập nguyên liệu — lò tự nướng, gom bánh bằng **/bakery collect**\n• **/bakery orders**: Nhận đơn đặt hàng VIP từ khách quen'
                     },
                     market: {
                         title: isEn ? '🛒 Market Exchange' : '🛒 Chợ Nông Thủy Sản',
@@ -441,8 +441,8 @@ module.exports = {
                     farm: {
                         title: isEn ? '🌾 Gekka Farm & Orchard' : '🌾 Vườn Nông Sản Gekka',
                         desc: isEn
-                            ? 'Grow fresh crops and harvest bakery ingredients:\n• **/farm info**: View plant status\n• **/farm muagiong**: Plant new seeds (Wheat, Strawberry)\n• **/farm tuoi**: Water your plant or help friends'
-                            : 'Trồng trọt và thu hoạch nguyên liệu làm bánh:\n• **/farm info**: Xem tình trạng cây trồng\n• **/farm muagiong**: Mua giống cây mới (Lúa mì, Dâu tây)\n• **/farm tuoi**: Tưới nước chăm sóc cây hoặc tưới hộ bạn bè'
+                            ? 'Grow fresh crops and harvest bakery ingredients:\n• **/farm info**: View plant status\n• **/farm plant**: Plant new seeds (Wheat, Strawberry)\n• **/farm water**: Water your plant or help friends'
+                            : 'Trồng trọt và thu hoạch nguyên liệu làm bánh:\n• **/farm info**: Xem tình trạng cây trồng\n• **/farm plant**: Mua giống cây mới (Lúa mì, Dâu tây)\n• **/farm water**: Tưới nước chăm sóc cây hoặc tưới hộ bạn bè'
                     },
                     loan: {
                         title: isEn ? '🤝 Kikyo Student Credit Bureau' : '🤝 Quỹ Tín Dụng Học Đường Kikyo',
@@ -480,14 +480,14 @@ module.exports = {
                     tiembanh_orders: {
                         title: isEn ? '📋 Gekka Bakery VIP Orders' : '📋 Đơn Hàng VIP Tiệm Bánh Gekka',
                         desc: isEn
-                            ? 'Type **/bakery donhang** to inspect today\'s VIP orders from 8 lore characters!\nOnce ready, deliver with **/bakery giaodon [1-3]** for Coins, EXP, and Reputation 🌸'
-                            : 'Gõ **/bakery donhang** để kiểm tra các đơn hàng VIP từ 8 khách quen lore Waguri hôm nay!\nSau khi chuẩn bị đủ bánh, gõ **/bakery giaodon [1-3]** để nhận Xu, EXP và Danh Tiếng nha 🌸'
+                            ? 'Type **/bakery orders** to inspect today\'s VIP orders from 8 lore characters!\nOnce ready, deliver with **/bakery deliver [1-3]** for Coins, EXP, and Reputation 🌸'
+                            : 'Gõ **/bakery orders** để kiểm tra các đơn hàng VIP từ 8 khách quen lore Waguri hôm nay!\nSau khi chuẩn bị đủ bánh, gõ **/bakery deliver [1-3]** để nhận Xu, EXP và Danh Tiếng nha 🌸'
                     },
                     tiembanh_bake: {
                         title: isEn ? '🧁 Bake Pastries' : '🧁 Nướng Bánh Thơm Ngon',
                         desc: isEn
-                            ? 'Type **/bakery nhapnl [ingredient] [qty]** to stock the oven, then **/bakery thu** to collect! Rush Hour bakes +20% faster 🥐'
-                            : 'Gõ **/bakery nhapnl [nguyên_liệu] [số_lượng]** để nạp lò, rồi **/bakery thu** để gom bánh! Giờ Cao Điểm lò nướng nhanh hơn +20% đó nha 🥐'
+                            ? 'Type **/bakery stock [ingredient] [qty]** to stock the oven, then **/bakery collect** to collect! Rush Hour bakes +20% faster 🥐'
+                            : 'Gõ **/bakery stock [nguyên_liệu] [số_lượng]** để nạp lò, rồi **/bakery collect** để gom bánh! Giờ Cao Điểm lò nướng nhanh hơn +20% đó nha 🥐'
                     },
                     market: {
                         title: isEn ? '🛒 Market Exchange' : '🛒 Bảng Giá Chợ Nông Sản',

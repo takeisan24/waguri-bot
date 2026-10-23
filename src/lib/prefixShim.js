@@ -1,4 +1,5 @@
 const { ApplicationCommandOptionType } = require('discord.js');
+const { SUB_ALIASES } = require('./prefixTen');
 
 // Phân tích token vị trí thành options dựa trên định nghĩa SlashCommandBuilder.
 async function parseOptions(message, commandData, tokens) {
@@ -7,7 +8,11 @@ async function parseOptions(message, commandData, tokens) {
 
     // Subcommand = token đầu tiên nếu command có subcommand
     if (optionDefs.length && optionDefs[0].type === ApplicationCommandOptionType.Subcommand) {
-        const subName = (tokens[0] || '').toLowerCase();
+        const goc = (tokens[0] || '').toLowerCase();
+        // Tên sub tiếng Việt cũ vẫn phải gõ được: `w!tiembanh xem`, `w!trongcay thuhoach`.
+        // Đợt đổi tên 2026-10-23 chuyển sub sang tiếng Anh; Discord chỉ biết tên mới, còn
+        // đường prefix nhận cả hai. Bảng ở `lib/prefixTen.js`.
+        const subName = SUB_ALIASES[goc] || goc;
         const subDef = optionDefs.find(o => o.type === ApplicationCommandOptionType.Subcommand && o.name === subName);
         if (subDef) {
             subcommand = subDef.name;

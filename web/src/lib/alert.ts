@@ -2,7 +2,7 @@
 //
 // VÌ SAO CẦN: luồng Premium duyệt THỦ CÔNG. Người mua chuyển khoản xong bấm "Tôi đã
 // chuyển khoản" -> trước đây việc đó chỉ ghi `claimed_at` vào DB và KHÔNG báo cho ai cả.
-// Owner chỉ biết khi tình cờ gõ `/premium-admin cho`. Người vừa trả tiền là người dễ mất
+// Owner chỉ biết khi tình cờ gõ `/premium-admin pending`. Người vừa trả tiền là người dễ mất
 // niềm tin nhất, nên khoảng lặng đó là lỗi đắt nhất của cả luồng.
 //
 // No-op nếu chưa đặt env. TUYỆT ĐỐI không ném lỗi: cảnh báo hỏng không được phép làm

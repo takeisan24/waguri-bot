@@ -15,14 +15,14 @@ module.exports = {
             'en-GB': 'Gekka Farm 🌱 — plant seeds, water, harvest crops & fruits for bakery'
         })
         .addSubcommand(s => s.setName('info').setDescription('Xem tình trạng cây của cậu'))
-        .addSubcommand(s => s.setName('muagiong').setDescription('Mua giống & trồng cây (500)'))
-        .addSubcommand(s => s.setName('tuoi').setDescription('Tưới nước (hoặc tưới hộ cây người khác)')
+        .addSubcommand(s => s.setName('plant').setDescription('Mua giống & trồng cây (500)'))
+        .addSubcommand(s => s.setName('water').setDescription('Tưới nước (hoặc tưới hộ cây người khác)')
             .addUserOption(o => o.setName('user').setDescription('Tưới hộ cây của ai (bỏ trống = cây của cậu)')))
-        .addSubcommand(s => s.setName('bonphan').setDescription('Bón phân để cây thêm 1 nước ngay (200)'))
-        .addSubcommand(s => s.setName('thuhoach').setDescription('Thu hoạch cây trưởng thành (nhận trái/hoa)'))
-        .addSubcommand(s => s.setName('hoisinh').setDescription('Hồi sinh cây đã chết (1.000)'))
-        .addSubcommand(s => s.setName('phacay').setDescription('Phá cây hiện tại để trồng cây mới'))
-        .addSubcommand(s => s.setName('trom').setDescription('Trộm cây trưởng thành của người khác (rủi ro!)')
+        .addSubcommand(s => s.setName('fertilize').setDescription('Bón phân để cây thêm 1 nước ngay (200)'))
+        .addSubcommand(s => s.setName('harvest').setDescription('Thu hoạch cây trưởng thành (nhận trái/hoa)'))
+        .addSubcommand(s => s.setName('revive').setDescription('Hồi sinh cây đã chết (1.000)'))
+        .addSubcommand(s => s.setName('clear').setDescription('Phá cây hiện tại để trồng cây mới'))
+        .addSubcommand(s => s.setName('steal').setDescription('Trộm cây trưởng thành của người khác (rủi ro!)')
             .addUserOption(o => o.setName('user').setDescription('Mục tiêu').setRequired(true)))
         .addSubcommand(s => s.setName('box').setDescription('Mở Plantbox may mắn (600)')
             .addUserOption(o => o.setName('user').setDescription('Tặng Plantbox cho ai (bỏ trống = cho mình)'))),
@@ -38,13 +38,13 @@ module.exports = {
         let r;
         switch (sub) {
             case 'info': r = await plant.plantStatus(userId, locale); break;
-            case 'muagiong': r = await plant.buyPlant(userId, locale); break;
-            case 'tuoi': r = target ? await plant.waterHelp(userId, target, locale) : await plant.waterPlant(userId, locale); break;
-            case 'bonphan': r = await plant.fertilize(userId, locale); break;
-            case 'thuhoach': r = await plant.harvest(userId, locale); break;
-            case 'hoisinh': r = await plant.revivePlant(userId, locale); break;
-            case 'phacay': r = await plant.destroyPlant(userId, locale); break;
-            case 'trom': r = await plant.stealPlant(userId, target, interaction.guildId, locale); break;
+            case 'plant': r = await plant.buyPlant(userId, locale); break;
+            case 'water': r = target ? await plant.waterHelp(userId, target, locale) : await plant.waterPlant(userId, locale); break;
+            case 'fertilize': r = await plant.fertilize(userId, locale); break;
+            case 'harvest': r = await plant.harvest(userId, locale); break;
+            case 'revive': r = await plant.revivePlant(userId, locale); break;
+            case 'clear': r = await plant.destroyPlant(userId, locale); break;
+            case 'steal': r = await plant.stealPlant(userId, target, interaction.guildId, locale); break;
             case 'box': r = await plant.plantBox(userId, target, locale); break;
             default: r = { type: 'error', title: t(locale, 'plant.title'), description: t(locale, 'common.invalid_subcommand') };
         }

@@ -12,9 +12,9 @@ module.exports = {
         .setName('premium-admin')
         .setDescription('Duyệt đơn Premium thanh toán thủ công (chỉ owner)')
         .setDefaultMemberPermissions(0)
-        .addSubcommand(s => s.setName('cho').setDescription('Xem các đơn Premium đang chờ duyệt'))
-        .addSubcommand(s => s.setName('duyet').setDescription('Xác nhận đã nhận tiền & kích hoạt 1 đơn')
-            .addStringOption(o => o.setName('ma').setDescription('Mã đơn (nội dung CK, vd WAGURI...)').setRequired(true).setAutocomplete(true))),
+        .addSubcommand(s => s.setName('pending').setDescription('Xem các đơn Premium đang chờ duyệt'))
+        .addSubcommand(s => s.setName('approve').setDescription('Xác nhận đã nhận tiền & kích hoạt 1 đơn')
+            .addStringOption(o => o.setName('code').setDescription('Mã đơn (nội dung CK, vd WAGURI...)').setRequired(true).setAutocomplete(true))),
 
     async autocomplete(interaction) {
         if (!await isOwner(interaction.client, interaction.user.id)) return interaction.respond([]);
@@ -38,7 +38,7 @@ module.exports = {
         await interaction.deferReply({ flags: MessageFlags.Ephemeral });
         const sub = interaction.options.getSubcommand();
 
-        if (sub === 'cho') {
+        if (sub === 'pending') {
             const pending = await db.getPendingPremiumOrders(15);
             if (!pending.length) {
                 const embed = buildWaguriEmbed(interaction, 'info', { title: t(locale, 'commands.premium-admin.pending_title'), description: t(locale, 'commands.premium-admin.pending_none') });
@@ -62,8 +62,8 @@ module.exports = {
             return interaction.editReply({ embeds: [embed] });
         }
 
-        if (sub === 'duyet') {
-            const code = interaction.options.getString('ma').trim().toUpperCase();
+        if (sub === 'approve') {
+            const code = interaction.options.getString('code').trim().toUpperCase();
             // Dùng chung đường duyệt với NÚT trong DM: một nguồn chân lý cho "duyệt + cảm ơn".
             const r = await approveAndThank(interaction.client, code, `manual:${interaction.user.id}`);
             if (!r?.ok) {

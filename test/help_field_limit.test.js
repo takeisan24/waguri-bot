@@ -128,7 +128,8 @@ const { COMMAND_DESCRIPTIONS, SUBCOMMAND_DESCRIPTIONS } = require('../src/lib/co
 
 // Lệnh CỐ Ý không có mục localizer, kèm lý do thật.
 const KHONG_CAN_LOC = {
-    'Xem hồ sơ Waguri': 'context menu (chuột phải) — Discord không hiện mô tả cho loại này',
+    // Đổi tên 2026-10-23: đăng ký bằng tiếng Anh, chữ hiển thị dịch qua `CONTEXT_MENU_NAMES`.
+    'View Waguri Profile': 'context menu (chuột phải) — Discord không hiện mô tả cho loại này',
 };
 
 test('gate: mọi lệnh và subcommand đều có mô tả localizer đủ vi + en', () => {

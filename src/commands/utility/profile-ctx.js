@@ -1,4 +1,10 @@
-// Context menu (chuột phải user -> Apps -> "Xem hồ sơ Waguri") — xem nhanh hồ sơ người khác.
+// Context menu (chuột phải user -> Apps -> "View Waguri Profile") — xem nhanh hồ sơ người khác.
+//
+// TÊN ĐỔI SANG TIẾNG ANH 2026-10-23, và ĐÂY LÀ NGOẠI LỆ DUY NHẤT của luật "tên lệnh không
+// đổi theo ngôn ngữ": với lệnh slash, tên là thứ người ta GÕ nên phải cố định; với context
+// menu, tên CHÍNH LÀ chữ hiển thị trong menu chuột phải — không ai gõ nó. Trước đây nó là
+// "Xem hồ sơ Waguri" cho mọi locale, nên người dùng tiếng Anh click chuột phải cũng đọc
+// tiếng Việt. `commandLocalizer` có bảng `CONTEXT_MENU_NAMES` riêng cho nhóm này.
 const { ContextMenuCommandBuilder, ApplicationCommandType } = require('discord.js');
 const db = require('../../database.js');
 const config = require('../../config');
@@ -8,7 +14,7 @@ const { getInteractionLanguage, t } = require('../../lib/i18n');
 
 module.exports = {
     data: new ContextMenuCommandBuilder()
-        .setName('Xem hồ sơ Waguri')
+        .setName('View Waguri Profile')
         .setType(ApplicationCommandType.User),
     async execute(interaction) {
         await interaction.deferReply();

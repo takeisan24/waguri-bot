@@ -29,7 +29,7 @@ const db = require('../src/database.js');
 function chayThu({ cakes = 0, capped = false } = {}) {
     const lenh = require('../src/commands/economy/bakery.js');
     const userId = '800000000000000001';
-    const { interaction, calls } = makeInteraction({ sub: 'thu', userId, locale: 'vi' });
+    const { interaction, calls } = makeInteraction({ sub: 'collect', userId, locale: 'vi' });
     const hoan = stubDb(db, {
         getBakery: async () => ({
             user_id: userId, level: 1, stock: 500, staff: [], decor: [],

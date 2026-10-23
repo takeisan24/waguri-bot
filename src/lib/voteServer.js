@@ -345,7 +345,7 @@ async function grantCassoPremium(client, payload) {
                 `Số tiền: ${amount.toLocaleString('vi-VN')}đ`,
                 `Nội dung CK: "${noiDung}"`,
                 `Ref: ${ref}`,
-                'Tìm đơn tương ứng bằng `/premium-admin cho` rồi duyệt bằng `/premium-admin duyet`.',
+                'Tìm đơn tương ứng bằng `/premium-admin pending` rồi duyệt bằng `/premium-admin approve`.',
             ].join('\n'));
             continue;
         }
@@ -363,7 +363,7 @@ async function grantCassoPremium(client, payload) {
                 vi,
                 `Nội dung CK: "${noiDung}"`,
                 `Ref: ${ref}`,
-                'Quyết định bằng tay: duyệt (`/premium-admin duyet`) hoặc hoàn tiền.',
+                'Quyết định bằng tay: duyệt (`/premium-admin approve`) hoặc hoàn tiền.',
             ].join('\n'));
             continue;
         }
@@ -402,7 +402,7 @@ function startVoteServer(client) {
     else console.log('[VOTE] Webhook discordbotlist sẵn sàng ở /dbl/vote.');
     if (!cassoToken) console.log('[CASSO] Chưa có CASSO_WEBHOOK_TOKEN -> webhook thanh toán tạm tắt.');
     else console.log('[CASSO] Webhook thanh toán Premium sẵn sàng ở /casso/webhook.');
-    if (!notifySecret) console.log('[PREMIUM] Chưa có BOT_NOTIFY_SECRET -> web không báo được đơn mới (owner phải tự gõ /premium-admin cho).');
+    if (!notifySecret) console.log('[PREMIUM] Chưa có BOT_NOTIFY_SECRET -> web không báo được đơn mới (owner phải tự gõ /premium-admin pending).');
     else console.log('[PREMIUM] Sẵn sàng nhận báo đơn ở /premium/notify -> DM owner kèm nút duyệt.');
     // Khi chạy sharding: chỉ shard 0 bind cổng (tránh nhiều process tranh cùng port).
     if (client.shard && !client.shard.ids.includes(0)) return;

@@ -315,31 +315,31 @@ const COMMAND_DESCRIPTIONS = {
 
 const SUBCOMMAND_DESCRIPTIONS = {
     // bakery
-    "bakery.xem": { vi: "Xem tình trạng tiệm bánh của cậu", en: "Check your bakery's status" },
-    "bakery.mo": { vi: "Mở tiệm bánh Gekka (Cấp 3 + 3.000 xu + Bộ Dụng Cụ Làm Bánh)", en: "Open a Gekka bakery (Lv.3 + 3,000 coins + a Baking Tool Set)" },
-    "bakery.nhapnl": { vi: "Nhập nguyên liệu (lúa mì, dâu tây, bột) vào tiệm", en: "Stock ingredients (wheat, strawberries, flour) into the shop" },
-    "bakery.thu": { vi: "Thu doanh thu tiệm về ví (có thể ra bánh!)", en: "Collect the shop's revenue to your wallet (may yield cakes!)" },
-    "bakery.thue": { vi: "Thuê nhân viên NPC phụ tiệm", en: "Hire an NPC staff member to help at the shop" },
-    "bakery.sathai": { vi: "Sa thải nhân viên NPC", en: "Fire an NPC staff member" },
-    "bakery.trangtri": { vi: "Trang trí tiệm bánh bằng nội thất gỗ / trang sức", en: "Decorate the bakery with wooden furniture / jewelry" },
-    "bakery.nangcap": { vi: "Nâng cấp tiệm (tăng tốc nướng & trần doanh thu)", en: "Upgrade the shop (faster baking & higher revenue cap)" },
-    "bakery.donhang": { vi: "Xem danh sách đơn hàng VIP đặc biệt hôm nay 📋", en: "View special VIP catering orders today 📋" },
-    "bakery.giaodon": { vi: "Giao đơn hàng VIP nhận Xu, EXP, Danh Tiếng 🎁", en: "Deliver a VIP order to earn Coins, EXP, Reputation 🎁" },
+    "bakery.view": { vi: "Xem tình trạng tiệm bánh của cậu", en: "Check your bakery's status" },
+    "bakery.open": { vi: "Mở tiệm bánh Gekka (Cấp 3 + 3.000 xu + Bộ Dụng Cụ Làm Bánh)", en: "Open a Gekka bakery (Lv.3 + 3,000 coins + a Baking Tool Set)" },
+    "bakery.stock": { vi: "Nhập nguyên liệu (lúa mì, dâu tây, bột) vào tiệm", en: "Stock ingredients (wheat, strawberries, flour) into the shop" },
+    "bakery.collect": { vi: "Thu doanh thu tiệm về ví (có thể ra bánh!)", en: "Collect the shop's revenue to your wallet (may yield cakes!)" },
+    "bakery.hire": { vi: "Thuê nhân viên NPC phụ tiệm", en: "Hire an NPC staff member to help at the shop" },
+    "bakery.fire": { vi: "Sa thải nhân viên NPC", en: "Fire an NPC staff member" },
+    "bakery.decor": { vi: "Trang trí tiệm bánh bằng nội thất gỗ / trang sức", en: "Decorate the bakery with wooden furniture / jewelry" },
+    "bakery.upgrade": { vi: "Nâng cấp tiệm (tăng tốc nướng & trần doanh thu)", en: "Upgrade the shop (faster baking & higher revenue cap)" },
+    "bakery.orders": { vi: "Xem danh sách đơn hàng VIP đặc biệt hôm nay 📋", en: "View special VIP catering orders today 📋" },
+    "bakery.deliver": { vi: "Giao đơn hàng VIP nhận Xu, EXP, Danh Tiếng 🎁", en: "Deliver a VIP order to earn Coins, EXP, Reputation 🎁" },
 
     // dating
     "dating.view": { vi: "Xem trạng thái tình cảm của cậu với Waguri", en: "View your affection status with Waguri" },
-    "dating.di-choi": { vi: "Dắt Waguri đi dạo ngắm cảnh Kikyo (Tốn 20 năng lượng)", en: "Take Waguri for a stroll around Kikyo (costs 20 energy)" },
-    "dating.tang-qua": { vi: "Tặng quà trong túi đồ để tăng độ thiện cảm", en: "Give gifts from your bag to increase affection" },
+    "dating.outing": { vi: "Dắt Waguri đi dạo ngắm cảnh Kikyo (Tốn 20 năng lượng)", en: "Take Waguri for a stroll around Kikyo (costs 20 energy)" },
+    "dating.gift": { vi: "Tặng quà trong túi đồ để tăng độ thiện cảm", en: "Give gifts from your bag to increase affection" },
 
     // farm
     "farm.info": { vi: "Xem tình trạng cây nông sản của cậu", en: "View your crop status" },
-    "farm.muagiong": { vi: "Mua giống & gieo hạt nông sản (500 xu)", en: "Buy seed & plant crop (500 coins)" },
-    "farm.tuoi": { vi: "Tưới nước cho cây", en: "Water crop" },
-    "farm.bonphan": { vi: "Bón phân cho cây nhanh lớn (200 xu, miễn phí nếu có sẵn phân)", en: "Fertilize crop to grow instantly (200 coins, free if you own fertilizer)" },
-    "farm.thuhoach": { vi: "Thu hoạch nông sản làm bánh", en: "Harvest crop products for baking" },
-    "farm.hoisinh": { vi: "Hồi sinh cây đã héo (1.000 xu)", en: "Revive withered crop (1,000 coins)" },
-    "farm.phacay": { vi: "Phá cây hiện tại để trồng cây mới", en: "Destroy current crop to replant" },
-    "farm.trom": { vi: "Trộm cây trưởng thành của người khác", en: "Steal crop from another player" },
+    "farm.plant": { vi: "Mua giống & gieo hạt nông sản (500 xu)", en: "Buy seed & plant crop (500 coins)" },
+    "farm.water": { vi: "Tưới nước cho cây", en: "Water crop" },
+    "farm.fertilize": { vi: "Bón phân cho cây nhanh lớn (200 xu, miễn phí nếu có sẵn phân)", en: "Fertilize crop to grow instantly (200 coins, free if you own fertilizer)" },
+    "farm.harvest": { vi: "Thu hoạch nông sản làm bánh", en: "Harvest crop products for baking" },
+    "farm.revive": { vi: "Hồi sinh cây đã héo (1.000 xu)", en: "Revive withered crop (1,000 coins)" },
+    "farm.clear": { vi: "Phá cây hiện tại để trồng cây mới", en: "Destroy current crop to replant" },
+    "farm.steal": { vi: "Trộm cây trưởng thành của người khác", en: "Steal crop from another player" },
     "farm.box": { vi: "Mở Plantbox may mắn (600 xu)", en: "Open a lucky Plantbox (600 coins)" },
 
     // loan
@@ -462,8 +462,8 @@ const SUBCOMMAND_DESCRIPTIONS = {
 
     // bank
     "bank.balance": { vi: "Xem số dư ví, ngân hàng và cấp độ", en: "View wallet, bank balance, and level" },
-    "bank.gui": { vi: "Gửi tiền từ ví vào ngân hàng", en: "Deposit money from wallet to bank" },
-    "bank.rut": { vi: "Rút tiền từ ngân hàng về ví", en: "Withdraw money from bank to wallet" },
+    "bank.deposit": { vi: "Gửi tiền từ ví vào ngân hàng", en: "Deposit money from wallet to bank" },
+    "bank.withdraw": { vi: "Rút tiền từ ngân hàng về ví", en: "Withdraw money from bank to wallet" },
 
     // henho
 
@@ -492,8 +492,8 @@ const SUBCOMMAND_DESCRIPTIONS = {
     "eco-admin.trace": { vi: "🔎 Xem nhật ký giao dịch của một người chơi", en: "🔎 View a player's transaction ledger" },
 
     // premium-admin
-    "premium-admin.cho": { vi: "Xem các đơn Premium đang chờ duyệt", en: "View pending Premium orders" },
-    "premium-admin.duyet": { vi: "Xác nhận đã nhận tiền & kích hoạt 1 đơn", en: "Approve a Premium order & activate benefits" },
+    "premium-admin.pending": { vi: "Xem các đơn Premium đang chờ duyệt", en: "View pending Premium orders" },
+    "premium-admin.approve": { vi: "Xác nhận đã nhận tiền & kích hoạt 1 đơn", en: "Approve a Premium order & activate benefits" },
 
     // study
     "study.start": { vi: "Bắt đầu một phiên học bài Pomodoro ⏳", en: "Start a Pomodoro study session ⏳" },
@@ -519,7 +519,7 @@ const OPTION_DESCRIPTIONS = {
     "eco-admin.code-create.min-account-age": { vi: "Tuổi tài khoản Discord tối thiểu (ngày)", en: "Minimum Discord account age (days)" },
     "eco-admin.code-list.limit": { vi: "Số dòng (mặc định 20, tối đa 50)", en: "Rows to show (default 20, max 50)" },
     "eco-admin.code-revoke.code": { vi: "Mã cần thu hồi", en: "Code to revoke" },
-    "ask.anh": { vi: "Gửi kèm một tấm ảnh cho Waguri xem (tuỳ chọn)", en: "Attach an image for Waguri to look at (optional)" },
+    "ask.image": { vi: "Gửi kèm một tấm ảnh cho Waguri xem (tuỳ chọn)", en: "Attach an image for Waguri to look at (optional)" },
     "antinuke.mode.mode": { vi: "Chế độ", en: "Mode" },
     "antinuke.lockdown.state": { vi: "Khoá hay mở", en: "Lock or unlock" },
     "antinuke.enable.enabled": { vi: "Bật lá chắn?", en: "Enable the shield?" },
@@ -533,18 +533,18 @@ const OPTION_DESCRIPTIONS = {
     "cosmetic.badge-equip.badge": { vi: "Chọn huy hiệu", en: "Choose a badge" },
     "cosmetic.badge-equip.slot": { vi: "Vị trí trưng bày (1..6)", en: "Display slot (1..6)" },
     "craft.make.recipe": { vi: "Món muốn chế", en: "Item to craft" },
-    "leaderboard.phamvi": { vi: "Trong server này hay toàn cầu", en: "This server or global" },
+    "leaderboard.scope": { vi: "Trong server này hay toàn cầu", en: "This server or global" },
     "eco-admin.trace.limit": { vi: "Số dòng (mặc định 20, tối đa 50)", en: "Number of entries (default 20, max 50)" },
     "pet.feed.food": { vi: "Chọn loại thức ăn cho bé", en: "Choose food for your pet" },
     "pet.skill-up.skill": { vi: "Chọn kỹ năng", en: "Choose a skill" },
     "pet.hatch.egg": { vi: "Chọn quả trứng", en: "Choose an egg" },
     "repair.tool": { vi: "Chọn công cụ muốn sửa", en: "Choose the tool to repair" },
-    "bakery.nhapnl.loai": { vi: "ID nguyên liệu, vd trai_2000 / thit_heo_2500 / ca_tuoi", en: "Ingredient ID, e.g. trai_2000 / thit_heo_2500 / ca_tuoi" },
-    "bakery.nhapnl.sl": { vi: "Số lượng", en: "Quantity" },
-    "bakery.thue.nhan_vien": { vi: "Nhân vật muốn thuê", en: "Character to hire" },
-    "bakery.sathai.nhan_vien": { vi: "Nhân vật muốn sa thải", en: "Character to fire" },
-    "bakery.trangtri.vat_pham": { vi: "Nội thất trang trí", en: "Decoration furnishing" },
-    "bakery.giaodon.stt": { vi: "Số thứ tự đơn hàng (1, 2 hoặc 3)", en: "Order slot number (1, 2 or 3)" },
+    "bakery.stock.type": { vi: "ID nguyên liệu, vd trai_2000 / thit_heo_2500 / ca_tuoi", en: "Ingredient ID, e.g. trai_2000 / thit_heo_2500 / ca_tuoi" },
+    "bakery.stock.amount": { vi: "Số lượng", en: "Quantity" },
+    "bakery.hire.staff": { vi: "Nhân vật muốn thuê", en: "Character to hire" },
+    "bakery.fire.staff": { vi: "Nhân vật muốn sa thải", en: "Character to fire" },
+    "bakery.decor.item": { vi: "Nội thất trang trí", en: "Decoration furnishing" },
+    "bakery.deliver.number": { vi: "Số thứ tự đơn hàng (1, 2 hoặc 3)", en: "Order slot number (1, 2 or 3)" },
     "fortune.zodiac.sign": { vi: "Cung của cậu", en: "Your zodiac sign" },
     "lunar.date": { vi: "Ngày dương lịch (dd/mm/yyyy) — bỏ trống = hôm nay", en: "Solar date (dd/mm/yyyy) — leave blank = today" },
     "weather.city": { vi: "Tên thành phố (vd: Hanoi, Da Nang)", en: "City name (e.g. Hanoi, Tokyo)" },
@@ -575,11 +575,11 @@ const OPTION_DESCRIPTIONS = {
 
     // Specific option translations using parentName.optionName
     "bank.balance.target": { vi: "Người muốn xem (mặc định: bạn)", en: "Player to view (default: yourself)" },
-    "bank.gui.amount": { vi: "Số tiền hoặc \"all\"", en: "Amount of money or \"all\"" },
-    "bank.rut.amount": { vi: "Số tiền hoặc \"all\"", en: "Amount of money or \"all\"" },
+    "bank.deposit.amount": { vi: "Số tiền hoặc \"all\"", en: "Amount of money or \"all\"" },
+    "bank.withdraw.amount": { vi: "Số tiền hoặc \"all\"", en: "Amount of money or \"all\"" },
     "jobs.info.job": { vi: "Mã nghề cần xem", en: "Job ID to view" },
     "jobs.apply.job": { vi: "Mã nghề muốn ứng tuyển", en: "Job ID to apply" },
-    "premium-admin.duyet.ma": { vi: "Mã đơn (nội dung CK, vd WAGURI...)", en: "Order code (e.g. WAGURI...)" },
+    "premium-admin.approve.code": { vi: "Mã đơn (nội dung CK, vd WAGURI...)", en: "Order code (e.g. WAGURI...)" },
     "getinvite.server": { vi: "Server cần lấy link mời (bỏ trống = hiện tại)", en: "Server to invite (empty = current server)" },
     "eco-admin.addmoney.field": { vi: "Ví hay ngân hàng", en: "Wallet or bank" },
     "eco-admin.setmoney.field": { vi: "Ví hay ngân hàng", en: "Wallet or bank" },
@@ -607,10 +607,15 @@ const OPTION_DESCRIPTIONS = {
 
     // Generic fallbacks
     "server": { vi: "Server cần chọn", en: "Target server" },
-    "ma": { vi: "Mã giao dịch/đơn", en: "Transaction/order code" },
     "qty": { vi: "Số lượng", en: "Quantity" },
     "job": { vi: "Nghề nghiệp", en: "Job" },
     "days": { vi: "Số ngày", en: "Number of days" }
+};
+
+// Context menu: tên CHÍNH LÀ chữ hiển thị trong menu chuột phải, không ai gõ nó -> dịch được.
+// Khoá = tên đăng ký với Discord (tiếng Anh).
+const CONTEXT_MENU_NAMES = {
+    "View Waguri Profile": { vi: "Xem hồ sơ Waguri", en: "View Waguri Profile" },
 };
 
 const CHOICE_LOCALIZATIONS = {
@@ -663,6 +668,17 @@ const CHOICE_LOCALIZATIONS = {
  */
 function localizeCommandJSON(cmd) {
     if (!cmd) return cmd;
+
+    // 0. Context menu (chuột phải -> Apps): type 2 = user, 3 = message. Nhóm này KHÔNG có
+    // description, và TÊN của nó chính là chữ hiển thị trong menu — không ai GÕ nó. Nên đây
+    // là ngoại lệ duy nhất được dịch tên; mọi lệnh slash thì tên phải cố định (xem mục 1).
+    // Trước 2026-10-23 nó rơi vào nhánh ghi đè ở dưới nên người dùng tiếng Anh đọc đúng
+    // chữ "Xem hồ sơ Waguri".
+    if (cmd.type === 2 || cmd.type === 3) {
+        const ten = CONTEXT_MENU_NAMES[cmd.name];
+        if (ten) cmd.name_localizations = { vi: ten.vi, 'en-US': ten.en, 'en-GB': ten.en };
+        return cmd;
+    }
 
     // 1. Dịch Command chính
     const cmdDesc = COMMAND_DESCRIPTIONS[cmd.name];

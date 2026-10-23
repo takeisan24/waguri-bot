@@ -118,7 +118,7 @@ export async function claimPremiumOrder(code: string) {
         `**Người mua:** <@${id}> (\`${id}\`)`,
         "",
         "Đối chiếu nội dung CK trong app ngân hàng rồi duyệt:",
-        `→ Discord: \`/premium-admin duyet ma:${vuaBao.code}\` (bot sẽ DM cảm ơn họ)`,
+        `→ Discord: \`/premium-admin approve ma:${vuaBao.code}\` (bot sẽ DM cảm ơn họ)`,
         "→ Web: /dashboard/premium/admin",
       ].join("\n"),
       0x57f287

@@ -321,7 +321,7 @@
     "farm_pets_title": "🌾 Farm & Bakery",
     "bakery_label": "🍰 Gekka Bakery",
     "bakery_status": "Level {level} · {likes} ❤️",
-    "bakery_none": "Not opened yet (/bakery mo)",
+    "bakery_none": "Not opened yet (/bakery open)",
     "pig_label": "🐷 Pig",
     "pig_sick": "Sick 🤒",
     "pig_stage": "Stage: {stage}",
@@ -433,7 +433,7 @@
     "like_limit": "You have reached your 3-like daily limit!",
     "like_success": "Successfully liked {name}'s bakery! ❤️",
     "not_found": "Bakery not found 🌸",
-    "not_found_desc": "This player has not opened a Gekka Bakery yet. Use `/bakery mo` on Discord to start!"
+    "not_found_desc": "This player has not opened a Gekka Bakery yet. Use `/bakery open` on Discord to start!"
   },
   "faq": {
     "title": "Frequently Asked Questions",

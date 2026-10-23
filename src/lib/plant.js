@@ -245,8 +245,10 @@ const PLANT_CMDS = new Set(['cay', 'muagiong', 'tuoinuoc', 'bonphan', 'thuhoach'
 // *Bất đối xứng cần biết:* `trongcay` KHÔNG nằm trong `PLANT_CMDS`, nên `w!trongcay tuoi`
 // đi qua prefixShim và vốn đã chạy đúng. Chỉ đường `w!cay <sub>` là hỏng.
 const SUB_SANG_TAT = {
-    info: 'cay', muagiong: 'muagiong', tuoi: 'tuoinuoc', bonphan: 'bonphan',
-    thuhoach: 'thuhoach', hoisinh: 'hoisinh', phacay: 'phacay', trom: 'trom', box: 'plantbox',
+    // KHOÁ = tên sub SLASH (đã đổi sang tiếng Anh 2026-10-23), GIÁ TRỊ = tên gõ tắt prefix
+    // (vẫn tiếng Việt, nằm trong PLANT_CMDS). Hai bên CỐ Ý khác nhau — đừng 'đồng bộ' chúng.
+    info: 'cay', plant: 'muagiong', water: 'tuoinuoc', fertilize: 'bonphan',
+    harvest: 'thuhoach', revive: 'hoisinh', clear: 'phacay', steal: 'trom', box: 'plantbox',
 };
 
 async function handlePlantPrefix(message, cmd, tokens) {

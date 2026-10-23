@@ -171,7 +171,7 @@ async function checkStoryNodeCondition(userId, chapterId, nodeId, user, locale =
                     pass,
                     guideText: pass
                         ? (isEn ? '🥖 Ingredients stocked in the oven!' : '🥖 Nguyên liệu đã được nạp đầy vào lò nướng rồi!')
-                        : (isEn ? '🥖 Please restock the bakery with `/bakery nhapnl` (use surplus bread or crops).' : '🥖 Cậu hãy nạp nguyên liệu vào lò bánh bằng lệnh `/bakery nhapnl` (dùng bánh mì hoặc nông sản dư) để lò bắt đầu nướng nhé!')
+                        : (isEn ? '🥖 Please restock the bakery with `/bakery stock` (use surplus bread or crops).' : '🥖 Cậu hãy nạp nguyên liệu vào lò bánh bằng lệnh `/bakery stock` (dùng bánh mì hoặc nông sản dư) để lò bắt đầu nướng nhé!')
                 };
             }
 
@@ -182,7 +182,7 @@ async function checkStoryNodeCondition(userId, chapterId, nodeId, user, locale =
                     pass,
                     guideText: pass
                         ? (isEn ? '🥐 First batch of warm pastries collected!' : '🥐 Mùi thơm nức mũi của những mẻ bánh nướng đầu mùa!')
-                        : (isEn ? '🥐 Collect your baked goods using `/bakery thu`.' : '🥐 Cậu hãy gõ lệnh `/bakery thu` để thu hoạch những mẻ bánh nướng thơm ngon đầu tiên nhé!')
+                        : (isEn ? '🥐 Collect your baked goods using `/bakery collect`.' : '🥐 Cậu hãy gõ lệnh `/bakery collect` để thu hoạch những mẻ bánh nướng thơm ngon đầu tiên nhé!')
                 };
             }
         }
@@ -292,7 +292,7 @@ async function checkStoryNodeCondition(userId, chapterId, nodeId, user, locale =
                     pass,
                     guideText: pass
                         ? (isEn ? '🏡 Your effort has earned a place under the shared roof!' : '🏡 Công sức của cậu đã góp thành mái nhà chung của hai trường rồi!')
-                        : (isEn ? '🏡 Reach 4,000 EXP — `/work`, `/study start` and bakery VIP orders (`/bakery donhang`) all help!' : '🏡 Hãy đạt 4.000 EXP nhé — `/work`, `/study start` hay giao đơn VIP tiệm bánh (`/bakery donhang`) đều giúp cậu tiến nhanh nhen!'),
+                        : (isEn ? '🏡 Reach 4,000 EXP — `/work`, `/study start` and bakery VIP orders (`/bakery orders`) all help!' : '🏡 Hãy đạt 4.000 EXP nhé — `/work`, `/study start` hay giao đơn VIP tiệm bánh (`/bakery orders`) đều giúp cậu tiến nhanh nhen!'),
                     progressText: pass ? undefined : `📊 [${bar}] ${progressPct}% (${exp.toLocaleString(isEn ? 'en-US' : 'vi-VN')}/${MUC.toLocaleString(isEn ? 'en-US' : 'vi-VN')} EXP)`
                 };
             }

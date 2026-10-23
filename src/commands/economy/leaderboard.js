@@ -14,7 +14,7 @@ module.exports = {
         .setDescription('Bảng xếp hạng')
         .addStringOption(o => o.setName('type').setDescription('Xếp theo').setRequired(false)
             .addChoices({ name: 'Tài sản', value: 'networth' }, { name: 'Cấp độ', value: 'level' }, { name: 'Tình cảm cặp đôi', value: 'love' }))
-        .addStringOption(o => o.setName('phamvi').setDescription('Trong server này hay toàn cầu').setRequired(false)
+        .addStringOption(o => o.setName('scope').setDescription('Trong server này hay toàn cầu').setRequired(false)
             .addChoices({ name: 'Trong server này', value: 'server' }, { name: 'Toàn cầu', value: 'global' })),
     async execute(interaction) {
         const locale = await getInteractionLanguage(interaction);
@@ -22,7 +22,7 @@ module.exports = {
         const sort = interaction.options.getString('type') || 'networth';
         // Mặc định 'server' để người mới thấy hàng xóm cùng server (kinh tế là global).
         // Trong DM (không có guild) thì tự về 'global'.
-        const scope = (interaction.options.getString('phamvi') || 'server') === 'server' && interaction.guildId ? 'server' : 'global';
+        const scope = (interaction.options.getString('scope') || 'server') === 'server' && interaction.guildId ? 'server' : 'global';
         const scopeTag = scope === 'server' ? t(locale, 'commands.leaderboard.scope_server') : t(locale, 'commands.leaderboard.scope_global');
 
         // BXH tình cảm cặp đôi: luôn toàn cầu (cặp đôi không thuộc riêng server nào).

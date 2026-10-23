@@ -161,8 +161,8 @@ async function subMo(interaction, locale) {
 
 // --- nhapnl <loai> <sl> ---
 async function subNhap(interaction, locale) {
-    const itemId = (interaction.options.getString('loai') || '').trim();
-    const qty = interaction.options.getInteger('sl') || 1;
+    const itemId = (interaction.options.getString('type') || '').trim();
+    const qty = interaction.options.getInteger('amount') || 1;
     const err = (tType, d) => interaction.editReply({ embeds: [buildWaguriEmbed(interaction, tType, { locale, title: t(locale, 'commands.tiembanh.title_nhap'), description: d })] });
 
     if (!B.FILLINGS.includes(itemId)) return err('warning', t(locale, 'commands.tiembanh.nhap_invalid'));
@@ -242,7 +242,7 @@ async function subThu(interaction, locale) {
 
 // --- thue ---
 async function subThue(interaction, locale) {
-    const staffId = interaction.options.getString('nhan_vien');
+    const staffId = interaction.options.getString('staff');
     const sc = B.STAFF[staffId];
     if (!sc) return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'error', { locale, title: t(locale, 'commands.tiembanh.thue_title'), description: t(locale, 'commands.tiembanh.thue_invalid') })] });
 
@@ -273,7 +273,7 @@ async function subThue(interaction, locale) {
 
 // --- sathai ---
 async function subSathai(interaction, locale) {
-    const staffId = interaction.options.getString('nhan_vien');
+    const staffId = interaction.options.getString('staff');
     const sc = B.STAFF[staffId];
     if (!sc) return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'error', { locale, title: t(locale, 'commands.tiembanh.sathai_title'), description: t(locale, 'commands.tiembanh.thue_invalid') })] });
 
@@ -292,7 +292,7 @@ async function subSathai(interaction, locale) {
 
 // --- trangtri ---
 async function subTrangtri(interaction, locale) {
-    const itemId = interaction.options.getString('vat_pham');
+    const itemId = interaction.options.getString('item');
     const dc = B.DECOR[itemId];
     if (!dc) return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'error', { locale, title: t(locale, 'commands.tiembanh.trangtri_title'), description: t(locale, 'commands.tiembanh.trangtri_invalid') })] });
 
@@ -382,8 +382,8 @@ async function subDonhang(interaction, locale) {
         : '';
 
     const guideText = isEn 
-        ? `Deliver an order using \`/bakery giaodon stt:<1-3>\`.\nReputation: **${fmt(bk.reputation || 0, locale)}** pts.${rushNotice}`
-        : `Dùng lệnh \`/bakery giaodon stt:<1-3>\` để hoàn thành đơn hàng và nhận thưởng.\nDanh tiếng tiệm: **${fmt(bk.reputation || 0, locale)}** điểm.${rushNotice}`;
+        ? `Deliver an order using \`/bakery deliver number:<1-3>\`.\nReputation: **${fmt(bk.reputation || 0, locale)}** pts.${rushNotice}`
+        : `Dùng lệnh \`/bakery deliver number:<1-3>\` để hoàn thành đơn hàng và nhận thưởng.\nDanh tiếng tiệm: **${fmt(bk.reputation || 0, locale)}** điểm.${rushNotice}`;
 
     return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'info', {
         locale,
@@ -395,7 +395,7 @@ async function subDonhang(interaction, locale) {
 
 // --- giaodon <stt> ---
 async function subGiaodon(interaction, locale) {
-    const slot = interaction.options.getInteger('stt');
+    const slot = interaction.options.getInteger('number');
     const isEn = locale === 'en';
 
     const bk = await db.getBakery(interaction.user.id);
@@ -492,14 +492,14 @@ module.exports = {
             'en-US': 'Manage Gekka Bakery 🍰 — passive baking & VIP orders',
             'en-GB': 'Manage Gekka Bakery 🍰 — passive baking & VIP orders'
         })
-        .addSubcommand(s => s.setName('xem').setDescription('Xem tình trạng tiệm bánh của cậu'))
-        .addSubcommand(s => s.setName('mo').setDescription(`Mở tiệm bánh (cần Lv.${B.MIN_LEVEL} + Bộ Dụng Cụ Làm Bánh)`))
-        .addSubcommand(s => s.setName('nhapnl').setDescription('Nhập nguyên liệu (trái/hoa/thịt/cá đã farm) vào tiệm')
-            .addStringOption(o => o.setName('loai').setDescription('ID nguyên liệu, vd trai_2000 / thit_heo_2500 / ca_tuoi').setRequired(true))
-            .addIntegerOption(o => o.setName('sl').setDescription('Số lượng').setRequired(true).setMinValue(1)))
-        .addSubcommand(s => s.setName('thu').setDescription('Thu doanh thu tiệm về ví (có thể ra bánh!)'))
-        .addSubcommand(s => s.setName('thue').setDescription('Thuê nhân viên NPC phụ tiệm')
-            .addStringOption(o => o.setName('nhan_vien').setDescription('Nhân vật muốn thuê')
+        .addSubcommand(s => s.setName('view').setDescription('Xem tình trạng tiệm bánh của cậu'))
+        .addSubcommand(s => s.setName('open').setDescription(`Mở tiệm bánh (cần Lv.${B.MIN_LEVEL} + Bộ Dụng Cụ Làm Bánh)`))
+        .addSubcommand(s => s.setName('stock').setDescription('Nhập nguyên liệu (trái/hoa/thịt/cá đã farm) vào tiệm')
+            .addStringOption(o => o.setName('type').setDescription('ID nguyên liệu, vd trai_2000 / thit_heo_2500 / ca_tuoi').setRequired(true))
+            .addIntegerOption(o => o.setName('amount').setDescription('Số lượng').setRequired(true).setMinValue(1)))
+        .addSubcommand(s => s.setName('collect').setDescription('Thu doanh thu tiệm về ví (có thể ra bánh!)'))
+        .addSubcommand(s => s.setName('hire').setDescription('Thuê nhân viên NPC phụ tiệm')
+            .addStringOption(o => o.setName('staff').setDescription('Nhân vật muốn thuê')
                 .setRequired(true)
                 .addChoices(
                     { name: '🧑‍🍳 Rintaro Tsumugi (30.000 VNĐ)', value: 'rintaro' },
@@ -509,8 +509,8 @@ module.exports = {
                     { name: '🎯 Ayato Yorita (22.000 VNĐ)', value: 'ayato' },
                     { name: '🌸 Madoka Yano (25.000 VNĐ)', value: 'madoka' }
                 )))
-        .addSubcommand(s => s.setName('sathai').setDescription('Sa thái nhân viên NPC')
-            .addStringOption(o => o.setName('nhan_vien').setDescription('Nhân vật muốn sa thải')
+        .addSubcommand(s => s.setName('fire').setDescription('Sa thái nhân viên NPC')
+            .addStringOption(o => o.setName('staff').setDescription('Nhân vật muốn sa thải')
                 .setRequired(true)
                 .addChoices(
                     { name: '🧑‍🍳 Rintaro Tsumugi', value: 'rintaro' },
@@ -520,31 +520,31 @@ module.exports = {
                     { name: '🎯 Ayato Yorita', value: 'ayato' },
                     { name: '🌸 Madoka Yano', value: 'madoka' }
                 )))
-        .addSubcommand(s => s.setName('trangtri').setDescription('Trang trí tiệm bánh bằng nội thất gỗ / trang sức')
-            .addStringOption(o => o.setName('vat_pham').setDescription('Nội thất trang trí')
+        .addSubcommand(s => s.setName('decor').setDescription('Trang trí tiệm bánh bằng nội thất gỗ / trang sức')
+            .addStringOption(o => o.setName('item').setDescription('Nội thất trang trí')
                 .setRequired(true)
                 .addChoices(
                     { name: '🪵 Bộ Nội Thất Gỗ (+5% rate)', value: 'noi_that' },
                     { name: '💎 Trang Sức Đá Quý (+6% rate)', value: 'trang_suc' }
                 )))
-        .addSubcommand(s => s.setName('nangcap').setDescription('Nâng cấp tiệm (tăng tốc nướng & trần doanh thu)'))
-        .addSubcommand(s => s.setName('donhang').setDescription('Xem danh sách đơn hàng VIP đặc biệt hôm nay 📋'))
-        .addSubcommand(s => s.setName('giaodon').setDescription('Giao đơn hàng VIP nhận Xu, EXP, Danh Tiếng 🎁')
-            .addIntegerOption(o => o.setName('stt').setDescription('Số thứ tự đơn hàng (1, 2 hoặc 3)').setRequired(true).setMinValue(1).setMaxValue(3))),
+        .addSubcommand(s => s.setName('upgrade').setDescription('Nâng cấp tiệm (tăng tốc nướng & trần doanh thu)'))
+        .addSubcommand(s => s.setName('orders').setDescription('Xem danh sách đơn hàng VIP đặc biệt hôm nay 📋'))
+        .addSubcommand(s => s.setName('deliver').setDescription('Giao đơn hàng VIP nhận Xu, EXP, Danh Tiếng 🎁')
+            .addIntegerOption(o => o.setName('number').setDescription('Số thứ tự đơn hàng (1, 2 hoặc 3)').setRequired(true).setMinValue(1).setMaxValue(3))),
     async execute(interaction) {
         await interaction.deferReply();
         const locale = await getInteractionLanguage(interaction);
         const sub = interaction.options.getSubcommand();
-        if (sub === 'xem') return subXem(interaction, locale);
-        if (sub === 'mo') return subMo(interaction, locale);
-        if (sub === 'nhapnl') return subNhap(interaction, locale);
-        if (sub === 'thu') return subThu(interaction, locale);
-        if (sub === 'thue') return subThue(interaction, locale);
-        if (sub === 'sathai') return subSathai(interaction, locale);
-        if (sub === 'trangtri') return subTrangtri(interaction, locale);
-        if (sub === 'nangcap') return subNangcap(interaction, locale);
-        if (sub === 'donhang') return subDonhang(interaction, locale);
-        if (sub === 'giaodon') return subGiaodon(interaction, locale);
+        if (sub === 'view') return subXem(interaction, locale);
+        if (sub === 'open') return subMo(interaction, locale);
+        if (sub === 'stock') return subNhap(interaction, locale);
+        if (sub === 'collect') return subThu(interaction, locale);
+        if (sub === 'hire') return subThue(interaction, locale);
+        if (sub === 'fire') return subSathai(interaction, locale);
+        if (sub === 'decor') return subTrangtri(interaction, locale);
+        if (sub === 'upgrade') return subNangcap(interaction, locale);
+        if (sub === 'orders') return subDonhang(interaction, locale);
+        if (sub === 'deliver') return subGiaodon(interaction, locale);
         return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'warning', { locale, title: t(locale, 'commands.tiembanh.title'), description: t(locale, 'commands.tiembanh.err_sub') })] });
     },
 };
