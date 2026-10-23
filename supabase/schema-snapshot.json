@@ -127,6 +127,7 @@
     "market_unit_price(p_item_id text)",
     "marry_users(p_a text, p_b text)",
     "newbie_quest_incr(p_user_id text, p_key text, p_amount integer)",
+    "next_confession_number(p_guild text)",
     "pet_effective_rarity(p_species text, p_exp integer, p_ascended text)",
     "pet_level(p_exp integer)",
     "pet_rarity_min_level(p_key text)",
