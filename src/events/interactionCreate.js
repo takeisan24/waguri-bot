@@ -4,6 +4,7 @@ const { isBanned } = require('../lib/bans');
 // `isJailed` chứ không phải `getJail`: cả hai nơi gọi trong file này đều nằm TRƯỚC khi
 // lệnh kịp `deferReply()`, nên phải có trần thời gian (xem lib/jail.js).
 const { isBlocked, isJailed } = require('../lib/jail');
+const { withTimeout, ACK_LOOKUP_TIMEOUT } = require('../lib/timeout');
 const { buildWaguriEmbed } = require('../lib/embed');
 const { recordMembership } = require('../lib/membership');
 const { logError, skipLog } = require('../lib/logger');
@@ -846,7 +847,12 @@ async function handleTicketComponent(interaction, locale) {
     const { customId, channel, user, member } = interaction;
     const { PermissionsBitField, EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder, AttachmentBuilder } = require('discord.js');
 
-    const ticket = await db.getTicketByChannel(channel.id);
+    // LƯỜI, và có trần thời gian. Bản cũ đọc ngay đầu hàm cho MỌI nhánh, kể cả ba nhánh
+    // không dùng tới nó — tức một vòng DB nằm trên đường trước ack mà phần lớn lượt bấm
+    // không cần. Nay chỉ nhánh nào cần mới gọi, và lời đọc bị chặn ở ACK_LOOKUP_TIMEOUT:
+    // `withTimeout` trả `undefined` khi quá hạn, khác `null` nên vẫn phân biệt được "hết
+    // giờ" với "không có bản ghi" — cả hai đều rơi về nhánh `if (ticket)` sẵn có.
+    const layTicket = () => withTimeout(db.getTicketByChannel(channel.id), ACK_LOOKUP_TIMEOUT);
 
     if (customId === 'tkt:claim') {
         const isStaff = await laStaffTicket(interaction.guild, member, PermissionsBitField);
@@ -854,16 +860,26 @@ async function handleTicketComponent(interaction, locale) {
             return interaction.reply({ content: '❌ Cậu không có quyền nhận ticket hỗ trợ này nhen!', flags: MessageFlags.Ephemeral });
         }
 
+        // ACK TRƯỚC, GHI SAU. Ack ẩn (ephemeral) chứ không công khai, vì nhánh thất bại
+        // phải trả lời riêng cho người bấm — mà sau một ack công khai thì không ẩn lại được.
+        // Lời khoe công khai vẫn còn: nó đi bằng `channel.send` ở nhánh thành công.
+        if (!interaction.deferred && !interaction.replied) {
+            await interaction.deferReply({ flags: MessageFlags.Ephemeral }).catch(() => {});
+        }
+
+        // KHÔNG bọc trần quanh lời ghi này: chặn ở 800ms một lời ghi thành công ở 900ms chỉ
+        // tạo thêm một lời nói sai. Ack đã xong nên cửa sổ trả lời là 15 phút.
         const claimed = await db.claimTicket(channel.id, user.id);
         if (!claimed) {
-            return interaction.reply({ content: '❌ Ticket này đã có người nhận hỗ trợ hoặc đã đóng trước đó rồi!', flags: MessageFlags.Ephemeral });
+            return interaction.editReply({ content: '❌ Ticket này đã có người nhận hỗ trợ hoặc đã đóng trước đó rồi!' });
         }
 
         await channel.setName(`claimed-${channel.name.replace('ticket-', '')}`).catch(() => {});
         const claimEmbed = new EmbedBuilder()
             .setColor('#22c55e')
             .setDescription(`🙋‍♂️ Staff <@${user.id}> đã nhận chịu trách nhiệm hỗ trợ cho ticket này!`);
-        return interaction.reply({ embeds: [claimEmbed] });
+        await channel.send({ embeds: [claimEmbed] }).catch(() => {});
+        return interaction.editReply({ content: '✅ Cậu đã nhận ticket này. Mình vừa báo trong kênh rồi nhen!' });
     }
 
     if (customId === 'tkt:lock') {
@@ -872,10 +888,16 @@ async function handleTicketComponent(interaction, locale) {
             return interaction.reply({ content: '❌ Cậu không có quyền khóa ticket này!', flags: MessageFlags.Ephemeral });
         }
 
+        // Ack trước: `permissionOverwrites.edit` là một vòng REST tới Discord, và nó đứng
+        // sau một vòng DB nữa — cộng lại thừa sức vượt hạn 3 giây lúc mạng host chậm.
+        if (!interaction.deferred && !interaction.replied) {
+            await interaction.deferReply().catch(() => {});
+        }
+        const ticket = await layTicket();
         if (ticket) {
             await channel.permissionOverwrites.edit(ticket.user_id, { SendMessages: false }).catch(() => {});
         }
-        return interaction.reply({ content: '🔒 Kênh ticket đã được khóa quyền chat tạm thời!' });
+        return interaction.editReply({ content: '🔒 Kênh ticket đã được khóa quyền chat tạm thời!' });
     }
 
     if (customId === 'tkt:close') {
@@ -898,6 +920,10 @@ async function handleTicketComponent(interaction, locale) {
 
     if (customId === 'tkt:confirm_close') {
         await interaction.update({ content: '🔒 Đang xuất Transcript và thu dọn ticket...', embeds: [], components: [] });
+
+        // Lấy bản ghi SAU `interaction.update` ở trên — tức sau ack, nên không còn nằm trên
+        // đường 3 giây và không cần trần thời gian gấp.
+        const ticket = await db.getTicketByChannel(channel.id);
 
         // 1. Khóa chat
         if (ticket) {

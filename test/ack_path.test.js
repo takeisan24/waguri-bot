@@ -161,3 +161,91 @@ test('ack: withTimeout trả undefined khi quá hạn, không ném lỗi', async
     const nem = Promise.reject(new Error('DB sập'));
     assert.strictEqual(await withTimeout(nem, 300), undefined, 'Promise lỗi phải trả undefined chứ không ném ra');
 });
+
+// ============================================================
+// ĐƯỜNG NÚT TICKET (`tkt:*`) — bổ sung 23/10/2026
+//
+// Cả file này trước đó chỉ soi nhánh SLASH-COMMAND. Nhánh NÚT thì không ai gác, và
+// `handleTicketComponent` có ba lời chờ trước ack:
+//   1. `db.getTicketByChannel` ngay đầu hàm, cho MỌI nhánh — kể cả ba nhánh không dùng tới
+//      giá trị đó.
+//   2. `laStaffTicket` -> `layRoleStaff` -> `db.getGuildSettings` (chỉ khi người bấm không
+//      có ManageThreads/ManageChannels, vì hai phép kiểm đó đọc trong RAM trước).
+//   3. `db.claimTicket` — một lời GHI, đứng TRƯỚC `interaction.reply`.
+//
+// Luật đã chốt: lời ĐỌC trước ack thì chặn trần + rơi về mặc định; lời GHI thì ACK TRƯỚC
+// GHI SAU, và KHÔNG bọc trần quanh lời ghi (chặn ở 800ms một lời ghi thành công ở 900ms là
+// tạo ra một lời nói sai mới).
+//
+// Bảng `tickets` có 0 dòng từ đầu đến giờ, nên đây là đường CHƯA AI ĐI — nhưng nó SỐNG và
+// với tới được: `/ticket panel` dán một select menu vĩnh cửu, bấm vào là mở kênh thật.
+// ============================================================
+
+function khoiHam(src, tenHam) {
+    const i = src.indexOf(`async function ${tenHam}(`);
+    assert.ok(i !== -1, `Không tìm thấy ${tenHam} — cổng cần cập nhật theo cấu trúc file mới.`);
+    // Hàm kế tiếp (hoặc hết file) là biên dưới.
+    const j = src.indexOf('\nasync function ', i + 10);
+    return boComment(src.slice(i, j === -1 ? src.length : j));
+}
+
+function khoiNhanh(khoi, customId) {
+    const i = khoi.indexOf(`customId === '${customId}'`);
+    assert.ok(i !== -1, `Không tìm thấy nhánh ${customId}.`);
+    const j = khoi.indexOf("customId === '", i + 20);
+    return khoi.slice(i, j === -1 ? khoi.length : j);
+}
+
+test('ack ticket: không lời tra DB nào đứng chắn TRƯỚC mọi nhánh', () => {
+    const khoi = khoiHam(fs.readFileSync(NGUON, 'utf8'), 'handleTicketComponent');
+    const dauNhanh = khoi.indexOf("customId === 'tkt:claim'");
+    assert.ok(dauNhanh !== -1, 'Không tìm thấy nhánh tkt:claim.');
+
+    const mo = khoi.slice(0, dauNhanh);
+    const awaitDb = [...mo.matchAll(/\bawait\s+(db\.[A-Za-z_$][\w$]*)\s*\(/g)].map((m) => m[1]);
+    assert.deepStrictEqual(awaitDb, [],
+        '\n❌ Có lời tra DB ở phần mở đầu handleTicketComponent: ' + awaitDb.join(', ') + '\n'
+        + '   Nó chạy cho MỌI lượt bấm, kể cả các nhánh không dùng tới giá trị đó, và nằm\n'
+        + '   nguyên trên đường 3 giây. Làm cho nó LƯỜI (chỉ nhánh nào cần mới gọi).\n');
+
+    assert.match(mo, /const layTicket = \(\) => withTimeout\(db\.getTicketByChannel\(channel\.id\), ACK_LOOKUP_TIMEOUT\)/,
+        'Lời đọc bản ghi ticket phải lười VÀ bọc withTimeout(ACK_LOOKUP_TIMEOUT): nó có thể\n'
+        + 'được gọi từ nhánh chưa ack.');
+});
+
+test('ack ticket: nhánh claim ACK TRƯỚC rồi mới GHI', () => {
+    const nhanh = khoiNhanh(khoiHam(fs.readFileSync(NGUON, 'utf8'), 'handleTicketComponent'), 'tkt:claim');
+
+    const viAck = nhanh.indexOf('deferReply(');
+    const viGhi = nhanh.indexOf('db.claimTicket(');
+    assert.ok(viAck !== -1, 'Nhánh claim phải ack (deferReply) trước khi ghi.');
+    assert.ok(viGhi !== -1, 'Nhánh claim phải còn gọi db.claimTicket.');
+    assert.ok(viAck < viGhi,
+        '\n❌ `db.claimTicket` vẫn đứng TRƯỚC ack. Lời GHI thì phải ack trước ghi sau —\n'
+        + '   không phải bọc trần, vì chặn ở 800ms một lời ghi thành công ở 900ms chỉ tạo\n'
+        + '   thêm một lời nói sai.\n');
+
+    // Ack phải ẩn: nhánh thất bại trả lời riêng cho người bấm, mà sau ack công khai thì
+    // không ẩn lại được.
+    assert.match(nhanh, /deferReply\(\{ flags: MessageFlags\.Ephemeral \}\)/,
+        'Ack của nhánh claim phải ẩn (ephemeral) — nhánh "đã có người nhận" là lời nhắn\n'
+        + 'riêng cho người bấm.');
+
+    // Và lời khoe công khai không được mất: nó chuyển sang channel.send.
+    assert.match(nhanh, /channel\.send\(\{ embeds: \[claimEmbed\] \}\)/,
+        'Ack ẩn rồi thì lời khoe "staff đã nhận ticket" phải đi bằng channel.send, nếu không\n'
+        + 'cả kênh không ai biết ticket đã có người nhận.');
+
+    assert.doesNotMatch(nhanh, /withTimeout\([^)]*claimTicket/,
+        'KHÔNG bọc trần quanh lời GHI.');
+});
+
+test('ack ticket: nhánh lock ack trước khi gọi REST đổi quyền kênh', () => {
+    const nhanh = khoiNhanh(khoiHam(fs.readFileSync(NGUON, 'utf8'), 'handleTicketComponent'), 'tkt:lock');
+    const viAck = nhanh.indexOf('deferReply(');
+    const viRest = nhanh.indexOf('permissionOverwrites.edit(');
+    assert.ok(viAck !== -1 && viRest !== -1, 'Nhánh lock phải có cả ack lẫn lời đổi quyền.');
+    assert.ok(viAck < viRest,
+        '`permissionOverwrites.edit` là một vòng REST tới Discord, và nó đứng sau một vòng DB\n'
+        + 'nữa — cộng lại thừa sức vượt hạn 3 giây lúc mạng host chậm. Ack trước.');
+});
