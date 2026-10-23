@@ -147,6 +147,45 @@ test('không có tên sub cũ nào trùng giữa hai lệnh khác nhau', () => {
         + 'phải khoá theo từng lệnh');
 });
 
+test('đường SLASH cũng nhận tên sub cũ — cửa sổ 1 tiếng Discord cập nhật client', () => {
+    // Lệnh global mất tới MỘT TIẾNG để client cập nhật. Ngay sau đợt đổi tên, client còn
+    // cache sẽ gửi `gui`, `xem`, `di-choi`… mà `/bank`, `/dating`, `/premium-admin` đều
+    // defer rồi RƠI QUA IM LẶNG khi sub không khớp -> người chơi thấy "đang suy nghĩ…" mãi.
+    const js = fs.readFileSync(path.join(ROOT, 'src', 'events', 'interactionCreate.js'), 'utf8');
+    assert.match(js, /SUB_ALIASES\[s\]/,
+        'mất lớp bọc getSubcommand ở interactionCreate -> client cache cũ gõ lệnh sẽ bị treo');
+    assert.match(js, /require\('\.\.\/lib\/prefixTen'\)/,
+        'dùng SUB_ALIASES mà thiếu require -> ReferenceError lúc chạy, node --check vẫn xanh');
+
+    // mô phỏng đúng phép bọc đó
+    const bọc = (traVe) => {
+        const it = { options: { getSubcommand: () => traVe } };
+        const goc = it.options.getSubcommand.bind(it.options);
+        it.options.getSubcommand = (...a) => { const s = goc(...a); return (s && SUB_ALIASES[s]) || s; };
+        return it.options.getSubcommand();
+    };
+    assert.strictEqual(bọc('gui'), 'deposit', 'tên cũ phải được dịch sang tên mới');
+    assert.strictEqual(bọc('deposit'), 'deposit', 'tên mới phải đi qua nguyên vẹn');
+    assert.strictEqual(bọc('balance'), 'balance', 'sub không đổi tên phải đi qua nguyên vẹn');
+});
+
+test('mọi lệnh ĐÃ ĐỔI TÊN phải có nhánh cuối khi sub lạ, hoặc đi qua lớp bọc', () => {
+    // `/bank`, `/dating`, `/premium-admin` không có nhánh cuối: nếu lớp bọc bị gỡ mà ba lệnh
+    // này vẫn thiếu nhánh cuối thì sub lạ = treo vĩnh viễn. Chốt một trong hai phải còn.
+    const js = fs.readFileSync(path.join(ROOT, 'src', 'events', 'interactionCreate.js'), 'utf8');
+    const coBoc = /SUB_ALIASES\[s\]/.test(js);
+    const thieuNhanhCuoi = [];
+    for (const [tep, ten] of [['economy/bank.js', 'bank'], ['economy/dating.js', 'dating'],
+        ['owner/premium-admin.js', 'premium-admin']]) {
+        const src = fs.readFileSync(path.join(ROOT, 'src', 'commands', tep), 'utf8');
+        // nhánh cuối = có `invalid_subcommand`/`err_sub` hoặc `default:` sau getSubcommand
+        if (!/invalid_subcommand|err_sub|^\s*default:/m.test(src)) thieuNhanhCuoi.push(`/${ten}`);
+    }
+    assert.ok(coBoc || thieuNhanhCuoi.length === 0,
+        `lớp bọc đã bị gỡ mà ${thieuNhanhCuoi.join(', ')} vẫn thiếu nhánh cuối -> sub lạ sẽ `
+        + 'defer rồi treo. Giữ lớp bọc, hoặc thêm nhánh cuối cho từng lệnh.');
+});
+
 test('đường prefix: w!tiembanh <tên cũ> vẫn ra đúng sub mới', async () => {
     const { buildPrefixInteraction } = require('../src/lib/prefixShim');
     const bakery = LENH.find((j) => j.name === 'bakery');

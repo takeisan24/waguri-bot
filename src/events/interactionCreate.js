@@ -8,6 +8,7 @@ const { buildWaguriEmbed } = require('../lib/embed');
 const { recordMembership } = require('../lib/membership');
 const { logError, skipLog } = require('../lib/logger');
 const { theoDoiAck, kiemAutocomplete } = require('../lib/canhAck');
+const { SUB_ALIASES } = require('../lib/prefixTen');
 const { recordCommand } = require('../lib/commandTelemetry');
 const db = require('../database.js');
 const config = require('../config');
@@ -131,6 +132,19 @@ module.exports = {
                     description: t(locale, 'common.rate_limited')
                 });
                 return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+            }
+
+            // Nhận cả tên subcommand CŨ trên đường slash, vì lệnh global mất tới MỘT TIẾNG
+            // để client cập nhật: ngay sau đợt đổi tên 2026-10-23, client còn cache sẽ gửi
+            // `gui`, `xem`, `di-choi`… Mà `/bank`, `/dating`, `/premium-admin` đều defer rồi
+            // RƠI QUA IM LẶNG khi sub không khớp -> người chơi thấy "đang suy nghĩ…" mãi.
+            // Bọc ở đây thay vì vá 5 tệp lệnh: một chỗ, và gỡ cũng một chỗ khi hết cần.
+            if (interaction.isChatInputCommand?.()) {
+                const gocGetSub = interaction.options.getSubcommand.bind(interaction.options);
+                interaction.options.getSubcommand = (...a) => {
+                    const s = gocGetSub(...a);
+                    return (s && SUB_ALIASES[s]) || s;
+                };
             }
 
             // Theo dõi ack: quét tĩnh KHÔNG kết luận được lệnh nào quên trả lời (ack hay
