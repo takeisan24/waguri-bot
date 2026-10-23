@@ -1,5 +1,6 @@
 {
   "common": {
+    "btn_wiki": "📖 Cẩm nang Waguri",
     "ai_quota_exceeded": "Cậu đã dùng hết **{cap}** lượt chat với mình hôm nay rồi 🥺 — nâng cấp `/premium` để có thêm nhé 💎",
     "ai_quota_global": "Hôm nay mình trò chuyện hơi nhiều nên thấm mệt rồi... 🥺 Cậu cho mình nghỉ một chút nha, mai mình lại nói chuyện với cậu nhé~ 🌸",
     "ai_wrong_channel": "Mình chỉ được phép trò chuyện ở {channel} thôi à~ Cậu sang bên đó nhắn với mình nhé 🌸",
@@ -72,7 +73,9 @@
       "text": "🎉 Cậu vừa lên **cấp {level}** rồi đó! Tớ vẫn âm thầm cộng điểm mỗi lần cậu trò chuyện đấy~",
       "cta_daily": "Thử gõ `/daily` xem — điểm danh mỗi ngày là có quà nhé 🎁",
       "cta_profile": "Gõ `/profile` để xem hồ sơ của cậu đã lớn tới đâu rồi 🌸",
-      "cta_work": "Cậu đủ cấp để đi làm rồi đó — thử `/work` xem sao 💼"
+      "cta_work": "Cậu đủ cấp để đi làm rồi đó — thử `/work` xem sao 💼",
+      "cta_jobs": "Cấp 10 rồi! Hai nghề mới vừa mở — gõ `/jobs list` xem nghề nào xịn hơn nhen 📋",
+      "cta_prestige": "Cấp 50 — cậu đủ điều kiện Chuyển sinh rồi đó! Gõ `/prestige` để đổi lấy đặc quyền vĩnh viễn 🌟"
     }
   },
   "disease": {
@@ -1288,22 +1291,22 @@
       "cat_detail_desc": "Dưới đây là các lệnh thuộc nhóm **{name}**:\n\n{cmds}\n\n*Gõ `/help <lệnh>` để xem chi tiết cách dùng của từng lệnh nhé!*",
       "categories": {
         "0": {
-          "name": "💼 Kinh tế & Nghề"
+          "name": "🌸 Bắt đầu tại đây"
         },
         "1": {
-          "name": "🏪 Cửa hàng & Kho"
+          "name": "💼 Kinh tế & Nghề"
         },
         "2": {
-          "name": "💸 Giao dịch & Ngân hàng"
+          "name": "🏪 Cửa hàng & Kho"
         },
         "3": {
-          "name": "🎲 Trò chơi"
+          "name": "💸 Giao dịch & Tín dụng"
         },
         "4": {
-          "name": "🎰 Cược & may rủi"
+          "name": "🎲 Nuôi trồng & Tiệm bánh"
         },
         "5": {
-          "name": "💬 Trò chuyện"
+          "name": "💬 AI & Hẹn hò"
         },
         "6": {
           "name": "🎀 Vui & Cộng đồng"
@@ -1315,9 +1318,6 @@
           "name": "⚙️ Quản trị (cần quyền)"
         },
         "9": {
-          "name": "🏰 Bang hội"
-        },
-        "10": {
           "name": "🏆 Khác"
         }
       },

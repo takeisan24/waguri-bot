@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, EmbedBuilder, ApplicationCommandOptionType, ActionRowBuilder, StringSelectMenuBuilder, ComponentType, MessageFlags } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, ApplicationCommandOptionType, ActionRowBuilder, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle, ComponentType, MessageFlags } = require('discord.js');
 const { buildWaguriEmbed } = require('../../lib/embed');
 const config = require('../../config');
 const { getInteractionLanguage, t } = require('../../lib/i18n');
@@ -14,6 +14,12 @@ const { getInteractionLanguage, t } = require('../../lib/i18n');
 //
 // GIỮ DẠNG MẢNG: `scripts/check-help-sync.js` lọc bằng `Array.isArray(c) && c[0]`.
 const CATEGORIES = [
+    // `/start` đứng ĐẦU: nó là lệnh người mới nên gõ trước tiên, mà trước đây nằm cuối
+    // nhóm "🏆 Khác" — người mới mở /help gần như không có cách nào thấy nó.
+    { name: '🌸 Bắt đầu tại đây', cmds: [
+        ['start'],
+        ['help'],
+    ] },
     { name: '💼 Kinh tế & Nghề', cmds: [
         ['work'],
         ['fish'],
@@ -91,7 +97,6 @@ const CATEGORIES = [
         ['antinuke'],
     ] },
     { name: '🏆 Khác', cmds: [
-        ['start'],
         ['leaderboard'],
         ['event'],
         ['ticket'],
@@ -100,7 +105,6 @@ const CATEGORIES = [
         ['server'],
         ['user'],
         ['deletedata'],
-        ['help'],
     ] },
 ];
 
@@ -210,7 +214,14 @@ module.exports = {
             );
 
         const row = new ActionRowBuilder().addComponents(selectMenu);
-        const msg = await interaction.editReply({ embeds: [welcomeEmbed], components: [row] });
+        // Cẩm nang web (766 dòng) trước đây KHÔNG có đường nào tới được từ trong bot.
+        const rowWiki = new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+                .setLabel(t(locale, 'common.btn_wiki'))
+                .setStyle(ButtonStyle.Link)
+                .setURL(`${config.WEB_URL}/wiki`)
+        );
+        const msg = await interaction.editReply({ embeds: [welcomeEmbed], components: [row, rowWiki] });
 
         const collector = msg.createMessageComponentCollector({
             componentType: ComponentType.StringSelect,
@@ -248,7 +259,8 @@ module.exports = {
             // Vô hiệu hóa Select Menu sau khi hết thời gian tương tác
             const disabledMenu = StringSelectMenuBuilder.from(selectMenu).setDisabled(true).setPlaceholder(t(locale, 'commands.help.menu_expired'));
             const disabledRow = new ActionRowBuilder().addComponents(disabledMenu);
-            await interaction.editReply({ components: [disabledRow] }).catch(() => {});
+            // Giữ LẠI hàng nút Cẩm nang: nó là liên kết, không hết hạn theo collector.
+            await interaction.editReply({ components: [disabledRow, rowWiki] }).catch(() => {});
         });
     },
 };

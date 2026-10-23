@@ -50,11 +50,17 @@ test('CATEGORIES KHÔNG mang mô tả thứ hai (nguồn thứ hai không ai đ�
 test('mọi lệnh /help nêu đều có mô tả thật ở CẢ vi và en', () => {
     const thieu = [];
     for (const ten of NGON_NGU) {
+        // ĐỌC THẲNG tệp JSON, không qua t(): `t()` rơi về bản Việt khi thiếu khoá tiếng Anh,
+        // nên một mô tả thiếu ở en.json vẫn trả ra chuỗi (tiếng Việt) và phép kiểm qua t()
+        // báo xanh trong khi người dùng EN đọc phải tiếng Việt.
+        const L = JSON.parse(fs.readFileSync(
+            path.join(__dirname, '..', 'src', 'locales', `${ten}.json`), 'utf8'));
         for (const c of tenLenh()) {
-            const s = t(ten, `commands.help.commands.${c}`);
-            // t() trả về chính chuỗi khoá khi thiếu -> người chơi đọc phải "commands.help…"
-            if (typeof s !== 'string' || !s.trim() || s === `commands.help.commands.${c}`) {
-                thieu.push(`${ten}:${c}`);
+            const s = (L.commands.help.commands || {})[c];
+            if (typeof s !== 'string' || !s.trim()) thieu.push(`${ten}:${c}`);
+            // t() cũng không được trả ra chính chuỗi khoá cho người chơi đọc.
+            if (t(ten, `commands.help.commands.${c}`) === `commands.help.commands.${c}`) {
+                thieu.push(`${ten}:${c} (t() trả chuỗi khoá)`);
             }
         }
     }

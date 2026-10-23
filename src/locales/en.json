@@ -1,5 +1,6 @@
 {
   "common": {
+    "btn_wiki": "📖 Waguri Handbook",
     "ai_quota_exceeded": "You have used all **{cap}** of your chat limits with me today 🥺 — upgrade to `/premium` for more 💎",
     "ai_quota_global": "I have been chatting a lot today and I am getting a little tired... 🥺 Let me rest a bit, and we can talk again tomorrow~ 🌸",
     "ai_wrong_channel": "I am only allowed to chat over in {channel}~ Come find me there and we can talk 🌸",
@@ -72,7 +73,9 @@
       "text": "🎉 You just reached **level {level}**! I've been quietly counting every message you send~",
       "cta_daily": "Try `/daily` — there is a gift every day you check in 🎁",
       "cta_profile": "Type `/profile` to see how far your profile has come 🌸",
-      "cta_work": "You are high enough level to work now — give `/work` a try 💼"
+      "cta_work": "You are high enough level to work now — give `/work` a try 💼",
+      "cta_jobs": "Level 10! Two new jobs just unlocked — run `/jobs list` to find a better one 📋",
+      "cta_prestige": "Level 50 — you can Prestige now! Run `/prestige` to trade it for permanent perks 🌟"
     }
   },
   "disease": {
@@ -1288,22 +1291,22 @@
       "cat_detail_desc": "Here are the commands in category **{name}**:\n\n{cmds}\n\n*Type `/help <command>` to view detailed usage of each command!*",
       "categories": {
         "0": {
-          "name": "💼 Economy & Jobs"
+          "name": "🌸 Start Here"
         },
         "1": {
-          "name": "🏪 Store & Inventory"
+          "name": "💼 Economy & Jobs"
         },
         "2": {
-          "name": "💸 Transactions & Banking"
+          "name": "🏪 Store & Inventory"
         },
         "3": {
-          "name": "🎲 Games"
+          "name": "💸 Transactions & Credit"
         },
         "4": {
-          "name": "🎰 Betting & Luck"
+          "name": "🎲 Farming & Bakery"
         },
         "5": {
-          "name": "💬 Conversation"
+          "name": "💬 AI & Dating"
         },
         "6": {
           "name": "🎀 Fun & Community"
@@ -1315,9 +1318,6 @@
           "name": "⚙️ Administration (Requires Perms)"
         },
         "9": {
-          "name": "🏰 Clan System"
-        },
-        "10": {
           "name": "🏆 Miscellaneous"
         }
       },

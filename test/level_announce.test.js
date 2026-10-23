@@ -80,7 +80,16 @@ test('ctaKeyFor: mỗi mốc dạy đúng một việc, cấp khác thì không 
     assert.equal(ctaKeyFor(3), 'common.levelup.cta_profile');
     assert.equal(ctaKeyFor(5), 'common.levelup.cta_work');
     assert.equal(ctaKeyFor(4), null);
-    assert.equal(ctaKeyFor(10), null);
+
+    // Thêm 2026-10-23. Hai dòng dưới trước đây là `ctaKeyFor(10) === null` — nhưng đó là
+    // CHỤP ẢNH trạng thái cũ, không phải chính sách. Hợp đồng mà tệp này bảo vệ (xem đầu
+    // tệp) là bot không được nói THÊM LẦN; cấp 10 và 50 vốn ĐÃ là mốc có báo, nên thêm một
+    // dòng gợi ý vào tin đã gửi thì tần suất không đổi.
+    // Hai mốc này lấy từ dữ liệu thật: seed 0043 mở `moi_gioi` + `streamer` ở cấp 10, và
+    // `config.PRESTIGE.REQ_LEVEL` = 50. Khoảng 6-49 cố ý để trống.
+    assert.equal(ctaKeyFor(10), 'common.levelup.cta_jobs');
+    assert.equal(ctaKeyFor(50), 'common.levelup.cta_prestige');
+    assert.equal(ctaKeyFor(15), null, 'cấp 15 không có mốc mở khoá nào -> đừng bịa gợi ý');
 });
 
 test('announceLevelUp: có lên cấp -> trả lời, KHÔNG ping ai', async () => {
@@ -129,13 +138,20 @@ test('announceLevelUp: cấp 7 im, cấp 10 báo', async () => {
     const m10 = fakeMessage();
     await announceLevelUp(m10, expForLevel(10), 5);
     assert.equal(m10.sent.length, 1, 'cấp 10 là mốc mỗi-5-cấp');
-    assert.doesNotMatch(m10.sent[0].content, /cta_/, 'cấp 10 không kèm gợi ý nào');
+    assert.match(m10.sent[0].content, /cta_jobs/,
+        'cấp 10 mở hai nghề mới (seed 0043) nên tin báo phải chỉ sang /jobs');
+
+    // Mốc KHÔNG có gì mở khoá thì vẫn báo nhưng KHÔNG gợi ý — đừng bịa việc cho người chơi.
+    const m15 = fakeMessage();
+    await announceLevelUp(m15, expForLevel(15), 5);
+    assert.equal(m15.sent.length, 1);
+    assert.doesNotMatch(m15.sent[0].content, /cta_/, 'cấp 15 không có mốc mở khoá nào');
 });
 
 test('chuỗi i18n dùng trong code phải tồn tại thật ở CẢ vi và en', () => {
     // Bản giả `t` ở trên trả về chính khoá, nên test hành vi không phát hiện được khoá chết.
     // Đọc thẳng file ngôn ngữ để bịt chỗ đó.
-    const KEYS = ['text', 'cta_daily', 'cta_profile', 'cta_work'];
+    const KEYS = ['text', 'cta_daily', 'cta_profile', 'cta_work', 'cta_jobs', 'cta_prestige'];
     for (const loc of ['vi', 'en']) {
         const j = require(path.join('..', 'src', 'locales', `${loc}.json`));
         assert.ok(j.common.levelup, `${loc}: thiếu cả nhánh common.levelup`);

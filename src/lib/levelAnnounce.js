@@ -50,6 +50,11 @@ function ctaKeyFor(level) {
     if (level === 2) return 'common.levelup.cta_daily';
     if (level === 3) return 'common.levelup.cta_profile';
     if (level === 5) return 'common.levelup.cta_work';
+    // Mốc dưới đây lấy từ dữ liệu THẬT, không bịa: seed 0043 mở `moi_gioi` + `streamer`
+    // ở cấp 10, và `config.PRESTIGE.REQ_LEVEL` = 50. Khoảng 6-49 cố ý để trống — thà
+    // không gợi ý còn hơn gợi ý một mốc không có thật.
+    if (level === 10) return 'common.levelup.cta_jobs';
+    if (level === 50) return 'common.levelup.cta_prestige';
     return null;
 }
 

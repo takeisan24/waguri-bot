@@ -26,13 +26,21 @@ module.exports = {
             description: t(locale, 'commands.start.desc', { bonus: bonusText })
         });
 
-        const components = onboarded ? [] : [
+        // Nút Cẩm nang hiện CẢ KHI đã nhận quà — đó là đường duy nhất từ bot tới cẩm nang web.
+        const rowWiki = new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+                .setLabel(t(locale, 'common.btn_wiki'))
+                .setStyle(ButtonStyle.Link)
+                .setURL(`${config.WEB_URL}/wiki`)
+        );
+        const components = onboarded ? [rowWiki] : [
             new ActionRowBuilder().addComponents(
                 new ButtonBuilder()
                     .setCustomId('start:claim')
                     .setLabel(t(locale, 'commands.start.btn_label'))
                     .setStyle(ButtonStyle.Success)
-            )
+            ),
+            rowWiki,
         ];
         await interaction.editReply({ embeds: [embed], components });
     },
