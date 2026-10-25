@@ -108,10 +108,12 @@ async function subXem(interaction, locale) {
     const row = new ActionRowBuilder().addComponents(buttons);
     const msg = await interaction.editReply({ embeds: [embed], components: [row] });
 
+    // `max` CỐ Ý không đặt: nhánh `collect` luôn `stop('acted')` sau cú bấm ĐẦU TIÊN, nên
+    // một hạn mức 2 lượt không bao giờ với tới được. Để lại là cái núm giả, người đọc sau
+    // sẽ tin collector nhận hai lượt.
     const collector = msg.createMessageComponentCollector({
         componentType: ComponentType.Button,
         time: 60_000,
-        max: 2
     });
 
     collector.on('collect', async i => {
@@ -127,13 +129,26 @@ async function subXem(interaction, locale) {
         collector.stop('acted');
     });
 
-    collector.on('end', async (_, reason) => {
-        if (reason !== 'acted') {
-            const disabledRow = new ActionRowBuilder().addComponents(
-                buttons.map(b => ButtonBuilder.from(b).setDisabled(true))
-            );
-            await interaction.editReply({ components: [disabledRow] }).catch(() => {});
-        }
+    // LÀM MỜ VÔ ĐIỀU KIỆN — không còn cửa `reason !== 'acted'`.
+    //
+    // Bản cũ chỉ làm mờ khi collector HẾT GIỜ. Bấm một cái thì `stop('acted')` chạy, nhánh
+    // này bỏ qua, và nút Ở LẠI NGUYÊN TRẠNG SÁNG trên tin nhắn — trong khi collector đã
+    // chết nên không ai còn nhận cú bấm nào nữa. `subThu`/`subDonhang` chỉ `editReply` phần
+    // `embeds`, mà Discord giữ nguyên field nào không được gửi, nên nút sống sót qua lượt
+    // cập nhật đó. Người chơi bấm tiếp là gặp "The application did not respond", không phải
+    // vì chậm mà vì không còn ai lắng nghe.
+    //
+    // Đo trên log prod 24-10: `nút bk_btn_orders` ba lần liên tiếp 05:55 → 05:57, cùng một
+    // người, mỗi lần cách nhau đúng một phút — dấu hiệu của người bấm lại vì tưởng mình bấm
+    // hụt. `/bakery` là lệnh đông thứ tư của bot và có tỷ lệ lỗi cao nhất trong nhóm có lưu
+    // lượng thật (6/146 = 4,1% trong 7 ngày).
+    //
+    // `editReply` chỉ gửi `components` nên embed mà hai hàm sub vừa vẽ vẫn còn nguyên.
+    collector.on('end', async () => {
+        const disabledRow = new ActionRowBuilder().addComponents(
+            buttons.map(b => ButtonBuilder.from(b).setDisabled(true))
+        );
+        await interaction.editReply({ components: [disabledRow] }).catch(() => {});
     });
 }
 
