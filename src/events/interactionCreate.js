@@ -418,6 +418,40 @@ module.exports = {
                 return;
             }
 
+            // Nút của Sổ Sứ Mệnh (pass:) — nhận quà và mua Premium.
+            //
+            // VÌ SAO KHỐI NÀY TỪNG KHÔNG TỒN TẠI: `pass.js` viết sẵn `handleButton` ngay từ commit
+            // gốc của tính năng (`79b5e15`) nhưng dây nối thì chưa ai đấu — không có router ở đây,
+            // cũng không collector trong `pass.js`. Nên cả 5 nút `pass:*` chết im từ ngày phát hành:
+            // bấm là "The application did not respond", mà KHÔNG có log lỗi nào vì chẳng handler nào ném.
+            // Đo trên prod 25-10: `battle_pass_users` 130 dòng, XP cao nhất 20.000, số quà đã nhận là 0.
+            // `is_premium` cũng 0, vì `/pass buy` chạy xong cũng chỉ vẽ ra `pass:buy_yes`/`buy_no` —
+            // tức Premium không mua được bằng BẤT CỨ đường nào trên Discord. Log cùng ngày: 21 lần
+            // `Chưa ack sau 2501ms: nút pass:claim_all` trong 2 ngày, một người bấm lại 14 lần/2 phút.
+            //
+            // Lấy module qua `client.commands` chứ không `require` thẳng: cùng cách `work:again` làm,
+            // tránh vòng require giữa events và commands.
+            if (interaction.customId.startsWith('pass:')) {
+                // Quà gồm xu và vật phẩm nên chặn người bị khoá y như đường lệnh slash.
+                // `isBanned`/`rateLimited` đọc RAM, không tốn RTT nào trước ack.
+                if (isBanned(interaction.user.id)) {
+                    return interaction.reply({ embeds: [buildWaguriEmbed(interaction, 'error', { locale, description: t(locale, 'common.banned') })], flags: MessageFlags.Ephemeral });
+                }
+                if (rateLimited(interaction.user.id)) {
+                    return interaction.reply({ embeds: [buildWaguriEmbed(interaction, 'warning', { locale, description: t(locale, 'common.rate_limited') })], flags: MessageFlags.Ephemeral });
+                }
+                const pass = interaction.client.commands.get('pass');
+                try {
+                    // `args` = phần sau `pass:` -> [action, targetUserId]. `handleButton` tự kiểm người
+                    // bấm có đúng chủ nút không, và tự ack bằng `deferUpdate`/`deferReply`.
+                    if (pass) await pass.handleButton(interaction, interaction.customId.split(':').slice(1));
+                } catch (error) {
+                    logError('pass_button', error, { customId: interaction.customId, user: interaction.user.id });
+                    await ackButtonError(interaction, locale);
+                }
+                return;
+            }
+
             // Nút điều hướng nhanh từ Announcement (1-Click Actions)
             if (interaction.customId.startsWith('ann_btn_')) {
                 const action = interaction.customId.replace('ann_btn_', '');
