@@ -17,6 +17,7 @@
 // giờ thấy: DB chậm lúc cao điểm, nhánh hiếm, lệnh chỉ vỡ khi túi đồ đầy.
 // ============================================================
 const { logError } = require('./logger');
+const { dongTomTat } = require('./canhRest');
 
 // Dưới hạn cứng 3 giây của Discord, để còn kịp ghi nhận trước khi interaction chết.
 const NGUONG_ACK_MS = 2500;
@@ -57,6 +58,17 @@ function theoDoiAck(interaction, nhan) {
         // Tên lệnh nằm trong TIÊU ĐỀ chứ không trong nội dung lỗi: logger gộp trùng theo
         // (tiêu đề + dòng đầu của lỗi), nên để chung tiêu đề thì mọi lệnh sẽ dồn vào MỘT
         // khoá và chỉ lệnh đầu tiên được báo.
+        // Nhúng trạng thái MẠNG + REST vào đúng tin cảnh báo.
+        //
+        // Vì sao cần: tới 25-10-2026 nhóm ack/10062 là 164/439 tin kênh log (37%) mà không
+        // tin nào cho biết thời gian đã đi đâu. Ba phép đo đã loại gateway, cron và event
+        // loop bị chặn (xem đầu `lib/canhRest.js`), chỉ còn "POST deferReply mất >2,3s" —
+        // do REST bị XẾP HÀNG, hay do jitter mạng? Hai thứ đó đòi hai bản vá khác nhau,
+        // nên đoán sai là vá sai. `gan60s > 0` đúng lúc vỡ = xếp hàng; luôn 0 mà vẫn vỡ =
+        // jitter. Lần vỡ tiếp theo vì thế TỰ NÓI nguyên nhân.
+        //
+        // `ws.ping` là NaN khi chưa kết nối xong, nên phải canh trước khi làm tròn.
+        const ping = Number(interaction?.client?.ws?.ping);
         logError(`Chưa ack sau ${tong}ms: ${nhan}`,
             new Error('Người dùng đã thấy "The application did not respond". '
                 + `Đã trôi ${daTroiKhiBam}ms TRƯỚC khi đồng hồ được bấm `
@@ -64,6 +76,10 @@ function theoDoiAck(interaction, nhan) {
                 command: nhan,
                 user: interaction?.user ? `<@${interaction.user.id}>` : undefined,
                 guild: interaction?.guildId,
+                // MỘT trường `note`, không phải hai khoá riêng: `logError` chỉ render
+                // command/user/guild/note — khoá lạ bị NUỐT IM LẶNG, tức phép đo sẽ không
+                // đo gì mà vẫn trông như đã làm. (Tôi đã suýt deploy đúng lỗi đó.)
+                note: `ping ${Number.isFinite(ping) ? Math.round(ping) + 'ms' : 'chưa có'} · ${dongTomTat()}`,
             });
     }, conLai);
     if (typeof hen.unref === 'function') hen.unref();

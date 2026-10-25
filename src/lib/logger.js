@@ -55,6 +55,12 @@ async function logError(title, err, meta = {}) {
             meta.command ? `**Lệnh:** \`${meta.command}\`` : null,
             meta.user ? `**User:** ${meta.user}` : null,
             meta.guild ? `**Guild:** \`${meta.guild}\`` : null,
+            // `note` — số đo kèm theo, biến thiên từng lần (vd ping + trạng thái hạn mức
+            // REST ở `lib/canhAck.js`). Cố ý KHÔNG nhồi vào `err.message`: `khoaCua()` gộp
+            // trùng theo DÒNG ĐẦU của message, nên số thay đổi mỗi lần sẽ làm mọi tin thành
+            // khoá riêng và kênh log bị spam. Là trường riêng thì nó hiện ra mà không đụng
+            // vào cách gộp.
+            meta.note ? `**Đo được:** ${meta.note}` : null,
             '```\n' + body + '\n```',
         ].filter(Boolean).join('\n');
         await fetch(url, {

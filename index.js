@@ -228,6 +228,11 @@ require('./src/lib/event').loadEvent()
 // 5. VÒNG ĐỜI GATEWAY + ĐĂNG NHẬP CÓ RETRY
 //    Chịu được mạng host chập chờn / "Opening handshake has timed out".
 // ---------------------------------------------------------
+// Đo xem REST ra Discord có bị xếp hàng không — gắn TRƯỚC khi đăng nhập, vì lượt chạm hạn
+// mức sớm nhất thường là đợt đăng ký lệnh lúc khởi động. Kết quả hiện trong tin cảnh báo
+// ack (`lib/canhAck.js`); lý do cần phép đo này ghi ở đầu `lib/canhRest.js`.
+require('./src/lib/canhRest').theoDoiRest(client);
+
 let lastReady = Date.now();
 client.on('clientReady', () => { lastReady = Date.now(); });
 client.on('shardReady', () => { lastReady = Date.now(); });
