@@ -120,6 +120,7 @@
     },
     "profile": {
       "title": "🌸・Hồ sơ của {user}",
+      "err_bot": "Bot thì không có hồ sơ người chơi đâu nha~ 🌸",
       "no_job": "*Chưa có nghề*",
       "partner_desc": "<@{user}> · Tình cảm: **{score}** 💞",
       "web_profile_hidden": "*(đang ẩn — bấm nút bên dưới để hiện)*",
@@ -1154,16 +1155,6 @@
       "claim_already": "Đơn này cậu báo rồi (hoặc đã được xử lý xong) nha~ Chờ chủ bot xác nhận chút xíu nhé 🌸",
       "order_failed": "Ối, mình không tạo được đơn lúc này 🥺 Cậu thử lại sau vài phút giúp mình nhé!",
       "not_configured": "Chủ bot chưa cấu hình tài khoản nhận ủng hộ nên tính năng này đang tạm nghỉ 🌸"
-    },
-    "profile_ctx": {
-      "err_bot": "Bot thì không có hồ sơ người chơi đâu nha~ 🌸",
-      "err_no_data": "Hơ, chưa lấy được dữ liệu, thử lại sau nhé~ 🌸",
-      "wallet": "💵 Ví tiền",
-      "bank": "🏦 Ngân hàng",
-      "energy": "⚡ Năng lượng",
-      "level": "⭐ Cấp độ",
-      "exp_progress": "📊 Tiến trình EXP ({current}/{max})",
-      "author_title": "🌸・Hồ sơ của {user}"
     },
     "event": {
       "err_owner": "Chỉ owner mới bật/tắt sự kiện được nhé~ 🌸",

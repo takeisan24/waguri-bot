@@ -616,6 +616,7 @@ const OPTION_DESCRIPTIONS = {
 // Khoá = tên đăng ký với Discord (tiếng Anh).
 const CONTEXT_MENU_NAMES = {
     "View Waguri Profile": { vi: "Xem hồ sơ Waguri", en: "View Waguri Profile" },
+    "View Inventory": { vi: "Xem kho đồ", en: "View Inventory" },
 };
 
 const CHOICE_LOCALIZATIONS = {

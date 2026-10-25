@@ -130,6 +130,7 @@ const { COMMAND_DESCRIPTIONS, SUBCOMMAND_DESCRIPTIONS } = require('../src/lib/co
 const KHONG_CAN_LOC = {
     // Đổi tên 2026-10-23: đăng ký bằng tiếng Anh, chữ hiển thị dịch qua `CONTEXT_MENU_NAMES`.
     'View Waguri Profile': 'context menu (chuột phải) — Discord không hiện mô tả cho loại này',
+    'View Inventory':      'context menu (chuột phải) — Discord không hiện mô tả cho loại này',
 };
 
 test('gate: mọi lệnh và subcommand đều có mô tả localizer đủ vi + en', () => {

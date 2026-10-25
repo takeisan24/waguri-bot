@@ -14,8 +14,19 @@ module.exports = {
     async execute(interaction) {
         await interaction.deferReply();
         const locale = await getInteractionLanguage(interaction);
-        const target = interaction.options.getUser('target') || interaction.user;
-        const user = await db.getUser(target.id);
+        // `targetUser` chỉ có khi vào từ context menu "View Waguri Profile" (`profile-ctx.js`).
+        const target = interaction.targetUser || interaction.options.getUser('target') || interaction.user;
+        // Chặn TRƯỚC khi đụng DB: `getUser` tự tạo dòng cho id lạ, nên xem hồ sơ một bot là
+        // đẻ ra một người chơi ma.
+        if (target.bot) {
+            const embed = buildWaguriEmbed(interaction, 'warning', {
+                locale,
+                description: t(locale, 'commands.profile.err_bot')
+            });
+            return interaction.editReply({ embeds: [embed] });
+        }
+        // Song song vì hai truy vấn độc lập nhau — xem chú thích cùng kiểu ở `status.js`.
+        const [user, energy] = await Promise.all([db.getUser(target.id), db.getEnergy(target.id)]);
         if (!user) {
             const embed = buildWaguriEmbed(interaction, 'error', {
                 locale,
@@ -24,7 +35,6 @@ module.exports = {
             return interaction.editReply({ embeds: [embed] });
         }
 
-        const energy = await db.getEnergy(target.id);
         const job = user.job_id ? await db.getJob(user.job_id) : null;
         const p = getProgress(Number(user.exp));
         const wallet = Number(user.wallet), bank = Number(user.bank);

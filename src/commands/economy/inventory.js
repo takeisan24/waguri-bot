@@ -15,7 +15,8 @@ module.exports = {
     async execute(interaction) {
         await interaction.deferReply();
         const locale = await getInteractionLanguage(interaction);
-        const target = interaction.options.getUser('target') || interaction.user;
+        // `targetUser` chỉ có khi vào từ context menu "View Inventory" (`inventory-ctx.js`).
+        const target = interaction.targetUser || interaction.options.getUser('target') || interaction.user;
 
         const inv = await db.getInventory(target.id);
         if (!inv.length) {

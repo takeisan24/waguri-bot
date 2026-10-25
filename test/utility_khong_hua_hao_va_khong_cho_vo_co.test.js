@@ -77,7 +77,7 @@ test('premium: hỏi tên người ủng hộ SONG SONG, không xếp hàng', ()
         'Hỏi không ra tên thì phải lui về ID — đừng để trống một dòng trong bảng vinh danh.');
 });
 
-for (const [tep, khoa] of [['status.js', 'id'], ['profile-ctx.js', 'target.id']]) {
+for (const [tep, khoa] of [['status.js', 'id'], ['../economy/profile.js', 'target.id']]) {
     test(`${tep}: đọc user và năng lượng song song`, () => {
         const s = doc(tep);
         const rx = new RegExp(`const \\[user, energy\\] = await Promise\\.all\\(\\[db\\.getUser\\(${khoa.replace('.', '\\.')}\\), db\\.getEnergy\\(${khoa.replace('.', '\\.')}\\)\\]\\)`);

@@ -120,6 +120,7 @@
     },
     "profile": {
       "title": "🌸・{user}'s Profile",
+      "err_bot": "Bots do not have player profiles~ 🌸",
       "no_job": "*No Job*",
       "partner_desc": "<@{user}> · Affection: **{score}** 💞",
       "web_profile_hidden": "*(hidden — click button below to show)*",
@@ -1154,16 +1155,6 @@
       "claim_already": "You've already reported this order (or it's been handled)~ Just hang tight for the owner 🌸",
       "order_failed": "Oops, I couldn't create the order right now 🥺 Please try again in a few minutes!",
       "not_configured": "The bot owner hasn't set up a receiving account yet, so this is taking a little nap 🌸"
-    },
-    "profile_ctx": {
-      "err_bot": "Bots do not have player profiles~ 🌸",
-      "err_no_data": "Oops, couldn't retrieve player data. Please try again later~ 🌸",
-      "wallet": "💵 Wallet",
-      "bank": "🏦 Bank",
-      "energy": "⚡ Energy",
-      "level": "⭐ Level",
-      "exp_progress": "📊 EXP Progress ({current}/{max})",
-      "author_title": "🌸・Profile of {user}"
     },
     "event": {
       "err_owner": "Only bot owners can toggle events~ 🌸",
