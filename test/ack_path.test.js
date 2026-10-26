@@ -23,6 +23,12 @@ const NGUON = path.join(__dirname, '..', 'src', 'events', 'interactionCreate.js'
 // Thêm tên vào đây = khẳng định hàm đó không thể chạy quá ~1 giây. Đừng thêm bừa.
 const CO_TRAN = {
     getInteractionLanguage: 'lib/i18n.js — cache 60s + withTimeout(ACK_LOOKUP_TIMEOUT) quanh mỗi lần đọc DB',
+    // Cửa lười bọc đúng `getInteractionLanguage` ở trên nên thừa hưởng nguyên trần của nó.
+    // Và nó chỉ được `await` TRONG ba nhánh chặn + nhánh catch, tức những đường đã `return`
+    // trước khi tới `command.execute()` — đường thường không chạm vào nó lần nào. Khoá hành
+    // vi đó bằng `test/locale_khong_chan_duong_ack.test.js`, cổng này chỉ đọc chữ nên không
+    // tự phân biệt được nhánh rẽ.
+    layLocale: 'interactionCreate.js — cửa lười gọi getInteractionLanguage (đã có trần), chỉ chạy ở nhánh chặn',
 };
 
 // Hàm KHÔNG chạm DB, được phép xuất hiện trong biểu thức khởi tạo một promise chờ sẵn.
@@ -103,9 +109,21 @@ test('ack: khối đồng bộ role ở server support không được await', (
     // Chỉ soi ĐÚNG khối đồng bộ role, không soi cả file: sau khi defer thì `await db.getUser()`
     // là hợp lệ (handler nút `profile:toggle` chẳng hạn), cấm toàn cục sẽ báo nhầm.
     const tu = nguyen.indexOf('SUPPORT_GUILD_ID');
-    const den = nguyen.indexOf('const locale = await getInteractionLanguage');
+    // Neo cuối là `.catch()` CỦA CHÍNH khối này, không phải một dòng ở xa phía dưới.
+    //
+    // Bản cũ neo vào `const locale = await getInteractionLanguage`. Ngày 26-10-2026 dòng đó
+    // bị bỏ (tra ngôn ngữ chuyển sang tính lười) — `indexOf` không trả -1 mà **trượt xuống
+    // lời gọi y hệt ở nhánh NÚT phía dưới**, nên lát cắt nuốt trọn cả nhánh slash và cổng
+    // báo đỏ với 8 cái `await` chẳng liên quan gì tới khối đồng bộ role. Cổng không gãy —
+    // nó âm thầm NỚI RA, loại hỏng khó thấy hơn hẳn.
+    const den = nguyen.indexOf('[ROLE SYNC ERROR]');
     assert.ok(tu !== -1 && den !== -1 && tu < den,
         'Không khoanh được khối đồng bộ role — test cần cập nhật theo cấu trúc file mới.');
+    // Chặn trượt neo: hai mốc phải nằm sát nhau. Nếu ai đổi cấu trúc làm lát cắt phình ra,
+    // cổng phải kêu NGAY ở đây thay vì lặng lẽ soi nhầm nửa tệp.
+    assert.ok(den - tu < 1200,
+        `Lát cắt khối đồng bộ role phình tới ${den - tu} ký tự — gần như chắc chắn neo đã\n`
+        + 'trượt sang chỗ khác. Sửa neo, ĐỪNG nới ngưỡng này.');
 
     const khoi = boComment(nguyen.slice(tu, den));
     const coAwait = [...khoi.matchAll(/\bawait\s+([A-Za-z_$][\w$.]*)\s*\(/g)].map(m => m[1]);

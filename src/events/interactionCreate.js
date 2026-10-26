@@ -96,10 +96,33 @@ module.exports = {
                     .catch(e => console.error('[ROLE SYNC ERROR] interactionCreate:', e?.message || e));
             }
 
-            const locale = await getInteractionLanguage(interaction);
+            // TRA NGÔN NGỮ LƯỜI — chỉ chạy khi một cổng chặn thật sự đóng sập.
+            //
+            // VÌ SAO: bản cũ `await getInteractionLanguage(interaction)` ngay tại đây, tức
+            // trên 100% lưu lượng và NẰM TRƯỚC ACK. Nhưng từ đây tới `command.execute()`,
+            // giá trị đó chỉ được dùng trong ba nhánh chặn dưới (cấm · giam · giới hạn tốc
+            // độ) và nhánh catch khi lệnh ném lỗi. Đường thường thì nó được tính ra rồi
+            // KHÔNG AI DÙNG — mỗi lệnh tự gọi `getInteractionLanguage` sau `deferReply()`,
+            // lúc đó đã có 15 phút nên chậm cũng vô hại.
+            //
+            // Giá của nó: `ACK_LOOKUP_TIMEOUT` là 800ms, tức khi DB chập thì 27% ngân sách
+            // 3 giây bị tiêu cho một giá trị sắp bị vứt. Đo trên 58 tin cảnh báo ack
+            // (26-10-2026): trước-mốc p50 chỉ 167ms, nhưng **p90 là 908ms** và 7/58 vượt
+            // 800ms — trong đó bốn cái bu rất chặt ở **821 · 908 · 911 · 917ms**, đúng bằng
+            // trần 800ms cộng một nhúm độ trễ gateway. Đó là vân tay của chính lời tra này
+            // chạm trần. Nó không TỰ gây vỡ ack (mất 800ms vẫn còn 2,1s), nhưng nó bào mất
+            // hơn một phần tư biên an toàn trên MỌI lượt gọi.
+            //
+            // Cả ba cổng dưới đều đọc RAM (`isBanned`/`isBlocked`/`isJailed`/`rateLimited`,
+            // xem `lib/jail.js`), nên thứ tự mới là: gác bằng RAM trước, chỉ ai bị chặn mới
+            // phải trả tiền tra ngôn ngữ — và họ thì không chạy lệnh nào nên 800ms đó không
+            // ăn vào ngân sách của ai cả.
+            let _locale;
+            const layLocale = async () => (_locale ??= await getInteractionLanguage(interaction));
 
             // Chặn user bị ban
             if (isBanned(interaction.user.id)) {
+                const locale = await layLocale();
                 const embed = buildWaguriEmbed(interaction, 'error', {
                     locale,
                     description: t(locale, 'common.banned')
@@ -108,12 +131,11 @@ module.exports = {
             }
 
             // Chặn khi đang bị giam (chỉ kiểm tra với lệnh kiếm tiền/cờ bạc/trộm).
-            // Lời tra đã chạy song song với `getInteractionLanguage` ở trên — tới đây thường
-            // đã xong sẵn, `await` không tốn thêm thời gian.
             // Kiểm tra ĐỒNG BỘ, 0 vòng DB — xem `lib/jail.js` để biết vì sao đủ an toàn.
             if (isBlocked(interaction.commandName)) {
                 const jail = isJailed(interaction.user.id);
                 if (jail) {
+                    const locale = await layLocale();
                     const time = `<t:${Math.floor(jail.until / 1000)}:R>`;
                     const embed = buildWaguriEmbed(interaction, 'error', {
                         locale,
@@ -128,6 +150,7 @@ module.exports = {
 
             // Rate limit tổng (chống spam)
             if (rateLimited(interaction.user.id)) {
+                const locale = await layLocale();
                 const embed = buildWaguriEmbed(interaction, 'warning', {
                     locale,
                     description: t(locale, 'common.rate_limited')
@@ -163,6 +186,10 @@ module.exports = {
                 logError('Lỗi thực thi lệnh', error, { command: interaction.commandName, user: `<@${interaction.user.id}>`, guild: interaction.guildId });
                 // Interaction đã hết hạn (10062) / đã ack (40060) do mạng chậm -> không thể phản hồi nữa, bỏ qua tránh lỗi dây chuyền.
                 if (error?.code === 10062 || error?.code === 40060) return;
+                // `layLocale()` chứ không phải biến `locale`: lời tra nay LƯỜI (xem chú thích
+                // ở khối cổng chặn phía trên). Ở đây chậm cũng vô hại — lệnh đã chạy xong và
+                // interaction đã được ack, nên không còn hạn 3 giây nào để lo.
+                const locale = await layLocale();
                 const embed = buildWaguriEmbed(interaction, 'error', {
                     locale,
                     description: t(locale, 'common.generic_error')
