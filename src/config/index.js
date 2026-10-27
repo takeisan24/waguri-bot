@@ -82,6 +82,20 @@ module.exports = {
         BLUSH: 'https://raw.githubusercontent.com/takeisan24/waguri-bot/master/web/public/assets/banners/banner_blush.jpg',
     },
 
+    // Ảnh MÙA LỄ — khác PRESET_BANNERS ở TỶ LỆ, nên đừng trộn hai nhóm.
+    //   PRESET_BANNERS: 1200×675 (16:9) -> dùng cho .setImage(), nằm ngang hết chiều rộng embed.
+    //   SEASONAL_IMAGES: 736×736 (vuông) -> dùng cho .setThumbnail(), hoặc .setImage() nếu
+    //   chấp nhận khung vuông. Đặt ảnh vuông vào chỗ của banner thì Discord vẫn hiện, chỉ là
+    //   lệch hẳn với 5 banner còn lại — đó là lý do có hai nhóm thay vì nhét chung.
+    // Mọi đường dẫn dưới đây được cổng `test/halloween_mua_le.test.js` đối chiếu với FILE
+    // THẬT trong web/public: gõ sai một ký tự thì embed hiện ô ảnh vỡ, Discord không báo lỗi.
+    SEASONAL_IMAGES: {
+        HALLOWEEN_BANNER: 'https://raw.githubusercontent.com/takeisan24/waguri-bot/master/web/public/assets/banners/banner_halloween.jpg',
+        HALLOWEEN_PUMPKIN: 'https://raw.githubusercontent.com/takeisan24/waguri-bot/master/web/public/assets/seasonal/halloween_pumpkin.jpg',
+        HALLOWEEN_WITCH: 'https://raw.githubusercontent.com/takeisan24/waguri-bot/master/web/public/assets/seasonal/halloween_witch.jpg',
+        HALLOWEEN_COSTUME: 'https://raw.githubusercontent.com/takeisan24/waguri-bot/master/web/public/assets/seasonal/halloween_costume.jpg',
+    },
+
     LEVELING: {
         BASE: 100, // tổng EXP để đạt level L = BASE * (L-1)^2
     },
@@ -277,7 +291,13 @@ module.exports = {
             // cost: 0 -> `/cosmetic badge-buy` tự từ chối (nó chặn cost <= 0). Huy hiệu này
             // CHỈ đến từ việc ủng hộ tiền thật, không mua được bằng xu trong game — đó là
             // toàn bộ ý nghĩa của nó. Cấp bởi RPC `approve_donation` (migration 0131).
-            supporter: { emoji: '💝', cost: 0, name_vi: 'Người Ủng Hộ', name_en: 'Supporter' }
+            supporter: { emoji: '💝', cost: 0, name_vi: 'Người Ủng Hộ', name_en: 'Supporter' },
+            // `season` -> chỉ MUA được khi mùa đó đang mở (src/lib/season.js). Trường này là
+            // cơ chế chung, không riêng Halloween: thêm huy hiệu Tết/Trung Thu sau chỉ cần
+            // gắn `season` tương ứng. Huy hiệu ĐÃ mua thì trưng bày được quanh năm — đó
+            // chính là giá trị của nó: dấu vết chứng minh có mặt đúng mùa.
+            // Giá 31.000 là cái gật đầu với 31/10; nằm giữa `heart` (50k) và `baker` (80k).
+            halloween: { emoji: '🎃', cost: 31000, season: 'halloween', name_vi: 'Bí Ngô Kikyo', name_en: 'Kikyo Pumpkin' }
         }
     },
 

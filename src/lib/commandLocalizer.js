@@ -675,6 +675,7 @@ const CHOICE_LOCALIZATIONS = {
     "heart": { vi: "💖 Trái Tim Ấm Áp (50.000 VNĐ)", en: "💖 Warm Heart (50,000 VNĐ)" },
     "vip": { vi: "👑 Thành Viên Hoàng Gia (200.000 VNĐ)", en: "👑 Royal Member (200,000 VNĐ)" },
     "baker": { vi: "🍰 Vua Bánh Gekka (80.000 VNĐ)", en: "🍰 Gekka Baking King (80,000 VNĐ)" },
+    "halloween": { vi: "🎃 Bí Ngô Kikyo (31.000 VNĐ — chỉ dịp Halloween)", en: "🎃 Kikyo Pumpkin (31,000 VNĐ — Halloween only)" },
     "prestige_1": { vi: "⭐ Chuyển Sinh I", en: "⭐ Prestige I" },
     "prestige_2": { vi: "🌟 Chuyển Sinh II", en: "🌟 Prestige II" },
     "prestige_3": { vi: "✨ Chuyển Sinh III", en: "✨ Prestige III" },

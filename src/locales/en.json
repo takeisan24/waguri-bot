@@ -175,7 +175,8 @@
         "thu": "Autumn",
         "dong": "Winter",
         "tet": "Lunar New Year",
-        "trung_thu": "Mid-Autumn Festival"
+        "halloween": "Halloween 🎃",
+        "trungthu": "Mid-Autumn Festival 🥮"
       }
     },
     "jobs": {
@@ -973,7 +974,8 @@
       "prize_jackpot_money": "🤑 JACKPOT: **+{amount}** {currency}!!!",
       "prize_rare_item": "💎 ULTRA RARE! You received **{name}**!",
       "title": "🎁・Mysterious Crate Opening",
-      "desc": "You spent **{cost}** {currency} to open the crate...\n\n{desc}\n\n💵 Balance: **{balance}** {currency}"
+      "desc": "You spent **{cost}** {currency} to open the crate...\n\n{desc}\n\n💵 Balance: **{balance}** {currency}",
+      "title_halloween": "🎃・HALLOWEEN CANDY BAG・🎃"
     },
     "user": {
       "title": "🌸 Profile of {user}",
@@ -2327,6 +2329,14 @@
       },
       "title_dai_hoc_si": {
         "name": "Title: Grand Scholar"
+      },
+      "keo_bi_ngo": {
+        "name": "Halloween Pumpkin Candy",
+        "desc": "A pumpkin candy Waguri keeps tucked in her coat pocket. Restores 65 energy (/eat). Sold only around Halloween."
+      },
+      "banh_ma_gekka": {
+        "name": "Gekka Ghost Cookie",
+        "desc": "A ghost-shaped cookie the Gekka bakery only bakes for Halloween. +25% income for 3 hours (/eat)."
       }
     },
     "jobs": {

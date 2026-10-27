@@ -23,6 +23,7 @@ const { LINES } = require('../src/commands/fun/action');
 const { CATEGORIES } = require('../src/commands/utility/help');
 const config = require('../src/config');
 const { localizeCommandJSON } = require('../src/lib/commandLocalizer');
+const { SEASON_LABEL } = require('../src/lib/season');
 
 // ---- (A) Value-level coverage cho MỌI key động có domain enumerable ----
 // Domain lấy TRỰC TIẾP từ code (import) nên tự cập nhật khi thêm value; vài hằng game cố định
@@ -44,7 +45,12 @@ test('i18n: mọi value key động (species/roles/plans/action/baucua/staff/hel
     });
     for (let d = 0; d <= 6; d++) required.push(`common.days.${d}`);                 // getDay() 0..6 (amlich)
     for (let s = 1; s <= 5; s++) required.push(`commands.quest.newbie_steps.${s}.name`, `commands.quest.newbie_steps.${s}.hint`); // lib/newbie NEWBIE_STEPS 1..5
-    for (const s of ['xuan', 'ha', 'thu', 'dong', 'tet', 'trung_thu']) required.push(`commands.store.seasons.${s}`); // item.season (hằng game)
+    // Mùa của VẬT PHẨM lấy thẳng từ `SEASON_LABEL` — nguồn mà lib/season.js và /store thật sự
+    // dùng. Trước 27-10 danh sách này chép tay và đã TRÔI LỆCH: nó đòi `trung_thu` trong khi id
+    // mùa thật là `trungthu`, nên khoá locale đúng thì cổng đỏ còn khoá chết thì cổng xanh —
+    // cổng tự bảo vệ một khoá không ai đọc. Bốn mùa tiết `xuan/ha/thu/dong` không phải mùa vật
+    // phẩm, giữ tường minh.
+    for (const s of ['xuan', 'ha', 'thu', 'dong', ...Object.keys(SEASON_LABEL)]) required.push(`commands.store.seasons.${s}`);
     // Key truyền qua BIẾN (ternary literal) nên scanner tĩnh không thấy — chốt tường minh ở đây.
     required.push('commands.masoi.seer_result_yes', 'commands.masoi.seer_result_no'); // masoi.js:173 resKey
 

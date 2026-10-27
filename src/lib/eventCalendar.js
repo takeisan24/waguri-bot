@@ -45,7 +45,11 @@ async function runDecision(client) {
                                     `**Hệ số:** Nhân **x${ev.mult}** mọi thu nhập cờ bạc và lao động hôm nay! 🧧\n\n` +
                                     `💬 *Lời chúc từ Waguri:*\n> ${ev.blessing}`
                                 )
-                                .setImage(pickWaguriImage('JACKPOT') || null)
+                                // Ảnh riêng của lễ nếu có, không thì rơi về ảnh Waguri ngẫu nhiên
+                                // như trước. `ev.image` là KHOÁ trong SEASONAL_IMAGES, nên khoá sai
+                                // -> `undefined` -> vẫn rơi về nhánh cũ chứ không ném; cổng
+                                // `test/halloween_mua_le.test.js` mới là chỗ bắt khoá sai.
+                                .setImage(config.SEASONAL_IMAGES?.[ev.image] || pickWaguriImage('JACKPOT') || null)
                                 .setFooter(getWaguriFooter(client));
 
                             await channel.send({ embeds: [embed] });

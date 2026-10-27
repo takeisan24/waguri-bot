@@ -3,6 +3,7 @@ const { buildWaguriEmbed } = require('../../lib/embed');
 const db = require('../../database.js');
 const config = require('../../config');
 const { getInteractionLanguage, t } = require('../../lib/i18n');
+const { activeSeasons, SEASON_LABEL } = require('../../lib/season');
 
 const fmt = (n, locale) => Number(n).toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN');
 const HEX = /^#?[0-9a-fA-F]{6}$/;
@@ -22,7 +23,8 @@ module.exports = {
                     { name: '💰 Triệu Phú Gekka (100.000 VNĐ)', value: 'rich' },
                     { name: '💖 Trái Tim Ấm Áp (50.000 VNĐ)', value: 'heart' },
                     { name: '👑 Thành Viên Hoàng Gia (200.000 VNĐ)', value: 'vip' },
-                    { name: '🍰 Vua Bánh Gekka (80.000 VNĐ)', value: 'baker' }
+                    { name: '🍰 Vua Bánh Gekka (80.000 VNĐ)', value: 'baker' },
+                    { name: '🎃 Bí Ngô Kikyo (31.000 VNĐ — chỉ dịp Halloween)', value: 'halloween' }
                 )))
         .addSubcommand(s => s.setName('badge-equip').setDescription('Trưng bày huy hiệu lên profile')
             .addStringOption(o => o.setName('badge').setDescription('Chọn huy hiệu').setRequired(true)
@@ -31,6 +33,8 @@ module.exports = {
                     { name: '💖 Trái Tim Ấm Áp', value: 'heart' },
                     { name: '👑 Thành Viên Hoàng Gia', value: 'vip' },
                     { name: '🍰 Vua Bánh Gekka', value: 'baker' },
+                    // Mua theo mùa nhưng TRƯNG BÀY quanh năm -> có mặt ở đây không kèm điều kiện.
+                    { name: '🎃 Bí Ngô Kikyo', value: 'halloween' },
                     { name: '⭐ Chuyển Sinh I', value: 'prestige_1' },
                     { name: '🌟 Chuyển Sinh II', value: 'prestige_2' },
                     { name: '✨ Chuyển Sinh III', value: 'prestige_3' },
@@ -115,7 +119,18 @@ module.exports = {
             if (!badgeConf || badgeConf.cost <= 0) {
                 return replyEmbed('error', 'Lỗi / Error', 'Huy hiệu không hợp lệ hoặc không bán.');
             }
-            
+
+            // Huy hiệu MÙA: chặn TRƯỚC khi chạm ví. Danh sách choice của Discord là tĩnh nên
+            // huy hiệu mùa vẫn hiện quanh năm — cửa thật nằm ở đây, không ở giao diện.
+            if (badgeConf.season && !activeSeasons().has(badgeConf.season)) {
+                const nhan = SEASON_LABEL[badgeConf.season] || badgeConf.season;
+                const ten = locale === 'en' ? badgeConf.name_en : badgeConf.name_vi;
+                return replyEmbed('warning', 'Chưa tới mùa / Out of season', locale === 'en'
+                    ? `**${badgeConf.emoji} ${ten}** is only sold during **${nhan}**. Come back then~ 🌸`
+                    : `**${badgeConf.emoji} ${ten}** chỉ bán vào dịp **${nhan}** thôi nha~ Đợi đúng mùa ghé lại nhé 🌸`);
+            }
+
+
             const u = await db.getUser(userId);
             if (!u) return replyEmbed('error', 'Lỗi / Error', t(locale, 'common.db_error'));
             

@@ -175,7 +175,8 @@
         "thu": "Thu",
         "dong": "Đông",
         "tet": "Tết Cổ Truyền",
-        "trung_thu": "Trung Thu"
+        "halloween": "Halloween 🎃",
+        "trungthu": "Trung Thu 🥮"
       }
     },
     "jobs": {
@@ -973,7 +974,8 @@
       "prize_jackpot_money": "🤑 ĐẠI TRÚNG: **+{amount}** {currency}!!!",
       "prize_rare_item": "💎 CỰC HIẾM! Cậu nhận được **{name}**!",
       "title": "🎁・Mở Rương Bí Ẩn",
-      "desc": "Cậu chi **{cost}** {currency} mở rương...\n\n{desc}\n\n💵 Số dư ví: **{balance}** {currency}"
+      "desc": "Cậu chi **{cost}** {currency} mở rương...\n\n{desc}\n\n💵 Số dư ví: **{balance}** {currency}",
+      "title_halloween": "🎃・TÚI KẸO HALLOWEEN・🎃"
     },
     "user": {
       "title": "🌸 Hồ sơ của {user}",

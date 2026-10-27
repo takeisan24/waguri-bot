@@ -4,11 +4,20 @@ const db = require('../../database.js');
 const config = require('../../config');
 const { getInteractionLanguage, t } = require('../../lib/i18n');
 const { gamblingEnabled } = require('../../lib/guildflags');
+const { activeSeasons } = require('../../lib/season');
 
 const fmt = (n, locale) => Number(n).toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN');
 const COMMON = ['banh_mi', 'ca_phe', 'xoi', 'soda_gekka'];
 const GOOD = ['the_sinh_vien', 'mu_noi', 'hop_but', 'bo_lam_banh'];
 const RARE = ['dong_ho_saku', 'xe_wave', 'laptop'];
+
+// Trick-or-treat đi bằng CHÍNH lệnh này thay vì một lệnh mới: `/crate` đã là money sink
+// có sẵn (EV ~0.7x), nên chèn đồ Halloween vào đây KHÔNG tạo nguồn tiền mới và KHÔNG cần
+// đăng ký lại lệnh với Discord. Hai mã dưới phải TỒN TẠI trong catalog, nếu không mọi lượt
+// rơi vào chúng sẽ báo "trao hỏng" — cổng test/halloween_mua_le.test.js neo đúng chỗ đó.
+const HALLOWEEN_COMMON = 'keo_bi_ngo';
+const HALLOWEEN_GOOD = 'banh_ma_gekka';
+
 const rpick = a => a[Math.floor(Math.random() * a.length)];
 
 module.exports = {
@@ -67,14 +76,20 @@ module.exports = {
             return n === null ? HONG : t(locale, key, { name: n });
         };
 
+        // Mùa Halloween: chèn thêm đồ lễ vào hai rổ thường, KHÔNG đổi tỉ lệ các nhánh —
+        // nền kinh tế giữ nguyên EV, chỉ nội dung giải thưởng là đổi.
+        const laHalloween = activeSeasons().has('halloween');
+        const rooCommon = laHalloween ? [...COMMON, HALLOWEEN_COMMON] : COMMON;
+        const rooGood = laHalloween ? [...GOOD, HALLOWEEN_GOOD] : GOOD;
+
         // Phân phối EV ÂM (~0.7x) -> rương là money sink thật, spam mở sẽ lỗ dần.
         const r = Math.random();
         let desc, type = 'success';
         if (r < 0.40) { desc = await dongTien(0.1 + Math.random() * 0.3, 'commands.crate.prize_little_money'); type = 'warning'; }
         else if (r < 0.65) { desc = await dongTien(0.5 + Math.random() * 0.4, 'commands.crate.prize_decent_money'); type = 'warning'; }
-        else if (r < 0.80) { desc = await dongDo(COMMON, 'commands.crate.prize_common_item'); }
+        else if (r < 0.80) { desc = await dongDo(rooCommon, 'commands.crate.prize_common_item'); }
         else if (r < 0.92) { desc = await dongTien(1 + Math.random() * 0.8, 'commands.crate.prize_good_money'); }
-        else if (r < 0.975) { desc = await dongDo(GOOD, 'commands.crate.prize_good_item'); }
+        else if (r < 0.975) { desc = await dongDo(rooGood, 'commands.crate.prize_good_item'); }
         else if (r < 0.997) { desc = await dongTien(2.5 + Math.random() * 1.5, 'commands.crate.prize_jackpot_money'); type = 'jackpot'; }
         else { desc = await dongDo(RARE, 'commands.crate.prize_rare_item'); type = 'jackpot'; }
 
@@ -85,7 +100,7 @@ module.exports = {
         const u = await db.getUser(userId);
         const embed = buildWaguriEmbed(interaction, type, {
             locale,
-            title: t(locale, 'commands.crate.title'),
+            title: t(locale, laHalloween ? 'commands.crate.title_halloween' : 'commands.crate.title'),
             description: t(locale, 'commands.crate.desc', {
                 cost: fmt(cost, locale),
                 currency: config.CURRENCY,
@@ -93,6 +108,11 @@ module.exports = {
                 balance: fmt(u?.wallet || 0, locale)
             })
         }).setTimestamp();
+
+        // Ảnh mùa lễ là ảnh VUÔNG -> đặt vào thumbnail (góc phải), không phải .setImage().
+        if (laHalloween && config.SEASONAL_IMAGES?.HALLOWEEN_WITCH) {
+            embed.setThumbnail(config.SEASONAL_IMAGES.HALLOWEEN_WITCH);
+        }
 
         await interaction.editReply({ embeds: [embed] });
     },

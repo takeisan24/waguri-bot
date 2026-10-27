@@ -1,5 +1,7 @@
 // Lịch sự kiện tự kích hoạt theo ngày (lễ VN dương + âm lịch, quốc tế phổ biến ở VN, kỉ niệm bot/Waguri).
-// Mỗi event: { id, name, emoji, mult (nhân thu nhập/EXP), blessing (lời chúc Waguri), solar?/lunar? }.
+// Mỗi event: { id, name, emoji, mult (nhân thu nhập/EXP), blessing (lời chúc Waguri), solar?/lunar?, image? }.
+//   image: KHOÁ trong `config.SEASONAL_IMAGES` (không phải URL) — URL sống ở src/config/
+//          theo Luật 8. Thiếu `image` -> embed rơi về ảnh Waguri ngẫu nhiên như trước.
 //   solar: mảng [ngày, tháng] dương lịch.   lunar: mảng [ngày, tháng] ÂM lịch (quy đổi qua amlich).
 // Khi nhiều sự kiện trùng ngày -> lấy cái ĐỨNG TRƯỚC trong danh sách (xếp theo độ quan trọng).
 const { solar2lunar } = require('../lib/amlich');
@@ -49,8 +51,15 @@ const EVENTS = [
     { id: 'valentine', name: 'Lễ Tình Nhân', emoji: '💝', mult: 1.2,
       solar: [[14, 2]],
       blessing: 'Valentine ngọt ngào nha~ 💝 Dù độc thân hay có đôi, cậu vẫn rất đáng yêu trong mắt Waguri! 🍫' },
+    // Cửa sổ 3 ngày thay vì đúng 31/10: sự kiện tự tắt lúc 23:59 (xem `hoursUntilEndOfDay`
+    // ở lib/eventCalendar.js), nên neo một ngày duy nhất thì ai không online đúng hôm đó
+    // coi như không có lễ. Mùa bán đồ (`halloween` trong lib/season.js) rộng hơn — 25/10
+    // đến 01/11 — để người chơi kịp MUA trước khi hệ số bật.
+    // Hệ số 1.3 giữ nguyên: Halloween là lễ du nhập, xếp dưới Trung Thu (1.5) và Tết (2.0)
+    // cho đúng trọng lượng văn hoá Việt mà bot đang bản địa hoá.
     { id: 'halloween', name: 'Halloween', emoji: '🎃', mult: 1.3,
-      solar: [[31, 10]],
+      solar: [[30, 10], [31, 10], [1, 11]],
+      image: 'HALLOWEEN_BANNER',
       blessing: 'Trick or treat~ 🎃 Coi chừng bị Waguri "doạ" cho một cái bánh ma quái nè! 👻🍬' },
 ];
 
