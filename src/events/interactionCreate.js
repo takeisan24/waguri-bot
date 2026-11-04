@@ -19,9 +19,36 @@ const { isOwner } = require('../lib/owner');
 const { approveAndThank } = require('../lib/premiumOrders');
 const { handlePayButton } = require('../lib/payButtons');
 
+// Token của một interaction chỉ sống 15 phút. Quá mốc đó thì MỌI lời gọi
+// reply/editReply/followUp đều trả về 50027 — gọi nữa chỉ tốn thêm một request chắc chắn
+// hỏng, đúng lúc ta cần hàng đợi REST thông nhất.
+const TOKEN_SONG_MS = 15 * 60_000;
+
+// Ba mã nói CÙNG một chuyện: không còn đường phản hồi nữa.
+//   10062 interaction hết hạn · 40060 đã ack rồi · 50027 token đã chết.
+// 50027 thêm 04-11-2026 sau sự cố hàng đợi REST dồn 15–114 phút (đo bằng cách giải base64
+// token trong url mà console prod in ra). Thiếu mã này thì nhánh báo lỗi phía dưới vẫn gọi
+// followUp, mà lời gọi đó CHẮC CHẮN cũng 401 — mỗi sự cố sinh 2 request hỏng thay vì 1.
+const MA_HET_DUONG = new Set([10062, 40060, 50027]);
+
+/**
+ * Còn phản hồi được không? Hỏi TRƯỚC khi tiêu một request chắc chắn hỏng.
+ *
+ * Hai cửa, và cửa thứ hai mới là cửa tổng quát: mã lỗi chỉ biết được SAU khi đã có một lời
+ * gọi hỏng, còn tuổi token thì tính được tại chỗ, không tốn gì. Nên ngay cả khi lời gọi đầu
+ * vỡ vì lý do khác (mạng rớt chẳng hạn) mà token đã quá hạn, ta vẫn im thay vì thử lần nữa.
+ */
+function hetDuongPhanHoi(interaction, err) {
+    if (MA_HET_DUONG.has(err?.code)) return true;
+    const sinh = interaction?.createdTimestamp;
+    return Boolean(sinh) && Date.now() - sinh >= TOKEN_SONG_MS;
+}
+
 // Ack lỗi cho handler nút: cố gắng phản hồi ephemeral để interaction không chết im lặng
-// ("This interaction failed"). Nuốt 10062 (hết hạn) / 40060 (đã ack) — không thể phản hồi thêm.
-async function ackButtonError(interaction, locale) {
+// ("This interaction failed"). `goc` là lỗi đã làm nhánh gọi vỡ — truyền vào thì chặn được
+// sớm hơn; bỏ trống vẫn an toàn vì cửa tuổi token luôn chạy.
+async function ackButtonError(interaction, locale, goc) {
+    if (hetDuongPhanHoi(interaction, goc)) return;
     try {
         const payload = { content: t(locale, 'common.generic_error'), flags: MessageFlags.Ephemeral };
         if (interaction.replied || interaction.deferred) {
@@ -30,7 +57,7 @@ async function ackButtonError(interaction, locale) {
             await interaction.reply(payload);
         }
     } catch (e) {
-        if (e?.code === 10062 || e?.code === 40060) return;
+        if (MA_HET_DUONG.has(e?.code)) return;
         console.error('[interactionCreate] ackButtonError không gửi được:', e?.message || e);
     }
 }
@@ -183,9 +210,26 @@ module.exports = {
                 canh.xong(true);   // lỗi đã được log riêng ngay dưới, đừng báo trùng
                 recordCommand(interaction.commandName, interaction.user.id, false);
                 console.error(`Lỗi khi thực thi lệnh ${interaction.commandName}:`, error);
-                logError('Lỗi thực thi lệnh', error, { command: interaction.commandName, user: `<@${interaction.user.id}>`, guild: interaction.guildId });
-                // Interaction đã hết hạn (10062) / đã ack (40060) do mạng chậm -> không thể phản hồi nữa, bỏ qua tránh lỗi dây chuyền.
-                if (error?.code === 10062 || error?.code === 40060) return;
+                // TUỔI interaction lúc vỡ — số đo quan trọng nhất của nhóm lỗi này, và nó
+                // KHÔNG suy ra được từ chỗ nào khác trong tin log. Sự cố 03/11-2026: hàng đợi
+                // REST dồn tới 15–114 phút nên token (trần 15 phút) chết trước khi editReply
+                // tới nơi; phải giải base64 token trong console prod mới biết. Có dòng này
+                // thì lần sau đọc một liếc là ra.
+                //
+                // Đi vào `note` chứ KHÔNG vào message: `khoaCua()` gộp trùng theo dòng đầu của
+                // message, nhồi một số biến thiên vào đó thì mỗi tin thành một khoá riêng và
+                // chính phép đo sẽ spam cái kênh nó đang cố làm sạch.
+                const tuoiMs = Date.now() - (interaction.createdTimestamp || Date.now());
+                logError('Lỗi thực thi lệnh', error, {
+                    command: interaction.commandName,
+                    user: `<@${interaction.user.id}>`,
+                    guild: interaction.guildId,
+                    note: `interaction ${(tuoiMs / 1000).toFixed(1)}s tuổi`
+                        + (tuoiMs >= TOKEN_SONG_MS ? ' — QUÁ HẠN TOKEN (trần 15 phút)' : ''),
+                });
+                // Hết đường phản hồi (token chết / đã ack / hết hạn) -> dừng, đừng tiêu thêm
+                // một request chắc chắn hỏng.
+                if (hetDuongPhanHoi(interaction, error)) return;
                 // `layLocale()` chứ không phải biến `locale`: lời tra nay LƯỜI (xem chú thích
                 // ở khối cổng chặn phía trên). Ở đây chậm cũng vô hại — lệnh đã chạy xong và
                 // interaction đã được ack, nên không còn hạn 3 giây nào để lo.
