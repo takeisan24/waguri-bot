@@ -9,6 +9,7 @@ const { buildWaguriEmbed } = require('../lib/embed');
 const { recordMembership } = require('../lib/membership');
 const { logError, skipLog } = require('../lib/logger');
 const { theoDoiAck, kiemAutocomplete } = require('../lib/canhAck');
+const { dongTomTat } = require('../lib/canhRest');
 const { SUB_ALIASES } = require('../lib/prefixTen');
 const { recordCommand } = require('../lib/commandTelemetry');
 const db = require('../database.js');
@@ -219,13 +220,21 @@ module.exports = {
                 // Đi vào `note` chứ KHÔNG vào message: `khoaCua()` gộp trùng theo dòng đầu của
                 // message, nhồi một số biến thiên vào đó thì mỗi tin thành một khoá riêng và
                 // chính phép đo sẽ spam cái kênh nó đang cố làm sạch.
+                //
+                // KÈM ẢNH CHỤP REST, và đây là mảnh còn thiếu để đóng hồ sơ 04/11. `canhRest`
+                // biết discord.js có TỰ THẤY mình bị hạn mức hay không — chính là thứ phân
+                // biệt "cửa hạn mức TOÀN CỤC" với "tầng mạng của host treo". Nhưng nó chỉ được
+                // `canhAck` tiêu thụ, tức chỉ hiện trên nhánh 10062; mà 10062 đã biến mất, bị
+                // 50027 thay thế. Phép đo còn sống mà gắn vào cái cửa sổ không còn ai đi qua —
+                // đúng lớp lỗi "phép đo bị bỏ trôi" (25-10), lặp lại ở tầng khác.
                 const tuoiMs = Date.now() - (interaction.createdTimestamp || Date.now());
                 logError('Lỗi thực thi lệnh', error, {
                     command: interaction.commandName,
                     user: `<@${interaction.user.id}>`,
                     guild: interaction.guildId,
                     note: `interaction ${(tuoiMs / 1000).toFixed(1)}s tuổi`
-                        + (tuoiMs >= TOKEN_SONG_MS ? ' — QUÁ HẠN TOKEN (trần 15 phút)' : ''),
+                        + (tuoiMs >= TOKEN_SONG_MS ? ' — QUÁ HẠN TOKEN (trần 15 phút)' : '')
+                        + ` · ${dongTomTat()}`,
                 });
                 // Hết đường phản hồi (token chết / đã ack / hết hạn) -> dừng, đừng tiêu thêm
                 // một request chắc chắn hỏng.

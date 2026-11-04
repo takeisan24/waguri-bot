@@ -31,6 +31,17 @@ const handler = require('../src/events/interactionCreate');
 
 const PHUT = 60_000;
 
+// MỖI PHÉP THỬ MỘT USER RIÊNG — và đây là một cái bẫy đã cắn thật, đáng ghi hơn bản vá.
+// `interactionCreate` có cổng chống spam `rateLimited()` trần **5 lệnh / 5 giây mỗi user**
+// (config.RATE_LIMIT). Bộ test này chạy liên tiếp trong vài chục ms, nên nếu mọi phép thử
+// dùng CHUNG một id thì từ lượt chạy thứ 6 trở đi lệnh **bị chặn trước khi kịp chạy**:
+// không có lỗi nào được ném, `logError` không bao giờ được gọi, và phép thử đỏ với câu
+// "phải có một tin log" — tức nó tố sai vào tính năng, trong khi thủ phạm là chính phép thử.
+// Bản đầu của tệp này có đúng 5 phép thử CÓ chạy lệnh nên xanh do TRÙNG HỢP; thêm phép thứ
+// sáu là vỡ ngay. Số thứ tự dưới đây giữ cho bộ test không bao giờ chạm trần đó nữa.
+let demUser = 0;
+const userMoi = () => String(424242424242424242n + BigInt(++demUser));
+
 function dungInteraction({ nem = null, ghi = [], tuoiMs = 0 } = {}) {
     const it = {
         isAutocomplete: () => false,
@@ -42,7 +53,7 @@ function dungInteraction({ nem = null, ghi = [], tuoiMs = 0 } = {}) {
         isModalSubmit: () => false,
         commandName: 'thu-nghiem',
         options: { getSubcommand: () => null },
-        user: { id: '424242424242424242', username: 'thu', displayAvatarURL: () => 'http://x/a.png' },
+        user: { id: userMoi(), username: 'thu', displayAvatarURL: () => 'http://x/a.png' },
         guildId: '515151515151515151',
         member: null,
         locale: 'vi',
@@ -136,4 +147,56 @@ test('đường NÚT cũng hỏi cửa đó trước khi gọi', () => {
         'Câu LỆNH ĐẦU TIÊN của `ackButtonError` phải là cửa `hetDuongPhanHoi`. Bảy nơi gọi nó\n'
         + 'đều nằm trong nhánh catch, nên nếu cửa không ở đây thì đường nút vẫn tiêu một request\n'
         + 'chắc chắn hỏng — đúng lỗi vừa vá cho đường slash, chỉ khác chỗ.');
+});
+
+// ---------------------------------------------------------------------------
+// ẢNH CHỤP REST phải đi kèm tin báo lỗi (bổ sung 04/11/2026, chiều).
+//
+// VÌ SAO THÊM. Sau lần restart 08:34 sự cố TÁI PHÁT lúc ~12:20–14:04 (trễ 77,9 và 104,5
+// phút) ⇒ "chữa = restart" là sai, nó chỉ xả hàng đợi đang có. Thứ còn thiếu để chốt
+// nguyên nhân là: discord.js có TỰ THẤY mình bị hạn mức hay không. `canhRest` đo được điều
+// đó, nhưng trước đây CHỈ `canhAck` tiêu thụ — tức chỉ hiện trên nhánh 10062, mà 10062 đã
+// biến mất và bị 50027 thay thế. Phép đo còn sống mà gắn vào cửa sổ không còn ai đi qua.
+//
+// CỔNG NÀY CHẠY THẬT, không đọc mã, vì bẫy đã mắc đúng lúc viết bản vá này: lời gọi
+// `dongTomTat()` được thêm vào mà QUÊN require — `node --check` vẫn XANH (không phải lỗi cú
+// pháp) và cả khối báo lỗi sẽ nổ `ReferenceError` lúc chạy, biến lệnh lỗi thành lệnh im
+// lặng. Chỉ phép chạy thật mới thấy.
+test('tin báo lỗi phải kèm ảnh chụp REST (phân biệt hạn mức vs mạng host)', async () => {
+    nhatKyLog = [];
+    await handler.execute(dungInteraction({ nem: loi(50027), tuoiMs: 104 * PHUT }));
+
+    const tin = nhatKyLog.find(x => x.title === 'Lỗi thực thi lệnh');
+    assert.ok(tin, 'phải có một tin log cho lệnh vỡ.');
+    assert.match(String(tin.meta.note || ''), /REST:/,
+        'Tin báo lỗi KHÔNG kèm ảnh chụp REST. Thiếu nó thì lần vỡ tới vẫn không nói được là\n'
+        + 'cửa hạn mức TOÀN CỤC hay tầng mạng host treo — đúng câu hỏi còn treo của sự cố\n'
+        + '03–04/11/2026, và là lý do bản vá này tồn tại.');
+    // Tuổi PHẢI còn nguyên: ảnh chụp REST là thứ thêm vào, không được đẩy số cũ ra ngoài.
+    assert.match(String(tin.meta.note), /tuổi/,
+        'Thêm ảnh chụp REST mà làm mất số đo TUỔI thì đổi một phép đo lấy một phép đo.');
+});
+
+test('canhRest: ảnh chụp nói được lần chạm GẦN NHẤT, không chỉ cửa sổ 60 giây', () => {
+    // `gan60s` mù với nhóm 50027: lệnh vỡ 78–104 phút SAU lúc hàng đợi nghẹt, nên cú chạm
+    // hạn mức đã trôi khỏi cửa sổ 60 giây và `gan60s` trả 0 — tin cảnh báo sẽ nói "không
+    // chạm hạn mức" trong đúng ca mà hạn mức là nghi phạm số một.
+    const { tomTat, dongTomTat, theoDoiRest } = require('../src/lib/canhRest');
+
+    let batSuKien = null;
+    theoDoiRest({ rest: { on: (ten, fn) => { if (ten === 'rateLimited') batSuKien = fn; } } });
+    assert.ok(batSuKien, 'theoDoiRest phải đăng ký được bộ bắt sự kiện `rateLimited`.');
+
+    batSuKien({ global: true, timeToReset: 6_000_000, method: 'PATCH', route: '/webhooks/:id/:token' });
+
+    const t = tomTat();
+    assert.strictEqual(typeof t.lanCuoiMs, 'number',
+        '`lanCuoiMs` phải là số sau khi có sự kiện — đây là số dùng để ĐỐI CHIẾU với tuổi\n'
+        + 'interaction in cùng tin: hai số xấp xỉ nhau nghĩa là CÙNG một sự kiện.');
+    assert.strictEqual(t.choLauNhatMs, 6_000_000,
+        '`choLauNhatMs` không giữ được `timeToReset` lớn nhất. Một `retry_after` khổng lồ là\n'
+        + 'bằng chứng trực tiếp nhất của cửa hạn mức toàn cục — mất nó là mất nhân chứng.');
+    assert.match(dongTomTat(), /chạm gần nhất/,
+        'Dòng tóm tắt không in lần chạm gần nhất, nên người đọc log vẫn chỉ thấy `gan60s` = 0\n'
+        + 'và vẫn kết luận sai là "không chạm hạn mức".');
 });

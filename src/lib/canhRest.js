@@ -37,6 +37,17 @@ const GIU_TOI_DA = 400;
 const moc = [];
 let tongCong = 0;
 let tongToanCuc = 0;
+// Mốc lần chạm GẦN NHẤT và lần bị bắt chờ LÂU NHẤT.
+//
+// VÌ SAO phải có hai số này, ngoài `gan60s` đã có: `gan60s` chỉ đúng cho nhóm ack/10062, nơi
+// lệnh vỡ NGAY lúc hàng đợi nghẹt. Nhóm 50027 (sự cố 03–04/11/2026) thì ngược — `editReply`
+// nằm trong hàng đợi 78–104 PHÚT rồi mới vỡ, nên lúc bắt được lỗi thì cú chạm hạn mức đã
+// trôi khỏi cửa sổ 60 giây từ lâu. `gan60s` sẽ trả 0 và tin cảnh báo sẽ nói "không chạm hạn
+// mức" trong đúng cái ca mà hạn mức là nghi phạm số một. Hai số dưới đây không mù chỗ đó:
+// `lanCuoi` cho phép đối chiếu với TUỔI interaction (trùng nhau = cùng một sự kiện), còn
+// `choLauNhat` lộ ngay một `retry_after` khổng lồ nếu Discord từng trả về.
+let lanCuoi = 0;
+let choLauNhat = 0;
 // Đường (route) bị chạm nhiều nhất -> gợi ý chỗ gây xếp hàng.
 const demTheoDuong = new Map();
 // Chống spam: hạn mức toàn cục chỉ gửi kênh nhiều nhất 1 lần / 10 phút.
@@ -48,6 +59,11 @@ function ghiNhan(info) {
     tongCong++;
     moc.push(now);
     if (moc.length > GIU_TOI_DA) moc.splice(0, moc.length - GIU_TOI_DA);
+    lanCuoi = now;
+    // `timeToReset` có thể thiếu/không phải số -> Number() rồi lọc NaN, đừng để một trường
+    // lạ của discord.js biến `choLauNhat` thành NaN và nuốt luôn số đo.
+    const cho = Number(info?.timeToReset);
+    if (Number.isFinite(cho) && cho > choLauNhat) choLauNhat = cho;
 
     const duong = String(info?.route || info?.url || '?').slice(0, 120);
     demTheoDuong.set(duong, (demTheoDuong.get(duong) || 0) + 1);
@@ -81,7 +97,8 @@ function theoDoiRest(client) {
 
 /**
  * Ảnh chụp để nhúng vào cảnh báo ack.
- * @returns {{tong:number,toanCuc:number,gan60s:number,duongHay:string|null}}
+ * @returns {{tong:number,toanCuc:number,gan60s:number,duongHay:string|null,
+ *            lanCuoiMs:number|null,choLauNhatMs:number}}
  */
 function tomTat() {
     const nguong = Date.now() - 60_000;
@@ -92,14 +109,22 @@ function tomTat() {
     }
     let duongHay = null, cao = 0;
     for (const [d, n] of demTheoDuong) if (n > cao) { cao = n; duongHay = d; }
-    return { tong: tongCong, toanCuc: tongToanCuc, gan60s, duongHay };
+    return {
+        tong: tongCong, toanCuc: tongToanCuc, gan60s, duongHay,
+        lanCuoiMs: lanCuoi ? Date.now() - lanCuoi : null,
+        choLauNhatMs: choLauNhat,
+    };
 }
 
 /** Dòng ngắn để nhúng vào meta của tin cảnh báo. */
 function dongTomTat() {
     const t = tomTat();
     if (!t.tong) return 'REST: chưa chạm hạn mức lần nào';
+    // `chạm gần nhất` là số để ĐỐI CHIẾU với tuổi interaction in cùng tin: hai số xấp xỉ
+    // nhau nghĩa là cú chạm hạn mức và cú interaction bị treo là CÙNG một sự kiện.
     return `REST: ${t.gan60s} lần/60s cuối · tổng ${t.tong} (toàn cục ${t.toanCuc})`
+        + ` · chạm gần nhất ${(t.lanCuoiMs / 60000).toFixed(1)} phút trước`
+        + ` · chờ lâu nhất ${t.choLauNhatMs}ms`
         + (t.duongHay ? ` · hay chạm: ${t.duongHay}` : '');
 }
 
