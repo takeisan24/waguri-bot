@@ -1509,6 +1509,59 @@ async function chargeWealthTax() {
     }
 }
 
+/**
+ * Hoàn thuế tài sản bị thu lặp (migration 0161, dùng MỘT LẦN — xoá cùng hàm ở 0162).
+ * Chống hoàn hai lần bằng khoá (dot, userId) trong DB: gọi lại trả `{status:'already'}`.
+ * @returns {Promise<{status:string, so_xu?:number, bank?:number}|null>} null = lỗi mạng/DB,
+ *   KHÔNG biết đã hoàn hay chưa → chạy lại script (hàm tự trả `already` nếu đã hoàn).
+ */
+async function hoanThueLap(userId, soXu, dot) {
+    try {
+        const { data, error } = await supabase.rpc('hoan_thue_lap', {
+            p_user_id: String(userId),
+            p_so_xu: soXu,
+            p_dot: String(dot),
+        });
+        if (error) throw error;
+        return data;
+    } catch (error) {
+        logDbError('[DATABASE ERROR] hoanThueLap():', error?.message || error);
+        return null;
+    }
+}
+
+/**
+ * Đọc phục vụ script hoàn thuế (chạy thử + nhắn tin). CHỈ ĐỌC, không tạo dòng users.
+ * @param {string[]} userIds
+ * @param {string[]} dots   các đợt hoàn cần đọc biên lai
+ * @returns {Promise<{nguoi: Map<string,{locale:string|null}>, bienLai: Array<{dot:string,user_id:string,so_xu:number}>}|null>}
+ */
+async function docHoanThueLap(userIds, dots) {
+    try {
+        const nguoi = new Map();
+        const ids = [...new Set(userIds.map(String))];
+        for (let i = 0; i < ids.length; i += 200) {
+            const { data, error } = await supabase
+                .from('users').select('user_id, locale').in('user_id', ids.slice(i, i + 200));
+            if (error) throw error;
+            for (const r of data || []) nguoi.set(r.user_id, { locale: r.locale ?? null });
+        }
+        const bienLai = [];
+        for (let tu = 0; ; tu += 1000) {
+            const { data, error } = await supabase
+                .from('hoan_thue_lap_bien_lai').select('dot, user_id, so_xu')
+                .in('dot', dots).order('dot').order('user_id').range(tu, tu + 999);
+            if (error) throw error;
+            bienLai.push(...(data || []).map(r => ({ ...r, so_xu: Number(r.so_xu) })));
+            if (!data || data.length < 1000) break;
+        }
+        return { nguoi, bienLai };
+    } catch (error) {
+        logDbError('[DATABASE ERROR] docHoanThueLap():', error?.message || error);
+        return null;
+    }
+}
+
 async function snapshotEconomy() {
     try {
         const { data, error } = await supabase.rpc('snapshot_economy');
@@ -3101,6 +3154,8 @@ module.exports = {
     // telemetry kinh tế
     snapshotEconomy,
     chargeWealthTax,
+    hoanThueLap,
+    docHoanThueLap,
     syncAdminExclusions,
     getEconomySnapshots,
     getLedgerUser,

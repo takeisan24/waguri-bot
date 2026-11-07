@@ -270,8 +270,18 @@ async function runEconomySnapshot() {
         // Thuế tài sản (migration 0118). Trước đây thuế nằm TRONG `claim_daily`, nên ai
         // không bao giờ điểm danh thì không bao giờ bị thu — hệ thống thưởng cho việc né
         // một lệnh. Hàm này bỏ qua người vừa điểm danh trong 24h nên không thu hai lần.
+        // Từ 0161 hàm tự khoá theo mốc `job_runs.wealth_tax`: gọi bao nhiêu lần cũng chỉ
+        // thu 1 lần / 24 giờ (trước đó nó thu ở MỖI lần khởi động + mỗi 12 tiếng).
         const thue = await db.chargeWealthTax();
         if (thue?.so_nguoi > 0) console.log(`[TELEMETRY] Thuế tài sản: thu ${thue.tong_thu} từ ${thue.so_nguoi} người.`);
+        // Mất dòng mốc thì hàm KHÔNG thu và KHÔNG tự tạo lại (chủ repo chốt) — dòng log này
+        // là cách duy nhất để biết thuế đã ngừng thu.
+        if (thue?.thieu_moc) {
+            logError('wealth_tax', new Error(
+                'Thuế tài sản KHÔNG thu: thiếu dòng mốc job_runs.wealth_tax. ' +
+                'Tạo lại tay: INSERT INTO job_runs(job, last_run) VALUES (\'wealth_tax\', now());'
+            ));
+        }
 
         // Dọn sổ sự cố chống nuke (migration 0119). 90 ngày là đủ để điều tra một vụ
         // nuke; giữ lâu hơn chỉ phình DB free-tier.
