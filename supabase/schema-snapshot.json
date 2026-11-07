@@ -99,6 +99,7 @@
     "guard_pay_transfer(p_sender_id text)",
     "halve_jail(p_user_id text)",
     "hatch_pet_egg(p_user text, p_egg text)",
+    "hoan_thue_lap(p_user_id text, p_so_xu bigint, p_dot text)",
     "hospital_heal(p_user_id text)",
     "increment_balance(p_user_id text, p_field text, p_amount bigint, p_source text)",
     "increment_pet_skill_points(p_user text, p_points integer)",
@@ -221,6 +222,7 @@
     "game_stakes_pkey",
     "guild_members_pkey",
     "guild_settings_pkey",
+    "hoan_thue_lap_bien_lai_pkey",
     "idx_antinuke_actions_incident",
     "idx_antinuke_incidents_guild",
     "idx_auctions_active",
@@ -255,6 +257,7 @@
     "inventory_pkey",
     "inventory_user_id_item_id_key",
     "items_pkey",
+    "job_runs_pkey",
     "jobs_pkey",
     "loans_pkey",
     "lottery_state_pkey",
@@ -477,6 +480,12 @@
       "settings:jsonb",
       "updated_at:timestamp with time zone"
     ],
+    "hoan_thue_lap_bien_lai": [
+      "dot:text",
+      "luc:timestamp with time zone",
+      "so_xu:bigint",
+      "user_id:text"
+    ],
     "inventory": [
       "durability:integer",
       "id:uuid",
@@ -497,6 +506,10 @@
       "season:text",
       "shop_hidden:boolean",
       "type:text"
+    ],
+    "job_runs": [
+      "job:text",
+      "last_run:timestamp with time zone"
     ],
     "jobs": [
       "id:text",
