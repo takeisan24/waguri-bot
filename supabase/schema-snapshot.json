@@ -99,7 +99,6 @@
     "guard_pay_transfer(p_sender_id text)",
     "halve_jail(p_user_id text)",
     "hatch_pet_egg(p_user text, p_egg text)",
-    "hoan_thue_lap(p_user_id text, p_so_xu bigint, p_dot text)",
     "hospital_heal(p_user_id text)",
     "increment_balance(p_user_id text, p_field text, p_amount bigint, p_source text)",
     "increment_pet_skill_points(p_user text, p_points integer)",
