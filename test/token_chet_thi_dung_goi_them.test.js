@@ -92,6 +92,23 @@ test('50027: token đã chết thì KHÔNG tiêu thêm một request nào', asyn
         + 'đang nghẹt. Đây chính là vòng xoáy đã thấy trong console prod 04/11/2026.');
 });
 
+test('từ chối sớm vì 429 dài (canhRest): KHÔNG gọi thêm Discord dù token còn tươi', async () => {
+    // `canhRest` ném RateLimitError khi Discord bắt chờ lâu hơn đời còn lại của token
+    // (09-11-2026). Mọi lời gọi tiếp trên cùng token cũng chung số phận, nên followUp báo lỗi
+    // chỉ là thêm một request vô ích — đúng lúc đường REST đang bị chặn.
+    const { RateLimitError } = require('@discordjs/rest');
+    nhatKyLog = [];
+    const ghi = [];
+    const nem = new RateLimitError({ route: '/webhooks/:id/:token/messages/@original', retryAfter: 3_600_000,
+        timeToReset: 3_600_000, method: 'PATCH', url: 'x', limit: 1, hash: 'h', majorParameter: 'm',
+        global: false, sublimitTimeout: 0, scope: 'shared' });
+    await handler.execute(dungInteraction({ ghi, nem }));
+    assert.ok(ghi.some(x => x.loai === 'execute'), 'lệnh phải chạy thật.');
+    assert.strictEqual(soLanGoiDiscord(ghi), 0,
+        'Sau khi canhRest từ chối sớm, bot vẫn gọi followUp — `hetDuongPhanHoi` chưa nhận ra loại lỗi này.');
+    assert.ok(nhatKyLog.some(x => x.title === 'Lỗi thực thi lệnh'), 'vẫn phải có tin log cho lệnh vỡ.');
+});
+
 test('lỗi THƯỜNG + token còn tươi: vẫn phải báo được cho người dùng', async () => {
     nhatKyLog = [];
     const ghi = [];

@@ -9,7 +9,7 @@ const { buildWaguriEmbed } = require('../lib/embed');
 const { recordMembership } = require('../lib/membership');
 const { logError, skipLog } = require('../lib/logger');
 const { theoDoiAck, kiemAutocomplete } = require('../lib/canhAck');
-const { dongTomTat } = require('../lib/canhRest');
+const { dongTomTat, laTuChoiVoVong } = require('../lib/canhRest');
 const { SUB_ALIASES } = require('../lib/prefixTen');
 const { recordCommand } = require('../lib/commandTelemetry');
 const db = require('../database.js');
@@ -41,6 +41,9 @@ const MA_HET_DUONG = new Set([10062, 40060, 50027]);
  */
 function hetDuongPhanHoi(interaction, err) {
     if (MA_HET_DUONG.has(err?.code)) return true;
+    // `canhRest` đã TỪ CHỐI SỚM vì Discord bắt chờ lâu hơn đời còn lại của token: mọi lời
+    // gọi tiếp theo trên token này cũng chung số phận (09-11-2026).
+    if (laTuChoiVoVong(err)) return true;
     const sinh = interaction?.createdTimestamp;
     return Boolean(sinh) && Date.now() - sinh >= TOKEN_SONG_MS;
 }
