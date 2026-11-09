@@ -77,9 +77,15 @@ Waguri là **Discord economy/RPG bot bản địa hóa văn hóa Việt**. Bot N
 
 ---
 
-## 4. TRẠNG THÁI HIỆN TẠI (cập nhật 2026-10-23 — sửa khi đổi lớn)
+## 4. TRẠNG THÁI HIỆN TẠI (cập nhật 2026-11-09 — sửa khi đổi lớn)
 
 - **Release:** GitHub tag mới nhất `v2.6.0` ("Architectural Restructure: Standardize 72 Commands, Prune Dead Minigames, Kikyo Credit Fund & Gekka Bakery Flow"). `package.json` = `2.6.0`.
+- **🔴 Sự cố 50027 KÉO DÀI từ 03/11 + bản vá phép đo 429 (cập nhật 2026-11-09, `origin/master` = `7e22da4`):**
+  - **KHÔNG cần đăng ký lại lệnh**; chỉ cần restart để nạp `7e22da4`.
+  - Từ 03/11 khoảng **1/3 lệnh** vỡ với 50027: `editReply` tới Discord sau 15–60 phút, token (trần 15 phút) đã chết. Restart **không** chữa. Người chơi vẫn nhận thưởng; thiệt hại là hiển thị. Chi tiết + cách đọc kết quả: sổ audit mục **B2**.
+  - **ĐÍNH CHÍNH:** chữ "REST: chưa chạm hạn mức lần nào" **KHÔNG loại được hạn mức**. `@discordjs/rest` 2.6.3 gặp 429 bất ngờ thì `sleep(Retry-After)` mà **không phát `rateLimited`** — sự kiện duy nhất `canhRest` từng nghe. Kết luận "jitter mạng" của nhóm 10062 (01/11) dựa trên cùng phép đo mù đó, nên cũng chưa vững.
+  - `7e22da4`: bọc `rest.options.makeRequest` để thấy mọi 429 ở tầng mạng (tin log `REST 429 kéo dài` khi chờ > 60s, kèm HTML/Cloudflare hay JSON); `rejectOnRateLimit` ném ngay khi chờ lâu hơn đời còn lại của token interaction. Test chạy trên `REST` thật của thư viện, 7/7 bẻ ngược đỏ, 768/768 xanh.
+  - Thuế tài sản (A10/P1) đã sửa + bồi hoàn 07/11 (0161/0162); khoá 1 lần/24h đã chạy đúng trên prod 08/11.
 - **🎃 HALLOWEEN 2026 — mùa lễ theo lịch DƯƠNG, lớp hạ tầng mà `season.js` chưa từng có (2026-10-27, migration `0160` ĐÃ ÁP test + prod):**
   - ⚠️ **PHẢI ĐĂNG KÝ LẠI LỆNH** (restart với `SKIP_DEPLOY` ≠ `1`): `/cosmetic` thêm một choice (huy hiệu 🎃) ở cả `badge-buy` lẫn `badge-equip`. Lần restart này cũng nuốt luôn `5f9e23c` vốn **chưa bao giờ sống**.
   - **BÀI HỌC CHÍNH, và nó KHÁC các đợt trước: lỗ hổng nằm giữa HAI TẦNG đều đúng.** Gắn `season = 'halloween'` cho một vật phẩm là chuyện DB hoàn toàn hợp lệ — `check-sql` xanh, `check-db` xanh, `npm test` xanh. Nhưng `src/lib/season.js` chỉ có nhánh **ÂM lịch** (`tet`, `trungthu`), nên `activeSeasons()` **không bao giờ** trả về `'halloween'` và món đó **biến mất khỏi `/store` vĩnh viễn, không log, không lỗi**. Dữ liệu đúng + mã đúng, chỉ là chúng nói hai thứ tiếng khác nhau. Cổng mới `#5` khoá đúng chỗ đó: **mọi mùa có NHÃN phải có CỬA mở, và ngược lại.**
