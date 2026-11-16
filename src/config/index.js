@@ -122,6 +122,23 @@ module.exports = {
         EXP_RANDOM: 3,
         JACKPOT_CHANCE: 0.08, // xác suất trúng lớn (trong các lần KHÔNG xui)
         JACKPOT_MULT: 3,      // jackpot = max_wage * mult
+
+        // Cổng thu nhập ngày của /work + /fish /mine /chop (nguồn tính tiền THẬT nằm ở SQL:
+        // hàm nhan_thu_nhap_chu_dong — bảng mốc dải + sàn; JS chỉ chọn chế độ).
+        //   'off'     = không gọi RPC, addMoney như trước spec (trạng thái có lỗ).
+        //   'log'     = RPC đếm tổng ngày + ghi dòng [BAND LOG], NHƯNG vẫn trả đủ gross.
+        //   'enforce' = trả theo dải (giảm dần), lượt nào cũng chạy, không bao giờ từ chối.
+        // Giá trị lạ -> runtime coi là 'enforce' (gõ sai không được mở lại lỗ).
+        // ĐIỀU KIỆN AN TOÀN của 'off': chỉ dùng khi cổng gây lỗi cho người chơi thật; ghi lý do
+        // + thời điểm, quay lại 'log'/'enforce' trong <= 24 giờ, trong lúc 'off' theo dõi
+        // economy_ledger source 'work'/'gather' theo giờ. Lùi migration 0164 (hạ lương 2 nghề)
+        // chỉ được khi 'enforce' đang chạy — lùi lúc 'log'/'off' là mở lại nguyên lỗ.
+        BAND_MODE: 'log',
+        // Nhánh lỗi RPC (không biết tổng hôm nay): chỉ trả tối đa chừng này mỗi lượt (<= gross).
+        BAND_ERR_CAP: 400,
+        // CHỈ để chọn CÂU nói với người chơi (dải sàn vs dải giảm) — KHÔNG tính tiền. Nguồn tính
+        // tiền thật là bảng mốc trong SQL; nếu SQL đổi mốc sàn thì đổi cả số này cho khớp lời nói.
+        BAND_COPY_FLOOR_FROM: 1_000_000,
     },
 
     // Cờ bạc — house edge nhẹ để không thành máy in tiền
@@ -231,7 +248,8 @@ module.exports = {
     // Mệt mỏi: thu nhập giảm khi NĂNG LƯỢNG hoặc SỨC KHỎE tụt thấp (xem src/lib/fatigue.js)
     FATIGUE: {
         THRESHOLD: 0.5, // còn >= 50% năng lượng & sức khỏe -> thu nhập 100%; dưới mức này mới bắt đầu giảm
-        FLOOR: 0.5,     // mệt cỡ nào thu nhập cũng không thấp hơn 50%
+        FLOOR: 0.5,     // mệt cỡ nào thu nhập cũng không thấp hơn 50% (tỉ lệ, trước khi kẹp FLOOR_CAP)
+        FLOOR_CAP: 400, // sàn mệt tuyệt đối tối đa: san = min(payout × FLOOR, FLOOR_CAP). Nghề cao không còn được "50% của lương khổng lồ" khi kiệt sức.
     },
 
     // Phương tiện: đi làm bằng xe giúp tiết kiệm năng lượng (work cơ bản tốn 10).

@@ -244,3 +244,16 @@ test('KINH TẾ #9 — XP bang không farm được bằng vòng lặp nạp/rú
         '-> nạp rồi rút là vòng lặp farm cấp bang miễn phí. ' +
         'Hoặc bỏ `xp = xp + ...` ở deposit, hoặc thêm `xp = greatest(0, xp - ...)` ở withdraw.');
 });
+
+// ============================================================
+// Bịt lỗ /work (spec-bit-lo-work-2026-10-19) — cấu hình không được gõ sai / lỏng tay.
+// ============================================================
+test('Cấu hình cổng thu nhập ngày: BAND_MODE hợp lệ, BAND_ERR_CAP <= sàn 400, FLOOR_CAP = 400, cooldown 5s', () => {
+    const config = require('../src/config');
+    assert.ok(['off', 'log', 'enforce'].includes(config.WORK.BAND_MODE),
+        `WORK.BAND_MODE phải là off|log|enforce, đang là ${String(config.WORK.BAND_MODE)}`);
+    assert.strictEqual(config.ACTION_COOLDOWN_MS, 5000, 'cooldown /work /fish /mine /chop');
+    assert.strictEqual(config.FATIGUE.FLOOR_CAP, 400);
+    assert.ok(config.WORK.BAND_ERR_CAP > 0 && config.WORK.BAND_ERR_CAP <= 400,
+        'BAND_ERR_CAP > 400 nghĩa là nhánh lỗi trả nhiều hơn sàn của dải');
+});

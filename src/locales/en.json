@@ -1,5 +1,7 @@
 {
   "common": {
+    "band_giam": "🌸 You've worked a lot today, so the pay is trimmed — take a break, or head to the farm/bakery~",
+    "band_san": "🌸 You've worked so hard today that the pay is just a little now — rest up, it'll be back to normal tomorrow (after midnight)~",
     "btn_wiki": "📖 Waguri Handbook",
     "ai_quota_exceeded": "You have used all **{cap}** of your chat limits with me today 🥺 — upgrade to `/premium` for more 💎",
     "ai_quota_global": "I have been chatting a lot today and I am getting a little tired... 🥺 Let me rest a bit, and we can talk again tomorrow~ 🌸",
@@ -294,6 +296,7 @@
       "field_wallet": "💵 Wallet Balance"
     },
     "work": {
+      "luong_chua_xac_nhan": "⚠️ Waguri couldn't confirm this shift's pay reached your wallet. Please check with `/bank balance`.",
       "bonus_unconfirmed": "\n\n⚠️ But the **level-up bonus didn't finish saving** because of a connection hiccup. Please check with `/bank balance` — your level did go up for real, so nothing is lost~",
       "success_title": "💼・Work Hard",
       "fail_title": "❌・Work Failed",
@@ -320,6 +323,7 @@
       "item_drop": "\n🍓 You received **{qty}x {name}** (added to inventory)."
     },
     "gather": {
+      "luong_chua_xac_nhan": "⚠️ Couldn't confirm this haul's coins reached your wallet. Please check with `/bank balance`.",
       "mine_success_title": "⛏️・Mining Success",
       "chop_success_title": "🪓・Chop Wood Success",
       "earn_desc": "\n💵 Sold minerals/wood: **+{amount}** {currency}",

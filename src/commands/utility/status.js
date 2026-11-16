@@ -30,7 +30,19 @@ module.exports = {
         }
 
         const now = Date.now();
-        const fatigue = conditionMultiplier(energy, user.health);
+        // Lớp C: sàn mệt là số tuyệt đối bị kẹp nên % phụ thuộc lương nghề. Dùng lương giữa của nghề
+        // hiện tại (sau defer — không chặn ack). Lấy không được -> gọi như cũ (không payout).
+        let luongGiua;
+        try {
+            let { min_wage: lo, max_wage: hi } = config.WORK.DEFAULT_JOB;
+            if (user.job_id) {
+                const job = await db.getJob(user.job_id);
+                if (job) { lo = job.min_wage; hi = job.max_wage; }
+            }
+            const mid = (Number(lo) + Number(hi)) / 2;
+            if (mid > 0) luongGiua = mid;
+        } catch { luongGiua = undefined; }
+        const fatigue = conditionMultiplier(energy, user.health, config.ENERGY.MAX, luongGiua);
         const jailedUntil = user.jailed_until && new Date(user.jailed_until).getTime() > now ? new Date(user.jailed_until).getTime() : null;
         const buffActive = user.buff_expires_at && new Date(user.buff_expires_at).getTime() > now;
         const premium = user.premium_until && new Date(user.premium_until).getTime() > now;

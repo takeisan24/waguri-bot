@@ -69,7 +69,9 @@ test('work: thưởng lên cấp phải được kiểm trước khi khoe', () =
 
     assert.match(s, /const daThuong = bonus > 0/,
         'Phải GIỮ kết quả trả thưởng lên cấp vào biến.');
-    assert.match(s, /await db\.addMoney\(userId, bonus, 'wallet'\) === true/,
+    // Tham số nguồn thứ 4 (vd 'levelup_work') được phép: nó đưa thưởng ra khỏi danh sách trắng
+    // Lớp B để thưởng một lần không bị kẹp oan rồi khoe sai số.
+    assert.match(s, /await db\.addMoney\(userId, bonus, 'wallet'(?:, '[a-z_]+')?\) === true/,
         'Phải so sánh `=== true`: `addMoney` trả ba giá trị, `!` gộp nhầm `false` với `null`.');
     assert.match(s, /if \(!daThuong\) lvlUpDesc \+= t\(locale, 'commands\.work\.bonus_unconfirmed'\);/,
         'Thưởng hỏng thì phải nối cảnh báo vào đúng dòng chúc mừng đang khoe con số đó.');
