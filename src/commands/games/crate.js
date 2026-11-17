@@ -105,8 +105,8 @@ module.exports = {
         // Trao hỏng thì đừng tô màu ăn mừng: hai nhánh hiếm nhất đặt `type = 'jackpot'`
         // trước khi biết kết quả, nên rương hỏng vẫn hiện khung vàng "ĐẠI TRÚNG".
         if (desc === HONG) type = 'warning';
-        // Cùng lý do: khung vàng "ĐẠI TRÚNG" phải theo số THỰC nhận. Jackpot bị kẹp về 0 thì không ăn mừng.
-        if (type === 'jackpot' && ketQuaTien && ketQuaTien.net === 0) type = 'warning';
+        // Cùng lý do: khung vàng "ĐẠI TRÚNG" phải theo số THỰC nhận. Jackpot bị kẹp (net < số bốc được) thì không ăn mừng.
+        if (type === 'jackpot' && ketQuaTien && ketQuaTien.net < ketQuaTien.goc) type = 'warning';
 
         const u = await db.getUser(userId);
         const embed = buildWaguriEmbed(interaction, type, {

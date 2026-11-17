@@ -77,7 +77,7 @@ test('crate.js và lib/plant.js: thưởng dương khai nguồn tường minh, k
 test('crate.js / plant.js: embed theo số thực nhận, khung jackpot theo net', () => {
     const crate = boCmt(doc('src', 'commands', 'games', 'crate.js'));
     const plant = boCmt(doc('src', 'lib', 'plant.js'));
-    assert.match(crate, /ketQuaTien\.net === 0\) type = 'warning'/);
+    assert.match(crate, /ketQuaTien\.net < ketQuaTien\.goc\) type = 'warning'/);
     assert.match(plant, /const noHu = daTra && thucNhan >= 5000;/);
     assert.match(plant, /reward: fmt\(thucNhan, locale\)/);
 });
