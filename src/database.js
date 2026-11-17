@@ -355,6 +355,42 @@ async function nhanThuNhapChuDong(userId, gross, source, deps = {}) {
 }
 
 /**
+ * Cộng thưởng DƯƠNG của /crate và /farm box qua RPC nguyên tử nhan_tien_lop_b: áp trần ngày
+ * Lớp B + ghi ví trong MỘT transaction, và TRẢ SỐ THỰC NHẬN (addMoney chỉ biết true/false nên
+ * embed từng khoe số chưa kẹp). Nhãn nguồn truyền TƯỜNG MINH — không suy từ tên tệp. Không ném.
+ *
+ * @param {string} userId
+ * @param {number} amount  thưởng bốc được (> 0)
+ * @param {'crate'|'plant'} nguon
+ * @param {{client?: object}} [deps]  chỉ để test: client giả có `.rpc(name, args)`
+ * @returns {Promise<{ok:true, net:number} | {ok:false, loai:'rollback'|'khong_ro', ma:string}>}
+ *   'khong_ro' = không biết đã ghi chưa: người gọi KHÔNG được gọi lại (trả đúp).
+ */
+async function addMoneyLopB(userId, amount, nguon, deps = {}) {
+    const client = deps.client || supabase;
+    try {
+        const { data, error } = await client.rpc('nhan_tien_lop_b', {
+            p_user_id: String(userId),
+            p_amount: amount,
+            p_source: nguon,
+        });
+        if (error) {
+            logDbError(`[DATABASE ERROR] addMoneyLopB(${userId}):`, error);
+            return { ok: false, loai: phanLoaiLoiRpc(error), ma: String(error.code || error.message || 'unknown').slice(0, 60) };
+        }
+        const net = Number(data);
+        // Server trả 200 nhưng thân lạ: RPC có thể đã chạy -> KHÔNG biết.
+        if (data === null || data === undefined || !Number.isFinite(net) || net < 0 || net > amount) {
+            return { ok: false, loai: 'khong_ro', ma: 'bad_payload' };
+        }
+        return { ok: true, net };
+    } catch (error) {
+        logDbError(`[DATABASE ERROR] addMoneyLopB(${userId}):`, error);
+        return { ok: false, loai: 'khong_ro', ma: String(error?.cause?.code || error?.code || error?.name || 'throw').slice(0, 60) };
+    }
+}
+
+/**
  * Trừ tiền phạt theo TỔNG TÀI SẢN: ví trước, thiếu thì trừ tiếp ngân hàng (atomic).
  * Dùng cho phạt /rob & công an cờ bạc -> không né được bằng cách gửi tiền vào bank.
  * @returns {number} số tiền thực sự bị trừ (>= 0).
@@ -2897,11 +2933,6 @@ async function bakeryStock(userId, itemId, qty, gain) {
     try { const { data, error } = await supabase.rpc('bakery_stock', { p_user_id: userId, p_item_id: itemId, p_qty: qty, p_gain: gain }); if (error) throw error; return data; }
     catch (e) { logDbError('[DATABASE ERROR] bakeryStock():', e); return 'error'; }
 }
-/** Thu doanh thu (lazy). Trả {result:'ok',revenue,cakes,stock_left,capped}|{result:'empty'|'no_bakery'|'error'}. */
-async function bakeryCollect(userId, rate, cap, cakeEvery) {
-    try { const { data, error } = await supabase.rpc('bakery_collect', { p_user_id: userId, p_rate: rate, p_cap: cap, p_cake_every: cakeEvery }); if (error) throw error; return data; }
-    catch (e) { logDbError('[DATABASE ERROR] bakeryCollect():', e); return { result: 'error' }; }
-}
 /** Nâng cấp tiệm. Trả 'ok'|'poor'|'no_mats'|'max'|'no_bakery'|'error'. */
 async function bakeryUpgrade(userId, cost, mats, maxLevel) {
     try { const { data, error } = await supabase.rpc('bakery_upgrade', { p_user_id: userId, p_cost: cost, p_mats: mats, p_max_level: maxLevel }); if (error) throw error; return data; }
@@ -3121,6 +3152,7 @@ module.exports = {
     getLeaderboardGuild,
     addMoney,
     nhanThuNhapChuDong,
+    addMoneyLopB,
     layBandMode,
     _band: { phanLoaiLoiRpc, datLaiBaoBandMode },
     transferMoney,
@@ -3332,7 +3364,6 @@ module.exports = {
     getBakery,
     bakeryOpen,
     bakeryStock,
-    bakeryCollect,
     bakeryUpgrade,
     bakeryCollectV2,
     bakeryHire,

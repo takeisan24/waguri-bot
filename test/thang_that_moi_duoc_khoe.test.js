@@ -93,7 +93,8 @@ test('blackjack: nhánh HOÀ cũng là một lần trả tiền, cũng phải c�
 test('crate: mọi cửa trao thưởng đều kiểm kết quả', () => {
     const s = doc('crate');
 
-    assert.match(s, /if \(await db\.addMoney\(userId, amt, 'wallet'\) !== true\) return null;/,
+    // Thưởng tiền đi qua `addMoneyLopB` (nhãn 'crate' tường minh + số thực nhận đã kẹp).
+    assert.match(s, /const r = await db\.addMoneyLopB\(userId, amt, 'crate'\);\s*if \(!r \|\| !r\.ok\) return null;/,
         'crate: `money()` phải trả `null` khi cộng tiền hỏng.');
     assert.match(s, /if \(await db\.giveItemAdmin\(userId, id, 1\) !== true\) return null;/,
         'crate: `giveItem()` phải trả `null` khi cấp vật phẩm hỏng.');
