@@ -275,6 +275,7 @@ Waguri là **Discord economy/RPG bot bản địa hóa văn hóa Việt**. Bot N
 - **Đổi tính năng → nhớ ripple:** helper (database.js) · `/help` · web CommandsExplorer · test · `docs/roadmap-mo-rong.md` (đánh dấu trạng thái).
 - **Không nhồi nhiều tính năng vào 1 commit.** 1 tính năng = 1 commit đã verify.
 - **Cập nhật §4 (Trạng thái hiện tại) của file này** khi hoàn thành một mảng lớn, để phiên sau không bị mơ hồ.
+- **CI chạy trên máy, không chạy trên GitHub** (từ 2026-11-18). GitHub Actions của repo đã tắt: tài khoản bị khoá thanh toán và chủ repo không muốn trả phí GitHub; `.github/workflows/ci.yml` giữ lại làm tài liệu, đừng xoá. Trước khi mở/cập nhật PR: chạy `npm run ci:local` (đúng các bước của `ci.yml`, trừ `web` build — Vercel đã build mỗi PR) và dán dòng tổng kết vào mô tả PR. Hook `pre-push` vẫn chạy như cũ. Đừng bật lại Actions khi chưa hỏi chủ repo.
 
 ### Quy ước commit (Git)
 - **KHÔNG thêm trailer `Co-Authored-By` / dòng ghi công AI** (Claude, Codex, Gemini…) vào message commit. Chủ repo không muốn git track attribution AI — commit đứng tên tác giả người dùng thôi.
