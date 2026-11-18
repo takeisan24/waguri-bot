@@ -9,7 +9,7 @@
   "scripts": {
     "start": "node index.js",
     "shard": "node shard.js",
-    "dev": "nodemon index.js",
+    "dev": "node --watch index.js",
     "clear": "node clear-commands.js",
     "backup": "node scripts/backup-db.js",
     "lint": "eslint \"src/**/*.js\" \"scripts/**/*.js\" \"test/**/*.js\" index.js shard.js",
@@ -40,7 +40,6 @@
   },
   "devDependencies": {
     "eslint": "^9.39.5",
-    "globals": "^17.7.0",
-    "nodemon": "^3.1.14"
+    "globals": "^17.7.0"
   }
 }

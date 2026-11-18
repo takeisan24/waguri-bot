@@ -13,7 +13,7 @@ Tài liệu này mô tả cách làm việc trên Waguri: nên theo gì, tránh 
 ---
 
 ## 1. Môi trường & vòng lặp dev
-- **Local (dev):** `npm run dev` (nodemon). Đặt `GUILD_ID` trong `.env` → slash command cập nhật **tức thì** trong server test (không phải chờ ~1h global).
+- **Local (dev):** `npm run dev` (`node --watch`, có sẵn trong Node ≥ 20 — đã bỏ nodemon). Đặt `GUILD_ID` trong `.env` → slash command cập nhật **tức thì** trong server test (không phải chờ ~1h global).
 - **Prod (Wispbyte):** `git push` → vào panel **Restart** (tự `git pull`). Node 20+.
 - **Database (Supabase):** mỗi thay đổi schema/RPC = 1 file `supabase/migrations/000N_*.sql` (đánh số tăng dần, **idempotent**), áp dụng vào project. Code đọc/ghi qua `src/database.js`.
 

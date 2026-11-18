@@ -128,7 +128,7 @@ Chạy lần lượt các file trong `supabase/migrations/` (`0001` → file có
 ### 4) Chạy
 ```bash
 npm install
-npm run dev     # DEV: nodemon + GUILD_ID để lệnh cập nhật tức thì
+npm run dev     # DEV: node --watch + GUILD_ID để lệnh cập nhật tức thì
 npm start       # PROD
 npm test        # unit test
 ```
