@@ -19,9 +19,26 @@ function conditionFactor(ratio) {
 
 /** Hệ số thu nhập do mệt: CHỈ theo NĂNG LƯỢNG.
  * (Sức khỏe KHÔNG phạt thu nhập — nó chỉ là cổng chặn hành động; máu chỉ giảm khi có bệnh.)
- * Vẫn giữ tham số `health` để không phá chữ ký các nơi đang gọi. */
-function conditionMultiplier(energy, health, maxEnergy = config.ENERGY.MAX) {
-    return conditionFactor(Number(energy) / maxEnergy);
+ * Vẫn giữ tham số `health` để không phá chữ ký các nơi đang gọi.
+ *
+ * `payout` (tuỳ chọn, > 0): số tiền ngay trước khi nhân hệ số mệt. Có `payout` thì sàn mệt là
+ * SỐ TUYỆT ĐỐI bị kẹp (Lớp C): san = min(payout × FLOOR, FLOOR_CAP);
+ * payout_sau_met = san + (payout − san) × (r / THRESHOLD) khi r < THRESHOLD. Hàm trả HỆ SỐ HIỆU
+ * DỤNG payout_sau_met / payout, nên `Math.round(payout × hệ_số)` ra đúng số tiền và
+ * `1 − hệ_số` là % giảm THẬT (nghề cao có thể > 50%). Khi payout × FLOOR <= FLOOR_CAP (mọi
+ * lượt /fish /mine /chop, nghề thấp) trả đúng `conditionFactor` như cũ, từng bit.
+ * Không truyền `payout` -> hành vi cũ (tương thích ngược). Hàm thuần, không chạm DB. */
+function conditionMultiplier(energy, health, maxEnergy = config.ENERGY.MAX, payout = undefined) {
+    const ratio = Number(energy) / maxEnergy;
+    const cu = conditionFactor(ratio);
+    const p = Number(payout);
+    if (payout === undefined || !(p > 0) || !Number.isFinite(p)) return cu;
+    const { THRESHOLD, FLOOR, FLOOR_CAP } = config.FATIGUE;
+    const san = Math.min(p * FLOOR, FLOOR_CAP);
+    if (san >= p * FLOOR) return cu;            // chưa chạm trần: trùng công thức cũ
+    const r = Math.max(0, Math.min(1, Number(ratio) || 0));
+    if (r >= THRESHOLD) return 1;
+    return (san + (p - san) * (r / THRESHOLD)) / p;
 }
 
 module.exports = { conditionMultiplier, conditionFactor };

@@ -237,13 +237,15 @@ function nguonTuNganXep() {
     return null;
 }
 
-async function addMoney(userId, amount, type = 'wallet') {
+async function addMoney(userId, amount, type = 'wallet', nguon = null) {
     try {
         const { data, error } = await supabase.rpc('increment_balance', {
             p_user_id: userId,
             p_field: type,
             p_amount: amount,
-            p_source: nguonTuNganXep(),
+            // `nguon` chỉ dùng khi lời gọi đi qua một hàm trung gian (vd lib/luongChuDong.js) —
+            // suy từ ngăn xếp lúc đó sẽ ra tên tệp trung gian chứ không phải 'work'/'gather'.
+            p_source: nguon || nguonTuNganXep(),
         });
 
         if (error) throw error;
@@ -258,6 +260,97 @@ async function addMoney(userId, amount, type = 'wallet') {
         // Mọi nơi gọi đều dùng `if (!x)` nên `null` giữ NGUYÊN hành vi cũ; chỗ nào muốn
         // tách mới kiểm `=== null`. Đổi dần từng chỗ, không cần một đợt sửa lớn.
         return null;
+    }
+}
+
+// ------------------------------------------------------------
+//  CỔNG THU NHẬP NGÀY (/work + /fish /mine /chop) — xem docs spec-bit-lo-work
+// ------------------------------------------------------------
+const BAND_MODES = ['off', 'log', 'enforce'];
+let bandModeLaDaBao = false;
+
+/**
+ * Đọc config.WORK.BAND_MODE đã chuẩn hoá: 'off' | 'log' | 'enforce'.
+ * Giá trị lạ (gõ sai) -> 'enforce' + console.error MỘT lần: gõ sai không được lặng lẽ mở lại lỗ.
+ * @param {*} raw  mặc định đọc từ config; truyền vào để test.
+ */
+function layBandMode(raw = config.WORK && config.WORK.BAND_MODE) {
+    if (BAND_MODES.includes(raw)) return raw;
+    if (!bandModeLaDaBao) {
+        bandModeLaDaBao = true;
+        console.error(`[BAND] config.WORK.BAND_MODE không hợp lệ (${String(raw)}) — coi như 'enforce'.`);
+    }
+    return 'enforce';
+}
+
+/** Cho test: cho phép kiểm "chỉ báo một lần". */
+function datLaiBaoBandMode() { bandModeLaDaBao = false; }
+
+/**
+ * Lỗi PostgREST này là server ĐÃ TRẢ LỜI (-> transaction đã rollback, chắc chắn chưa ghi ví)
+ * hay là KHÔNG BIẾT (mạng/timeout/không mã -> RPC có thể đã commit)?
+ *   · rollback: `error.code` là SQLSTATE 5 ký tự (lớp hợp lệ của Postgres) hoặc 'PGRST…'.
+ *   · khong_ro: mọi thứ còn lại. Cố ý KHÔNG nhận mọi chuỗi 5 ký tự hoa (vd 'EPIPE' của Node).
+ */
+// Loại trừ các lớp có thể xảy ra SAU khi commit mà mất ack: 08 (kết nối), 53 (tài nguyên),
+// 57 (server tắt/huỷ), 58 (lỗi hệ thống), XX (lỗi nội bộ) -> coi là khong_ro, không phải rollback.
+// Nếu coi nhầm là rollback, chế độ log sẽ trả đủ gross lần hai.
+const SQLSTATE_HOP_LE = /^(?!08|53|57|58|XX)(?:[0-9][0-9A-Z]|F0|HV|P0)[0-9A-Z]{3}$/;
+function phanLoaiLoiRpc(error) {
+    const ma = error && typeof error.code === 'string' ? error.code.trim() : '';
+    // PGRST000/PGRST001 = PostgREST mất kết nối tới Postgres (có thể rớt ngay lúc COMMIT) ->
+    // không biết đã ghi chưa. PGRST002/003 (schema cache, pool) xảy ra TRƯỚC khi chạy -> rollback.
+    if (/^PGRST00[01]$/.test(ma)) return 'khong_ro';
+    if (ma && (SQLSTATE_HOP_LE.test(ma) || /^PGRST[0-9]+$/.test(ma))) return 'rollback';
+    return 'khong_ro';
+}
+
+/**
+ * Cộng lương CHỦ ĐỘNG (work/gather) qua RPC nguyên tử nhan_thu_nhap_chu_dong: cộng dồn thu nhập
+ * ngày + tính dải + ghi ví trong CÙNG MỘT transaction (INV-7). Không ném (luật 2).
+ *
+ * @param {string} userId
+ * @param {number} gross  số tiền CUỐI CÙNG sau mọi hệ số (đúng biến từng đưa vào addMoney), > 0
+ * @param {'work'|'gather'} source
+ * @param {{client?: object, mode?: string}} [deps]  chỉ để test: client giả có `.rpc(name, args)`,
+ *        `mode` thay cho config.WORK.BAND_MODE.
+ * @returns {Promise<
+ *   {ok:true, net:number, netTinh:number, tongTruoc:number, tongSau:number} |
+ *   {ok:false, loai:'rollback'|'khong_ro', ma:string}>}
+ *   net = số THỰC vào ví. 'rollback' = chắc chắn CHƯA ghi; 'khong_ro' = không biết đã ghi chưa
+ *   (người gọi KHÔNG được gọi lại RPC, chỉ trả tối đa BAND_ERR_CAP). `ma` = mã lỗi để log.
+ *   'off' không có nghĩa ở đây (chỗ gọi tự rẽ sang addMoney); nếu lỡ truyền thì coi như 'log'.
+ */
+async function nhanThuNhapChuDong(userId, gross, source, deps = {}) {
+    const client = deps.client || supabase;
+    const che = layBandMode(deps.mode !== undefined ? deps.mode : config.WORK && config.WORK.BAND_MODE);
+    const pMode = che === 'enforce' ? 'enforce' : 'log';
+    try {
+        const { data, error } = await client.rpc('nhan_thu_nhap_chu_dong', {
+            p_user_id: String(userId),
+            p_gross: gross,
+            p_source: source,
+            p_mode: pMode,
+        });
+        if (error) {
+            const loai = phanLoaiLoiRpc(error);
+            // Lỗi mạng đã có nhánh gộp log riêng; lỗi server (rollback) thì in đủ để điều tra.
+            logDbError(`[DATABASE ERROR] nhanThuNhapChuDong(${userId}):`, error);
+            return { ok: false, loai, ma: String(error.code || error.message || 'unknown').slice(0, 60) };
+        }
+        const row = Array.isArray(data) ? data[0] : data;
+        const net = Number(row && row.net);
+        const netTinh = Number(row && row.net_tinh);
+        const tongTruoc = Number(row && row.tong_truoc);
+        const tongSau = Number(row && row.tong_sau);
+        // Server trả 200 nhưng thân lạ: RPC có thể đã chạy -> KHÔNG biết.
+        if (!row || !Number.isFinite(net) || net < 0 || !Number.isFinite(netTinh) || !Number.isFinite(tongSau)) {
+            return { ok: false, loai: 'khong_ro', ma: 'bad_payload' };
+        }
+        return { ok: true, net, netTinh, tongTruoc: Number.isFinite(tongTruoc) ? tongTruoc : 0, tongSau };
+    } catch (error) {
+        logDbError(`[DATABASE ERROR] nhanThuNhapChuDong(${userId}):`, error);
+        return { ok: false, loai: 'khong_ro', ma: String(error?.cause?.code || error?.code || error?.name || 'throw').slice(0, 60) };
     }
 }
 
@@ -3027,6 +3120,9 @@ module.exports = {
     recordGuildMember,
     getLeaderboardGuild,
     addMoney,
+    nhanThuNhapChuDong,
+    layBandMode,
+    _band: { phanLoaiLoiRpc, datLaiBaoBandMode },
     transferMoney,
     transferMoneyWithTax,
     updateExp,

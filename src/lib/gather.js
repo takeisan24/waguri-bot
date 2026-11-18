@@ -8,6 +8,7 @@ const { getEventMult } = require('./event');
 const { buildWaguriEmbed } = require('./embed');
 const { getInteractionLanguage, t } = require('./i18n');
 const { petBuffValue, petRarity, findSpecies, EGGS } = require('../data/pets');
+const { ghiLuongChuDong } = require('./luongChuDong');
 
 /**
  * MỘT CỬA trao vật phẩm cho cả ba hoạt động cày cuốc, và là chỗ duy nhất biết "trao hụt".
@@ -203,7 +204,9 @@ async function runGather(interaction, opts) {
         bearNote = r.note || '';
     }
 
-    const fatigue = conditionMultiplier(e, user.health);
+    // Truyền `payout` (ngay trước khi nhân mệt) để sàn mệt kẹp tuyệt đối (Lớp C); hệ số trả về là
+    // hệ số HIỆU DỤNG nên dòng "mệt -X%" in % thật.
+    const fatigue = conditionMultiplier(e, user.health, config.ENERGY.MAX, payout > 0 ? payout : undefined);
     const gross = payout;
     if (payout > 0) payout = Math.round(payout * fatigue);
     const dz = await applyDisease(db, userId, user, locale);
@@ -215,10 +218,22 @@ async function runGather(interaction, opts) {
 
     const displayName = name(c, en);
 
+    // LƯƠNG DƯƠNG đi qua cổng thu nhập ngày (RPC nguyên tử: đếm tổng ngày + ghi ví cùng một
+    // transaction). `soGhi` là số THỰC vào ví (INV-3): mọi chỗ in tiền bên dưới dùng nó chứ không
+    // dùng `payout` (số xin ghi). Gọi SAU mọi hệ số và TRƯỚC khi dựng embed.
+    let soGhi = 0;
+    let luongChuaXacNhan = false;
+    let bandNote = '';
+    if (payout > 0) {
+        const gl = await ghiLuongChuDong(userId, payout, 'gather');
+        soGhi = gl.soGhi;
+        luongChuaXacNhan = !gl.daGhi;
+        if (gl.giam) bandNote = t(locale, gl.sanDay ? 'common.band_san' : 'common.band_giam');
+    }
+
     let desc;
     if (payout > 0) {
-        if (!await db.addMoney(userId, payout, 'wallet')) console.error(`[PAYOUT FAIL] gather user=${userId} payout=${payout}`);
-        db.questIncr(userId, 'earn', payout);
+        if (soGhi > 0) db.questIncr(userId, 'earn', soGhi);
 
         const grossStr = fatigue < 1 && gross > 0
             ? (en ? ` *(base ${fmt(gross, locale)}, tired -${Math.round((1 - fatigue) * 100)}%)` : ` *(gốc ${fmt(gross, locale)}, mệt -${Math.round((1 - fatigue) * 100)}%)*`)
@@ -226,7 +241,10 @@ async function runGather(interaction, opts) {
         const premStr = premium ? ` *(Premium +${Math.round(config.PREMIUM.INCOME_BONUS * 100)}% 💎)*` : '';
         const evStr = eventMult > 1 ? (en ? ` *(Event x${eventMult} 🎉)*` : ` *(Sự kiện x${eventMult} 🎉)*`) : '';
 
-        desc = sold(c, displayName, fmt(payout, locale), { grossStr, premStr, evStr }, en);
+        // Lương không ghi được: KHÔNG in "+X xu" như đã nhận (bài học e138e6b).
+        desc = luongChuaXacNhan
+            ? t(locale, 'commands.gather.luong_chua_xac_nhan')
+            : sold(c, displayName, fmt(soGhi, locale), { grossStr, premStr, evStr }, en);
     } else {
         desc = empty(c, displayName, en);
     }
@@ -234,6 +252,7 @@ async function runGather(interaction, opts) {
     if (staminaCut > 0) desc += thoNote(`${petTag} **${petName}**`, (staminaCut * 100).toFixed(0), en);
     if (bearNote) desc += bearNote;
     if (dz.note) desc += `\n${dz.note}`;
+    if (bandNote) desc += `\n${bandNote}`;
 
     // Drop đặc thù theo hoạt động (copy nguyên văn từ lệnh gốc)
     desc += await onDrops({ userId, c, userPet, locale, payout, so });
@@ -260,7 +279,7 @@ async function runGather(interaction, opts) {
     }
     if (newLevel > oldLevel) {
         const bonus = levelUpReward(oldLevel, newLevel);
-        if (bonus > 0 && !await db.addMoney(userId, bonus, 'wallet')) console.error(`[PAYOUT FAIL] gather-levelup user=${userId} bonus=${bonus}`);
+        if (bonus > 0 && !await db.addMoney(userId, bonus, 'wallet', 'levelup_gather')) console.error(`[PAYOUT FAIL] gather-levelup user=${userId} bonus=${bonus}`);
         desc += en
             ? `\n🎉 Reached **Level ${newLevel}**! Bonus: **+${fmt(bonus, locale)}** ${config.CURRENCY} 🎁`
             : `\n🎉 Lên **Level ${newLevel}**! Thưởng **+${fmt(bonus, locale)}** ${config.CURRENCY} 🎁`;
@@ -296,7 +315,7 @@ async function runGather(interaction, opts) {
         title: headerTitle,
         description: desc,
         fields: [
-            { name: fieldWalletName, value: `${payout > 0 ? '+' + fmt(payout, locale) + ' → ' : ''}**${fmt(u?.wallet || 0, locale)}** ${config.CURRENCY}`, inline: false },
+            { name: fieldWalletName, value: `${payout > 0 && !luongChuaXacNhan ? '+' + fmt(soGhi, locale) + ' → ' : ''}**${fmt(u?.wallet || 0, locale)}** ${config.CURRENCY}`, inline: false },
             { name: fieldXpName, value: `+${gainedExp} EXP`, inline: true },
             { name: fieldEnergyName, value: `${e}/${config.ENERGY.MAX} ⚡`, inline: true },
             { name: fieldHealthName, value: `${u && u.health !== undefined ? u.health : 100}/100`, inline: true },

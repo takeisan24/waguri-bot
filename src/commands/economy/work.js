@@ -9,6 +9,7 @@ const { applyDisease } = require('../../lib/disease');
 const { getEventMult } = require('../../lib/event');
 const { buildWaguriEmbed } = require('../../lib/embed');
 const { handleNewbieQuest } = require('../../lib/newbie');
+const { ghiLuongChuDong } = require('../../lib/luongChuDong');
 const { petBuffValue, petRarity, findSpecies } = require('../../data/pets');
 
 const { getInteractionLanguage, t } = require('../../lib/i18n');
@@ -136,7 +137,9 @@ module.exports = {
                 earnedMoney = Math.round(base * buffMult);
             }
             // Mệt mỏi: năng lượng/sức khỏe càng thấp (dưới 50%) thì thu nhập càng giảm
-            const fatigue = conditionMultiplier(energyLeft, user.health);
+            // Truyền `earnedMoney` (ngay trước khi nhân mệt) để sàn mệt kẹp tuyệt đối (Lớp C): hệ số trả về
+            // là hệ số HIỆU DỤNG nên dòng "mệt -X%" bên dưới in % thật.
+            const fatigue = conditionMultiplier(energyLeft, user.health, config.ENERGY.MAX, earnedMoney > 0 ? earnedMoney : undefined);
             const grossMoney = earnedMoney;
             if (earnedMoney > 0) earnedMoney = Math.round(earnedMoney * fatigue);
 
@@ -171,7 +174,24 @@ module.exports = {
             // trong khi /work là BƯỚC 2 của onboarding mà bước 1 đã chặn 91,5% người dùng.
             // Siết độ khó ở đó để đổi lấy 0,2% là món hời tồi. Khi phễu thông thì đổi sang
             // `chargeAssets` như /rob và /police — hàm đó đã nằm sẵn.
-            const daTru = await db.addMoney(userId, earnedMoney, 'wallet');
+            //
+            // LƯƠNG DƯƠNG đi qua cổng thu nhập ngày (RPC nguyên tử: đếm tổng ngày + ghi ví cùng
+            // một transaction). Từ đây `earnedMoney` là số THỰC vào ví (INV-3) — mọi chỗ in số
+            // tiền / questIncr('earn') / newWallet bên dưới đều dùng nó. Khoản lỗ (âm) và 0 giữ
+            // nguyên đường addMoney như cũ.
+            let daTru;
+            let luongChuaXacNhan = false;
+            let bandNote = '';
+            if (earnedMoney > 0) {
+                const gl = await ghiLuongChuDong(userId, earnedMoney, 'work');
+                daTru = gl.daGhi;
+                luongChuaXacNhan = !gl.daGhi;
+                earnedMoney = gl.soGhi;
+                if (gl.giam) bandNote = t(locale, gl.sanDay ? 'common.band_san' : 'common.band_giam');
+            } else {
+                const daTruLo = await db.addMoney(userId, earnedMoney, 'wallet');
+                daTru = daTruLo;
+            }
             const loBiChan = earnedMoney < 0 && !daTru;
             const userAfter = await db.getUser(userId);
             const newWallet = userAfter ? Number(userAfter.wallet) : (Number(user.wallet) + earnedMoney);
@@ -185,7 +205,10 @@ module.exports = {
             const displayJobName = t(locale, `data.jobs.${jobKey}.name`) || jobName;
             const amtStr = `${fmt(Math.abs(earnedMoney), locale)} ${config.CURRENCY}`;
             let resultMessage;
-            if (loBiChan) {
+            if (luongChuaXacNhan) {
+                // Lương không ghi được: KHÔNG in "+X xu" như đã nhận (bài học e138e6b).
+                resultMessage = t(locale, 'commands.work.luong_chua_xac_nhan');
+            } else if (loBiChan) {
                 // Nói thật, nhưng KHÔNG nêu con số và KHÔNG giải thích vì sao thoát.
                 //
                 // Câu "suýt mất X xu nhưng ví trống nên thoát" vừa đúng vừa là một bài hướng
@@ -223,6 +246,7 @@ module.exports = {
                     : `\n${petTag} **${petName}** truyền sức mạnh giúp cậu nhận thêm ${(expBonus * 100).toFixed(0)}% EXP!`;
             }
             if (dz.note) resultMessage += `\n${dz.note}`;
+            if (bandNote) resultMessage += `\n${bandNote}`;
 
             if (usedVehicle) {
                 const vehicleName = config.VEHICLES[usedVehicle.vehicle_id]?.name || usedVehicle.vehicle_id;
@@ -288,7 +312,9 @@ module.exports = {
                 : '';
 
             const fields = [
-                { name: fieldWalletName, value: `${earnedMoney >= 0 ? '+' : '-'}${fmt(Math.abs(earnedMoney), locale)}${grossStr} → **${fmt(newWallet, locale)}** ${config.CURRENCY}`, inline: false },
+                { name: fieldWalletName, value: luongChuaXacNhan
+                    ? `**${fmt(newWallet, locale)}** ${config.CURRENCY}`
+                    : `${earnedMoney >= 0 ? '+' : '-'}${fmt(Math.abs(earnedMoney), locale)}${grossStr} → **${fmt(newWallet, locale)}** ${config.CURRENCY}`, inline: false },
                 { name: fieldXpName, value: `+${gainedExp} EXP`, inline: true },
                 { name: fieldLvlName, value: `Lv.${newLevel}`, inline: true },
                 { name: fieldEnergyName, value: `${energyLeft}/${config.ENERGY.MAX} ⚡`, inline: true },
@@ -305,7 +331,7 @@ module.exports = {
                 // `addMoney` với số DƯƠNG chỉ hỏng theo kiểu `null` (DB lỗi) — guard trong
                 // RPC là `wallet + amount >= 0`, luôn đúng khi cộng.
                 const daThuong = bonus > 0
-                    ? await db.addMoney(userId, bonus, 'wallet') === true
+                    ? await db.addMoney(userId, bonus, 'wallet', 'levelup_work') === true
                     : true;   // không có thưởng thì không có gì để hỏng
                 if (!daThuong) console.error(`[PAYOUT FAIL] work-levelup user=${userId} bonus=${bonus}`);
                 const lvlUpTitle = isEn ? '🎉 Level Up!' : '🎉 Lên cấp!';

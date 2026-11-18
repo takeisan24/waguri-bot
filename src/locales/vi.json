@@ -1,5 +1,7 @@
 {
   "common": {
+    "band_giam": "🌸 Hôm nay cậu làm nhiều rồi đó nên tiền công giảm bớt — nghỉ chút, hoặc ra nông trại/tiệm bánh nha~",
+    "band_san": "🌸 Hôm nay cậu vất vả lắm rồi, tiền công chỉ còn chút ít thôi — nghỉ ngơi nha, mai (sau 0 giờ) lại như cũ~",
     "btn_wiki": "📖 Cẩm nang Waguri",
     "ai_quota_exceeded": "Cậu đã dùng hết **{cap}** lượt chat với mình hôm nay rồi 🥺 — nâng cấp `/premium` để có thêm nhé 💎",
     "ai_quota_global": "Hôm nay mình trò chuyện hơi nhiều nên thấm mệt rồi... 🥺 Cậu cho mình nghỉ một chút nha, mai mình lại nói chuyện với cậu nhé~ 🌸",
@@ -294,6 +296,7 @@
       "field_wallet": "💵 Số dư ví"
     },
     "work": {
+      "luong_chua_xac_nhan": "⚠️ Waguri chưa xác nhận được tiền công lượt này vào ví. Cậu xem lại bằng `/bank balance` nha.",
       "bonus_unconfirmed": "\n\n⚠️ Nhưng **tiền thưởng lên cấp chưa ghi nhận xong** do trục trặc kết nối. Cậu kiểm lại bằng `/bank balance` giúp mình nhé — cấp độ thì đã lên thật rồi, không mất đâu~",
       "success_title": "💼・Làm việc chăm chỉ",
       "fail_title": "❌・Làm việc thất bại",
@@ -320,6 +323,7 @@
       "item_drop": "\n🍓 Cậu nhận được **{qty}x {name}** (đã cất vào kho đồ)."
     },
     "gather": {
+      "luong_chua_xac_nhan": "⚠️ Chưa xác nhận được số xu lượt này vào ví. Cậu xem lại bằng `/bank balance` nha.",
       "mine_success_title": "⛏️・Khai thác mỏ thành công",
       "chop_success_title": "🪓・Chặt gỗ thành công",
       "earn_desc": "\n💵 Bán khoáng sản/gỗ: **+{amount}** {currency}",
