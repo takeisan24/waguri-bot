@@ -21,7 +21,7 @@ export default function SiteFooter() {
           <p>
             {devByText}{" "}
             <a
-              href="https://bio.link/takeisan204"
+              href="https://guns.lol/takeisan04"
               target="_blank"
               rel="noopener noreferrer"
               className="text-pink-300 hover:underline font-semibold"
