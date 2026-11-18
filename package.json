@@ -29,7 +29,8 @@
     "db:catalog": "node scripts/db-catalog.js",
     "check-i18n-data": "node scripts/check-i18n-data.js",
     "check-rpc-anon": "node scripts/check-rpc-anon.js",
-    "check-pet-mirror": "node scripts/check-pet-mirror.js"
+    "check-pet-mirror": "node scripts/check-pet-mirror.js",
+    "ci:local": "npm test && npm run check-sql && npm run check-rpc && node scripts/check-command-sync.js && node scripts/check-help-sync.js && node scripts/check-db-applied.js && node scripts/check-db-drift.js && node scripts/check-rpc-anon.js --soft && npm --prefix web run lint && echo CI_LOCAL_OK"
   },
   "dependencies": {
     "@google/genai": "^2.15.0",
