@@ -286,6 +286,10 @@ module.exports = {
 
         let i = 0;
         const rotate = () => {
+            // Đang tắt / crash: client.destroy() đã chạy thì gửi presence sẽ ném
+            // "RangeError: Shard 0 not found" thành unhandledRejection (rác trong kênh log).
+            // isReady() = false ngay khi ws.destroyed, nên bỏ qua lượt này.
+            if (!client.isReady()) return;
             const list = buildStatuses(client); // tính lại mỗi lần -> số liệu luôn mới
             const s = list[i % list.length];
             client.user.setActivity(s.name, { type: s.type });
