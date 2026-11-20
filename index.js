@@ -85,8 +85,11 @@ process.on('unhandledRejection', (reason) => {
 });
 process.on('uncaughtException', (error) => {
     console.error('[UNCAUGHT EXCEPTION]', error);
+    // Ngừng nhận việc NGAY (state trong RAM có thể đã hỏng): đóng gateway trước, không await,
+    // để không lệnh kinh tế/game nào bắt đầu trong lúc chờ gửi tin rồi bị exit cắt ngang.
+    try { client.destroy(); } catch { /* ignore */ }
     // KHÔNG logError() rồi exit ngay như trước: logError là async nên tin chưa kịp đi thì
-    // tiến trình đã chết. thoatSauKhiBao chờ gửi (tối đa ~3s) rồi mới exit(1).
+    // tiến trình đã chết. thoatSauKhiBao chờ gửi (tối đa ~3s, có hạn chót cứng) rồi exit(1).
     nhatKy.thoatSauKhiBao('Uncaught Exception', error);
 });
 
@@ -99,8 +102,10 @@ function gracefulShutdown(sig) {
     try { client.destroy(); } catch { /* ignore */ }
     // Chờ tin "đang tắt" + BAND LOG còn lại (mỗi lần gửi tự huỷ sau 3s), nhưng không bao giờ
     // quá 2,5s — panel thường SIGKILL nếu tiến trình nán lại lâu.
+    // Đường thoát do lỗi đang chạy thì để nó exit(1) — không che crash bằng một lần "tắt gọn".
+    if (nhatKy.dangThoat()) return;
     const het = setTimeout(() => process.exit(0), 2500);
-    nhatKy.baoTat(sig).finally(() => { clearTimeout(het); process.exit(0); });
+    nhatKy.baoTat(sig).then((ok) => { if (ok) { clearTimeout(het); process.exit(0); } }, () => {});
 }
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
@@ -244,19 +249,22 @@ require('./src/lib/event').loadEvent()
 // ack (`lib/canhAck.js`); lý do cần phép đo này ghi ở đầu `lib/canhRest.js`.
 require('./src/lib/canhRest').theoDoiRest(client);
 
-let lastReady = Date.now();
-client.on('clientReady', () => { lastReady = Date.now(); nhatKy.baoKhoiDong(client); });
-client.on('shardReady', (id) => { lastReady = Date.now(); nhatKy.khiShardNoiLai(id); });
+client.on('clientReady', () => nhatKy.baoKhoiDong(client));
+client.on('shardReady', (id) => nhatKy.khiShardNoiLai(id));
 client.on('shardResume', (id) => nhatKy.khiShardNoiLai(id));
 client.on('error', (e) => logError('client_error', e));
 client.on('shardError', (e, id) => logError('shard_error', e, { shard: id }));
+// discord.js 14 chỉ phát `shardDisconnect` với close code KHÔNG phục hồi được (token bị reset,
+// intent bị tắt...) — shard sẽ không bao giờ tự nối lại. Trước đây dòng này in "sẽ tự kết nối
+// lại" rồi thôi, tức bot chết im. Nay thoát có báo để panel restart (và kênh log thấy code).
 client.on('shardDisconnect', (ev, id) => {
-    console.warn(`[GATEWAY] Shard ${id} ngắt (code ${ev?.code}) — sẽ tự kết nối lại...`);
-    nhatKy.khiShardNgat(id, ev?.code);
+    console.error(`[GATEWAY] Shard ${id} ngắt vĩnh viễn (code ${ev?.code}) — thoát để panel khởi động lại.`);
+    nhatKy.thoatSauKhiBao(`Shard ${id} ngắt vĩnh viễn (code ${ev?.code})`, new Error(`Gateway close code ${ev?.code}`));
 });
+// Ngắt có thể phục hồi chỉ phát `shardReconnecting` (không kèm code) -> ghi mốc mất kết nối.
 client.on('shardReconnecting', (id) => {
     console.log(`[GATEWAY] Shard ${id} đang kết nối lại...`);
-    nhatKy.khiShardNgat(id);   // đã ghi mốc ở shardDisconnect thì giữ mốc cũ
+    nhatKy.khiShardNgat(id);
 });
 client.on('invalidated', () => {
     console.error('[GATEWAY] Session bị vô hiệu hoá — thoát để panel khởi động lại.');
@@ -264,10 +272,18 @@ client.on('invalidated', () => {
 });
 
 // Watchdog: gateway không Ready quá 5 phút -> thoát để panel restart sạch (chống trạng thái "zombie").
+// PHẢI soi TỪNG SHARD: `client.ws.status` chỉ được gán Ready MỘT lần lúc khởi động và không bao
+// giờ đổi lại (discord.js 14 WebSocketManager), nên điều kiện cũ `client.ws.status === 0` luôn
+// đúng sau lần Ready đầu — watchdog đã vô hiệu từ đó. Đếm thời gian từ lúc watchdog THẤY mất
+// Ready (không dùng mốc Ready cuối: bot chạy nhiều giờ rồi ngắt thì sẽ bị thoát oan ngay).
+let khongReadyTu = Date.now();     // trước lần Ready đầu cũng tính (login treo > 5 phút)
 setInterval(() => {
-    if (shuttingDown) return;
-    const ready = client.ws?.status === 0; // 0 = Ready
-    if (!ready && Date.now() - lastReady > 5 * 60_000) {
+    if (shuttingDown || nhatKy.dangThoat()) return;
+    const shards = [...(client.ws?.shards?.values?.() || [])];
+    const ready = shards.length > 0 && shards.every(s => s.status === 0); // 0 = Status.Ready
+    if (ready) { khongReadyTu = null; return; }
+    if (khongReadyTu === null) khongReadyTu = Date.now();
+    if (Date.now() - khongReadyTu > 5 * 60_000) {
         console.error('[WATCHDOG] Gateway không Ready > 5 phút — thoát để restart.');
         nhatKy.thoatSauKhiBao('Watchdog', new Error('Gateway không Ready quá 5 phút'));
     }
