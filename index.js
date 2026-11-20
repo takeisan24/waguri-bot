@@ -83,10 +83,14 @@ process.on('unhandledRejection', (reason) => {
     // KHÔNG exit: rejection lẻ (vd Discord API/DM lỗi, Supabase chập chờn) thường phục hồi được;
     // exit ở đây gây restart-loop và làm mất mọi ván game/interaction đang chạy.
 });
+// Khai báo trước handler crash: handler cũng bật cờ này để các vòng hẹn giờ ngừng lại.
+let shuttingDown = false;
 process.on('uncaughtException', (error) => {
     console.error('[UNCAUGHT EXCEPTION]', error);
     // Ngừng nhận việc NGAY (state trong RAM có thể đã hỏng): đóng gateway trước, không await,
     // để không lệnh kinh tế/game nào bắt đầu trong lúc chờ gửi tin rồi bị exit cắt ngang.
+    // Chặn các vòng hẹn giờ tự đặt lịch lại (snapshot, nhắc nhở…) trong lúc chờ gửi tin.
+    shuttingDown = true;
     try { client.destroy(); } catch { /* ignore */ }
     // KHÔNG logError() rồi exit ngay như trước: logError là async nên tin chưa kịp đi thì
     // tiến trình đã chết. thoatSauKhiBao chờ gửi (tối đa ~3s, có hạn chót cứng) rồi exit(1).
@@ -94,7 +98,6 @@ process.on('uncaughtException', (error) => {
 });
 
 // Tắt mượt: đóng kết nối Discord gọn gàng khi nhận tín hiệu dừng (Wispbyte/PM2/Ctrl+C restart)
-let shuttingDown = false;
 function gracefulShutdown(sig) {
     if (shuttingDown) return;
     shuttingDown = true;

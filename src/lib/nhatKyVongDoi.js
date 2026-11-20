@@ -120,7 +120,7 @@ function taoNhatKy(o = {}) {
                 }] }),
                 signal: AbortSignal.timeout(timeoutMs),
             });
-            try { res?.body?.cancel?.(); } catch { /* nhả kết nối, không cần đọc body */ }
+            try { res?.body?.cancel?.()?.catch?.(() => {}); } catch { /* nhả kết nối, không cần đọc body */ }
             return !!(res && res.ok);
         } catch { return false; }
     }
