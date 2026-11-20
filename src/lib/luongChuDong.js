@@ -42,7 +42,10 @@ async function ghiLuongChuDong(userId, gross, source) {
         kq.daGhi = true;
         kq.soGhi = r.net;
         if (che === 'log' && r.netTinh < gross) {
-            console.log(`[BAND LOG] user=${userId} src=${source} gross=${gross} net_tinh=${r.netTinh} tong_sau=${r.tongSau}`);
+            const dong = `[BAND LOG] user=${userId} src=${source} gross=${gross} net_tinh=${r.netTinh} tong_sau=${r.tongSau}`;
+            console.log(dong);
+            // Console Wispbyte không được lưu -> gom lại, gửi về kênh log mỗi 30 phút.
+            require('./nhatKyVongDoi').ghiBandLog(dong, userId);
         }
         if (che === 'enforce' && r.net < gross) {
             kq.giam = true;

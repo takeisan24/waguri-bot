@@ -5,6 +5,13 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { Client, Collection, GatewayIntentBits, Options, REST, Routes } = require('discord.js');
 const { logError } = require('./src/lib/logger');
+// Nhật ký vòng đời (spec docs/spec-nhat-ky-vong-doi.md): đọc kết cục lần chạy trước và ghi
+// phiên này vào `.runtime/vong-doi.json` NGAY lúc khởi động — crash trước khi ready cũng phải
+// để lại dấu. Gửi webhook chỉ xảy ra sau, ở clientReady.
+const nhatKy = require('./src/lib/nhatKyVongDoi');
+nhatKy.batDau();
+setInterval(() => nhatKy.ghiNhip(), 60_000).unref();
+setInterval(() => { nhatKy.xaBandLog().catch(() => {}); }, 30 * 60_000).unref();
 
 const client = new Client({
     // Slash command + prefix command (đọc nội dung tin nhắn).
@@ -78,8 +85,9 @@ process.on('unhandledRejection', (reason) => {
 });
 process.on('uncaughtException', (error) => {
     console.error('[UNCAUGHT EXCEPTION]', error);
-    logError('Uncaught Exception', error);
-    process.exit(1);
+    // KHÔNG logError() rồi exit ngay như trước: logError là async nên tin chưa kịp đi thì
+    // tiến trình đã chết. thoatSauKhiBao chờ gửi (tối đa ~3s) rồi mới exit(1).
+    nhatKy.thoatSauKhiBao('Uncaught Exception', error);
 });
 
 // Tắt mượt: đóng kết nối Discord gọn gàng khi nhận tín hiệu dừng (Wispbyte/PM2/Ctrl+C restart)
@@ -89,7 +97,10 @@ function gracefulShutdown(sig) {
     shuttingDown = true;
     console.log(`[SYSTEM] Nhận ${sig} — đang tắt gọn gàng...`);
     try { client.destroy(); } catch { /* ignore */ }
-    setTimeout(() => process.exit(0), 1000);
+    // Chờ tin "đang tắt" + BAND LOG còn lại (mỗi lần gửi tự huỷ sau 3s), nhưng không bao giờ
+    // quá 2,5s — panel thường SIGKILL nếu tiến trình nán lại lâu.
+    const het = setTimeout(() => process.exit(0), 2500);
+    nhatKy.baoTat(sig).finally(() => { clearTimeout(het); process.exit(0); });
 }
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
@@ -234,16 +245,22 @@ require('./src/lib/event').loadEvent()
 require('./src/lib/canhRest').theoDoiRest(client);
 
 let lastReady = Date.now();
-client.on('clientReady', () => { lastReady = Date.now(); });
-client.on('shardReady', () => { lastReady = Date.now(); });
+client.on('clientReady', () => { lastReady = Date.now(); nhatKy.baoKhoiDong(client); });
+client.on('shardReady', (id) => { lastReady = Date.now(); nhatKy.khiShardNoiLai(id); });
+client.on('shardResume', (id) => nhatKy.khiShardNoiLai(id));
 client.on('error', (e) => logError('client_error', e));
 client.on('shardError', (e, id) => logError('shard_error', e, { shard: id }));
-client.on('shardDisconnect', (ev, id) => console.warn(`[GATEWAY] Shard ${id} ngắt (code ${ev?.code}) — sẽ tự kết nối lại...`));
-client.on('shardReconnecting', (id) => console.log(`[GATEWAY] Shard ${id} đang kết nối lại...`));
+client.on('shardDisconnect', (ev, id) => {
+    console.warn(`[GATEWAY] Shard ${id} ngắt (code ${ev?.code}) — sẽ tự kết nối lại...`);
+    nhatKy.khiShardNgat(id, ev?.code);
+});
+client.on('shardReconnecting', (id) => {
+    console.log(`[GATEWAY] Shard ${id} đang kết nối lại...`);
+    nhatKy.khiShardNgat(id);   // đã ghi mốc ở shardDisconnect thì giữ mốc cũ
+});
 client.on('invalidated', () => {
-    logError('session_invalidated', new Error('Session invalidated'));
     console.error('[GATEWAY] Session bị vô hiệu hoá — thoát để panel khởi động lại.');
-    process.exit(1); // Wispbyte/Pterodactyl auto-restart
+    nhatKy.thoatSauKhiBao('Session invalidated', new Error('Session invalidated')); // exit(1) sau khi báo
 });
 
 // Watchdog: gateway không Ready quá 5 phút -> thoát để panel restart sạch (chống trạng thái "zombie").
@@ -252,7 +269,7 @@ setInterval(() => {
     const ready = client.ws?.status === 0; // 0 = Ready
     if (!ready && Date.now() - lastReady > 5 * 60_000) {
         console.error('[WATCHDOG] Gateway không Ready > 5 phút — thoát để restart.');
-        process.exit(1);
+        nhatKy.thoatSauKhiBao('Watchdog', new Error('Gateway không Ready quá 5 phút'));
     }
 }, 60_000).unref();
 
