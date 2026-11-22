@@ -133,7 +133,7 @@ module.exports = {
         // + thời điểm, quay lại 'log'/'enforce' trong <= 24 giờ, trong lúc 'off' theo dõi
         // economy_ledger source 'work'/'gather' theo giờ. Lùi migration 0164 (hạ lương 2 nghề)
         // chỉ được khi 'enforce' đang chạy — lùi lúc 'log'/'off' là mở lại nguyên lỗ.
-        BAND_MODE: 'log',
+        BAND_MODE: 'enforce',
         // Nhánh lỗi RPC (không biết tổng hôm nay): chỉ trả tối đa chừng này mỗi lượt (<= gross).
         BAND_ERR_CAP: 400,
         // CHỈ để chọn CÂU nói với người chơi (dải sàn vs dải giảm) — KHÔNG tính tiền. Nguồn tính
