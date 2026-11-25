@@ -114,3 +114,93 @@ test('nhánh CATCH: lệnh ném lỗi thì vẫn báo được cho người dùn
         'Nhánh catch phải tra được ngôn ngữ để dựng lời báo lỗi. Ở đây chậm cũng vô hại:\n'
         + 'lệnh đã chạy xong và interaction đã ack, không còn hạn 3 giây nào.');
 });
+
+// ============================================================
+// ĐƯỜNG NÚT `work:again` — bổ sung 25/11/2026
+//
+// Nhánh nút từng `await getInteractionLanguage()` cho MỌI nút trước khi rẽ nhánh, nên nút
+// "Làm tiếp" (gọi thẳng `work.execute()`, dòng đầu là `deferReply()`) trả 200–800ms trước
+// ack. Bot ở Romania, DB ở Singapore: mỗi lời đọc ≥ 200ms, p95 ~600–740ms (đo 25/11), và
+// nút này đứng đầu bảng "Chưa ack" ở #logs. Nay nút đó gác RAM trước, tra ngôn ngữ lười.
+// Spec: docs/spec-nut-tra-ngon-ngu-luoi.md
+// ============================================================
+function dungNutWork({ chu = '777000000000000001', nguoiBam = chu, nem = null, ghi = [] } = {}) {
+    const it = {
+        isAutocomplete: () => false,
+        isChatInputCommand: () => false,
+        isUserContextMenuCommand: () => false,
+        isMessageContextMenuCommand: () => false,
+        isButton: () => true,
+        isStringSelectMenu: () => false,
+        isModalSubmit: () => false,
+        customId: `work:again:${chu}`,
+        user: { id: nguoiBam, username: 'thu', displayAvatarURL: () => 'http://x/a.png' },
+        guildId: '515151515151515151',
+        member: null,
+        locale: 'vi',
+        createdTimestamp: Date.now(),
+        replied: false,
+        deferred: false,
+        reply: async (p) => { ghi.push({ loai: 'reply', p }); it.replied = true; },
+        editReply: async (p) => { ghi.push({ loai: 'editReply', p }); },
+        followUp: async (p) => { ghi.push({ loai: 'followUp', p }); },
+        deferReply: async () => { it.deferred = true; },
+        client: {
+            commands: new Map([['work', {
+                execute: async (i) => {
+                    ghi.push({ loai: 'execute', traTruocKhiChay: demTraNgonNgu });
+                    await i.deferReply();
+                    if (nem) throw nem;
+                },
+            }]]),
+        },
+    };
+    return it;
+}
+
+test('nút work:again: KHÔNG tra ngôn ngữ trước khi /work kịp defer', async () => {
+    demTraNgonNgu = 0; giaVoBiCam = false;
+    const ghi = [];
+    await handler.execute(dungNutWork({ chu: '777000000000000011', ghi }));
+
+    const chay = ghi.find(x => x.loai === 'execute');
+    assert.ok(chay, 'chủ nút bấm thì /work phải được chạy.');
+    assert.strictEqual(chay.traTruocKhiChay, 0,
+        'Nút "Làm tiếp" tra ngôn ngữ TRƯỚC khi /work kịp `deferReply()`. Lời tra đọc DB ở\n'
+        + 'Singapore từ host ở Romania (≥ 200ms, p95 ~700ms, trần 800ms) — chính nó đẩy nút này\n'
+        + 'lên đầu bảng "Chưa ack". Đặt khối work:again TRƯỚC lời tra ngôn ngữ chung.');
+});
+
+test('nút work:again: người KHÁC bấm thì không chạy /work, trả lời ẩn đã dịch', async () => {
+    demTraNgonNgu = 0; giaVoBiCam = false;
+    const ghi = [];
+    await handler.execute(dungNutWork({ chu: '777000000000000021', nguoiBam: '777000000000000022', ghi }));
+
+    assert.ok(!ghi.some(x => x.loai === 'execute'), 'nút của người khác thì KHÔNG được chạy /work.');
+    const tl = ghi.filter(x => x.loai === 'reply');
+    assert.strictEqual(tl.length, 1, 'phải trả lời đúng một lần.');
+    assert.ok(typeof tl[0].p.content === 'string' && tl[0].p.content.length > 0, 'lời nhắn phải có nội dung đã dịch.');
+    assert.strictEqual(demTraNgonNgu, 1, 'nhánh chặn phải tra ngôn ngữ đúng một lần (lười, không bỏ hẳn).');
+});
+
+test('nút work:again: người bị CẤM thì không chạy /work, vẫn trả lời được', async () => {
+    demTraNgonNgu = 0; giaVoBiCam = true;
+    const ghi = [];
+    try {
+        await handler.execute(dungNutWork({ chu: '777000000000000031', ghi }));
+    } finally { giaVoBiCam = false; }
+
+    assert.ok(!ghi.some(x => x.loai === 'execute'), 'người bị cấm thì /work KHÔNG được chạy.');
+    const tl = ghi.find(x => x.loai === 'reply');
+    assert.ok(tl && tl.p.embeds && tl.p.embeds.length === 1, 'phải trả lời bằng embed báo bị cấm.');
+    assert.strictEqual(demTraNgonNgu, 1, 'nhánh cấm phải tra ngôn ngữ đúng một lần.');
+});
+
+test('nút work:again: /work ném lỗi thì handler không ném ra ngoài', async () => {
+    demTraNgonNgu = 0; giaVoBiCam = false;
+    const ghi = [];
+    await assert.doesNotReject(
+        handler.execute(dungNutWork({ chu: '777000000000000041', ghi, nem: new Error('vỡ thử') })),
+        'lỗi trong /work phải được bắt ở nhánh nút (logError), không được làm vỡ handler.');
+    assert.ok(ghi.some(x => x.loai === 'execute'), '/work phải đã được chạy.');
+});

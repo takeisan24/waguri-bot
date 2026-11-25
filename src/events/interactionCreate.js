@@ -279,7 +279,44 @@ module.exports = {
             // chưa ack) — đúng nhóm lỗi đang cần truy. Đồng hồ tự im nếu nút đã ack kịp.
             theoDoiAck(interaction, `nút ${interaction.customId}`);
 
-            // Ngôn ngữ dùng chung cho MỌI handler nút (tránh ReferenceError ở các nhánh không tự khai báo).
+            // Nút "Làm tiếp" sau /work -> chạy lại /work (áp cùng guard như slash).
+            //
+            // ĐỨNG TRƯỚC lời tra ngôn ngữ chung bên dưới, và tra ngôn ngữ LƯỜI — y như nhánh
+            // slash (xem `layLocale` ở trên). Lý do: `work.execute()` gọi `deferReply()` ở dòng
+            // đầu, nên mọi thứ chạy trước nó ăn vào hạn 3 giây. Lời tra ngôn ngữ đọc `users` +
+            // `guild_settings` (cache 60s, trần 800ms); bot ở Romania, DB ở Singapore nên mỗi
+            // lần ≥ 200ms, p95 ~600–740ms (đo 25/11). Nút này đứng đầu bảng "Chưa ack" ở #logs.
+            // Đường thường không dùng ngôn ngữ ở đây — `/work` tự tra lại SAU defer. Chỉ ai bị
+            // chặn mới phải tra (một lần) để dịch lời chặn. Spec: docs/spec-nut-tra-ngon-ngu-luoi.md
+            if (interaction.customId.startsWith('work:again:')) {
+                let _localeNut;
+                const layLocaleNut = async () => (_localeNut ??= await getInteractionLanguage(interaction));
+                const ownerId = interaction.customId.slice('work:again:'.length);
+                if (interaction.user.id !== ownerId) {
+                    const locale = await layLocaleNut();
+                    return interaction.reply({ content: t(locale, 'commands.work.err_not_owner'), flags: MessageFlags.Ephemeral });
+                }
+                if (isBanned(interaction.user.id)) {
+                    const locale = await layLocaleNut();
+                    return interaction.reply({ embeds: [buildWaguriEmbed(interaction, 'error', { locale, description: t(locale, 'common.banned') })], flags: MessageFlags.Ephemeral });
+                }
+                if (rateLimited(interaction.user.id)) {
+                    const locale = await layLocaleNut();
+                    return interaction.reply({ embeds: [buildWaguriEmbed(interaction, 'warning', { locale, description: t(locale, 'common.rate_limited') })], flags: MessageFlags.Ephemeral });
+                }
+                if (isBlocked('work')) {
+                    const jail = isJailed(interaction.user.id);
+                    if (jail) {
+                        const locale = await layLocaleNut();
+                        return interaction.reply({ embeds: [buildWaguriEmbed(interaction, 'error', { locale, title: t(locale, 'common.jail_title'), description: t(locale, 'common.jail_locked', { time: `<t:${Math.floor(jail.until / 1000)}:R>` }) })], flags: MessageFlags.Ephemeral });
+                    }
+                }
+                const work = interaction.client.commands.get('work');
+                try { if (work) await work.execute(interaction); } catch (error) { logError('work:again', error); }
+                return;
+            }
+
+            // Ngôn ngữ dùng chung cho MỌI handler nút còn lại (tránh ReferenceError ở các nhánh không tự khai báo).
             const locale = await getInteractionLanguage(interaction);
             // Nút "Tắt nhắc" trong DM nhắc vote -> tắt nhận nhắc cho user này.
             if (interaction.customId === 'vote_remind_off') {
@@ -397,29 +434,6 @@ module.exports = {
                 } catch (error) {
                     logError('start:claim', error);
                 }
-                return;
-            }
-
-            // Nút "Làm tiếp" sau /work -> chạy lại /work (áp cùng guard như slash).
-            if (interaction.customId.startsWith('work:again:')) {
-                const ownerId = interaction.customId.slice('work:again:'.length);
-                if (interaction.user.id !== ownerId) {
-                    return interaction.reply({ content: t(locale, 'commands.work.err_not_owner'), flags: MessageFlags.Ephemeral });
-                }
-                if (isBanned(interaction.user.id)) {
-                    return interaction.reply({ embeds: [buildWaguriEmbed(interaction, 'error', { locale, description: t(locale, 'common.banned') })], flags: MessageFlags.Ephemeral });
-                }
-                if (rateLimited(interaction.user.id)) {
-                    return interaction.reply({ embeds: [buildWaguriEmbed(interaction, 'warning', { locale, description: t(locale, 'common.rate_limited') })], flags: MessageFlags.Ephemeral });
-                }
-                if (isBlocked('work')) {
-                    const jail = isJailed(interaction.user.id);
-                    if (jail) {
-                        return interaction.reply({ embeds: [buildWaguriEmbed(interaction, 'error', { locale, title: t(locale, 'common.jail_title'), description: t(locale, 'common.jail_locked', { time: `<t:${Math.floor(jail.until / 1000)}:R>` }) })], flags: MessageFlags.Ephemeral });
-                    }
-                }
-                const work = interaction.client.commands.get('work');
-                try { if (work) await work.execute(interaction); } catch (error) { logError('work:again', error); }
                 return;
             }
 
