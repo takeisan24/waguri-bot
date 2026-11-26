@@ -4,6 +4,9 @@
 -- File này cố ý nằm NGOÀI supabase/migrations/ để không ai áp nhầm theo thứ tự số.
 -- Khi cần lùi: chép nguyên văn thành migration số kế tiếp, áp waguri-test rồi mới prod.
 --
+-- ⚠️ NẾU ĐÃ ÁP 0166/0167: phải lùi `lui_0167` -> `lui_0166` TRƯỚC file này. File này DROP
+--    ap_tran_lop_b; nhan_tien_lop_b (0166) và deliver_bakery_order (0166) còn gọi nó -> mỗi
+--    /crate và /farm box mất tiền cược mà thưởng không vào (42883), /bakery deliver hỏng hẳn.
 -- ⚠️ ĐIỀU KIỆN AN TOÀN: lùi Lớp B = bỏ trần 2.000.000 xu/ngày. Lớp A (0163) ở 'enforce'
 --    vẫn giữ work/gather theo dải, nhưng bán vật phẩm / thu tiệm bánh / crate / plant trở
 --    lại KHÔNG có trần nào. Chỉ lùi khi Lớp B chặn lầm người chơi thật; ghi lý do + thời

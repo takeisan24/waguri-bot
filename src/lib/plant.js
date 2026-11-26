@@ -220,20 +220,30 @@ async function plantBox(userId, target, locale) {
     else if (x < 0.88) reward = 600 + Math.floor(Math.random() * 400);   // 600-1000
     else if (x < 0.98) reward = 1500 + Math.floor(Math.random() * 700);  // 1500-2200
     else reward = 5000;                                                  // nổ hũ
-    // Khoe số tiền ở dưới -> phải kiểm. Thưởng 0 thì không gọi, nên coi như đã trả xong.
-    // KHÔNG gọi lại khi hụt: `null` có thể là timeout SAU khi DB đã ghi -> gọi lại là trả đúp.
+    // Thưởng đi qua `addMoneyLopB` (RPC nhan_tien_lop_b): nhãn nguồn 'plant' TƯỜNG MINH (đổi tên
+    // tệp không làm thoát trần ngày Lớp B) và trả SỐ THỰC NHẬN đã kẹp — embed in số này.
+    // Trần tính theo NGƯỜI NHẬN vì tiền vào ví họ. Thưởng 0 thì không gọi, coi như đã trả xong.
+    // KHÔNG gọi lại khi hụt: `khong_ro` có thể là timeout SAU khi DB đã ghi -> gọi lại là trả đúp.
+    const nguoiNhan = receiver ? receiver.id : userId;
     let daTra = true;
+    let thucNhan = reward;
     if (reward > 0) {
-        daTra = (await db.addMoney(receiver ? receiver.id : userId, reward, 'wallet')) === true;
-        if (!daTra) console.error(`[PAYOUT FAIL] plant-box user=${receiver ? receiver.id : userId} reward=${reward}`);
+        const r = await db.addMoneyLopB(nguoiNhan, reward, 'plant');
+        daTra = !!(r && r.ok);
+        thucNhan = daTra ? r.net : reward;   // hụt: giữ số bốc được kèm cảnh báo chưa xác nhận (như trước)
+        if (!daTra) console.error(`[PAYOUT FAIL] plant-box user=${nguoiNhan} reward=${reward}`);
     }
 
     const who = receiver ? t(locale, 'plant.box_gift_msg', { user: receiver.id }) : '';
     if (reward === 0) return info(t(locale, 'plant.box_empty', { who }), locale);
-    const big = reward >= 5000 ? t(locale, 'plant.box_jackpot_msg') : '';
+    // "Nổ hũ" theo số THỰC nhận: kẹp về 0 thì không hiện khung/đoạn ăn mừng.
+    const noHu = daTra && thucNhan >= 5000;
+    const big = noHu ? t(locale, 'plant.box_jackpot_msg') : '';
+    const biKep = daTra && thucNhan < reward;
     return res(
-        reward >= 5000 ? 'jackpot' : 'success',
-        t(locale, 'plant.box_success', { who, reward: fmt(reward, locale), currency: C, big })
+        noHu ? 'jackpot' : 'success',
+        t(locale, 'plant.box_success', { who, reward: fmt(thucNhan, locale), currency: C, big })
+            + (biKep ? t(locale, receiver ? 'plant.box_cap_hit_gift' : 'plant.box_cap_hit') : '')
             + (daTra ? '' : t(locale, 'common.payout_unconfirmed')),
         locale
     );

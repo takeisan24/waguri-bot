@@ -970,6 +970,7 @@
     "crate": {
       "err_poor": "You need **{cost}** {currency} to open the crate~ 😟",
       "prize_failed": "😥 The crate opened… but **the reward didn't save** because of a connection hiccup. The balance below is the real number — if it's short, please ping an admin~",
+      "cap_hit": "\n🌸 You have earned a lot today, so this reward was trimmed. Come back tomorrow~",
       "prize_little_money": "💵 A little change: **+{amount}** {currency}",
       "prize_decent_money": "💰 Not bad! **+{amount}** {currency}",
       "prize_common_item": "📦 Item: **{name}**!",
@@ -2872,6 +2873,8 @@
     "box_empty": "You opened a Plantbox{who}... unfortunately, it was empty~ 🌱 Better luck next time!",
     "box_jackpot_msg": " 💥 **JACKPOT!**",
     "box_success": "You opened a Plantbox{who} and received **{reward}** {currency}!{big} 🎁🌸",
+    "box_cap_hit": "\n🌸 You have earned a lot today, so this reward was trimmed. Come back tomorrow~",
+    "box_cap_hit_gift": "\n🌸 The recipient has received a lot today, so the gift was trimmed~",
     "status_no_plant": "You haven't planted anything. Start by using `/farm plant` (500) to plant seeds~ 🌱",
     "status_mature_wait": "🌳 **{name}** (value: **{tier}** {currency}) is mature.\nWait **{time} minutes** before using `/farm harvest`.",
     "status_mature_pest_warning": "🐛 The plant has been left for too long, beware of pests! Try `/farm harvest` now~",

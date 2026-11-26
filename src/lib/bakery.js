@@ -1,5 +1,5 @@
 // ============================================================
-// lib/bakery.js — Logic THUẦN cho Tiệm Bánh Gekka (dễ test, mirror RPC bakery_collect).
+// lib/bakery.js — Logic THUẦN cho Tiệm Bánh Gekka (dễ test, mirror RPC bakery_collect_v2).
 // Không đụng DB, không async. Xem docs/design-tiem-banh-gekka.md.
 //
 // MÔ HÌNH: stock = "kho doanh thu tiềm năng" (VNĐ) nạp từ nguyên liệu (giá × markup).
@@ -26,7 +26,7 @@ function fillingStockGain(itemPrice, qty) {
 }
 
 /**
- * Tính mẻ nướng kể từ lastCollectMs. HÀM THUẦN (RPC bakery_collect làm y hệt, nguyên tử).
+ * Tính mẻ nướng kể từ lastCollectMs. HÀM THUẦN (RPC bakery_collect_v2 làm y hệt, nguyên tử).
  * @returns {{revenue, bakedMin, newStock, capped, stockLimited}}
  *   revenue: doanh thu nướng được · newStock: kho còn lại · capped: đầy trần (mất thời gian dư)
  *   stockLimited: hết nguyên liệu trước khi hết thời gian (nhắc tiếp NL).

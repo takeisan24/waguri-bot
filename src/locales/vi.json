@@ -970,6 +970,7 @@
     "crate": {
       "err_poor": "Cần **{cost}** {currency} để mở rương~ 😟",
       "prize_failed": "😥 Rương mở ra rồi… nhưng **phần thưởng chưa ghi nhận được** do trục trặc kết nối. Số dư dưới đây mới là con số thật — nếu thiếu, cậu nhắn admin giúp tớ nhé~",
+      "cap_hit": "\n🌸 Hôm nay cậu đã nhận khá nhiều rồi nên phần thưởng bị giảm bớt. Mai quay lại nhé~",
       "prize_little_money": "💵 Chút tiền lẻ: **+{amount}** {currency}",
       "prize_decent_money": "💰 Cũng được! **+{amount}** {currency}",
       "prize_common_item": "📦 Vật phẩm: **{name}**!",
@@ -2445,6 +2446,8 @@
     "box_empty": "Cậu mở Plantbox{who}... tiếc quá, hộp rỗng rồi~ 🌱 Thử lại lần sau nhé!",
     "box_jackpot_msg": " 💥 **NỔ HŨ!**",
     "box_success": "Cậu mở Plantbox{who} và nhận **{reward}** {currency}!{big} 🎁🌸",
+    "box_cap_hit": "\n🌸 Hôm nay cậu đã nhận khá nhiều rồi nên phần thưởng bị giảm bớt. Mai quay lại nhé~",
+    "box_cap_hit_gift": "\n🌸 Hôm nay người nhận đã nhận khá nhiều rồi nên món quà bị giảm bớt~",
     "status_no_plant": "Cậu chưa trồng cây. Bắt đầu bằng `/farm plant` (500) nhé~ 🌱",
     "status_mature_wait": "🌳 **{name}** (giá trị **{tier}** {currency}) đã trưởng thành.\nĐợi **{time} phút** nữa rồi `/farm harvest` nhé.",
     "status_mature_pest_warning": "🐛 Cây để quá lâu, coi chừng sâu bọ! Thử `/farm harvest` xem còn kịp không~",

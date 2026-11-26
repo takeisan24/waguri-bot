@@ -483,13 +483,19 @@ async function subGiaodon(interaction, locale) {
           `• Coins: **+${fmt(res.reward_coins, locale)}** ${C}\n` +
           `• EXP: **+${res.reward_exp}** EXP\n` +
           `• Reputation: **+${res.reward_rep}** 🏆 (Total: **${fmt(res.new_reputation, locale)}**)\n` +
-          `• Cake Progress: **+${fmt(target.cakeProgress, locale)}** 🎂`
+          `• Cake Progress: **+${fmt(target.cakeProgress, locale)}** 🎂` +
+          (res.capped ? `
+
+🌸 You've earned a lot today, so the coin reward was trimmed to **${fmt(res.reward_coins, locale)}**. Come back tomorrow~` : '')
         : `**${target.customer}** vô cùng hài lòng với món ngon từ đơn hàng **"${orderTitle}"**!\n\n` +
           `🎁 **Phần thưởng cậu nhận được:**\n` +
           `• Xu: **+${fmt(res.reward_coins, locale)}** ${C}\n` +
           `• EXP: **+${res.reward_exp}** EXP\n` +
           `• Danh tiếng tiệm: **+${res.reward_rep}** 🏆 (Tổng: **${fmt(res.new_reputation, locale)}** điểm)\n` +
-          `• Tiến trình bánh: **+${fmt(target.cakeProgress, locale)}** 🎂`;
+          `• Tiến trình bánh: **+${fmt(target.cakeProgress, locale)}** 🎂` +
+          (res.capped ? `
+
+🌸 Hôm nay cậu đã nhận khá nhiều rồi nên phần xu bị giảm còn **${fmt(res.reward_coins, locale)}**. Mai quay lại nhé~` : '');
 
     return interaction.editReply({ embeds: [buildWaguriEmbed(interaction, 'success', {
         locale,

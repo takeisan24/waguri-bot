@@ -51,10 +51,16 @@ module.exports = {
         // Bản cũ bỏ luôn kết quả của cả `addMoney` lẫn `giveItemAdmin`, nên người chơi đọc
         // "💎 CỰC HIẾM! Cậu nhận được Laptop!" với túi đồ trống — đúng lớp lỗi đã vá ở
         // `/fish`. Không thử lại: hỏng có thể là timeout sau khi ghi ĐÃ thành công.
+        // Thưởng tiền đi qua `addMoneyLopB` (RPC nhan_tien_lop_b): nhãn nguồn 'crate' TƯỜNG MINH
+        // (đổi tên tệp không làm thoát trần ngày Lớp B) và trả SỐ THỰC NHẬN — đã kẹp. Embed in
+        // số này, không in số bốc được. `ketQuaTien` giữ lần trả tiền gần nhất để chọn khung màu.
+        let ketQuaTien = null;
         const money = async mult => {
             const amt = Math.floor(cost * mult);
-            if (await db.addMoney(userId, amt, 'wallet') !== true) return null;
-            return amt;
+            const r = await db.addMoneyLopB(userId, amt, 'crate');
+            if (!r || !r.ok) return null;
+            ketQuaTien = { net: r.net, goc: amt };
+            return r.net;
         };
         const giveItem = async pool => {
             const id = rpick(pool);
@@ -69,7 +75,10 @@ module.exports = {
         const HONG = t(locale, 'commands.crate.prize_failed');
         const dongTien = async (mult, key) => {
             const a = await money(mult);
-            return a === null ? HONG : t(locale, key, { amount: fmt(a, locale), currency: config.CURRENCY });
+            if (a === null) return HONG;
+            const dong = t(locale, key, { amount: fmt(a, locale), currency: config.CURRENCY });
+            // Bị kẹp (một phần hoặc hết): nói thật vì sao số nhận nhỏ hơn số bốc được.
+            return ketQuaTien && ketQuaTien.net < ketQuaTien.goc ? dong + t(locale, 'commands.crate.cap_hit') : dong;
         };
         const dongDo = async (pool, key) => {
             const n = await giveItem(pool);
@@ -96,6 +105,8 @@ module.exports = {
         // Trao hỏng thì đừng tô màu ăn mừng: hai nhánh hiếm nhất đặt `type = 'jackpot'`
         // trước khi biết kết quả, nên rương hỏng vẫn hiện khung vàng "ĐẠI TRÚNG".
         if (desc === HONG) type = 'warning';
+        // Cùng lý do: khung vàng "ĐẠI TRÚNG" phải theo số THỰC nhận. Jackpot bị kẹp (net < số bốc được) thì không ăn mừng.
+        if (type === 'jackpot' && ketQuaTien && ketQuaTien.net < ketQuaTien.goc) type = 'warning';
 
         const u = await db.getUser(userId);
         const embed = buildWaguriEmbed(interaction, type, {
